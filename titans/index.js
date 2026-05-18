@@ -11,6 +11,7 @@
  *
  * Current roster:
  *   ✦ Hyperion  — Light / Signal Amplifier         [lore]
+ *   ✦ Rhea      — Flow / Rhythm / Tick Regulator    [lore + config + threshold]
  *   ○ Kronos    — Time / Phase Accumulator          [inline in gaia.html — extract later]
  *   ○ Rhea      — Flow / Rhythm                     [planned]
  *   ○ Oceanus   — Deep Data / Streams               [planned]
@@ -22,9 +23,10 @@
  */
 
 export { hyperion } from './hyperion.js';
+export { rhea, rheaEvaluate, rheaBand, canFire, rheaConfig, rheaState } from './rhea.js';
+export { themis, themisWeigh, buildOlympusRow, themisConfig } from './themis.js';
 
 // Stub imports — uncomment as each Titan is built:
-// export { rhea }      from './rhea.js';
 // export { oceanus }   from './oceanus.js';
 // export { themis }    from './themis.js';
 // export { mnemosyne } from './mnemosyne.js';
@@ -59,9 +61,9 @@ export async function getTitan(name) {
 export const TITAN_PIPELINE = [
   { name: 'kronos',    role: 'Phase Accumulator',   status: 'inline',   glyph: '⏳' },
   { name: 'hyperion',  role: 'Signal Amplifier',     status: 'active',   glyph: '🔆' },
-  { name: 'rhea',      role: 'Flow / Rhythm',        status: 'planned',  glyph: '🌊' },
+  { name: 'rhea',      role: 'Flow / Tick Regulator',   status: 'active',   glyph: '🌊' },
   { name: 'oceanus',   role: 'Deep Data Streams',    status: 'planned',  glyph: '🌀' },
-  { name: 'themis',    role: 'Law / Thresholds',     status: 'planned',  glyph: '⚖️'  },
+  { name: 'themis',    role: 'Law / Ascension Gate',    status: 'active',   glyph: '⚖️'  },
   { name: 'mnemosyne', role: 'Memory / Storage',     status: 'planned',  glyph: '📜' },
   { name: 'prometheus',role: 'Fire / LLM Gate',      status: 'planned',  glyph: '🔥' },
   { name: 'iapetus',   role: 'Mortality / Pruning',  status: 'planned',  glyph: '💀' },
