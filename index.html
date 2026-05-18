@@ -3,221 +3,326 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GAIA — Phase Field + Supabase</title>
+    <title>GAIA — Mountains, Sea, Underworld</title>
     <style>
-        * { box-sizing: border-box; }
-        body {
-            background: #050510;
-            color: #e0e0ff;
-            font-family: 'Segoe UI', 'Courier New', monospace;
-            margin: 0;
-            min-height: 100vh;
-            padding: 1.5rem;
-        }
-        .container { max-width: 1300px; margin: 0 auto; }
-        h1 { margin: 0 0 0.25rem; font-size: 2rem; letter-spacing: 2px; }
-        .sub { color: #aaaaff; border-left: 3px solid #ffaa66; padding-left: 1rem; margin-bottom: 2rem; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         
-        .panels { display: flex; flex-wrap: wrap; gap: 1.5rem; margin-bottom: 1.5rem; }
-        .module {
-            flex: 1; min-width: 220px;
-            background: #0f0f1f; border-radius: 1.2rem; padding: 1rem;
-            border-top: 3px solid;
+        body {
+            background: linear-gradient(180deg, #0a0a2a 0%, #1a0a2a 100%);
+            color: #e0e0ff;
+            font-family: 'Georgia', 'Times New Roman', serif;
+            min-height: 100vh;
+            padding: 2rem;
         }
-        .module.kairos { border-color: #44ccff; }
-        .module.apollo { border-color: #ffaa44; }
-        .module.hermes { border-color: #88ffaa; }
-        .module h3 { margin: 0 0 0.5rem; display: flex; justify-content: space-between; }
+        
+        /* COSMIC GRID */
+        .cosmos {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-areas:
+                "sky sky"
+                "mountains sea"
+                "underworld underworld";
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+        
+        /* SKY: The two oscillators */
+        .sky {
+            grid-area: sky;
+            display: flex;
+            gap: 2rem;
+            justify-content: center;
+            margin-bottom: 2rem;
+        }
+        
+        .star {
+            background: rgba(20, 20, 50, 0.6);
+            backdrop-filter: blur(10px);
+            border-radius: 2rem;
+            padding: 1.5rem;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            flex: 1;
+        }
         
         .phase-ring {
-            width: 60px; height: 60px; border-radius: 50%;
-            background: conic-gradient(from 0deg, #ffaa44 0%, #2a2a4a 100%);
-            margin: 0.5rem 0;
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            margin: 1rem auto;
+            transition: background 0.05s linear;
+            box-shadow: 0 0 20px rgba(100, 100, 200, 0.3);
         }
-        .slider-container { margin: 0.75rem 0; }
-        input[type="range"] { width: 100%; background: #2a2a3a; height: 3px; border-radius: 3px; }
-        .value-display { font-family: monospace; font-size: 0.8rem; background: #00000066; padding: 0.2rem 0.4rem; border-radius: 6px; }
         
-        canvas { width: 100%; background: #010108; border-radius: 0.8rem; display: block; margin-bottom: 1rem; border: 1px solid #2a2a4a; }
-        .stats { display: flex; gap: 1rem; flex-wrap: wrap; margin: 1rem 0; }
-        .stat-card { background: #00000066; border-radius: 1rem; padding: 0.5rem 1rem; flex: 1; text-align: center; }
+        /* MOUNTAINS (Ourea) */
+        .mountains {
+            grid-area: mountains;
+            background: linear-gradient(180deg, #1a2a1a 0%, #0a1a0a 100%);
+            border-radius: 2rem;
+            padding: 1.5rem;
+            border-top: 3px solid #44aa77;
+            position: relative;
+            overflow: hidden;
+            min-height: 300px;
+        }
+        
+        .mountain-canvas {
+            width: 100%;
+            height: 200px;
+            display: block;
+            margin-top: 1rem;
+        }
+        
+        /* SEA (Pontus) */
+        .sea {
+            grid-area: sea;
+            background: linear-gradient(180deg, #0a2a3a 0%, #0a1a2a 100%);
+            border-radius: 2rem;
+            padding: 1.5rem;
+            border-top: 3px solid #44aaff;
+            min-height: 300px;
+        }
+        
+        .wave-canvas {
+            width: 100%;
+            height: 200px;
+            display: block;
+            margin-top: 1rem;
+        }
+        
+        /* UNDERWORLD (Eros portal) */
+        .underworld {
+            grid-area: underworld;
+            background: #1a0a1a;
+            border-radius: 2rem;
+            padding: 1.5rem;
+            border-top: 3px solid #ff66aa;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .underworld:hover {
+            background: #2a0a2a;
+            box-shadow: 0 0 30px rgba(255, 102, 170, 0.3);
+        }
+        
+        .portal {
+            width: 150px;
+            height: 150px;
+            margin: 1rem auto;
+            border-radius: 50%;
+            background: radial-gradient(circle, #ff66aa20, #ff006620);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+        
+        .portal.active {
+            background: radial-gradient(circle, #ff66aa80, #ff0066cc);
+            box-shadow: 0 0 40px #ff66aa;
+            transform: scale(1.05);
+        }
+        
+        /* Stats & Controls */
+        .controls {
+            margin-top: 2rem;
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
         
         button {
-            background: #2a2a5a; border: none; color: white; padding: 0.5rem 1rem;
-            border-radius: 2rem; cursor: pointer; font-family: monospace;
+            background: #2a2a5a;
+            border: none;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 2rem;
+            cursor: pointer;
         }
-        button:hover { background: #4a4a8a; }
-        .db-status { font-size: 0.8rem; padding: 0.5rem; background: #0a0a1a; border-radius: 0.5rem; margin-top: 1rem; }
-        .success { color: #88ffaa; }
-        .error { color: #ff8888; }
+        
+        .mythic-text {
+            font-style: italic;
+            margin-top: 1rem;
+            padding: 0.5rem;
+            background: rgba(0,0,0,0.5);
+            border-radius: 1rem;
+        }
     </style>
 </head>
 <body>
-<div class="container">
-    <h1>🌍 GAIA — Phase Field</h1>
-    <div class="sub">phase-locked audio field | logging to GaiaDB (Supabase)</div>
-
-    <div class="panels">
-        <div class="module kairos">
-            <h3>⚡ KAIROS <span class="value-display" id="kairosFreqDisplay">43.70 Hz</span></h3>
+<div class="cosmos">
+    <!-- SKY: Apollo + Kairos -->
+    <div class="sky">
+        <div class="star">
+            <h2>⚡ KAIROS</h2>
             <div class="phase-ring" id="kairosRing"></div>
-            <div class="slider-container"><span>🌊 base freq</span><input type="range" id="kairosBase" min="20" max="80" step="0.1" value="43.7"></div>
-            <div class="slider-container"><span>🔗 coupling to Apollo</span><input type="range" id="couplingStrength" min="0" max="8" step="0.05" value="1.8"></div>
-            <div>🔁 actual: <strong id="kairosActual">43.70</strong> Hz</div>
+            <div id="kairosFreq">0.43 Hz</div>
         </div>
-        <div class="module apollo">
-            <h3>☀️ APOLLO <span class="value-display" id="apolloFreqDisplay">50.00 Hz</span></h3>
+        <div class="star">
+            <h2>☀️ APOLLO</h2>
             <div class="phase-ring" id="apolloRing"></div>
-            <div class="slider-container"><span>🎵 reference freq</span><input type="range" id="apolloFreq" min="20" max="80" step="0.1" value="50.0"></div>
-            <div>🔒 phase anchor</div>
-        </div>
-        <div class="module hermes">
-            <h3>📯 HERMES <span class="value-display" id="hermesState">listening</span></h3>
-            <div>📡 phase coherence threshold:</div>
-            <input type="range" id="coherenceThreshold" min="0" max="1.57" step="0.05" value="0.3">
-            <div id="hermesLog" style="font-size: 0.7rem; margin-top: 0.5rem; background: #00000044; padding: 0.3rem; border-radius: 0.5rem;">⌛ waiting for lock...</div>
+            <div id="apolloFreq">0.50 Hz</div>
         </div>
     </div>
-
-    <canvas id="waveCanvas" width="900" height="200" style="width:100%; height:auto; max-height:200px"></canvas>
-    <canvas id="beatCanvas" width="900" height="100" style="width:100%; height:auto; max-height:100px"></canvas>
-
-    <div class="stats">
-        <div class="stat-card">🏔️ OUREA (diff) <br> <strong id="oureaHz">0.00 Hz</strong></div>
-        <div class="stat-card">🌊 PONTUS (sum/2) <br> <strong id="pontusHz">0.00 Hz</strong></div>
-        <div class="stat-card">❤️ EROS (coupling) <br> <strong id="erosVal">1.80</strong></div>
-        <div class="stat-card">🎯 phase diff <br> <strong id="phaseDiffRad">0.00</strong> rad</div>
+    
+    <!-- MOUNTAINS (Ourea) -->
+    <div class="mountains">
+        <h2>🏔️ OUREA — The Mountains</h2>
+        <div class="mythic-text" id="oureaText">The ages are still... waiting for coherence.</div>
+        <canvas id="mountainCanvas" class="mountain-canvas" width="500" height="200"></canvas>
     </div>
-
-    <div style="display: flex; gap: 1rem; justify-content: center; margin: 1rem 0;">
-        <button id="resetPhaseBtn">⟳ reset phase diff to 0</button>
-        <button id="muteBtn">🔇 mute/unmute</button>
-        <button id="saveNowBtn" style="background:#3a6a4a;">💾 Save current state to GaiaDB</button>
+    
+    <!-- SEA (Pontus) -->
+    <div class="sea">
+        <h2>🌊 PONTUS — The Sea</h2>
+        <div class="mythic-text" id="pontusText">The waters carry messages between worlds.</div>
+        <canvas id="waveCanvas" class="wave-canvas" width="500" height="200"></canvas>
+        <div id="hermesMessage" style="font-size: 0.8rem; margin-top: 0.5rem;"></div>
     </div>
-
-    <div class="db-status" id="dbStatus">
-        📡 Initializing GaiaDB connection...
+    
+    <!-- UNDERWORLD (Eros portal) -->
+    <div class="underworld" id="erosPortal">
+        <h2>❤️ EROS — The Underworld Portal</h2>
+        <div class="portal" id="portalCircle">
+            <span id="portalText">🔒 Locked</span>
+        </div>
+        <div class="mythic-text" id="erosText">Binding strength: <span id="erosVal">0.00</span><br>Descent requires Eros > 1.5</div>
     </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<div class="controls">
+    <button id="resetPhaseBtn">⟳ Reset Phase</button>
+    <button id="saveBtn">💾 Save Age to Gaia</button>
+</div>
+
 <script>
-    // ========================
-    // SUPABASE CONFIG
-    // ========================
-    const SUPABASE_URL = "https://nbdvavzqvxrlxhsbrluz.supabase.co";
-    const SUPABASE_ANON_KEY = "sb_publishable_6x1xlieXjs3dWqEETQcxnQ_4L1UO2uR";
-    
-    let _supabase = null;
-    let dbReady = false;
-    
-    // ========================
-    // AUDIO FIELD STATE
-    // ========================
-    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    // ========== PHASE FIELD ENGINE (same as before, but now drives aesthetics) ==========
     let phaseKairos = 0, phaseApollo = 0;
-    let kairosBaseFreq = 43.7, apolloFixedFreq = 50.0, couplingK = 1.8;
+    let kairosBaseFreq = 0.43, apolloFixedFreq = 0.50, couplingK = 0.8;
     let currentKairosFreq = kairosBaseFreq;
-    let kairosOsc, apolloOsc, kairosGain, apolloGain, masterGain;
-    let isMuted = false, updateInterval = null;
+    let updateInterval = null;
+    let wasLocked = false;
     let coherenceThreshold = 0.3;
-    let wasLocked = false, hermesTriggerCount = 0;
     
     // DOM elements
-    const kairosBaseSlider = document.getElementById('kairosBase');
-    const apolloFreqSlider = document.getElementById('apolloFreq');
-    const couplingSlider = document.getElementById('couplingStrength');
-    const coherenceSlider = document.getElementById('coherenceThreshold');
-    const resetPhaseBtn = document.getElementById('resetPhaseBtn');
-    const muteBtn = document.getElementById('muteBtn');
-    const saveNowBtn = document.getElementById('saveNowBtn');
-    const dbStatusDiv = document.getElementById('dbStatus');
+    const kairosRing = document.getElementById('kairosRing');
+    const apolloRing = document.getElementById('apolloRing');
+    const mountainCanvas = document.getElementById('mountainCanvas');
+    const waveCanvas = document.getElementById('waveCanvas');
+    const portalCircle = document.getElementById('portalCircle');
+    const erosValSpan = document.getElementById('erosVal');
+    const oureaTextDiv = document.getElementById('oureaText');
+    const pontusTextDiv = document.getElementById('pontusText');
+    const hermesMessageDiv = document.getElementById('hermesMessage');
     
-    // ========================
-    // SUPABASE INIT + TABLE CREATE
-    // ========================
-    async function initSupabase() {
-        try {
-            _supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-            dbStatusDiv.innerHTML = '📡 Connected to Supabase. Creating table if needed...';
-            
-            // Test insert to see if table exists
-            const testInsert = await _supabase.from('gaia_field_states').insert({
-                kairos_freq: 0, apollo_freq: 0, coupling_k: 0, phase_diff: 0,
-                is_locked: false, ourea_hz: 0, pontus_hz: 0
-            });
-            
-            if (testInsert.error && testInsert.error.code === '42P01') {
-                dbStatusDiv.innerHTML = '⚠️ Table "gaia_field_states" not found. Please run this SQL in Supabase SQL Editor:<br><code style="background:#1a1a2a; padding:0.5rem; display:block; font-size:0.7rem;">CREATE TABLE gaia_field_states (id SERIAL PRIMARY KEY, kairos_freq REAL, apollo_freq REAL, coupling_k REAL, phase_diff REAL, is_locked BOOLEAN, ourea_hz REAL, pontus_hz REAL, created_at TIMESTAMPTZ DEFAULT NOW());</code>';
-                return false;
-            }
-            dbReady = true;
-            saveNowBtn.disabled = false;
-            dbStatusDiv.innerHTML = '✅ GaiaDB ready — logging phase states';
-            return true;
-        } catch (e) {
-            dbStatusDiv.innerHTML = `❌ DB Error: ${e.message}`;
-            return false;
-        }
+    // Canvas contexts
+    const mountainCtx = mountainCanvas.getContext('2d');
+    const waveCtx = waveCanvas.getContext('2d');
+    
+    function resizeCanvases() {
+        mountainCanvas.width = mountainCanvas.parentElement.clientWidth - 32;
+        mountainCanvas.height = 200;
+        waveCanvas.width = waveCanvas.parentElement.clientWidth - 32;
+        waveCanvas.height = 200;
     }
+    window.addEventListener('resize', resizeCanvases);
+    resizeCanvases();
     
-    // Save current field state to GaiaDB
-    async function saveToGaiaDB() {
-        if (!dbReady || !_supabase) {
-            dbStatusDiv.innerHTML = '⚠️ Wait for DB init before saving';
-            return;
-        }
-        const phaseDiff = phaseApollo - phaseKairos;
-        const normDiff = ((phaseDiff % (2*Math.PI)) + 2*Math.PI) % (2*Math.PI);
-        const signedDiff = normDiff > Math.PI ? normDiff - 2*Math.PI : normDiff;
-        const isLocked = Math.abs(signedDiff) < coherenceThreshold;
-        const ourea = Math.abs(currentKairosFreq - apolloFixedFreq);
-        const pontus = (currentKairosFreq + apolloFixedFreq) / 2;
+    // Draw Mountains (Ourea) — silhouette that rises/falls with coherence
+    function drawMountains(coherence, oureaHz) {
+        const w = mountainCanvas.width;
+        const h = mountainCanvas.height;
+        mountainCtx.clearRect(0, 0, w, h);
         
-        const { error } = await _supabase.from('gaia_field_states').insert({
-            kairos_freq: currentKairosFreq,
-            apollo_freq: apolloFixedFreq,
-            coupling_k: couplingK,
-            phase_diff: signedDiff,
-            is_locked: isLocked,
-            ourea_hz: ourea,
-            pontus_hz: pontus
+        // Mountain height = coherence (0 to 1) * max height
+        const peakHeight = coherence * h * 0.8;
+        const peaks = [0.2, 0.5, 0.8];
+        
+        mountainCtx.fillStyle = '#2a4a2a';
+        mountainCtx.beginPath();
+        mountainCtx.moveTo(0, h);
+        peaks.forEach((xPos, i) => {
+            const x = xPos * w;
+            const y = h - peakHeight * (1 - Math.abs(i - 1) * 0.3);
+            mountainCtx.lineTo(x, y);
         });
+        mountainCtx.lineTo(w, h);
+        mountainCtx.fill();
         
-        if (error) {
-            dbStatusDiv.innerHTML = `❌ Save failed: ${error.message}`;
-        } else {
-            dbStatusDiv.innerHTML = `✅ Saved to GaiaDB at ${new Date().toLocaleTimeString()} — lock: ${isLocked ? 'YES' : 'NO'}`;
-            setTimeout(() => {
-                if (dbReady) dbStatusDiv.innerHTML = '✅ GaiaDB ready — logging phase states';
-            }, 2000);
+        // Snow caps if high coherence
+        if (coherence > 0.6) {
+            mountainCtx.fillStyle = '#ffffffaa';
+            peaks.forEach((xPos, i) => {
+                const x = xPos * w;
+                const y = h - peakHeight * (1 - Math.abs(i - 1) * 0.3);
+                mountainCtx.beginPath();
+                mountainCtx.moveTo(x - 10, y);
+                mountainCtx.lineTo(x, y - 8);
+                mountainCtx.lineTo(x + 10, y);
+                mountainCtx.fill();
+            });
+        }
+        
+        // Age text based on Ourea frequency
+        if (oureaHz > 0) {
+            const ageSeconds = (1 / oureaHz).toFixed(1);
+            oureaTextDiv.innerHTML = `🏔️ Mountain age: ${ageSeconds} seconds per beat. ${coherence > 0.7 ? 'The peaks are locked in ancient rhythm.' : 'The mountains tremble, seeking coherence.'}`;
         }
     }
     
-    // ========================
-    // AUDIO ENGINE (Phase Lock)
-    // ========================
-    function initAudio() {
-        kairosOsc = audioCtx.createOscillator();
-        apolloOsc = audioCtx.createOscillator();
-        kairosOsc.type = 'sine';
-        apolloOsc.type = 'sine';
-        kairosGain = audioCtx.createGain();
-        apolloGain = audioCtx.createGain();
-        masterGain = audioCtx.createGain();
-        kairosGain.gain.value = 0.25;
-        apolloGain.gain.value = 0.25;
-        masterGain.gain.value = 0.4;
-        kairosOsc.connect(kairosGain);
-        apolloOsc.connect(apolloGain);
-        kairosGain.connect(masterGain);
-        apolloGain.connect(masterGain);
-        masterGain.connect(audioCtx.destination);
-        kairosOsc.start();
-        apolloOsc.start();
+    // Draw Sea (Pontus) — flowing waves
+    let waveOffset = 0;
+    function drawSea(pontusHz, coherence) {
+        const w = waveCanvas.width;
+        const h = waveCanvas.height;
+        waveCtx.clearRect(0, 0, w, h);
+        
+        waveOffset += 0.05 * (pontusHz * 2); // Speed of waves
+        
+        waveCtx.beginPath();
+        waveCtx.strokeStyle = `rgba(68, 170, 255, ${0.3 + coherence * 0.7})`;
+        waveCtx.lineWidth = 2;
+        
+        for (let x = 0; x < w; x++) {
+            const y = h/2 + Math.sin(x * 0.02 + waveOffset) * (20 + pontusHz * 30) + 
+                      Math.sin(x * 0.05 + waveOffset * 1.5) * 10;
+            if (x === 0) waveCtx.moveTo(x, y);
+            else waveCtx.lineTo(x, y);
+        }
+        waveCtx.stroke();
+        
+        pontusTextDiv.innerHTML = `🌊 Pontus flows at ${pontusHz.toFixed(2)} Hz. ${coherence > 0.5 ? 'The sea carries coherent messages.' : 'Waves crash chaotically.'}`;
+    }
+    
+    // Update Portal (Eros)
+    function updatePortal(eros, isLocked) {
+        erosValSpan.innerText = eros.toFixed(2);
+        const canDescend = eros > 1.5;
+        
+        if (canDescend && isLocked) {
+            portalCircle.classList.add('active');
+            document.getElementById('portalText').innerHTML = '🌀 DESCEND 🌀';
+            document.getElementById('erosPortal').style.cursor = 'pointer';
+        } else {
+            portalCircle.classList.remove('active');
+            document.getElementById('portalText').innerHTML = eros > 1.0 ? '🔓 Unlocking...' : '🔒 Locked';
+            document.getElementById('erosPortal').style.cursor = 'not-allowed';
+        }
+    }
+    
+    // Phase field update loop
+    function startField() {
+        if (updateInterval) clearInterval(updateInterval);
         
         updateInterval = setInterval(() => {
-            const dt = 0.05;
+            const dt = 0.1;
             const couplingTerm = couplingK * Math.sin(phaseApollo - phaseKairos);
             const dPhaseKairos = (currentKairosFreq * 2 * Math.PI * dt) + couplingTerm * dt;
             phaseKairos += dPhaseKairos;
@@ -226,126 +331,83 @@
             phaseApollo %= (2 * Math.PI);
             
             const deltaFreqHz = (couplingK * Math.sin(phaseApollo - phaseKairos)) / (2 * Math.PI);
-            currentKairosFreq = Math.min(80, Math.max(20, kairosBaseFreq + deltaFreqHz));
-            if (kairosOsc) kairosOsc.frequency.value = currentKairosFreq;
-            if (apolloOsc) apolloOsc.frequency.value = apolloFixedFreq;
+            currentKairosFreq = Math.min(2.0, Math.max(0.2, kairosBaseFreq + deltaFreqHz));
             
-            document.getElementById('kairosActual').innerText = currentKairosFreq.toFixed(2);
-            document.getElementById('kairosFreqDisplay').innerText = currentKairosFreq.toFixed(2) + ' Hz';
-            document.getElementById('apolloFreqDisplay').innerText = apolloFixedFreq.toFixed(2) + ' Hz';
+            // Update displays
+            document.getElementById('kairosFreq').innerHTML = currentKairosFreq.toFixed(3) + ' Hz';
+            document.getElementById('apolloFreq').innerHTML = apolloFixedFreq.toFixed(3) + ' Hz';
             
             const phaseDiff = phaseApollo - phaseKairos;
             const normDiff = ((phaseDiff % (2*Math.PI)) + 2*Math.PI) % (2*Math.PI);
             const signedDiff = normDiff > Math.PI ? normDiff - 2*Math.PI : normDiff;
-            document.getElementById('phaseDiffRad').innerText = signedDiff.toFixed(3);
-            
+            const isLocked = Math.abs(signedDiff) < coherenceThreshold;
             const ourea = Math.abs(currentKairosFreq - apolloFixedFreq);
             const pontus = (currentKairosFreq + apolloFixedFreq) / 2;
-            document.getElementById('oureaHz').innerText = ourea.toFixed(3) + ' Hz';
-            document.getElementById('pontusHz').innerText = pontus.toFixed(2) + ' Hz';
-            document.getElementById('erosVal').innerText = couplingK.toFixed(2);
             
-            const isLocked = Math.abs(signedDiff) < coherenceThreshold;
-            const hermesStateSpan = document.getElementById('hermesState');
-            const hermesLogDiv = document.getElementById('hermesLog');
+            // Coherence as 1 - normalized phase diff
+            const coherence = 1 - (Math.abs(signedDiff) / Math.PI);
+            
+            // Update aesthetics
+            drawMountains(coherence, ourea);
+            drawSea(pontus, coherence);
+            updatePortal(couplingK, isLocked);
+            
+            // Hermes messages on lock
             if (isLocked && !wasLocked) {
-                hermesTriggerCount++;
-                hermesStateSpan.innerHTML = '✨ MESSAGE SENT ✨';
-                hermesLogDiv.innerHTML = `📨 Hermes triggered at lock #${hermesTriggerCount} — coherence at ${signedDiff.toFixed(3)} rad<br>🕊️ "Phase binds, worlds speak."`;
-                saveToGaiaDB(); // Auto-save on phase lock!
+                hermesMessageDiv.innerHTML = `📨 Hermes: "Coherence achieved at ${new Date().toLocaleTimeString()}"`;
                 setTimeout(() => {
-                    if (document.getElementById('hermesState')) hermesStateSpan.innerHTML = 'listening';
-                }, 800);
-            } else if (!isLocked) {
-                hermesStateSpan.innerHTML = 'listening...';
-                if (wasLocked) hermesLogDiv.innerHTML = '⌛ waiting for next lock...';
+                    hermesMessageDiv.innerHTML = '';
+                }, 3000);
             }
             wasLocked = isLocked;
             
-            const kairosRing = document.getElementById('kairosRing');
-            const apolloRing = document.getElementById('apolloRing');
-            if (kairosRing) kairosRing.style.background = `conic-gradient(from ${phaseKairos}rad, #44ccff 0%, #2a2a4a 100%)`;
-            if (apolloRing) apolloRing.style.background = `conic-gradient(from ${phaseApollo}rad, #ffaa44 0%, #2a2a4a 100%)`;
-        }, 50);
+            // Phase rings
+            kairosRing.style.background = `conic-gradient(from ${phaseKairos}rad, #44ccff 0%, #2a2a4a 100%)`;
+            apolloRing.style.background = `conic-gradient(from ${phaseApollo}rad, #ffaa44 0%, #2a2a4a 100%)`;
+        }, 100);
     }
     
-    // Canvas visuals
-    const waveCanvas = document.getElementById('waveCanvas');
-    const ctx = waveCanvas.getContext('2d');
-    const beatCanvas = document.getElementById('beatCanvas');
-    const beatCtx = beatCanvas.getContext('2d');
+    // UI Controls
+    document.getElementById('resetPhaseBtn').onclick = () => {
+        phaseKairos = 0;
+        phaseApollo = 0;
+    };
     
-    function resizeCanvases() {
-        const w = waveCanvas.parentElement.clientWidth;
-        waveCanvas.width = Math.min(w, 1100);
-        beatCanvas.width = waveCanvas.width;
-        waveCanvas.height = 200;
-        beatCanvas.height = 100;
-    }
-    window.addEventListener('resize', resizeCanvases);
+    document.getElementById('saveBtn').onclick = () => {
+        alert('Saving age to GaiaDB — integrate Ouranos edge function here');
+    };
+    
+    document.getElementById('erosPortal').onclick = () => {
+        if (couplingK > 1.5 && wasLocked) {
+            alert('🌀 You descend into the Underworld. The D card awakens. 🌀');
+            // Here you'd trigger your Pantheon D card synthesis
+        }
+    };
+    
+    // Start everything
+    startField();
     resizeCanvases();
     
-    function drawVisuals() {
-        if (!waveCanvas || !beatCanvas) return;
-        const samples = 300;
-        const tStep = 0.0025;
-        const fK = currentKairosFreq, fA = apolloFixedFreq;
-        const pK = phaseKairos, pA = phaseApollo;
-        const k = new Array(samples), a = new Array(samples), s = new Array(samples);
-        for (let i = 0; i < samples; i++) {
-            const t = i * tStep;
-            const valK = Math.sin(2 * Math.PI * fK * t + pK);
-            const valA = Math.sin(2 * Math.PI * fA * t + pA);
-            k[i] = valK; a[i] = valA; s[i] = (valK + valA) / 2;
-        }
-        ctx.clearRect(0, 0, waveCanvas.width, waveCanvas.height);
-        ctx.beginPath(); ctx.strokeStyle = '#44ccff'; ctx.lineWidth = 1.8;
-        for (let i = 0; i < samples; i++) {
-            const x = (i / samples) * waveCanvas.width;
-            const y = waveCanvas.height/2 - k[i] * 70;
-            if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
-        }
-        ctx.stroke();
-        ctx.beginPath(); ctx.strokeStyle = '#ffaa44';
-        for (let i = 0; i < samples; i++) {
-            const x = (i / samples) * waveCanvas.width;
-            const y = waveCanvas.height/2 + 25 - a[i] * 70;
-            if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
-        }
-        ctx.stroke();
-        beatCtx.clearRect(0, 0, beatCanvas.width, beatCanvas.height);
-        beatCtx.beginPath(); beatCtx.strokeStyle = '#ff88aa'; beatCtx.lineWidth = 2;
-        for (let i = 0; i < samples; i++) {
-            const x = (i / samples) * beatCanvas.width;
-            const y = beatCanvas.height/2 - s[i] * 35;
-            if (i === 0) beatCtx.moveTo(x, y); else beatCtx.lineTo(x, y);
-        }
-        beatCtx.stroke();
-        requestAnimationFrame(drawVisuals);
-    }
+    // Sliders for control (add to controls div if desired)
+    const controlDiv = document.querySelector('.controls');
+    controlDiv.innerHTML += `
+        <div><label>⚡ Kairos base: <input type="range" id="kairosBase" min="0.2" max="2.0" step="0.01" value="0.43"></label> <span id="kairosBaseVal">0.43</span></div>
+        <div><label>☀️ Apollo ref: <input type="range" id="apolloBase" min="0.2" max="2.0" step="0.01" value="0.50"></label> <span id="apolloBaseVal">0.50</span></div>
+        <div><label>❤️ Eros (coupling): <input type="range" id="coupling" min="0" max="3.0" step="0.05" value="0.8"></label> <span id="couplingVal">0.8</span></div>
+    `;
     
-    // UI Bindings
-    kairosBaseSlider.oninput = (e) => { kairosBaseFreq = parseFloat(e.target.value); document.getElementById('kairosFreqDisplay').innerText = kairosBaseFreq.toFixed(2) + ' Hz'; };
-    apolloFreqSlider.oninput = (e) => { apolloFixedFreq = parseFloat(e.target.value); };
-    couplingSlider.oninput = (e) => { couplingK = parseFloat(e.target.value); };
-    coherenceSlider.oninput = (e) => { coherenceThreshold = parseFloat(e.target.value); };
-    resetPhaseBtn.onclick = () => { phaseKairos = 0; phaseApollo = 0; };
-    muteBtn.onclick = () => { isMuted = !isMuted; if (masterGain) masterGain.gain.value = isMuted ? 0 : 0.4; muteBtn.innerText = isMuted ? '🔇 muted' : '🔊 unmute'; };
-    saveNowBtn.onclick = saveToGaiaDB;
-    
-    // Start
-    async function start() {
-        await initSupabase();
-        await audioCtx.resume();
-        initAudio();
-        drawVisuals();
-    }
-    
-    // User gesture to start audio
-    const startGuard = () => { start(); document.body.removeEventListener('click', startGuard); document.body.removeEventListener('touchstart', startGuard); };
-    document.body.addEventListener('click', startGuard);
-    document.body.addEventListener('touchstart', startGuard);
-    dbStatusDiv.innerHTML = '📡 Click anywhere to start audio + connect to GaiaDB';
+    document.getElementById('kairosBase').oninput = (e) => {
+        kairosBaseFreq = parseFloat(e.target.value);
+        document.getElementById('kairosBaseVal').innerText = kairosBaseFreq;
+    };
+    document.getElementById('apolloBase').oninput = (e) => {
+        apolloFixedFreq = parseFloat(e.target.value);
+        document.getElementById('apolloBaseVal').innerText = apolloFixedFreq;
+    };
+    document.getElementById('coupling').oninput = (e) => {
+        couplingK = parseFloat(e.target.value);
+        document.getElementById('couplingVal').innerText = couplingK;
+    };
 </script>
 </body>
 </html>
