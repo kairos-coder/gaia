@@ -3,411 +3,1455 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GAIA — Mountains, Sea, Underworld</title>
+    <title>GAIA — The Primordial Cosmology</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&family=Cinzel:wght@400;600&family=EB+Garamond:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        
-        body {
-            background: linear-gradient(180deg, #0a0a2a 0%, #1a0a2a 100%);
-            color: #e0e0ff;
-            font-family: 'Georgia', 'Times New Roman', serif;
-            min-height: 100vh;
-            padding: 2rem;
+        :root {
+            --gold: #c9a84c;
+            --gold-bright: #f0d080;
+            --gold-dim: #6b5520;
+            --copper: #b87333;
+            --deep: #05050f;
+            --void: #080818;
+            --stone: #1a1a2e;
+            --mist: #e8e0d0;
+            --kronos: #7a6a9a;
+            --kronos-bright: #b0a0d0;
+            --kairos: #4488cc;
+            --kairos-bright: #88ccff;
+            --apollo: #cc8822;
+            --apollo-bright: #ffcc44;
+            --locked: #44cc88;
+            --glow-gold: 0 0 20px rgba(201,168,76,0.4), 0 0 60px rgba(201,168,76,0.15);
+            --glow-kronos: 0 0 20px rgba(122,106,154,0.5), 0 0 60px rgba(122,106,154,0.2);
         }
-        
-        /* COSMIC GRID */
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background: var(--deep);
+            color: var(--mist);
+            font-family: 'EB Garamond', Georgia, serif;
+            min-height: 100vh;
+            overflow-x: hidden;
+            cursor: crosshair;
+        }
+
+        /* ── STARFIELD ── */
+        #starfield {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        /* ── SACRED GEOMETRY BACKGROUND ── */
+        .sacred-bg {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            pointer-events: none;
+            opacity: 0.04;
+            background-image:
+                repeating-linear-gradient(0deg, var(--gold) 0px, transparent 1px, transparent 80px),
+                repeating-linear-gradient(90deg, var(--gold) 0px, transparent 1px, transparent 80px),
+                repeating-linear-gradient(45deg, var(--gold) 0px, transparent 1px, transparent 113px);
+        }
+
+        /* ── LAYOUT ── */
         .cosmos {
-            max-width: 1400px;
+            position: relative;
+            z-index: 1;
+            max-width: 1500px;
             margin: 0 auto;
+            padding: 2rem;
             display: grid;
-            grid-template-areas:
-                "sky sky"
-                "mountains sea"
-                "underworld underworld";
+            grid-template-rows: auto auto auto auto;
+            gap: 2rem;
+        }
+
+        /* ── HEADER ── */
+        .header {
+            text-align: center;
+            padding: 3rem 1rem 1rem;
+            position: relative;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 50%; transform: translateX(-50%);
+            width: 1px; height: 3rem;
+            background: linear-gradient(to bottom, transparent, var(--gold));
+        }
+
+        .gaia-title {
+            font-family: 'Cinzel Decorative', serif;
+            font-size: clamp(2.5rem, 6vw, 5rem);
+            font-weight: 900;
+            letter-spacing: 0.3em;
+            background: linear-gradient(135deg, var(--gold-dim), var(--gold-bright), var(--gold), var(--gold-dim));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: none;
+            filter: drop-shadow(0 0 30px rgba(201,168,76,0.6));
+            animation: titlePulse 4s ease-in-out infinite;
+        }
+
+        @keyframes titlePulse {
+            0%, 100% { filter: drop-shadow(0 0 20px rgba(201,168,76,0.4)); }
+            50% { filter: drop-shadow(0 0 50px rgba(201,168,76,0.9)); }
+        }
+
+        .subtitle {
+            font-family: 'Cinzel', serif;
+            font-size: 0.9rem;
+            letter-spacing: 0.5em;
+            color: var(--gold-dim);
+            margin-top: 0.5rem;
+            text-transform: uppercase;
+        }
+
+        .divider {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin: 1.5rem auto;
+            max-width: 600px;
+        }
+        .divider::before, .divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: linear-gradient(to right, transparent, var(--gold-dim));
+        }
+        .divider::after { background: linear-gradient(to left, transparent, var(--gold-dim)); }
+        .divider span { color: var(--gold); font-size: 1.2rem; }
+
+        /* ── STATUS BAR ── */
+        .status-bar {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            flex-wrap: wrap;
+            font-family: 'Cinzel', serif;
+            font-size: 0.75rem;
+            letter-spacing: 0.15em;
+            color: var(--gold-dim);
+            padding: 0.75rem;
+            border: 1px solid rgba(201,168,76,0.15);
+            border-radius: 2px;
+            background: rgba(5,5,15,0.8);
+        }
+        .status-item { display: flex; gap: 0.5rem; align-items: center; }
+        .status-dot {
+            width: 6px; height: 6px; border-radius: 50%;
+            background: var(--gold-dim);
+            transition: all 0.3s;
+        }
+        .status-dot.live { background: var(--locked); box-shadow: 0 0 8px var(--locked); animation: blink 1.5s infinite; }
+        .status-dot.locked { background: var(--locked); box-shadow: 0 0 8px var(--locked); }
+        .status-dot.unlocked { background: var(--copper); }
+        @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+        /* ── OSCILLATOR ROW ── */
+        .oscillator-row {
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
+            gap: 1.5rem;
+            align-items: center;
+        }
+
+        .oscillator-card {
+            background: linear-gradient(135deg, rgba(15,15,35,0.9), rgba(8,8,24,0.95));
+            border: 1px solid rgba(201,168,76,0.2);
+            border-radius: 4px;
+            padding: 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .oscillator-card::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(201,168,76,0.03), transparent 50%);
+            pointer-events: none;
+        }
+
+        .oscillator-card.kairos-card { border-color: rgba(68,136,204,0.3); }
+        .oscillator-card.apollo-card { border-color: rgba(204,136,34,0.3); }
+
+        .osc-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .osc-glyph {
+            font-size: 1.5rem;
+            filter: drop-shadow(0 0 8px currentColor);
+        }
+
+        .osc-name {
+            font-family: 'Cinzel Decorative', serif;
+            font-size: 1.1rem;
+            letter-spacing: 0.2em;
+        }
+
+        .kairos-card .osc-name { color: var(--kairos-bright); }
+        .apollo-card .osc-name { color: var(--apollo-bright); }
+
+        .osc-freq {
+            font-family: 'Cinzel', serif;
+            font-size: 2.5rem;
+            font-weight: 600;
+            letter-spacing: 0.1em;
+            margin-bottom: 0.25rem;
+        }
+
+        .kairos-card .osc-freq { color: var(--kairos-bright); text-shadow: 0 0 20px rgba(68,136,204,0.6); }
+        .apollo-card .osc-freq { color: var(--apollo-bright); text-shadow: 0 0 20px rgba(204,136,34,0.6); }
+
+        .osc-unit {
+            font-family: 'Cinzel', serif;
+            font-size: 0.7rem;
+            letter-spacing: 0.3em;
+            color: var(--gold-dim);
+            margin-bottom: 1.5rem;
+        }
+
+        /* Phase arc */
+        .phase-arc-wrap {
+            position: relative;
+            width: 100px; height: 100px;
+            margin: 0 auto 1.5rem;
+        }
+        .phase-arc-wrap canvas { width: 100%; height: 100%; }
+
+        .osc-slider-group { margin-top: 1rem; }
+        .osc-label {
+            font-family: 'Cinzel', serif;
+            font-size: 0.65rem;
+            letter-spacing: 0.25em;
+            color: var(--gold-dim);
+            text-transform: uppercase;
+            margin-bottom: 0.4rem;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        input[type=range] {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 2px;
+            background: rgba(201,168,76,0.2);
+            outline: none;
+            border-radius: 1px;
+            margin-bottom: 1rem;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 12px; height: 12px;
+            border-radius: 50%;
+            background: var(--gold);
+            cursor: pointer;
+            box-shadow: 0 0 8px rgba(201,168,76,0.6);
+        }
+        .kairos-card input[type=range]::-webkit-slider-thumb { background: var(--kairos-bright); box-shadow: 0 0 8px rgba(68,136,204,0.6); }
+        .apollo-card input[type=range]::-webkit-slider-thumb { background: var(--apollo-bright); box-shadow: 0 0 8px rgba(204,136,34,0.6); }
+
+        /* ── KRONOS CENTRAL ── */
+        .kronos-center {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        #kronosCanvas {
+            width: 220px;
+            height: 220px;
+            filter: drop-shadow(0 0 20px rgba(122,106,154,0.4));
+        }
+
+        .kronos-label {
+            font-family: 'Cinzel Decorative', serif;
+            font-size: 0.8rem;
+            letter-spacing: 0.3em;
+            color: var(--kronos-bright);
+            text-align: center;
+        }
+
+        .coherence-badge {
+            font-family: 'Cinzel', serif;
+            font-size: 0.7rem;
+            letter-spacing: 0.2em;
+            padding: 0.3rem 0.8rem;
+            border: 1px solid var(--kronos);
+            border-radius: 2px;
+            color: var(--kronos-bright);
+            transition: all 0.5s;
+        }
+        .coherence-badge.locked {
+            border-color: var(--locked);
+            color: var(--locked);
+            box-shadow: 0 0 15px rgba(68,204,136,0.3);
+        }
+
+        /* ── TITAN ROW ── */
+        .titan-row {
+            display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 2rem;
         }
-        
-        /* SKY: The two oscillators */
-        .sky {
-            grid-area: sky;
-            display: flex;
-            gap: 2rem;
-            justify-content: center;
-            margin-bottom: 2rem;
-        }
-        
-        .star {
-            background: rgba(20, 20, 50, 0.6);
-            backdrop-filter: blur(10px);
-            border-radius: 2rem;
-            padding: 1.5rem;
-            text-align: center;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            flex: 1;
-        }
-        
-        .phase-ring {
-            width: 120px;
-            height: 120px;
-            border-radius: 50%;
-            margin: 1rem auto;
-            transition: background 0.05s linear;
-            box-shadow: 0 0 20px rgba(100, 100, 200, 0.3);
-        }
-        
-        /* MOUNTAINS (Ourea) */
-        .mountains {
-            grid-area: mountains;
-            background: linear-gradient(180deg, #1a2a1a 0%, #0a1a0a 100%);
-            border-radius: 2rem;
-            padding: 1.5rem;
-            border-top: 3px solid #44aa77;
-            position: relative;
-            overflow: hidden;
-            min-height: 300px;
-        }
-        
-        .mountain-canvas {
-            width: 100%;
-            height: 200px;
-            display: block;
-            margin-top: 1rem;
-        }
-        
-        /* SEA (Pontus) */
-        .sea {
-            grid-area: sea;
-            background: linear-gradient(180deg, #0a2a3a 0%, #0a1a2a 100%);
-            border-radius: 2rem;
-            padding: 1.5rem;
-            border-top: 3px solid #44aaff;
-            min-height: 300px;
-        }
-        
-        .wave-canvas {
-            width: 100%;
-            height: 200px;
-            display: block;
-            margin-top: 1rem;
-        }
-        
-        /* UNDERWORLD (Eros portal) */
-        .underworld {
-            grid-area: underworld;
-            background: #1a0a1a;
-            border-radius: 2rem;
-            padding: 1.5rem;
-            border-top: 3px solid #ff66aa;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s ease;
+
+        .titan-panel {
+            background: linear-gradient(160deg, rgba(12,10,30,0.95), rgba(8,8,20,0.98));
+            border: 1px solid rgba(122,106,154,0.25);
+            border-top: 2px solid var(--kronos);
+            border-radius: 4px;
+            padding: 1.75rem;
             position: relative;
             overflow: hidden;
         }
-        
-        .underworld:hover {
-            background: #2a0a2a;
-            box-shadow: 0 0 30px rgba(255, 102, 170, 0.3);
+
+        .titan-panel::after {
+            content: '';
+            position: absolute;
+            bottom: 0; left: 0; right: 0;
+            height: 80px;
+            background: linear-gradient(to top, rgba(122,106,154,0.04), transparent);
+            pointer-events: none;
         }
-        
-        .portal {
-            width: 150px;
-            height: 150px;
-            margin: 1rem auto;
-            border-radius: 50%;
-            background: radial-gradient(circle, #ff66aa20, #ff006620);
+
+        .titan-panel-header {
             display: flex;
             align-items: center;
-            justify-content: center;
-            transition: all 0.2s;
+            justify-content: space-between;
+            margin-bottom: 1.25rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 1px solid rgba(122,106,154,0.15);
         }
-        
-        .portal.active {
-            background: radial-gradient(circle, #ff66aa80, #ff0066cc);
-            box-shadow: 0 0 40px #ff66aa;
-            transform: scale(1.05);
+
+        .titan-name {
+            font-family: 'Cinzel Decorative', serif;
+            font-size: 1rem;
+            letter-spacing: 0.2em;
+            color: var(--kronos-bright);
         }
-        
-        /* Stats & Controls */
-        .controls {
-            margin-top: 2rem;
+
+        .titan-domain {
+            font-family: 'Cinzel', serif;
+            font-size: 0.65rem;
+            letter-spacing: 0.3em;
+            color: var(--gold-dim);
+            text-transform: uppercase;
+        }
+
+        /* Kronos clock canvas */
+        #kronosBigCanvas {
+            width: 100%;
+            height: 200px;
+            display: block;
+        }
+
+        /* Kronos data panel */
+        .kronos-data {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.75rem;
+            margin-top: 1rem;
+        }
+
+        .data-cell {
+            background: rgba(0,0,0,0.3);
+            border: 1px solid rgba(122,106,154,0.15);
+            border-radius: 2px;
+            padding: 0.6rem 0.8rem;
+        }
+
+        .data-cell-label {
+            font-family: 'Cinzel', serif;
+            font-size: 0.6rem;
+            letter-spacing: 0.25em;
+            color: var(--gold-dim);
+            text-transform: uppercase;
+            margin-bottom: 0.25rem;
+        }
+
+        .data-cell-value {
+            font-family: 'Cinzel', serif;
+            font-size: 1rem;
+            color: var(--kronos-bright);
+        }
+
+        /* ── OUREA + PONTUS ROW ── */
+        .world-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 1.5rem;
+        }
+
+        .world-panel {
+            background: rgba(8,8,24,0.9);
+            border-radius: 4px;
+            padding: 1.5rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .world-panel.ourea {
+            border: 1px solid rgba(68,170,100,0.25);
+            border-top: 2px solid #44aa77;
+        }
+        .world-panel.pontus {
+            border: 1px solid rgba(68,136,204,0.25);
+            border-top: 2px solid var(--kairos);
+        }
+        .world-panel.eros {
+            border: 1px solid rgba(255,102,170,0.25);
+            border-top: 2px solid #ff66aa;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .world-panel.eros:hover { background: rgba(20,5,20,0.95); box-shadow: 0 0 30px rgba(255,102,170,0.15); }
+
+        .world-title {
+            font-family: 'Cinzel Decorative', serif;
+            font-size: 0.85rem;
+            letter-spacing: 0.2em;
+            margin-bottom: 0.25rem;
+        }
+        .ourea .world-title { color: #88ddaa; }
+        .pontus .world-title { color: var(--kairos-bright); }
+        .eros .world-title { color: #ff99cc; }
+
+        .world-subtitle {
+            font-family: 'EB Garamond', serif;
+            font-style: italic;
+            font-size: 0.8rem;
+            color: var(--gold-dim);
+            margin-bottom: 1rem;
+        }
+
+        .world-canvas {
+            width: 100%;
+            height: 120px;
+            display: block;
+            border-radius: 2px;
+        }
+
+        .world-text {
+            font-size: 0.78rem;
+            color: rgba(232,224,208,0.6);
+            margin-top: 0.75rem;
+            font-style: italic;
+            line-height: 1.5;
+            min-height: 2.5rem;
+        }
+
+        /* Eros portal */
+        .portal-ring {
+            width: 100px; height: 100px;
+            border-radius: 50%;
+            margin: 0.5rem auto;
+            display: flex; align-items: center; justify-content: center;
+            background: radial-gradient(circle, rgba(255,102,170,0.05), rgba(255,0,102,0.02));
+            border: 1px solid rgba(255,102,170,0.2);
+            transition: all 0.4s;
+            position: relative;
+        }
+        .portal-ring.active {
+            background: radial-gradient(circle, rgba(255,102,170,0.4), rgba(255,0,102,0.2));
+            border-color: #ff66aa;
+            box-shadow: 0 0 30px rgba(255,102,170,0.5), inset 0 0 30px rgba(255,102,170,0.1);
+            animation: portalPulse 1.5s ease-in-out infinite;
+        }
+        @keyframes portalPulse {
+            0%,100% { box-shadow: 0 0 30px rgba(255,102,170,0.5); transform: scale(1); }
+            50% { box-shadow: 0 0 60px rgba(255,102,170,0.8); transform: scale(1.04); }
+        }
+        .portal-text {
+            font-family: 'Cinzel', serif;
+            font-size: 0.7rem;
+            letter-spacing: 0.15em;
+            color: #ff99cc;
+            text-align: center;
+        }
+        .eros-val {
+            font-family: 'Cinzel', serif;
+            font-size: 1.4rem;
+            color: #ff99cc;
+            text-align: center;
+            margin-top: 0.5rem;
+        }
+
+        /* ── BOTTOM BAR ── */
+        .bottom-bar {
             display: flex;
             gap: 1rem;
             justify-content: center;
+            align-items: center;
             flex-wrap: wrap;
+            padding: 1rem;
+            border-top: 1px solid rgba(201,168,76,0.1);
         }
-        
-        button {
-            background: #2a2a5a;
-            border: none;
-            color: white;
-            padding: 0.5rem 1rem;
-            border-radius: 2rem;
+
+        .mythic-btn {
+            font-family: 'Cinzel', serif;
+            font-size: 0.75rem;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            background: transparent;
+            border: 1px solid var(--gold-dim);
+            color: var(--gold);
+            padding: 0.6rem 1.5rem;
+            border-radius: 2px;
             cursor: pointer;
+            transition: all 0.3s;
         }
-        
-        .mythic-text {
-            font-style: italic;
-            margin-top: 1rem;
-            padding: 0.5rem;
-            background: rgba(0,0,0,0.5);
-            border-radius: 1rem;
+        .mythic-btn:hover {
+            border-color: var(--gold);
+            background: rgba(201,168,76,0.08);
+            box-shadow: var(--glow-gold);
         }
+        .mythic-btn.danger { border-color: #ff66aa44; color: #ff99cc; }
+        .mythic-btn.danger:hover { border-color: #ff66aa; background: rgba(255,102,170,0.08); }
+        .mythic-btn.primary { border-color: var(--kronos); color: var(--kronos-bright); }
+        .mythic-btn.primary:hover { border-color: var(--kronos-bright); background: rgba(122,106,154,0.1); box-shadow: var(--glow-kronos); }
+
+        /* ── TOAST / DB RESPONSE ── */
+        #toast {
+            position: fixed;
+            bottom: 2rem; left: 50%; transform: translateX(-50%);
+            background: rgba(8,8,24,0.95);
+            border: 1px solid var(--gold-dim);
+            border-radius: 2px;
+            padding: 0.75rem 2rem;
+            font-family: 'Cinzel', serif;
+            font-size: 0.75rem;
+            letter-spacing: 0.15em;
+            color: var(--gold);
+            z-index: 100;
+            opacity: 0;
+            transition: opacity 0.4s;
+            text-align: center;
+            max-width: 90vw;
+        }
+        #toast.show { opacity: 1; }
+        #toast.error { border-color: #ff6644; color: #ff9977; }
+        #toast.success { border-color: var(--locked); color: var(--locked); }
+
+        /* ── HERMES TICKER ── */
+        #hermesTicker {
+            font-family: 'Cinzel', serif;
+            font-size: 0.65rem;
+            letter-spacing: 0.2em;
+            color: var(--gold-dim);
+            text-align: center;
+            min-height: 1.2rem;
+            transition: all 0.4s;
+        }
+        #hermesTicker.active { color: var(--kairos-bright); }
+
+        /* ── DB HISTORY ── */
+        .db-history {
+            background: rgba(5,5,15,0.8);
+            border: 1px solid rgba(122,106,154,0.15);
+            border-radius: 4px;
+            padding: 1.25rem;
+        }
+
+        .db-history-title {
+            font-family: 'Cinzel', serif;
+            font-size: 0.7rem;
+            letter-spacing: 0.3em;
+            color: var(--gold-dim);
+            text-transform: uppercase;
+            margin-bottom: 0.75rem;
+        }
+
+        .db-row {
+            display: grid;
+            grid-template-columns: auto 1fr auto auto;
+            gap: 1rem;
+            align-items: center;
+            padding: 0.4rem 0;
+            border-bottom: 1px solid rgba(201,168,76,0.06);
+            font-size: 0.75rem;
+        }
+        .db-row:last-child { border-bottom: none; }
+        .db-time { font-family: 'Cinzel', serif; color: var(--gold-dim); font-size: 0.65rem; letter-spacing: 0.1em; }
+        .db-archetype { font-style: italic; color: var(--mist); opacity: 0.7; }
+        .db-coherence { font-family: 'Cinzel', serif; font-size: 0.7rem; }
+        .db-locked { font-size: 0.7rem; }
+
+        /* Saving animation */
+        @keyframes savePulse {
+            0% { box-shadow: 0 0 0 0 rgba(122,106,154,0.5); }
+            100% { box-shadow: 0 0 0 20px rgba(122,106,154,0); }
+        }
+        .saving { animation: savePulse 0.6s ease-out; }
     </style>
 </head>
 <body>
+
+<canvas id="starfield"></canvas>
+<div class="sacred-bg"></div>
+
 <div class="cosmos">
-    <!-- SKY: Apollo + Kairos -->
-    <div class="sky">
-        <div class="star">
-            <h2>⚡ KAIROS</h2>
-            <div class="phase-ring" id="kairosRing"></div>
-            <div id="kairosFreq">0.43 Hz</div>
+
+    <!-- HEADER -->
+    <div class="header">
+        <h1 class="gaia-title">ΓΑΙΑ</h1>
+        <div class="subtitle">The Primordial Cosmology Engine</div>
+        <div class="divider"><span>✦</span></div>
+        <div id="hermesTicker">Awaiting coherence...</div>
+    </div>
+
+    <!-- STATUS BAR -->
+    <div class="status-bar">
+        <div class="status-item">
+            <div class="status-dot live" id="dotLive"></div>
+            <span>FIELD ACTIVE</span>
         </div>
-        <div class="star">
-            <h2>☀️ APOLLO</h2>
-            <div class="phase-ring" id="apolloRing"></div>
-            <div id="apolloFreq">0.50 Hz</div>
+        <div class="status-item">
+            <div class="status-dot" id="dotLock"></div>
+            <span id="statusLock">SEEKING LOCK</span>
+        </div>
+        <div class="status-item">
+            <div class="status-dot" id="dotDB"></div>
+            <span id="statusDB">GAIADB READY</span>
+        </div>
+        <div class="status-item">
+            <span id="statusArchetype">🌫️ Mist — Becoming</span>
+        </div>
+        <div class="status-item">
+            <span id="statusSeason">Season: —</span>
         </div>
     </div>
-    
-    <!-- MOUNTAINS (Ourea) -->
-    <div class="mountains">
-        <h2>🏔️ OUREA — The Mountains</h2>
-        <div class="mythic-text" id="oureaText">The ages are still... waiting for coherence.</div>
-        <canvas id="mountainCanvas" class="mountain-canvas" width="500" height="200"></canvas>
-    </div>
-    
-    <!-- SEA (Pontus) -->
-    <div class="sea">
-        <h2>🌊 PONTUS — The Sea</h2>
-        <div class="mythic-text" id="pontusText">The waters carry messages between worlds.</div>
-        <canvas id="waveCanvas" class="wave-canvas" width="500" height="200"></canvas>
-        <div id="hermesMessage" style="font-size: 0.8rem; margin-top: 0.5rem;"></div>
-    </div>
-    
-    <!-- UNDERWORLD (Eros portal) -->
-    <div class="underworld" id="erosPortal">
-        <h2>❤️ EROS — The Underworld Portal</h2>
-        <div class="portal" id="portalCircle">
-            <span id="portalText">🔒 Locked</span>
+
+    <!-- OSCILLATOR ROW -->
+    <div class="oscillator-row">
+        <!-- KAIROS -->
+        <div class="oscillator-card kairos-card">
+            <div class="osc-header">
+                <span class="osc-glyph" style="color:var(--kairos-bright)">⚡</span>
+                <div>
+                    <div class="osc-name">KAIROS</div>
+                    <div style="font-size:0.65rem;letter-spacing:0.2em;color:var(--gold-dim);font-family:'Cinzel',serif">THE OPPORTUNE MOMENT</div>
+                </div>
+            </div>
+            <div class="osc-freq" id="kairosFreqDisplay">0.430</div>
+            <div class="osc-unit">HERTZ</div>
+            <div class="phase-arc-wrap">
+                <canvas id="kairosArc" width="100" height="100"></canvas>
+            </div>
+            <div class="osc-slider-group">
+                <div class="osc-label">
+                    <span>Base Frequency</span>
+                    <span id="kairosBaseVal">0.43</span>
+                </div>
+                <input type="range" id="kairosBase" min="0.2" max="2.0" step="0.01" value="0.43">
+                <div class="osc-label">
+                    <span>Coupling Strength (Eros)</span>
+                    <span id="couplingVal">0.80</span>
+                </div>
+                <input type="range" id="coupling" min="0" max="3.0" step="0.05" value="0.8">
+            </div>
         </div>
-        <div class="mythic-text" id="erosText">Binding strength: <span id="erosVal">0.00</span><br>Descent requires Eros > 1.5</div>
+
+        <!-- KRONOS CENTER -->
+        <div class="kronos-center">
+            <canvas id="kronosCanvas" width="220" height="220"></canvas>
+            <div class="kronos-label">ΚΡΟΝΟΣ<br>TITAN OF TIME</div>
+            <div class="coherence-badge" id="coherenceBadge">COHERENCE: 0.00</div>
+        </div>
+
+        <!-- APOLLO -->
+        <div class="oscillator-card apollo-card">
+            <div class="osc-header">
+                <span class="osc-glyph" style="color:var(--apollo-bright)">☀️</span>
+                <div>
+                    <div class="osc-name">APOLLO</div>
+                    <div style="font-size:0.65rem;letter-spacing:0.2em;color:var(--gold-dim);font-family:'Cinzel',serif">THE GOLDEN MEASURE</div>
+                </div>
+            </div>
+            <div class="osc-freq" id="apolloFreqDisplay">0.500</div>
+            <div class="osc-unit">HERTZ</div>
+            <div class="phase-arc-wrap">
+                <canvas id="apolloArc" width="100" height="100"></canvas>
+            </div>
+            <div class="osc-slider-group">
+                <div class="osc-label">
+                    <span>Reference Frequency</span>
+                    <span id="apolloBaseVal">0.50</span>
+                </div>
+                <input type="range" id="apolloBase" min="0.2" max="2.0" step="0.01" value="0.50">
+            </div>
+            <div style="margin-top:1rem; padding:0.75rem; background:rgba(0,0,0,0.3); border:1px solid rgba(204,136,34,0.15); border-radius:2px;">
+                <div class="osc-label"><span>Apollo holds the fixed measure.<br>Kairos seeks alignment.</span></div>
+            </div>
+        </div>
     </div>
+
+    <!-- TITAN ROW -->
+    <div class="titan-row">
+        <!-- KRONOS CLOCK -->
+        <div class="titan-panel">
+            <div class="titan-panel-header">
+                <div>
+                    <div class="titan-name">KRONOS — The Devourer</div>
+                    <div class="titan-domain">Titan of Time · Phase Accumulator</div>
+                </div>
+                <span style="font-size:1.5rem">⏳</span>
+            </div>
+            <canvas id="kronosBigCanvas" class="world-canvas" style="height:180px;" width="600" height="180"></canvas>
+            <div class="kronos-data">
+                <div class="data-cell">
+                    <div class="data-cell-label">Ourea Δ Hz</div>
+                    <div class="data-cell-value" id="oureaHz">0.070</div>
+                </div>
+                <div class="data-cell">
+                    <div class="data-cell-label">Beat Period</div>
+                    <div class="data-cell-value" id="beatPeriod">14.3s</div>
+                </div>
+                <div class="data-cell">
+                    <div class="data-cell-label">Pontus Avg Hz</div>
+                    <div class="data-cell-value" id="pontusHz">0.465</div>
+                </div>
+                <div class="data-cell">
+                    <div class="data-cell-label">Phase Δ</div>
+                    <div class="data-cell-value" id="phaseDelta">0.000</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- DB HISTORY -->
+        <div class="titan-panel">
+            <div class="titan-panel-header">
+                <div>
+                    <div class="titan-name">GAIADB — The Record</div>
+                    <div class="titan-domain">Supabase · titan_states</div>
+                </div>
+                <span style="font-size:1.5rem">📜</span>
+            </div>
+            <div class="db-history">
+                <div class="db-history-title">Recent Titan States</div>
+                <div id="dbHistoryRows">
+                    <div style="font-style:italic;color:var(--gold-dim);font-size:0.78rem;">No states saved yet. The record is empty.</div>
+                </div>
+            </div>
+            <div style="margin-top:0.75rem; font-size:0.7rem; font-family:'Cinzel',serif; letter-spacing:0.15em; color:var(--gold-dim); text-align:right;" id="dbLastSaved">Last saved: —</div>
+        </div>
+    </div>
+
+    <!-- WORLD ROW -->
+    <div class="world-row">
+        <!-- OUREA -->
+        <div class="world-panel ourea">
+            <div class="world-title">🏔️ OUREA</div>
+            <div class="world-subtitle">The Mountains — Beat Frequency</div>
+            <canvas id="mountainCanvas" class="world-canvas" width="400" height="120"></canvas>
+            <div class="world-text" id="oureaText">The ages are still... waiting for coherence.</div>
+        </div>
+
+        <!-- PONTUS -->
+        <div class="world-panel pontus">
+            <div class="world-title">🌊 PONTUS</div>
+            <div class="world-subtitle">The Sea — Carrier Wave</div>
+            <canvas id="waveCanvas" class="world-canvas" width="400" height="120"></canvas>
+            <div class="world-text" id="pontusText">The waters carry messages between worlds.</div>
+        </div>
+
+        <!-- EROS -->
+        <div class="world-panel eros" id="erosPortal">
+            <div class="world-title">❤️ EROS</div>
+            <div class="world-subtitle">The Binding Force — Descent Portal</div>
+            <div class="portal-ring" id="portalRing">
+                <canvas id="erosCanvas" width="98" height="98"></canvas>
+            </div>
+            <div class="eros-val">K = <span id="erosVal">0.80</span></div>
+            <div class="world-text" id="erosText">Binding strength insufficient.<br>Descent requires K &gt; 1.5 + lock.</div>
+        </div>
+    </div>
+
+    <!-- BOTTOM BAR -->
+    <div class="bottom-bar">
+        <button class="mythic-btn" id="resetPhaseBtn">⟳ Reset Phase</button>
+        <button class="mythic-btn primary" id="saveBtn">💾 Save Titan State</button>
+        <button class="mythic-btn" id="loadBtn">📜 Load Recent</button>
+        <button class="mythic-btn danger" id="descendBtn">🌀 Descend to Underworld</button>
+    </div>
+
 </div>
 
-<div class="controls">
-    <button id="resetPhaseBtn">⟳ Reset Phase</button>
-    <button id="saveBtn">💾 Save Age to Gaia</button>
-</div>
+<div id="toast"></div>
 
 <script>
-    // ========== PHASE FIELD ENGINE (same as before, but now drives aesthetics) ==========
-    let phaseKairos = 0, phaseApollo = 0;
-    let kairosBaseFreq = 0.43, apolloFixedFreq = 0.50, couplingK = 0.8;
-    let currentKairosFreq = kairosBaseFreq;
-    let updateInterval = null;
-    let wasLocked = false;
-    let coherenceThreshold = 0.3;
-    
-    // DOM elements
-    const kairosRing = document.getElementById('kairosRing');
-    const apolloRing = document.getElementById('apolloRing');
-    const mountainCanvas = document.getElementById('mountainCanvas');
-    const waveCanvas = document.getElementById('waveCanvas');
-    const portalCircle = document.getElementById('portalCircle');
-    const erosValSpan = document.getElementById('erosVal');
-    const oureaTextDiv = document.getElementById('oureaText');
-    const pontusTextDiv = document.getElementById('pontusText');
-    const hermesMessageDiv = document.getElementById('hermesMessage');
-    
-    // Canvas contexts
-    const mountainCtx = mountainCanvas.getContext('2d');
-    const waveCtx = waveCanvas.getContext('2d');
-    
-    function resizeCanvases() {
-        mountainCanvas.width = mountainCanvas.parentElement.clientWidth - 32;
-        mountainCanvas.height = 200;
-        waveCanvas.width = waveCanvas.parentElement.clientWidth - 32;
-        waveCanvas.height = 200;
-    }
-    window.addEventListener('resize', resizeCanvases);
-    resizeCanvases();
-    
-    // Draw Mountains (Ourea) — silhouette that rises/falls with coherence
-    function drawMountains(coherence, oureaHz) {
-        const w = mountainCanvas.width;
-        const h = mountainCanvas.height;
-        mountainCtx.clearRect(0, 0, w, h);
-        
-        // Mountain height = coherence (0 to 1) * max height
-        const peakHeight = coherence * h * 0.8;
-        const peaks = [0.2, 0.5, 0.8];
-        
-        mountainCtx.fillStyle = '#2a4a2a';
-        mountainCtx.beginPath();
-        mountainCtx.moveTo(0, h);
-        peaks.forEach((xPos, i) => {
-            const x = xPos * w;
-            const y = h - peakHeight * (1 - Math.abs(i - 1) * 0.3);
-            mountainCtx.lineTo(x, y);
-        });
-        mountainCtx.lineTo(w, h);
-        mountainCtx.fill();
-        
-        // Snow caps if high coherence
-        if (coherence > 0.6) {
-            mountainCtx.fillStyle = '#ffffffaa';
-            peaks.forEach((xPos, i) => {
-                const x = xPos * w;
-                const y = h - peakHeight * (1 - Math.abs(i - 1) * 0.3);
-                mountainCtx.beginPath();
-                mountainCtx.moveTo(x - 10, y);
-                mountainCtx.lineTo(x, y - 8);
-                mountainCtx.lineTo(x + 10, y);
-                mountainCtx.fill();
-            });
+// ═══════════════════════════════════════════════
+// SUPABASE CONFIG
+// ═══════════════════════════════════════════════
+const SUPABASE_URL = 'https://nbdvavzqvxrlxhsbrluz.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_6x1xlieXjs3dWqEETQcxnQ_4L1UO2uR';
+const TABLE = 'titan_states';
+
+async function dbInsert(row) {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/${TABLE}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'apikey': SUPABASE_KEY,
+            'Authorization': `Bearer ${SUPABASE_KEY}`,
+            'Prefer': 'return=representation'
+        },
+        body: JSON.stringify(row)
+    });
+    if (!res.ok) throw new Error(await res.text());
+    return res.json();
+}
+
+async function dbFetch(limit = 5) {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/${TABLE}?order=timestamp.desc&limit=${limit}`, {
+        headers: {
+            'apikey': SUPABASE_KEY,
+            'Authorization': `Bearer ${SUPABASE_KEY}`
         }
-        
-        // Age text based on Ourea frequency
-        if (oureaHz > 0) {
-            const ageSeconds = (1 / oureaHz).toFixed(1);
-            oureaTextDiv.innerHTML = `🏔️ Mountain age: ${ageSeconds} seconds per beat. ${coherence > 0.7 ? 'The peaks are locked in ancient rhythm.' : 'The mountains tremble, seeking coherence.'}`;
-        }
-    }
-    
-    // Draw Sea (Pontus) — flowing waves
-    let waveOffset = 0;
-    function drawSea(pontusHz, coherence) {
-        const w = waveCanvas.width;
-        const h = waveCanvas.height;
-        waveCtx.clearRect(0, 0, w, h);
-        
-        waveOffset += 0.05 * (pontusHz * 2); // Speed of waves
-        
-        waveCtx.beginPath();
-        waveCtx.strokeStyle = `rgba(68, 170, 255, ${0.3 + coherence * 0.7})`;
-        waveCtx.lineWidth = 2;
-        
-        for (let x = 0; x < w; x++) {
-            const y = h/2 + Math.sin(x * 0.02 + waveOffset) * (20 + pontusHz * 30) + 
-                      Math.sin(x * 0.05 + waveOffset * 1.5) * 10;
-            if (x === 0) waveCtx.moveTo(x, y);
-            else waveCtx.lineTo(x, y);
-        }
-        waveCtx.stroke();
-        
-        pontusTextDiv.innerHTML = `🌊 Pontus flows at ${pontusHz.toFixed(2)} Hz. ${coherence > 0.5 ? 'The sea carries coherent messages.' : 'Waves crash chaotically.'}`;
-    }
-    
-    // Update Portal (Eros)
-    function updatePortal(eros, isLocked) {
-        erosValSpan.innerText = eros.toFixed(2);
-        const canDescend = eros > 1.5;
-        
-        if (canDescend && isLocked) {
-            portalCircle.classList.add('active');
-            document.getElementById('portalText').innerHTML = '🌀 DESCEND 🌀';
-            document.getElementById('erosPortal').style.cursor = 'pointer';
-        } else {
-            portalCircle.classList.remove('active');
-            document.getElementById('portalText').innerHTML = eros > 1.0 ? '🔓 Unlocking...' : '🔒 Locked';
-            document.getElementById('erosPortal').style.cursor = 'not-allowed';
-        }
-    }
-    
-    // Phase field update loop
-    function startField() {
-        if (updateInterval) clearInterval(updateInterval);
-        
-        updateInterval = setInterval(() => {
-            const dt = 0.1;
-            const couplingTerm = couplingK * Math.sin(phaseApollo - phaseKairos);
-            const dPhaseKairos = (currentKairosFreq * 2 * Math.PI * dt) + couplingTerm * dt;
-            phaseKairos += dPhaseKairos;
-            phaseApollo += apolloFixedFreq * 2 * Math.PI * dt;
-            phaseKairos %= (2 * Math.PI);
-            phaseApollo %= (2 * Math.PI);
-            
-            const deltaFreqHz = (couplingK * Math.sin(phaseApollo - phaseKairos)) / (2 * Math.PI);
-            currentKairosFreq = Math.min(2.0, Math.max(0.2, kairosBaseFreq + deltaFreqHz));
-            
-            // Update displays
-            document.getElementById('kairosFreq').innerHTML = currentKairosFreq.toFixed(3) + ' Hz';
-            document.getElementById('apolloFreq').innerHTML = apolloFixedFreq.toFixed(3) + ' Hz';
-            
-            const phaseDiff = phaseApollo - phaseKairos;
-            const normDiff = ((phaseDiff % (2*Math.PI)) + 2*Math.PI) % (2*Math.PI);
-            const signedDiff = normDiff > Math.PI ? normDiff - 2*Math.PI : normDiff;
-            const isLocked = Math.abs(signedDiff) < coherenceThreshold;
-            const ourea = Math.abs(currentKairosFreq - apolloFixedFreq);
-            const pontus = (currentKairosFreq + apolloFixedFreq) / 2;
-            
-            // Coherence as 1 - normalized phase diff
-            const coherence = 1 - (Math.abs(signedDiff) / Math.PI);
-            
-            // Update aesthetics
-            drawMountains(coherence, ourea);
-            drawSea(pontus, coherence);
-            updatePortal(couplingK, isLocked);
-            
-            // Hermes messages on lock
-            if (isLocked && !wasLocked) {
-                hermesMessageDiv.innerHTML = `📨 Hermes: "Coherence achieved at ${new Date().toLocaleTimeString()}"`;
-                setTimeout(() => {
-                    hermesMessageDiv.innerHTML = '';
-                }, 3000);
+    });
+    if (!res.ok) throw new Error(await res.text());
+    return res.json();
+}
+
+// ═══════════════════════════════════════════════
+// PHASE FIELD STATE
+// ═══════════════════════════════════════════════
+let phaseKairos = 0, phaseApollo = 0;
+let kairosBaseFreq = 0.43, apolloFixedFreq = 0.50, couplingK = 0.8;
+let currentKairosFreq = kairosBaseFreq;
+let wasLocked = false;
+let coherenceThreshold = 0.3;
+let fieldInterval = null;
+let waveOffset = 0;
+let erosAngle = 0;
+
+// History buffers for Kronos visualizer
+const HISTORY_LEN = 200;
+let kairosHistory = new Array(HISTORY_LEN).fill(0.43);
+let apolloHistory = new Array(HISTORY_LEN).fill(0.50);
+let coherenceHistory = new Array(HISTORY_LEN).fill(0);
+
+// ═══════════════════════════════════════════════
+// CANVAS SETUP
+// ═══════════════════════════════════════════════
+const starCanvas = document.getElementById('starfield');
+const starCtx = starCanvas.getContext('2d');
+const kairosArcCvs = document.getElementById('kairosArc');
+const apolloArcCvs = document.getElementById('apolloArc');
+const kronosCvs = document.getElementById('kronosCanvas');
+const kronosBigCvs = document.getElementById('kronosBigCanvas');
+const mountainCvs = document.getElementById('mountainCanvas');
+const waveCvs = document.getElementById('waveCanvas');
+const erosCvs = document.getElementById('erosCanvas');
+
+const kairosArcCtx = kairosArcCvs.getContext('2d');
+const apolloArcCtx = apolloArcCvs.getContext('2d');
+const kronosCtx = kronosCvs.getContext('2d');
+const kronosBigCtx = kronosBigCvs.getContext('2d');
+const mountainCtx = mountainCvs.getContext('2d');
+const waveCtx = waveCvs.getContext('2d');
+const erosCtx = erosCvs.getContext('2d');
+
+function resizeAll() {
+    starCanvas.width = window.innerWidth;
+    starCanvas.height = window.innerHeight;
+    mountainCvs.width = mountainCvs.parentElement.clientWidth - 48;
+    waveCvs.width = waveCvs.parentElement.clientWidth - 48;
+    kronosBigCvs.width = kronosBigCvs.parentElement.clientWidth - 48;
+}
+window.addEventListener('resize', resizeAll);
+resizeAll();
+
+// ═══════════════════════════════════════════════
+// STARFIELD
+// ═══════════════════════════════════════════════
+const stars = Array.from({length: 180}, () => ({
+    x: Math.random(), y: Math.random(),
+    r: Math.random() * 1.2,
+    alpha: Math.random() * 0.6 + 0.1,
+    twinkle: Math.random() * Math.PI * 2
+}));
+
+function drawStarfield(t) {
+    starCtx.clearRect(0, 0, starCanvas.width, starCanvas.height);
+    const W = starCanvas.width, H = starCanvas.height;
+    stars.forEach(s => {
+        const a = s.alpha * (0.7 + 0.3 * Math.sin(s.twinkle + t * 0.0003));
+        starCtx.beginPath();
+        starCtx.arc(s.x * W, s.y * H, s.r, 0, Math.PI * 2);
+        starCtx.fillStyle = `rgba(232,224,208,${a})`;
+        starCtx.fill();
+    });
+}
+
+// ═══════════════════════════════════════════════
+// KRONOS SMALL (center gear)
+// ═══════════════════════════════════════════════
+function drawKronosGear(phase, coherence) {
+    const cvs = kronosCvs;
+    const ctx = kronosCtx;
+    const cx = cvs.width / 2, cy = cvs.height / 2;
+    const R = 85;
+    ctx.clearRect(0, 0, cvs.width, cvs.height);
+
+    // Outer orbit ring
+    ctx.beginPath();
+    ctx.arc(cx, cy, R + 8, 0, Math.PI * 2);
+    ctx.strokeStyle = `rgba(122,106,154,${0.15 + coherence * 0.3})`;
+    ctx.lineWidth = 1;
+    ctx.stroke();
+
+    // Sacred geometry: hexagram
+    const drawHexagram = (r, alpha) => {
+        for (let t = 0; t < 2; t++) {
+            ctx.beginPath();
+            for (let i = 0; i < 3; i++) {
+                const a = phase + (t * Math.PI / 3) + (i * 2 * Math.PI / 3);
+                const x = cx + r * Math.cos(a);
+                const y = cy + r * Math.sin(a);
+                if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
             }
-            wasLocked = isLocked;
-            
-            // Phase rings
-            kairosRing.style.background = `conic-gradient(from ${phaseKairos}rad, #44ccff 0%, #2a2a4a 100%)`;
-            apolloRing.style.background = `conic-gradient(from ${phaseApollo}rad, #ffaa44 0%, #2a2a4a 100%)`;
-        }, 100);
-    }
-    
-    // UI Controls
-    document.getElementById('resetPhaseBtn').onclick = () => {
-        phaseKairos = 0;
-        phaseApollo = 0;
-    };
-    
-    document.getElementById('saveBtn').onclick = () => {
-        alert('Saving age to GaiaDB — integrate Ouranos edge function here');
-    };
-    
-    document.getElementById('erosPortal').onclick = () => {
-        if (couplingK > 1.5 && wasLocked) {
-            alert('🌀 You descend into the Underworld. The D card awakens. 🌀');
-            // Here you'd trigger your Pantheon D card synthesis
+            ctx.closePath();
+            ctx.strokeStyle = `rgba(122,106,154,${alpha})`;
+            ctx.lineWidth = 0.8;
+            ctx.stroke();
         }
     };
-    
-    // Start everything
-    startField();
-    resizeCanvases();
-    
-    // Sliders for control (add to controls div if desired)
-    const controlDiv = document.querySelector('.controls');
-    controlDiv.innerHTML += `
-        <div><label>⚡ Kairos base: <input type="range" id="kairosBase" min="0.2" max="2.0" step="0.01" value="0.43"></label> <span id="kairosBaseVal">0.43</span></div>
-        <div><label>☀️ Apollo ref: <input type="range" id="apolloBase" min="0.2" max="2.0" step="0.01" value="0.50"></label> <span id="apolloBaseVal">0.50</span></div>
-        <div><label>❤️ Eros (coupling): <input type="range" id="coupling" min="0" max="3.0" step="0.05" value="0.8"></label> <span id="couplingVal">0.8</span></div>
-    `;
-    
-    document.getElementById('kairosBase').oninput = (e) => {
-        kairosBaseFreq = parseFloat(e.target.value);
-        document.getElementById('kairosBaseVal').innerText = kairosBaseFreq;
+    drawHexagram(R * 0.7, 0.2 + coherence * 0.4);
+    drawHexagram(R * 0.45, 0.15 + coherence * 0.3);
+
+    // Gear teeth
+    const teeth = 16;
+    const innerR = R * 0.82;
+    const outerR = R;
+    ctx.beginPath();
+    for (let i = 0; i < teeth * 2; i++) {
+        const a = phase + (i * Math.PI / teeth);
+        const r2 = i % 2 === 0 ? outerR : innerR;
+        const x = cx + r2 * Math.cos(a);
+        const y = cy + r2 * Math.sin(a);
+        if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+    }
+    ctx.closePath();
+    ctx.strokeStyle = `rgba(122,106,154,${0.4 + coherence * 0.5})`;
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+    ctx.fillStyle = `rgba(12,10,30,0.9)`;
+    ctx.fill();
+
+    // Inner gear (counter-rotate)
+    const innerTeeth = 8;
+    const ir = R * 0.38, oir = R * 0.44;
+    ctx.beginPath();
+    for (let i = 0; i < innerTeeth * 2; i++) {
+        const a = -phase * 2 + (i * Math.PI / innerTeeth);
+        const r2 = i % 2 === 0 ? oir : ir;
+        const x = cx + r2 * Math.cos(a);
+        const y = cy + r2 * Math.sin(a);
+        if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+    }
+    ctx.closePath();
+    ctx.strokeStyle = `rgba(201,168,76,${0.3 + coherence * 0.5})`;
+    ctx.lineWidth = 1;
+    ctx.stroke();
+    ctx.fillStyle = 'rgba(8,8,20,0.95)';
+    ctx.fill();
+
+    // Center dot
+    const dotColor = coherence > 0.7 ? '#44cc88' : `rgba(122,106,154,${0.5 + coherence * 0.5})`;
+    ctx.beginPath();
+    ctx.arc(cx, cy, 5, 0, Math.PI * 2);
+    ctx.fillStyle = dotColor;
+    ctx.fill();
+    if (coherence > 0.5) {
+        ctx.beginPath();
+        ctx.arc(cx, cy, 5 + coherence * 8, 0, Math.PI * 2);
+        ctx.strokeStyle = `rgba(68,204,136,${coherence * 0.4})`;
+        ctx.lineWidth = 1;
+        ctx.stroke();
+    }
+
+    // Spokes
+    for (let i = 0; i < 6; i++) {
+        const a = phase + (i * Math.PI / 3);
+        ctx.beginPath();
+        ctx.moveTo(cx + ir * Math.cos(a), cy + ir * Math.sin(a));
+        ctx.lineTo(cx + R * 0.75 * Math.cos(a), cy + R * 0.75 * Math.sin(a));
+        ctx.strokeStyle = `rgba(122,106,154,${0.2 + coherence * 0.4})`;
+        ctx.lineWidth = 1;
+        ctx.stroke();
+    }
+}
+
+// ═══════════════════════════════════════════════
+// KRONOS BIG (timeline viz)
+// ═══════════════════════════════════════════════
+function drawKronosBig() {
+    const w = kronosBigCvs.width, h = kronosBigCvs.height;
+    kronosBigCtx.clearRect(0, 0, w, h);
+
+    // Grid
+    kronosBigCtx.strokeStyle = 'rgba(122,106,154,0.06)';
+    kronosBigCtx.lineWidth = 1;
+    for (let i = 0; i <= 4; i++) {
+        const y = (i / 4) * h;
+        kronosBigCtx.beginPath();
+        kronosBigCtx.moveTo(0, y);
+        kronosBigCtx.lineTo(w, y);
+        kronosBigCtx.stroke();
+    }
+
+    const drawLine = (data, color, minV, maxV, yOffset, yScale) => {
+        kronosBigCtx.beginPath();
+        kronosBigCtx.strokeStyle = color;
+        kronosBigCtx.lineWidth = 1.5;
+        data.forEach((v, i) => {
+            const x = (i / HISTORY_LEN) * w;
+            const y = yOffset - ((v - minV) / (maxV - minV)) * yScale;
+            if (i === 0) kronosBigCtx.moveTo(x, y); else kronosBigCtx.lineTo(x, y);
+        });
+        kronosBigCtx.stroke();
     };
-    document.getElementById('apolloBase').oninput = (e) => {
-        apolloFixedFreq = parseFloat(e.target.value);
-        document.getElementById('apolloBaseVal').innerText = apolloFixedFreq;
+
+    // Kairos freq
+    drawLine(kairosHistory, 'rgba(68,136,204,0.8)', 0.2, 2.0, h * 0.5, h * 0.45);
+    // Apollo freq
+    drawLine(apolloHistory, 'rgba(204,136,34,0.6)', 0.2, 2.0, h * 0.5, h * 0.45);
+    // Coherence
+    drawLine(coherenceHistory, 'rgba(68,204,136,0.6)', 0, 1, h * 0.95, h * 0.4);
+
+    // Labels
+    kronosBigCtx.font = '9px Cinzel, serif';
+    kronosBigCtx.fillStyle = 'rgba(68,136,204,0.7)';
+    kronosBigCtx.fillText('KAIROS', 4, 12);
+    kronosBigCtx.fillStyle = 'rgba(204,136,34,0.7)';
+    kronosBigCtx.fillText('APOLLO', 4, 24);
+    kronosBigCtx.fillStyle = 'rgba(68,204,136,0.7)';
+    kronosBigCtx.fillText('COHERENCE', 4, 36);
+}
+
+// ═══════════════════════════════════════════════
+// PHASE ARC (small oscillator rings)
+// ═══════════════════════════════════════════════
+function drawPhaseArc(ctx, phase, color, label) {
+    const cx = 50, cy = 50, R = 40;
+    ctx.clearRect(0, 0, 100, 100);
+    // Track
+    ctx.beginPath();
+    ctx.arc(cx, cy, R, 0, Math.PI * 2);
+    ctx.strokeStyle = 'rgba(255,255,255,0.06)';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    // Arc
+    ctx.beginPath();
+    ctx.arc(cx, cy, R, -Math.PI / 2, phase - Math.PI / 2);
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 2;
+    ctx.shadowColor = color;
+    ctx.shadowBlur = 8;
+    ctx.stroke();
+    ctx.shadowBlur = 0;
+    // Dot
+    const dx = cx + R * Math.cos(phase - Math.PI / 2);
+    const dy = cy + R * Math.sin(phase - Math.PI / 2);
+    ctx.beginPath();
+    ctx.arc(dx, dy, 4, 0, Math.PI * 2);
+    ctx.fillStyle = color;
+    ctx.fill();
+}
+
+// ═══════════════════════════════════════════════
+// OUREA (mountains)
+// ═══════════════════════════════════════════════
+function drawMountains(coherence, oureaHz) {
+    const w = mountainCvs.width, h = mountainCvs.height;
+    mountainCtx.clearRect(0, 0, w, h);
+
+    // Stars in sky
+    mountainCtx.fillStyle = 'rgba(180,160,255,0.4)';
+    [[0.15,0.2],[0.35,0.1],[0.6,0.15],[0.8,0.08],[0.92,0.2]].forEach(([rx,ry])=>{
+        mountainCtx.beginPath();
+        mountainCtx.arc(rx*w, ry*h, 1, 0, Math.PI*2);
+        mountainCtx.fill();
+    });
+
+    const peakH = coherence * h * 0.72;
+    const peaks = [
+        {x: 0.12, h: 0.55}, {x: 0.28, h: 0.72}, {x: 0.42, h: 0.45},
+        {x: 0.55, h: 0.88}, {x: 0.68, h: 0.62}, {x: 0.80, h: 0.78}, {x: 0.93, h: 0.50}
+    ];
+
+    // Back range (lighter)
+    mountainCtx.beginPath();
+    mountainCtx.moveTo(0, h);
+    peaks.forEach(p => mountainCtx.lineTo(p.x * w, h - peakH * p.h * 0.7));
+    mountainCtx.lineTo(w, h);
+    mountainCtx.closePath();
+    mountainCtx.fillStyle = `rgba(40,60,40,${0.4 + coherence * 0.3})`;
+    mountainCtx.fill();
+
+    // Front range
+    mountainCtx.beginPath();
+    mountainCtx.moveTo(0, h);
+    peaks.forEach(p => mountainCtx.lineTo(p.x * w, h - peakH * p.h));
+    mountainCtx.lineTo(w, h);
+    mountainCtx.closePath();
+    mountainCtx.fillStyle = `rgba(30,50,30,0.9)`;
+    mountainCtx.fill();
+
+    // Snow caps
+    if (coherence > 0.4) {
+        peaks.forEach(p => {
+            const px = p.x * w;
+            const py = h - peakH * p.h;
+            const sw = 8 + coherence * 8;
+            mountainCtx.beginPath();
+            mountainCtx.moveTo(px - sw, py + sw * 0.6);
+            mountainCtx.lineTo(px, py - 4);
+            mountainCtx.lineTo(px + sw, py + sw * 0.6);
+            mountainCtx.closePath();
+            mountainCtx.fillStyle = `rgba(240,235,255,${coherence * 0.7})`;
+            mountainCtx.fill();
+        });
+    }
+
+    // Update text
+    const oureaEl = document.getElementById('oureaText');
+    if (oureaHz > 0.001) {
+        const beatSec = (1 / oureaHz).toFixed(1);
+        oureaEl.innerHTML = coherence > 0.7
+            ? `The peaks are locked in ancient rhythm — one beat every ${beatSec}s.`
+            : `The mountains tremble. Beat frequency ${oureaHz.toFixed(4)} Hz.`;
+    }
+}
+
+// ═══════════════════════════════════════════════
+// PONTUS (sea waves)
+// ═══════════════════════════════════════════════
+function drawSea(pontusHz, coherence) {
+    const w = waveCvs.width, h = waveCvs.height;
+    waveCtx.clearRect(0, 0, w, h);
+    waveOffset += 0.04 * (1 + pontusHz);
+
+    const alpha = 0.25 + coherence * 0.6;
+
+    for (let layer = 3; layer >= 0; layer--) {
+        waveCtx.beginPath();
+        const amp = 8 + layer * 5 + pontusHz * 15;
+        const speed = 1 + layer * 0.3;
+        const yBase = h * (0.35 + layer * 0.16);
+        for (let x = 0; x <= w; x++) {
+            const y = yBase
+                + Math.sin(x * 0.018 + waveOffset * speed) * amp
+                + Math.sin(x * 0.037 + waveOffset * speed * 0.7) * (amp * 0.5);
+            if (x === 0) waveCtx.moveTo(x, y); else waveCtx.lineTo(x, y);
+        }
+        waveCtx.lineTo(w, h); waveCtx.lineTo(0, h); waveCtx.closePath();
+        waveCtx.fillStyle = `rgba(20,50,80,${0.15 + layer * 0.08})`;
+        waveCtx.fill();
+        waveCtx.strokeStyle = `rgba(68,170,255,${alpha * (0.3 + layer * 0.15)})`;
+        waveCtx.lineWidth = 1;
+        waveCtx.stroke();
+    }
+
+    document.getElementById('pontusText').innerHTML = coherence > 0.5
+        ? `The sea carries coherent messages at ${pontusHz.toFixed(3)} Hz.`
+        : `Waves crash chaotically. Carrier: ${pontusHz.toFixed(3)} Hz.`;
+}
+
+// ═══════════════════════════════════════════════
+// EROS PORTAL
+// ═══════════════════════════════════════════════
+function drawEros(k, isLocked) {
+    erosAngle += 0.03 * k;
+    const cx = 49, cy = 49, R = 42;
+    erosCtx.clearRect(0, 0, 98, 98);
+
+    const canDescend = k > 1.5 && isLocked;
+    const baseAlpha = canDescend ? 0.8 : 0.3;
+    const col = canDescend ? '#ff66aa' : '#7a4a6a';
+
+    // Rotating sacred spiral
+    for (let i = 0; i < 3; i++) {
+        const a = erosAngle + (i * 2 * Math.PI / 3);
+        erosCtx.beginPath();
+        erosCtx.arc(cx, cy, R, a, a + Math.PI * 1.2);
+        erosCtx.strokeStyle = `${col}${Math.floor(baseAlpha * 255).toString(16).padStart(2,'0')}`;
+        erosCtx.lineWidth = 1.5;
+        erosCtx.stroke();
+    }
+
+    // Center
+    erosCtx.beginPath();
+    erosCtx.arc(cx, cy, 6, 0, Math.PI * 2);
+    erosCtx.fillStyle = canDescend ? '#ff66aa' : '#7a4a6a';
+    erosCtx.fill();
+
+    // Portal ring update
+    const ring = document.getElementById('portalRing');
+    if (canDescend) {
+        ring.classList.add('active');
+        document.getElementById('erosText').innerHTML = `🌀 Binding sufficient. Click to descend.<br>Eros K = ${k.toFixed(2)}`;
+    } else {
+        ring.classList.remove('active');
+        document.getElementById('erosText').innerHTML = `Binding strength insufficient.<br>Requires K > 1.5 + phase lock. Current: ${k.toFixed(2)}`;
+    }
+    document.getElementById('erosVal').innerText = k.toFixed(2);
+}
+
+// ═══════════════════════════════════════════════
+// TOAST
+// ═══════════════════════════════════════════════
+let toastTimer = null;
+function toast(msg, type = '') {
+    const el = document.getElementById('toast');
+    el.className = `show ${type}`;
+    el.innerHTML = msg;
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => { el.className = ''; }, 4000);
+}
+
+// ═══════════════════════════════════════════════
+// HERMES TICKER
+// ═══════════════════════════════════════════════
+function hermes(msg) {
+    const el = document.getElementById('hermesTicker');
+    el.className = 'active';
+    el.innerText = msg;
+    setTimeout(() => {
+        el.className = '';
+        el.innerText = 'Monitoring the field...';
+    }, 4000);
+}
+
+// ═══════════════════════════════════════════════
+// DB HISTORY RENDER
+// ═══════════════════════════════════════════════
+function renderDBHistory(rows) {
+    const container = document.getElementById('dbHistoryRows');
+    if (!rows || rows.length === 0) {
+        container.innerHTML = '<div style="font-style:italic;color:var(--gold-dim);font-size:0.78rem;">No states saved yet.</div>';
+        return;
+    }
+    container.innerHTML = rows.map(r => {
+        const t = new Date(r.timestamp).toLocaleTimeString();
+        const coh = r.coherence != null ? r.coherence.toFixed(2) : '—';
+        const cohColor = r.coherence > 0.7 ? 'var(--locked)' : r.coherence > 0.4 ? 'var(--gold)' : 'var(--copper)';
+        return `<div class="db-row">
+            <span class="db-time">${t}</span>
+            <span class="db-archetype">${r.titan || 'kronos'}</span>
+            <span class="db-coherence" style="color:${cohColor}">C:${coh}</span>
+            <span class="db-locked">${r.is_locked ? '🔒' : '🔓'}</span>
+        </div>`;
+    }).join('');
+    document.getElementById('dbLastSaved').innerText = `Last saved: ${new Date(rows[0].timestamp).toLocaleTimeString()}`;
+}
+
+// ═══════════════════════════════════════════════
+// MAIN FIELD LOOP
+// ═══════════════════════════════════════════════
+function startField() {
+    if (fieldInterval) clearInterval(fieldInterval);
+    fieldInterval = setInterval(() => {
+        const dt = 0.1;
+        const coupling = couplingK * Math.sin(phaseApollo - phaseKairos);
+        phaseKairos += (currentKairosFreq * 2 * Math.PI * dt) + coupling * dt;
+        phaseApollo += apolloFixedFreq * 2 * Math.PI * dt;
+        phaseKairos %= (2 * Math.PI);
+        phaseApollo %= (2 * Math.PI);
+
+        const dHz = (couplingK * Math.sin(phaseApollo - phaseKairos)) / (2 * Math.PI);
+        currentKairosFreq = Math.min(2.0, Math.max(0.2, kairosBaseFreq + dHz));
+
+        const phaseDiff = phaseApollo - phaseKairos;
+        const normDiff = ((phaseDiff % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI);
+        const signedDiff = normDiff > Math.PI ? normDiff - 2 * Math.PI : normDiff;
+        const isLocked = Math.abs(signedDiff) < coherenceThreshold;
+        const oureaHz = Math.abs(currentKairosFreq - apolloFixedFreq);
+        const pontusHz = (currentKairosFreq + apolloFixedFreq) / 2;
+        const coherence = Math.max(0, 1 - (Math.abs(signedDiff) / Math.PI));
+
+        // Histories
+        kairosHistory.shift(); kairosHistory.push(currentKairosFreq);
+        apolloHistory.shift(); apolloHistory.push(apolloFixedFreq);
+        coherenceHistory.shift(); coherenceHistory.push(coherence);
+
+        // Status
+        document.getElementById('kairosFreqDisplay').innerText = currentKairosFreq.toFixed(3);
+        document.getElementById('apolloFreqDisplay').innerText = apolloFixedFreq.toFixed(3);
+
+        const dotLock = document.getElementById('dotLock');
+        const statusLock = document.getElementById('statusLock');
+        if (isLocked) {
+            dotLock.className = 'status-dot locked';
+            statusLock.innerText = 'PHASE LOCKED';
+        } else {
+            dotLock.className = 'status-dot unlocked';
+            statusLock.innerText = 'SEEKING LOCK';
+        }
+
+        // Coherence badge
+        const badge = document.getElementById('coherenceBadge');
+        badge.innerText = `COHERENCE: ${coherence.toFixed(2)}`;
+        badge.className = 'coherence-badge' + (isLocked ? ' locked' : '');
+
+        // Kronos data cells
+        document.getElementById('oureaHz').innerText = oureaHz.toFixed(4);
+        document.getElementById('pontusHz').innerText = pontusHz.toFixed(3);
+        document.getElementById('phaseDelta').innerText = signedDiff.toFixed(3);
+        const beatPeriod = oureaHz > 0.0001 ? (1 / oureaHz).toFixed(1) + 's' : '∞';
+        document.getElementById('beatPeriod').innerText = beatPeriod;
+
+        // Canvas renders
+        drawPhaseArc(kairosArcCtx, phaseKairos, 'rgba(68,136,204,0.9)', 'K');
+        drawPhaseArc(apolloArcCtx, phaseApollo, 'rgba(204,136,34,0.9)', 'A');
+        drawKronosGear(phaseKairos, coherence);
+        drawKronosBig();
+        drawMountains(coherence, oureaHz);
+        drawSea(pontusHz, coherence);
+        drawEros(couplingK, isLocked);
+
+        // Lock event
+        if (isLocked && !wasLocked) {
+            hermes(`⚡ Phase lock achieved — Kronos devours the interval. Coherence: ${coherence.toFixed(2)}`);
+        }
+        wasLocked = isLocked;
+
+    }, 100);
+}
+
+// ═══════════════════════════════════════════════
+// ANIMATION LOOP (starfield + timestamp)
+// ═══════════════════════════════════════════════
+let lastT = 0;
+function animFrame(t) {
+    drawStarfield(t);
+    requestAnimationFrame(animFrame);
+}
+requestAnimationFrame(animFrame);
+
+// ═══════════════════════════════════════════════
+// SAVE TITAN STATE
+// ═══════════════════════════════════════════════
+async function saveTitanState() {
+    const phaseDiff = phaseApollo - phaseKairos;
+    const normDiff = ((phaseDiff % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI);
+    const signedDiff = normDiff > Math.PI ? normDiff - 2 * Math.PI : normDiff;
+    const isLocked = Math.abs(signedDiff) < coherenceThreshold;
+    const coherence = Math.max(0, 1 - (Math.abs(signedDiff) / Math.PI));
+    const oureaHz = Math.abs(currentKairosFreq - apolloFixedFreq);
+    const pontusHz = (currentKairosFreq + apolloFixedFreq) / 2;
+    const beatSec = oureaHz > 0 ? 1 / oureaHz : null;
+
+    const row = {
+        titan: 'kronos',
+        phase_kairos: phaseKairos,
+        phase_apollo: phaseApollo,
+        coherence: coherence,
+        freq_kairos: currentKairosFreq,
+        freq_apollo: apolloFixedFreq,
+        coupling_k: couplingK,
+        is_locked: isLocked,
+        age_seconds: beatSec
     };
-    document.getElementById('coupling').oninput = (e) => {
-        couplingK = parseFloat(e.target.value);
-        document.getElementById('couplingVal').innerText = couplingK;
-    };
+
+    const dotDB = document.getElementById('dotDB');
+    const statusDB = document.getElementById('statusDB');
+    dotDB.className = 'status-dot live';
+    statusDB.innerText = 'SAVING...';
+
+    try {
+        const saved = await dbInsert(row);
+        dotDB.className = 'status-dot locked';
+        statusDB.innerText = 'GAIADB SAVED';
+        toast(`✦ Titan state preserved in GaiaDB — Coherence: ${coherence.toFixed(2)}`, 'success');
+        hermes(`💾 Kronos committed to GaiaDB at ${new Date().toLocaleTimeString()}`);
+        // Reload history
+        const rows = await dbFetch(5);
+        renderDBHistory(rows);
+    } catch (err) {
+        dotDB.className = 'status-dot unlocked';
+        statusDB.innerText = 'DB ERROR';
+        toast(`❌ GaiaDB rejected the offering: ${err.message}`, 'error');
+    }
+
+    setTimeout(() => {
+        dotDB.className = 'status-dot';
+        statusDB.innerText = 'GAIADB READY';
+    }, 3000);
+}
+
+// ═══════════════════════════════════════════════
+// LOAD RECENT
+// ═══════════════════════════════════════════════
+async function loadRecent() {
+    const dotDB = document.getElementById('dotDB');
+    dotDB.className = 'status-dot live';
+    try {
+        const rows = await dbFetch(5);
+        renderDBHistory(rows);
+        toast(`📜 Loaded ${rows.length} titan states from GaiaDB`, 'success');
+    } catch (err) {
+        toast(`❌ Could not read GaiaDB: ${err.message}`, 'error');
+    }
+    dotDB.className = 'status-dot';
+}
+
+// ═══════════════════════════════════════════════
+// CONTROLS
+// ═══════════════════════════════════════════════
+document.getElementById('kairosBase').oninput = e => {
+    kairosBaseFreq = parseFloat(e.target.value);
+    document.getElementById('kairosBaseVal').innerText = kairosBaseFreq.toFixed(2);
+};
+document.getElementById('apolloBase').oninput = e => {
+    apolloFixedFreq = parseFloat(e.target.value);
+    document.getElementById('apolloBaseVal').innerText = apolloFixedFreq.toFixed(2);
+};
+document.getElementById('coupling').oninput = e => {
+    couplingK = parseFloat(e.target.value);
+    document.getElementById('couplingVal').innerText = couplingK.toFixed(2);
+};
+document.getElementById('resetPhaseBtn').onclick = () => {
+    phaseKairos = 0; phaseApollo = 0;
+    hermes('⟳ Phase reset — Kronos begins again.');
+};
+document.getElementById('saveBtn').onclick = saveTitanState;
+document.getElementById('loadBtn').onclick = loadRecent;
+document.getElementById('erosPortal').onclick = () => {
+    const phaseDiff = phaseApollo - phaseKairos;
+    const normDiff = ((phaseDiff % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI);
+    const signedDiff = normDiff > Math.PI ? normDiff - 2 * Math.PI : normDiff;
+    const isLocked = Math.abs(signedDiff) < coherenceThreshold;
+    if (couplingK > 1.5 && isLocked) {
+        toast('🌀 You descend into the Underworld. The D card awakens. Tartarus opens.', 'success');
+        hermes('🌀 Eros tears the veil. Descent initiated.');
+    } else {
+        toast('🔒 Descent denied. Raise Eros above 1.5 and achieve phase lock.', 'error');
+    }
+};
+document.getElementById('descendBtn').onclick = () => {
+    document.getElementById('erosPortal').click();
+};
+
+// ═══════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════
+startField();
+loadRecent();
 </script>
 </body>
 </html>
