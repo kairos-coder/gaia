@@ -1,0 +1,73 @@
+# /titans — Pre-Olympian Registry
+
+The Titans are the processing layer that existed before the Olympian gods.  
+In the GAIA system they sit between raw field oscillation and the Pantheon pipeline.
+
+---
+
+## Architecture
+
+```
+gaia.html
+  └── import from titans/index.js
+        ├── kronos.js      (extract from gaia.html — inline for now)
+        ├── hyperion.js    ✦ ACTIVE
+        ├── rhea.js        ○ planned
+        ├── oceanus.js     ○ planned
+        ├── themis.js      ○ planned
+        ├── mnemosyne.js   ○ planned
+        ├── prometheus.js  ○ planned
+        └── iapetus.js     ○ planned
+```
+
+## Pipeline Order
+
+Data flows through Titans before reaching the Olympians:
+
+```
+Raw Field (Kairos ↔ Apollo phase engine)
+    ↓
+KRONOS    — Phase accumulation, time-as-oscillation
+    ↓
+HYPERION  — Signal amplification, noise suppression
+    ↓
+[RHEA]    — Rhythm regulation, flow smoothing
+    ↓
+[OCEANUS] — Deep data streaming, persistence prep
+    ↓
+[THEMIS]  — Threshold law, gate decisions
+    ↓
+[MNEMOSYNE] — Memory write, context packaging
+    ↓
+[PROMETHEUS] — LLM fire gate (Apollo/Claude handoff)
+    ↓
+APOLLO    — Synthesis, archetype interpretation
+```
+
+## Module Contract
+
+Each Titan module exports a named object with:
+
+| Export         | Type       | Status     | Description                        |
+|----------------|------------|------------|------------------------------------|
+| `lore`         | object     | ✦ all      | Mythic text strings by state       |
+| `draw()`       | function   | ○ phase 2  | Canvas renderer                    |
+| `update()`     | function   | ○ phase 2  | Physics / math tick                |
+| `config`       | object     | ○ phase 2  | Default params                     |
+| `schema`       | object     | ✦ hyperion | DB column definitions + SQL        |
+| `archetypes`   | object     | ✦ hyperion | State → archetype mapping          |
+
+## Adding a New Titan
+
+1. Create `titans/<name>.js` following the `hyperion.js` pattern
+2. Uncomment its export in `titans/index.js`
+3. Add it to `TITAN_PIPELINE` array in `titans/index.js`
+4. **Do not modify `gaia.html`** — import the module and mount it
+
+## GaiaDB
+
+Titan states write to the `titan_states` table.  
+Each Titan carries a `schema` export with the SQL to extend that table  
+when it is promoted from lore-only to a full active agent.
+
+Run `hyperion.schema.sql` to add Hyperion columns when ready.
