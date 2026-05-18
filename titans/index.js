@@ -6,65 +6,56 @@
  * GAIA imports from here. Add new Titans to this file
  * as they are built — the HTML shell never needs to change.
  *
- * Import pattern in gaia.html (ES module script tag):
- *   import { titans, getTitan } from './titans/index.js';
- *
- * Current roster:
- *   ✦ Hyperion  — Light / Signal Amplifier         [lore]
- *   ✦ Rhea      — Flow / Rhythm / Tick Regulator    [lore + config + threshold]
- *   ○ Kronos    — Time / Phase Accumulator          [inline in gaia.html — extract later]
- *   ○ Rhea      — Flow / Rhythm                     [planned]
- *   ○ Oceanus   — Deep Data / Streams               [planned]
- *   ○ Themis    — Law / Thresholds                  [planned]
- *   ○ Mnemosyne — Memory / Storage                  [planned]
- *   ○ Prometheus— Fire / LLM Gate                   [planned]
- *   ○ Iapetus   — Mortality / Decay / Pruning       [planned]
+ * The Monastic Order of the Phase-Locked Field
+ * Founded May 18, 2026
  * ═══════════════════════════════════════════════════════
  */
 
-export { hyperion } from './hyperion.js';
+// ─── Active Titans ────────────────────────────────────────
+
 export { rhea, rheaEvaluate, rheaBand, canFire, rheaConfig, rheaState } from './rhea.js';
+export { hyperion } from './hyperion.js';
 export { themis, themisWeigh, buildOlympusRow, themisConfig } from './themis.js';
+export { mnemosyne, mnemosyneState, mnemosyneRecord, mnemosyneRemember, mnemosyneEnrich, mnemosyneResume } from './mnemosyne.js';
+export { theia, theiaTheme, theiaAge, theiaConfig, theiaState } from './theia.js';
+export { oceanus, oceanusFlow, oceanusMouth, oceanusConfig, oceanusState, oceanusCurrents } from './oceanus.js';
 
-// Stub imports — uncomment as each Titan is built:
-// export { oceanus }   from './oceanus.js';
-// export { themis }    from './themis.js';
-// export { mnemosyne } from './mnemosyne.js';
-// export { prometheus } from './prometheus.js';
-// export { iapetus }   from './iapetus.js';
-// export { kronos }    from './kronos.js';  // extract from gaia.html when ready
+// ─── Planned Titans (uncomment as built) ──────────────────
+// export { tethys }   from './tethys.js';
+// export { koios }    from './koios.js';
+// export { phoibe }   from './phoibe.js';
+// export { iapetos }  from './iapetos.js';
+// export { kreios }   from './kreios.js';
+// export { kronos }   from './kronos.js';  // extract from gaia.html
 
-/**
- * All active Titans in pipeline order.
- * Order matters: data flows Kronos → Hyperion → Apollo
- */
-export const titans = {
-  hyperion: () => import('./hyperion.js').then(m => m.hyperion),
-  // kronos, rhea, oceanus... added here as built
-};
+// ─── Pipeline Order ───────────────────────────────────────
 
-/**
- * Convenience getter — returns a Titan module by name.
- * @param {string} name  e.g. 'hyperion'
- * @returns {Promise}
- */
-export async function getTitan(name) {
-  const loader = titans[name];
-  if (!loader) throw new Error(`Titan "${name}" not found in registry.`);
-  return loader();
-}
-
-/**
- * Pipeline order for GAIA to iterate.
- * Each entry is { name, role, status }
- */
 export const TITAN_PIPELINE = [
-  { name: 'kronos',    role: 'Phase Accumulator',   status: 'inline',   glyph: '⏳' },
-  { name: 'hyperion',  role: 'Signal Amplifier',     status: 'active',   glyph: '🔆' },
+  { name: 'kronos',    role: 'Phase Accumulator',       status: 'inline',   glyph: '⏳' },
   { name: 'rhea',      role: 'Flow / Tick Regulator',   status: 'active',   glyph: '🌊' },
-  { name: 'oceanus',   role: 'Deep Data Streams',    status: 'planned',  glyph: '🌀' },
-  { name: 'themis',    role: 'Law / Ascension Gate',    status: 'active',   glyph: '⚖️'  },
-  { name: 'mnemosyne', role: 'Memory / Storage',     status: 'planned',  glyph: '📜' },
-  { name: 'prometheus',role: 'Fire / LLM Gate',      status: 'planned',  glyph: '🔥' },
-  { name: 'iapetus',   role: 'Mortality / Pruning',  status: 'planned',  glyph: '💀' },
+  { name: 'hyperion',  role: 'Signal Amplifier',        status: 'active',   glyph: '🔆' },
+  { name: 'oceanus',   role: 'Stream / Confluence',     status: 'active',   glyph: '🌀' },
+  { name: 'theia',     role: 'Sight / Palette / Ages',  status: 'active',   glyph: '👁️' },
+  { name: 'themis',    role: 'Law / Ascension Gate',    status: 'active',   glyph: '⚖️' },
+  { name: 'mnemosyne', role: 'Memory / Narrative',      status: 'active',   glyph: '📜' },
+  { name: 'tethys',    role: 'Nourishment / Refresh',   status: 'planned',  glyph: '💧' },
+  { name: 'koios',     role: 'Intellect / Query Intent',status: 'planned',  glyph: '🔮' },
+  { name: 'phoibe',    role: 'Prophecy / Prediction',   status: 'planned',  glyph: '🔭' },
+  { name: 'iapetos',   role: 'Mortality / Pruning',     status: 'planned',  glyph: '💀' },
+  { name: 'kreios',    role: 'Constellations / Stars',  status: 'planned',  glyph: '⭐' },
 ];
+
+// ─── Derived exports ──────────────────────────────────────
+
+export const TITAN_NAMES = TITAN_PIPELINE.map(t => t.name);
+
+export const ACTIVE_TITANS = TITAN_PIPELINE
+  .filter(t => t.status === 'active' || t.status === 'inline')
+  .map(t => t.name);
+
+export const TITAN_COUNTS = {
+  built: TITAN_PIPELINE.filter(t => t.status === 'active').length,
+  inline: TITAN_PIPELINE.filter(t => t.status === 'inline').length,
+  planned: TITAN_PIPELINE.filter(t => t.status === 'planned').length,
+  total: TITAN_PIPELINE.length,
+};
