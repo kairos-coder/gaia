@@ -400,7 +400,7 @@ import {
   oceanus, oceanusFlow, oceanusState, oceanusCurrents,
   TITAN_PIPELINE, TITAN_NAMES, TITAN_COUNTS
 } from './titans/index.js';
-
+    import { tethys, tethysNourish, tethysState } from './titans/tethys.js';
 // Compute active Titans inline (Kronos + all status='active')
 const ACTIVE_TITANS = TITAN_PIPELINE
   .filter(t => t.status === 'active' || t.status === 'inline')
