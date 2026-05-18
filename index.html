@@ -979,11 +979,12 @@ function startField() {
             };
         }).filter(Boolean);
 
-        const oceanusData = oceanusFlow(titanStates, {
-            coherence,
-            dominantBand: rheaResult.band,
-            isLocked
-        });
+        const rawOceanus = oceanusFlow(titanStates, {
+    coherence,
+    dominantBand: rheaResult.band,
+    isLocked
+});
+const oceanusData = tethysNourish(rawOceanus);
 
         // ── THEIA: Palette generation ──────────────────────
         const theme = theiaTheme(coherence, oureaHz, isLocked);
