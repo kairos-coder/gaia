@@ -108,7 +108,7 @@
     const SUPABASE_URL = "https://nbdvavzqvxrlxhsbrluz.supabase.co";
     const SUPABASE_ANON_KEY = "sb_publishable_6x1xlieXjs3dWqEETQcxnQ_4L1UO2uR";
     
-    let supabase;
+    let _supabase = null;
     let dbReady = false;
     
     // ========================
@@ -138,14 +138,11 @@
     // ========================
     async function initSupabase() {
         try {
-            supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+            _supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
             dbStatusDiv.innerHTML = '📡 Connected to Supabase. Creating table if needed...';
             
-            // Create table via SQL (requires manual setup once, or use RPC)
-            // Since Supabase JS can't run arbitrary DDL directly, we'll just insert
-            // and let the table be created manually or via migrations.
-            // For auto-setup, we'll attempt to insert a test row and catch error.
-            const testInsert = await supabase.from('gaia_field_states').insert({
+            // Test insert to see if table exists
+            const testInsert = await _supabase.from('gaia_field_states').insert({
                 kairos_freq: 0, apollo_freq: 0, coupling_k: 0, phase_diff: 0,
                 is_locked: false, ourea_hz: 0, pontus_hz: 0
             });
@@ -166,7 +163,7 @@
     
     // Save current field state to GaiaDB
     async function saveToGaiaDB() {
-        if (!dbReady || !supabase) {
+        if (!dbReady || !_supabase) {
             dbStatusDiv.innerHTML = '⚠️ Wait for DB init before saving';
             return;
         }
@@ -177,7 +174,7 @@
         const ourea = Math.abs(currentKairosFreq - apolloFixedFreq);
         const pontus = (currentKairosFreq + apolloFixedFreq) / 2;
         
-        const { error } = await supabase.from('gaia_field_states').insert({
+        const { error } = await _supabase.from('gaia_field_states').insert({
             kairos_freq: currentKairosFreq,
             apollo_freq: apolloFixedFreq,
             coupling_k: couplingK,
@@ -230,8 +227,8 @@
             
             const deltaFreqHz = (couplingK * Math.sin(phaseApollo - phaseKairos)) / (2 * Math.PI);
             currentKairosFreq = Math.min(80, Math.max(20, kairosBaseFreq + deltaFreqHz));
-            kairosOsc.frequency.value = currentKairosFreq;
-            apolloOsc.frequency.value = apolloFixedFreq;
+            if (kairosOsc) kairosOsc.frequency.value = currentKairosFreq;
+            if (apolloOsc) apolloOsc.frequency.value = apolloFixedFreq;
             
             document.getElementById('kairosActual').innerText = currentKairosFreq.toFixed(2);
             document.getElementById('kairosFreqDisplay').innerText = currentKairosFreq.toFixed(2) + ' Hz';
@@ -265,8 +262,10 @@
             }
             wasLocked = isLocked;
             
-            document.getElementById('kairosRing').style.background = `conic-gradient(from ${phaseKairos}rad, #44ccff 0%, #2a2a4a 100%)`;
-            document.getElementById('apolloRing').style.background = `conic-gradient(from ${phaseApollo}rad, #ffaa44 0%, #2a2a4a 100%)`;
+            const kairosRing = document.getElementById('kairosRing');
+            const apolloRing = document.getElementById('apolloRing');
+            if (kairosRing) kairosRing.style.background = `conic-gradient(from ${phaseKairos}rad, #44ccff 0%, #2a2a4a 100%)`;
+            if (apolloRing) apolloRing.style.background = `conic-gradient(from ${phaseApollo}rad, #ffaa44 0%, #2a2a4a 100%)`;
         }, 50);
     }
     
@@ -287,6 +286,7 @@
     resizeCanvases();
     
     function drawVisuals() {
+        if (!waveCanvas || !beatCanvas) return;
         const samples = 300;
         const tStep = 0.0025;
         const fK = currentKairosFreq, fA = apolloFixedFreq;
