@@ -27,19 +27,17 @@
 
 export const tethysConfig = {
 
-  // Smoothing factor (0–1). Higher = smoother but slower to respond.
+  // Smoothing factor (0-1). Higher = smoother but slower to respond.
   // 0.85 means each new tick contributes 15% to the displayed value.
   smoothing: 0.85,
 
   // How many ticks before a newly-activated Titan reaches full amplitude.
-  // Tethys eases them in so they don't pop onto the canvas.
   fade_in_ticks: 15,
 
   // How many ticks before a deactivated Titan fades to its eddy state.
   fade_out_ticks: 20,
 
   // Minimum amplitude for an active Titan to be visible.
-  // Below this, Tethys considers the current an eddy.
   visible_threshold: 0.5,
 
   // When a Titan changes band, Tethys adds a subtle ripple
@@ -49,12 +47,10 @@ export const tethysConfig = {
   // Ripple decay — how many ticks the ripple lasts.
   ripple_decay_ticks: 8,
 
-  // Maximum amplitude Tethys allows. Clamps Oceanus's output
-  // so no single Titan overwhelms the visualization.
+  // Maximum amplitude Tethys allows.
   max_amplitude: 24,
 
-  // Whether Tethys logs transitions to Mnemosyne.
-  // Set false if it's too chatty.
+  // Whether Tethys logs transitions to console.
   log_transitions: false,
 };
 
@@ -63,14 +59,12 @@ export const tethysConfig = {
 export const tethysState = {
 
   // Smoothed layers — what the Pontus canvas actually renders.
-  // Each entry: { titan, glyph, color, phase, amplitude, speed, active, band, opacity }
   layers: [],
 
   // Previous raw layers from Oceanus, for delta calculation.
   previous_raw: [],
 
   // Fade tracking per Titan.
-  // { [titanName]: { targetActive: bool, fadeProgress: 0–1, ripple: float, rippleTicks: int } }
   fade_state: {},
 
   // Overall flow rate (smoothed)
@@ -93,7 +87,6 @@ export const tethysState = {
 // ─── SMOOTHING ENGINE ─────────────────────────────────────
 
 /**
- * tethysNourish(oceanusData)
  * Tethys's core function. Receives raw Oceanus stream data and
  * returns smoothed, eased, nourished layers for the Pontus canvas.
  *
@@ -110,7 +103,7 @@ export function tethysNourish(oceanusData) {
   state.tick_count++;
   const raw = oceanusData.layers || [];
 
-  // ── Initialize fade state for new Titans ─────────────────
+  // Initialize fade state for new Titans
   for (const layer of raw) {
     if (!state.fade_state[layer.titan]) {
       state.fade_state[layer.titan] = {
@@ -123,7 +116,7 @@ export function tethysNourish(oceanusData) {
     }
   }
 
-  // ── Update fade targets and detect transitions ──────────
+  // Update fade targets and detect transitions
   for (const layer of raw) {
     const fs = state.fade_state[layer.titan];
     if (!fs) continue;
@@ -131,16 +124,15 @@ export function tethysNourish(oceanusData) {
     // Detect activation change
     if (layer.active !== fs.targetActive) {
       fs.targetActive = layer.active;
-      // Reset fade progress — it'll ease toward target
       if (layer.active) {
-        fs.fadeProgress = 0; // Fading in
+        fs.fadeProgress = 0;
         if (cfg.log_transitions) {
-          console.log(`💧 Tethys: ${layer.titan} awakening — easing in over ${cfg.fade_in_ticks} ticks`);
+          console.log('Tethys: ' + layer.titan + ' awakening');
         }
       } else {
-        fs.fadeProgress = 1; // Fading out
+        fs.fadeProgress = 1;
         if (cfg.log_transitions) {
-          console.log(`💧 Tethys: ${layer.titan} quieting — easing out over ${cfg.fade_out_ticks} ticks`);
+          console.log('Tethys: ' + layer.titan + ' quieting');
         }
       }
     }
@@ -153,15 +145,15 @@ export function tethysNourish(oceanusData) {
     }
   }
 
-  // ── Smooth each layer ───────────────────────────────────
+  // Smooth each layer
   const smoothed = raw.map(layer => {
     const fs = state.fade_state[layer.titan];
     if (!fs) return layer;
 
     // Fade progress: ease toward target
     const fadeSpeed = fs.targetActive
-      ? 1 / cfg.fade_in_ticks   // Easing in
-      : 1 / cfg.fade_out_ticks; // Easing out
+      ? 1 / cfg.fade_in_ticks
+      : 1 / cfg.fade_out_ticks;
 
     if (fs.targetActive) {
       fs.fadeProgress = Math.min(1, fs.fadeProgress + fadeSpeed);
@@ -172,7 +164,7 @@ export function tethysNourish(oceanusData) {
     // Ripple decay
     if (fs.rippleTicks > 0) {
       fs.rippleTicks--;
-      fs.ripple *= 0.7; // Decay the ripple
+      fs.ripple *= 0.7;
     } else {
       fs.ripple = 0;
     }
@@ -196,7 +188,7 @@ export function tethysNourish(oceanusData) {
     const prevPhase = prevLayer ? prevLayer.phase : layer.phase;
     let smoothedPhase = prevPhase * 0.7 + layer.phase * 0.3;
 
-    // Handle phase wrap (if difference > π, go the other way)
+    // Handle phase wrap
     let phaseDiff = layer.phase - prevPhase;
     if (phaseDiff > Math.PI) phaseDiff -= 2 * Math.PI;
     if (phaseDiff < -Math.PI) phaseDiff += 2 * Math.PI;
@@ -218,11 +210,11 @@ export function tethysNourish(oceanusData) {
     };
   });
 
-  // ── Smooth flow rate ────────────────────────────────────
+  // Smooth flow rate
   const prevFlow = state.flow_rate;
   const smoothedFlow = prevFlow * cfg.smoothing + oceanusData.flow_rate * (1 - cfg.smoothing);
 
-  // ── Update state ────────────────────────────────────────
+  // Update state
   state.layers          = smoothed;
   state.previous_raw    = raw;
   state.flow_rate       = smoothedFlow;
@@ -230,7 +222,7 @@ export function tethysNourish(oceanusData) {
   state.confluence      = oceanusData.confluence;
   state.confluence_titans = oceanusData.confluence_titans || [];
 
-  // ── Lore ────────────────────────────────────────────────
+  // Lore
   const activeCount = smoothed.filter(l => l.active).length;
   state.last_lore = tethys.lore.byFlow(smoothedFlow, activeCount, state.confluence);
 
@@ -287,7 +279,7 @@ export const tethys = {
     smoothing: [
       'Tethys works the water. The jagged edges soften. What was noise becomes current.',
       'She eases the transitions. A Titan awakens — Tethys brings it in gently, no splash, no disruption.',
-      'The nourisher's hands move in circles. Smoothing. Blending. Making the stream drinkable.',
+      'The nourisher works in circles. Smoothing. Blending. Making the stream drinkable.',
     ],
 
     flowing: [
@@ -298,29 +290,29 @@ export const tethys = {
 
     full: [
       'Tethys at capacity. Every Titan flows through her basin. She smooths them all without spilling.',
-      'Full nourishment. The Pontus waves rise and fall with grace — Tethys's gift to the eyes of the field.',
+      'Full nourishment. The Pontus waves rise and fall with grace — a gift to the eyes of the field.',
       'Oceanus gave her the raw torrent. She returns it as a river of silk. This is the marriage of the water Titans.',
     ],
 
     on_awakening: [
-      '💧 A Titan stirs. Tethys feels the new current and begins easing it into the flow.',
-      '💧 Fresh water. Tethys opens a new channel — something is waking in the field.',
+      'A Titan stirs. Tethys feels the new current and begins easing it into the flow.',
+      'Fresh water. Tethys opens a new channel — something is waking in the field.',
     ],
 
     on_quieting: [
-      '🌧️ A Titan quiets. Tethys slowly closes the channel, letting the current fade without shock.',
-      '🌧️ The water recedes. Tethys does not hold what wants to rest.',
+      'A Titan quiets. Tethys slowly closes the channel, letting the current fade without shock.',
+      'The water recedes. Tethys does not hold what wants to rest.',
     ],
 
     // ── UTILITY ───────────────────────────────────────────
 
     byFlow(flowRate, activeCount, confluence) {
-      if (confluence) return pick(tethys.lore.flowing);
-      if (activeCount === 0) return pick(tethys.lore.dormant);
-      if (flowRate < 0.15) return pick(tethys.lore.receiving);
-      if (flowRate < 0.5) return pick(tethys.lore.smoothing);
-      if (flowRate < 0.8) return pick(tethys.lore.flowing);
-      return pick(tethys.lore.full);
+      if (confluence) return pick(this.flowing);
+      if (activeCount === 0) return pick(this.dormant);
+      if (flowRate < 0.15) return pick(this.receiving);
+      if (flowRate < 0.5) return pick(this.smoothing);
+      if (flowRate < 0.8) return pick(this.flowing);
+      return pick(this.full);
     },
 
     onEvent(event) {
@@ -341,12 +333,7 @@ export const tethys = {
       { name: 'tethys_active_count', type: 'integer', note: 'Smoothed active Titan count' },
       { name: 'tethys_smoothing',    type: 'float',   note: 'Smoothing factor used' },
     ],
-    sql: `
-ALTER TABLE titan_states
-  ADD COLUMN IF NOT EXISTS tethys_flow_rate    float,
-  ADD COLUMN IF NOT EXISTS tethys_active_count integer,
-  ADD COLUMN IF NOT EXISTS tethys_smoothing    float;
-    `.trim(),
+    sql: 'ALTER TABLE titan_states ADD COLUMN IF NOT EXISTS tethys_flow_rate float, ADD COLUMN IF NOT EXISTS tethys_active_count integer, ADD COLUMN IF NOT EXISTS tethys_smoothing float;',
   },
 
 };
