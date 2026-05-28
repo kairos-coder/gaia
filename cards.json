@@ -1,0 +1,61 @@
+{
+  "cards": {
+    "kronos_mark_interval": {
+      "id": "kronos_mark_interval",
+      "name": "Mark Interval",
+      "titan": "kronos",
+      "suit": "fire",
+      "times_played": 47,
+      "last_played": "2026-05-28T02:14:00Z",
+      "play_history": [
+        {
+          "timestamp": "2026-05-28T02:14:00Z",
+          "tick": 29,
+          "output_type": "function",
+          "output_summary": "function markInterval(tick) — marked Tick 29",
+          "gate_verdict": "lawful"
+        },
+        {
+          "timestamp": "2026-05-28T02:18:00Z",
+          "tick": 31,
+          "output_type": "function",
+          "output_summary": "function markInterval(tick) — marked Tick 31",
+          "gate_verdict": "lawful"
+        }
+      ]
+    },
+    "kronos_measure_succession": {
+      "id": "kronos_measure_succession",
+      "name": "Measure Succession",
+      "titan": "kronos",
+      "suit": "fire",
+      "times_played": 12,
+      "last_played": "2026-05-27T23:45:00Z",
+      "play_history": [...]
+    },
+    "rhea_feel_tremor": {
+      "id": "rhea_feel_tremor",
+      "name": "Feel Tremor",
+      "titan": "rhea",
+      "suit": "earth",
+      "times_played": 31,
+      "last_played": "2026-05-28T02:15:00Z",
+      "play_history": [...]
+    }
+  },
+  "totals": {
+    "total_cards_played": 847,
+    "by_titan": {
+      "kronos": 89,
+      "rhea": 76,
+      "hyperion": 82
+    },
+    "by_suit": {
+      "fire": 210,
+      "earth": 195,
+      "water": 230,
+      "air": 212
+    }
+  },
+  "last_updated": "2026-05-28T02:14:00Z"
+}
