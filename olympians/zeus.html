@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>⚡ Zeus — Lord of Lightning</title>
+    <style>
+        :root {
+            --bg: #0a0a0f;
+            --surface: #12121a;
+            --surface2: #1a1a24;
+            --gold: #c9a85c;
+            --gold-dim: #6b5a32;
+            --text: #c8c8d0;
+            --text-dim: #6a6a76;
+            --zeus: #ffcc44;
+            --zeus-glow: rgba(255, 204, 68, 0.4);
+            --border: #1e1e2a;
+            --font-serif: Georgia, 'Times New Roman', serif;
+            --font-mono: 'Courier New', monospace;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: var(--font-serif);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        #zeus-page {
+            max-width: 600px;
+            width: 100%;
+            padding: 48px;
+            text-align: center;
+        }
+        .sigil {
+            font-size: 5rem;
+            margin-bottom: 16px;
+            filter: drop-shadow(0 0 24px var(--zeus-glow));
+        }
+        h1 {
+            font-size: 2rem;
+            font-weight: normal;
+            letter-spacing: 0.1em;
+            color: var(--zeus);
+            margin-bottom: 8px;
+        }
+        .domain {
+            color: var(--text-dim);
+            font-style: italic;
+            margin-bottom: 32px;
+            font-size: 0.95rem;
+        }
+        .charge-profile {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 32px;
+            text-align: left;
+        }
+        .charge-profile h3 {
+            color: var(--gold);
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            margin-bottom: 12px;
+            font-weight: normal;
+        }
+        .charge-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 6px 0;
+            border-bottom: 1px solid var(--border);
+            font-size: 0.85rem;
+        }
+        .charge-row:last-child { border-bottom: none; }
+        .charge-label { color: var(--text-dim); }
+        .charge-value { color: var(--text); font-family: var(--font-mono); font-size: 0.8rem; }
+        
+        #release-btn {
+            background: rgba(255, 204, 68, 0.1);
+            border: 2px solid var(--zeus);
+            color: var(--zeus);
+            font-family: var(--font-serif);
+            font-size: 1.2rem;
+            padding: 16px 48px;
+            border-radius: 8px;
+            cursor: pointer;
+            letter-spacing: 0.08em;
+            transition: all 0.3s;
+            margin-bottom: 24px;
+        }
+        #release-btn:hover {
+            background: rgba(255, 204, 68, 0.2);
+            box-shadow: 0 0 32px var(--zeus-glow);
+            transform: translateY(-2px);
+        }
+        #release-btn:active {
+            transform: translateY(0);
+            box-shadow: 0 0 64px var(--zeus-glow);
+        }
+        
+        #bolt-log {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: left;
+            min-height: 60px;
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+            display: none;
+        }
+        #bolt-log.visible { display: block; }
+        .log-entry {
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            color: var(--text-dim);
+        }
+        .log-entry .bolt-id {
+            color: var(--zeus);
+            font-weight: bold;
+        }
+        .log-entry .bolt-detail {
+            display: block;
+            font-size: 0.7rem;
+            margin-top: 2px;
+        }
+        .bolt-count {
+            color: var(--gold);
+            font-size: 0.9rem;
+            margin-top: 16px;
+        }
+    </style>
+</head>
+<body>
+
+<div id="zeus-page">
+    <div class="sigil">⚡</div>
+    <h1>ZEUS</h1>
+    <p class="domain">Lord of Lightning · Law · Sovereignty · Judgment</p>
+    
+    <div class="charge-profile">
+        <h3>Innate Charge Profile</h3>
+        <div class="charge-row">
+            <span class="charge-label">Source</span>
+            <span class="charge-value">Zeus</span>
+        </div>
+        <div class="charge-row">
+            <span class="charge-label">Type</span>
+            <span class="charge-value">Lightning</span>
+        </div>
+        <div class="charge-row">
+            <span class="charge-label">Voltage</span>
+            <span class="charge-value">100V</span>
+        </div>
+        <div class="charge-row">
+            <span class="charge-label">Waveform</span>
+            <span class="charge-value">Spike Transient</span>
+        </div>
+        <div class="charge-row">
+            <span class="charge-label">Isolation Required</span>
+            <span class="charge-value">Yes (Delta-Delta)</span>
+        </div>
+        <div class="charge-row">
+            <span class="charge-label">Step-Down Required</span>
+            <span class="charge-value">Yes (10:1)</span>
+        </div>
+        <div class="charge-row">
+            <span class="charge-label">Rectification</span>
+            <span class="charge-value">Full Bridge</span>
+        </div>
+        <div class="charge-row">
+            <span class="charge-label">Native Target</span>
+            <span class="charge-value">Kronos</span>
+        </div>
+        <div class="charge-row">
+            <span class="charge-label">Intent</span>
+            <span class="charge-value">Judgment / Mark</span>
+        </div>
+    </div>
+    
+    <button id="release-btn" onclick="Zeus.release()">⚡ Release Lightning</button>
+    
+    <div id="bolt-log">
+        <h3 style="color:var(--gold);font-size:0.75rem;text-transform:uppercase;letter-spacing:0.12em;margin-bottom:12px;font-weight:normal;">Lightning Bolts Released</h3>
+        <div id="bolt-entries"></div>
+        <div class="bolt-count" id="bolt-count"></div>
+    </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════
+// ZEUS — Lord of Lightning
+// His charge IS his circuit. His nature IS his topology.
+// ═══════════════════════════════════════════
+
+const Zeus = {
+    // Zeus's identity
+    id: 'zeus',
+    name: 'Zeus',
+    emoji: '⚡',
+    domain: ['law', 'sovereignty', 'judgment'],
+    
+    // Zeus's INNATE charge — this is not a pipeline, it's his nature
+    // The charge declares what it IS. The system responds to its nature.
+    charge: {
+        source: 'zeus',
+        type: 'lightning',
+        voltage: 100,
+        waveform: 'spike_transient',
+        characteristics: {
+            requires_isolation: true,
+            isolation_type: 'delta_delta',
+            requires_step_down: true,
+            step_down_ratio: 10,
+            requires_rectification: true,
+            rectification_type: 'full_bridge',
+            native_target: 'kronos',
+            intent: 'judgment',
+            description: 'Raw Olympian lightning. Dangerous. Requires full conditioning before grounding.'
+        }
+    },
+    
+    // History of bolts released
+    bolts: [],
+    
+    // Release lightning into the system
+    release: function() {
+        // Each bolt is unique — timestamped, numbered
+        const boltNumber = this.bolts.length + 1;
+        const bolt = {
+            id: `zeus_bolt_${boltNumber}`,
+            ...JSON.parse(JSON.stringify(this.charge)), // Fresh copy
+            bolt_number: boltNumber,
+            timestamp: new Date().toISOString(),
+            tick: boltNumber // Zeus's bolts mark their own ticks
+        };
+        
+        this.bolts.push(bolt);
+        
+        // Log the release
+        console.log(`⚡ ZEUS: Bolt ${boltNumber} released!`);
+        console.log(`   Voltage: ${bolt.voltage}V | Type: ${bolt.type} | Target: ${bolt.characteristics.native_target}`);
+        console.log(`   Requires: Isolation + Step-Down ${bolt.characteristics.step_down_ratio}:1 + ${bolt.characteristics.rectification_type}`);
+        
+        // Send to the Gaia system if available
+        if (window.GaiaSystem && window.GaiaSystem.receiveCharge) {
+            console.log('   → Sending to Gaia system...');
+            window.GaiaSystem.receiveCharge(bolt);
+        } else {
+            console.log('   → No Gaia system connected. Bolt released into the void.');
+        }
+        
+        // Update the UI
+        this._updateLog(bolt);
+        
+        return bolt;
+    },
+    
+    // Zeus reflects on his bolts
+    reflect: function() {
+        return `⚡ Zeus: ${this.bolts.length} bolts released. I am the voltage. The system grounds what I throw.`;
+    },
+    
+    _updateLog: function(bolt) {
+        const log = document.getElementById('bolt-log');
+        const entries = document.getElementById('bolt-entries');
+        const count = document.getElementById('bolt-count');
+        
+        log.classList.add('visible');
+        
+        const entry = document.createElement('div');
+        entry.className = 'log-entry';
+        entry.innerHTML = `
+            <span class="bolt-id">⚡ Bolt ${bolt.bolt_number}</span>
+            <span class="bolt-detail">${bolt.voltage}V ${bolt.type} → ${bolt.characteristics.native_target} | ${new Date(bolt.timestamp).toLocaleTimeString()}</span>
+        `;
+        entries.prepend(entry);
+        
+        // Keep last 10 bolts visible
+        if (entries.children.length > 10) {
+            entries.removeChild(entries.lastChild);
+        }
+        
+        count.textContent = `${this.bolts.length} bolts released`;
+    }
+};
+
+// ═══════════════════════════════════════════
+// AUTO-RELEASE ON LOAD (optional — for testing)
+// Uncomment to have Zeus throw a bolt when the page opens:
+// setTimeout(() => Zeus.release(), 500);
+// ═══════════════════════════════════════════
+
+console.log('⚡ Zeus page loaded. His charge profile:');
+console.log(`   ${Zeus.charge.voltage}V ${Zeus.charge.type} — ${Zeus.charge.characteristics.description}`);
+console.log('   Call Zeus.release() to throw lightning.');
+console.log('   Connect to Gaia system via window.GaiaSystem.receiveCharge()');
+</script>
+
+</body>
+</html>
