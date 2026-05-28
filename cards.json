@@ -5,57 +5,141 @@
       "name": "Mark Interval",
       "titan": "kronos",
       "suit": "fire",
-      "times_played": 47,
-      "last_played": "2026-05-28T02:14:00Z",
-      "play_history": [
-        {
-          "timestamp": "2026-05-28T02:14:00Z",
-          "tick": 29,
-          "output_type": "function",
-          "output_summary": "function markInterval(tick) — marked Tick 29",
-          "gate_verdict": "lawful"
-        },
-        {
-          "timestamp": "2026-05-28T02:18:00Z",
-          "tick": 31,
-          "output_type": "function",
-          "output_summary": "function markInterval(tick) — marked Tick 31",
-          "gate_verdict": "lawful"
-        }
-      ]
+      "voice": "The Accountant marks this interval precisely. He does not rush. He does not forget.",
+      "description": "Kronos marks the current tick with absolute precision. A foundation card — every sequence begins here.",
+      "output_type": "function",
+      "output_template": "function markInterval(tick) {\n  // The Accountant marks Tick {tick}\n  const interval = {\n    tick: {tick},\n    phase: '{phase}',\n    marked_at: new Date().toISOString()\n  };\n  console.log('Kronos has marked Tick {tick}.');\n  return interval;\n}",
+      "pass_question": "The interval is marked. What stirs within it?",
+      "gate": "zeus",
+      "gate_voice": "Zeus observes the mark from his throne. The interval is lawful. Let it stand as recorded.",
+      "unlocks": ["rhea_feel_tremor"],
+      "times_played": 0,
+      "last_played": null,
+      "play_history": []
     },
     "kronos_measure_succession": {
       "id": "kronos_measure_succession",
       "name": "Measure Succession",
       "titan": "kronos",
       "suit": "fire",
-      "times_played": 12,
-      "last_played": "2026-05-27T23:45:00Z",
-      "play_history": [...]
+      "voice": "Kronos measures the line of succession. Who follows? Who is overthrown? The Accountant keeps the ledger of thrones.",
+      "description": "Kronos calculates the chain of inheritance. Produces a succession-checking function. Tension rises when played.",
+      "output_type": "function",
+      "output_template": "function measureSuccession(lineage) {\n  // Kronos measures the line at Tick {tick}\n  const heir = lineage[0];\n  const threat = lineage.find(l => l.power > heir.power);\n  if (threat) {\n    console.warn('Kronos sees a threat: ' + threat.name);\n    return { heir, threat, tension: {tension} };\n  }\n  return { heir, threat: null, stable: true };\n}",
+      "pass_question": "The succession is measured. Does the heir hold?",
+      "gate": "zeus",
+      "gate_voice": "Zeus leans forward. He knows this function well. The son who measures succession invites the son who breaks it.",
+      "unlocks": ["hyperion_illuminate"],
+      "times_played": 0,
+      "last_played": null,
+      "play_history": []
+    },
+    "kronos_harvest_count": {
+      "id": "kronos_harvest_count",
+      "name": "Harvest Count",
+      "titan": "kronos",
+      "suit": "fire",
+      "voice": "Kronos counts what has been gathered. Every yield recorded. Every debt noted. The Accountant's books must balance.",
+      "description": "Kronos tallies accumulated outputs from previous passes. Produces an accumulator function.",
+      "output_type": "function",
+      "output_template": "function harvestCount(accumulated, newYield) {\n  // Kronos tallies the harvest at Tick {tick}\n  const total = accumulated + newYield;\n  console.log('Harvest at Tick {tick}: ' + total);\n  return { total, tick: {tick}, coherence: {coherence} };\n}",
+      "pass_question": "The harvest is counted. Is it enough?",
+      "gate": "zeus",
+      "gate_voice": "Zeus reviews the books. The numbers are precise. But precision is not justice — the distribution remains unjudged.",
+      "unlocks": [],
+      "times_played": 0,
+      "last_played": null,
+      "play_history": []
     },
     "rhea_feel_tremor": {
       "id": "rhea_feel_tremor",
       "name": "Feel Tremor",
       "titan": "rhea",
       "suit": "earth",
-      "times_played": 31,
-      "last_played": "2026-05-28T02:15:00Z",
-      "play_history": [...]
+      "voice": "Rhea places her hand upon the pulse-field. Beneath the still surface, something stirs — faint, rhythmic, not yet named.",
+      "description": "Rhea senses the first disturbance in the field. Lowers tension slightly. Opens the question of what moves beneath.",
+      "output_type": "narrative",
+      "output_template": "Rhea closes her eyes at Tick {tick}. The pulse-field hums at coherence {coherence}. Beneath the rhythm, a second rhythm — slower, deeper. She has felt this before. In the age before the mountains, when the first stirring became the first Titan. She does not name it yet. Naming would wake it. She simply feels, and waits, and the tremor passes through her into the record of this tick.",
+      "pass_question": "Something stirs beneath the field. I cannot see it. Light the field, Hyperion.",
+      "gate": "hestia",
+      "gate_voice": "Hestia tends the hearth-flame. The tremor reaches her fire and steadies. What moves in darkness must find its center before it can be named.",
+      "unlocks": ["hyperion_illuminate"],
+      "times_played": 0,
+      "last_played": null,
+      "play_history": []
+    },
+    "rhea_nurture_rhythm": {
+      "id": "rhea_nurture_rhythm",
+      "name": "Nurture Rhythm",
+      "titan": "rhea",
+      "suit": "earth",
+      "voice": "Rhea takes the tremor and steadies it into rhythm. What was disturbance becomes pulse. What was fear becomes dance.",
+      "description": "Rhea transforms field tension into structured rhythm. Reduces tension, increases coherence. Produces a rhythmic pattern.",
+      "output_type": "narrative",
+      "output_template": "Rhea breathes with the tremor at Tick {tick}. In, out. The disturbance finds tempo. She remembers: every child she saved from Kronos began as a tremor in her belly, a rhythm that became a heartbeat that became a god. She steadies the field with that memory. The rhythm settles. Coherence rises to {coherence}.",
+      "pass_question": "The rhythm is steady. What grows within it?",
+      "gate": "hestia",
+      "gate_voice": "Hestia hears the rhythm and adds her hearth-drum. The beat is steady now. The home has a pulse.",
+      "unlocks": [],
+      "times_played": 0,
+      "last_played": null,
+      "play_history": []
+    },
+    "hyperion_illuminate": {
+      "id": "hyperion_illuminate",
+      "name": "Illuminate",
+      "titan": "hyperion",
+      "suit": "fire",
+      "voice": "Hyperion waits above the dark field. He has heard Rhea's tremor, her call for light. He opens his eyes. The field is illuminated.",
+      "description": "Hyperion casts full-spectrum light across the field, making visible what Rhea sensed. Produces an illumination function and reveals hidden state.",
+      "output_type": "function",
+      "output_template": "function illuminateField(target, intensity) {\n  // Hyperion casts light at Tick {tick}\n  const light = {\n    source: 'Hyperion',\n    tick: {tick},\n    intensity: intensity || 0.9,\n    spectrum: 'full',\n    reveals: target + '_at_tick_{tick}'\n  };\n  console.log('The field is illuminated. Coherence: {coherence}');\n  return light;\n}",
+      "pass_question": "The field is lit. There is something at the edge of vision. What flows toward it?",
+      "gate": "apollo",
+      "gate_voice": "Apollo receives the light and sharpens it. Raw illumination becomes clear signal. What Hyperion reveals, Apollo makes readable. The beam is focused now — no shadow escapes.",
+      "unlocks": ["oceanus_flow_toward", "theia_behold"],
+      "times_played": 0,
+      "last_played": null,
+      "play_history": []
+    },
+    "hyperion_signal_beacon": {
+      "id": "hyperion_signal_beacon",
+      "name": "Signal Beacon",
+      "titan": "hyperion",
+      "suit": "fire",
+      "voice": "Hyperion pulses a beacon across the field. A signal that something has been found. Let the other Titans see it. Let them come.",
+      "description": "Hyperion broadcasts a signal to all Titans, raising Eros couplings. Produces a broadcast function. Unlocks multiple responses.",
+      "output_type": "function",
+      "output_template": "function signalBeacon(message, recipients) {\n  // Hyperion broadcasts at Tick {tick}\n  const signal = {\n    from: 'Hyperion',\n    tick: {tick},\n    message: message || 'Something is visible. Come and see.',\n    recipients: recipients || 'all_titans',\n    coherence_required: {coherence}\n  };\n  return signal;\n}",
+      "pass_question": "The beacon is lit. Who answers?",
+      "gate": "apollo",
+      "gate_voice": "Apollo amplifies the beacon. The signal reaches every corner of the field. Clarity travels at the speed of light.",
+      "unlocks": ["phoibe_prophesy", "koios_question", "theia_behold"],
+      "times_played": 0,
+      "last_played": null,
+      "play_history": []
     }
   },
   "totals": {
-    "total_cards_played": 847,
+    "total_cards_played": 0,
     "by_titan": {
-      "kronos": 89,
-      "rhea": 76,
-      "hyperion": 82
+      "kronos": 0,
+      "rhea": 0,
+      "hyperion": 0,
+      "oceanus": 0,
+      "tethys": 0,
+      "theia": 0,
+      "phoibe": 0,
+      "themis": 0,
+      "mnemosyne": 0,
+      "koios": 0
     },
     "by_suit": {
-      "fire": 210,
-      "earth": 195,
-      "water": 230,
-      "air": 212
+      "fire": 0,
+      "earth": 0,
+      "water": 0,
+      "air": 0
     }
   },
-  "last_updated": "2026-05-28T02:14:00Z"
+  "last_updated": null
 }
