@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GAIA — The Game Table</title>
+    <style>
+        :root {
+            --bg: #0a0a0f;
+            --surface: #12121a;
+            --surface2: #1a1a24;
+            --gold: #c9a85c;
+            --gold-dim: #6b5a32;
+            --text: #c8c8d0;
+            --text-dim: #6a6a76;
+            --air: #aaccff;
+            --air-glow: rgba(170, 204, 255, 0.3);
+            --fire: #ff6644;
+            --fire-glow: rgba(255, 102, 68, 0.3);
+            --water: #44ccff;
+            --water-glow: rgba(68, 204, 255, 0.3);
+            --earth: #88aa44;
+            --earth-glow: rgba(136, 170, 68, 0.3);
+            --border: #1e1e2a;
+            --font-mono: 'Courier New', monospace;
+            --font-serif: Georgia, 'Times New Roman', serif;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: var(--font-serif);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* ── HEADER ── */
+        #header {
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            padding: 12px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        #header h1 {
+            font-size: 1.2rem;
+            font-weight: normal;
+            letter-spacing: 0.15em;
+            color: var(--gold);
+        }
+        #header .tick-display {
+            font-family: var(--font-mono);
+            color: var(--text-dim);
+            font-size: 0.85rem;
+        }
+        #header .tick-display span {
+            color: var(--gold);
+            font-size: 1.1rem;
+        }
+
+        /* ── PIPELINE BAR ── */
+        #pipeline {
+            display: flex;
+            gap: 4px;
+            padding: 8px 16px;
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            overflow-x: auto;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        .titan-node {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            white-space: nowrap;
+            transition: all 0.3s;
+            border: 1px solid transparent;
+            cursor: default;
+        }
+        .titan-node.passed {
+            opacity: 0.5;
+            text-decoration: line-through;
+            text-decoration-color: var(--gold-dim);
+            border-color: var(--border);
+        }
+        .titan-node.active {
+            border-color: var(--gold);
+            box-shadow: 0 0 12px rgba(201, 168, 92, 0.3);
+            animation: pulse-gold 2s infinite;
+        }
+        .titan-node.pending {
+            opacity: 0.6;
+            color: var(--text-dim);
+        }
+        .titan-node .emoji {
+            font-size: 1.2rem;
+        }
+        @keyframes pulse-gold {
+            0%,
+            100% {
+                box-shadow: 0 0 8px rgba(201, 168, 92, 0.2);
+            }
+            50% {
+                box-shadow: 0 0 18px rgba(201, 168, 92, 0.5);
+            }
+        }
+
+        /* ── MAIN GRID ── */
+        #main-grid {
+            display: grid;
+            grid-template-columns: 280px 1fr 280px;
+            gap: 1px;
+            background: var(--border);
+            min-height: calc(100vh - 130px);
+        }
+        @media (max-width: 900px) {
+            #main-grid {
+                grid-template-columns: 1fr;
+                grid-template-rows: auto 1fr auto;
+            }
+        }
+
+        /* ── LEFT: HAND ── */
+        #hand-panel {
+            background: var(--surface);
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            overflow-y: auto;
+        }
+        #hand-panel h3 {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            color: var(--text-dim);
+            margin-bottom: 4px;
+        }
+        #hand-titan-name {
+            color: var(--gold);
+            font-size: 1rem;
+            font-weight: bold;
+        }
+        .hand-card {
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+        }
+        .hand-card:hover {
+            border-color: var(--gold-dim);
+            transform: translateX(4px);
+        }
+        .hand-card.selected {
+            border-color: var(--gold);
+            box-shadow: 0 0 16px rgba(201, 168, 92, 0.25);
+        }
+        .hand-card .card-name {
+            font-weight: bold;
+            font-size: 0.95rem;
+            margin-bottom: 4px;
+        }
+        .hand-card .card-suit {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 10px;
+            margin-bottom: 6px;
+        }
+        .suit-air {
+            color: var(--air);
+            border: 1px solid var(--air);
+        }
+        .suit-fire {
+            color: var(--fire);
+            border: 1px solid var(--fire);
+        }
+        .suit-water {
+            color: var(--water);
+            border: 1px solid var(--water);
+        }
+        .suit-earth {
+            color: var(--earth);
+            border: 1px solid var(--earth);
+        }
+        .hand-card .card-desc {
+            font-size: 0.75rem;
+            color: var(--text-dim);
+        }
+        #hand-controls {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        #hand-controls button {
+            flex: 1;
+            min-width: 70px;
+        }
+
+        /* ── CENTER: PLAY AREA ── */
+        #play-area {
+            background: var(--bg);
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            overflow-y: auto;
+        }
+        #active-card {
+            background: var(--surface);
+            border: 2px solid var(--gold-dim);
+            border-radius: 16px;
+            padding: 32px;
+            max-width: 500px;
+            width: 100%;
+            text-align: center;
+            transition: all 0.5s;
+        }
+        #active-card.playing {
+            border-color: var(--gold);
+            box-shadow: 0 0 32px rgba(201, 168, 92, 0.3);
+            animation: card-slam 0.4s ease-out;
+        }
+        @keyframes card-slam {
+            0% {
+                transform: scale(1.08);
+                opacity: 0.7;
+            }
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+        #active-card .card-titan {
+            font-size: 2rem;
+            margin-bottom: 8px;
+        }
+        #active-card .card-name-lg {
+            font-size: 1.6rem;
+            font-weight: bold;
+            color: var(--gold);
+            letter-spacing: 0.05em;
+            margin-bottom: 8px;
+        }
+        #active-card .card-suit-lg {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            margin-bottom: 16px;
+        }
+        #active-card .card-voice {
+            font-style: italic;
+            color: var(--text);
+            margin-bottom: 20px;
+            line-height: 1.5;
+            font-size: 0.95rem;
+        }
+        #active-card .card-output {
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 16px;
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+            text-align: left;
+            max-height: 200px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            color: var(--text);
+        }
+        #gate-response {
+            margin-top: 16px;
+            padding: 12px 16px;
+            background: rgba(201, 168, 92, 0.08);
+            border-left: 3px solid var(--gold);
+            border-radius: 0 8px 8px 0;
+            font-style: italic;
+            color: var(--gold);
+            font-size: 0.9rem;
+            display: none;
+        }
+        #gate-response.visible {
+            display: block;
+        }
+        #no-card-message {
+            color: var(--text-dim);
+            font-style: italic;
+            text-align: center;
+        }
+
+        /* ── RIGHT: CHRONICLE ── */
+        #chronicle-panel {
+            background: var(--surface);
+            padding: 16px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        #chronicle-panel h3 {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            color: var(--text-dim);
+            margin-bottom: 4px;
+        }
+        .chronicle-entry {
+            font-size: 0.78rem;
+            padding: 8px;
+            border-radius: 6px;
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            line-height: 1.4;
+        }
+        .chronicle-entry .ce-titan {
+            margin-right: 4px;
+        }
+        .chronicle-entry .ce-card {
+            color: var(--gold);
+            font-weight: bold;
+        }
+        .chronicle-entry .ce-summary {
+            color: var(--text-dim);
+            display: block;
+            margin-top: 2px;
+        }
+        .chronicle-entry .ce-tick {
+            font-family: var(--font-mono);
+            font-size: 0.65rem;
+            color: var(--text-dim);
+            float: right;
+        }
+
+        /* ── BOTTOM BAR ── */
+        #field-bar {
+            background: var(--surface);
+            border-top: 1px solid var(--border);
+            padding: 10px 24px;
+            display: flex;
+            gap: 24px;
+            align-items: center;
+            flex-wrap: wrap;
+            font-size: 0.78rem;
+            font-family: var(--font-mono);
+        }
+        .field-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .field-label {
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            font-size: 0.65rem;
+        }
+        .field-value {
+            color: var(--gold);
+        }
+        .coherence-bar {
+            width: 80px;
+            height: 6px;
+            background: var(--surface2);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+        .coherence-fill {
+            height: 100%;
+            background: var(--gold);
+            border-radius: 3px;
+            transition: width 0.5s;
+        }
+
+        /* ── CONTROLS ── */
+        #controls-bar {
+            background: var(--surface);
+            border-top: 1px solid var(--border);
+            padding: 10px 24px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        button {
+            background: var(--surface2);
+            color: var(--text);
+            border: 1px solid var(--border);
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-family: var(--font-serif);
+            font-size: 0.85rem;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+        button:hover {
+            border-color: var(--gold-dim);
+            color: var(--gold);
+        }
+        button.primary {
+            background: rgba(201, 168, 92, 0.15);
+            border-color: var(--gold-dim);
+            color: var(--gold);
+        }
+        button.primary:hover {
+            background: rgba(201, 168, 92, 0.25);
+            border-color: var(--gold);
+        }
+        button.danger {
+            border-color: rgba(255, 80, 60, 0.3);
+            color: #cc5544;
+        }
+        button.danger:hover {
+            border-color: rgba(255, 80, 60, 0.6);
+        }
+        button:disabled {
+            opacity: 0.35;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+        select {
+            background: var(--surface2);
+            color: var(--text);
+            border: 1px solid var(--border);
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-family: var(--font-serif);
+            font-size: 0.85rem;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- HEADER -->
+    <div id="header">
+        <h1>✦ ΓΑΙΑ — THE GAME TABLE</h1>
+        <div class="tick-display">
+            Tick <span id="tick-number">—</span> ·
+            Band <span id="band-name">—</span> ·
+            <span id="chronicle-count">0</span> cards played
+        </div>
+    </div>
+
+    <!-- PIPELINE -->
+    <div id="pipeline"></div>
+
+    <!-- MAIN GRID -->
+    <div id="main-grid">
+        <!-- LEFT: HAND -->
+        <div id="hand-panel">
+            <h3>Hand · <span id="hand-titan-name">—</span></h3>
+            <div id="hand-cards"></div>
+            <div id="hand-controls">
+                <button class="primary" id="btn-play" disabled onclick="playSelectedCard()">▶ Play</button>
+                <button id="btn-draw" onclick="drawHand()">Draw</button>
+                <button id="btn-pass" onclick="autoPlay()">Pass ↻</button>
+                <button class="danger" id="btn-veto" disabled onclick="vetoCard()">✕ Veto</button>
+            </div>
+        </div>
+
+        <!-- CENTER: PLAY AREA -->
+        <div id="play-area">
+            <div id="active-card">
+                <div id="no-card-message">The table awaits the first card.</div>
+            </div>
+            <div id="gate-response"></div>
+        </div>
+
+        <!-- RIGHT: CHRONICLE -->
+        <div id="chronicle-panel">
+            <h3>Chronicle</h3>
+            <div id="chronicle-entries"></div>
+        </div>
+    </div>
+
+    <!-- FIELD STATE BAR -->
+    <div id="field-bar">
+        <div class="field-item">
+            <span class="field-label">Coherence</span>
+            <div class="coherence-bar"><div class="coherence-fill" id="coherence-fill" style="width:0%"></div></div>
+            <span class="field-value" id="coherence-val">—</span>
+        </div>
+        <div class="field-item">
+            <span class="field-label">Phase</span>
+            <span class="field-value" id="phase-val">—</span>
+        </div>
+        <div class="field-item">
+            <span class="field-label">Tension</span>
+            <span class="field-value" id="tension-val">—</span>
+        </div>
+        <div class="field-item">
+            <span class="field-label">Eros K</span>
+            <span class="field-value" id="eros-k-val">—</span>
+        </div>
+    </div>
+
+    <!-- CONTROLS -->
+    <div id="controls-bar">
+        <button id="btn-next-titan" class="primary" onclick="advancePipeline()">Next Titan →</button>
+        <button onclick="runFullPass()">Run Full Pass</button>
+        <button onclick="resetTable()">Reset Table</button>
+        <label style="margin-left:12px;color:var(--text-dim);font-size:0.8rem;">
+            Invoke Olympian:
+            <select id="olympian-select" onchange="invokeOlympian()">
+                <option value="">—</option>
+                <option value="zeus">Zeus ⚡</option>
+                <option value="hera">Hera 👑</option>
+                <option value="athena">Athena 🦉</option>
+                <option value="apollo">Apollo ☀️</option>
+                <option value="aphrodite">Aphrodite 💗</option>
+                <option value="hephaestus">Hephaestus 🔨</option>
+                <option value="hermes">Hermes 🪄</option>
+                <option value="artemis">Artemis 🏹</option>
+                <option value="ares">Ares ⚔️</option>
+                <option value="demeter">Demeter 🌾</option>
+                <option value="dionysus">Dionysus 🍇</option>
+                <option value="hestia">Hestia 🔥</option>
+            </select>
+        </label>
+    </div>
+
+    <script src="playCards.js"></script>
+</body>
+</html>
