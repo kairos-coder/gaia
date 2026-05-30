@@ -32,7 +32,7 @@
   <div class="endpoint">?view=status — Current sovereignty level and domain health</div>
   <div class="endpoint">?view=precedents&context=SYSTEM — Prior relevant judgments</div>
 
-  <pre id="output">Loading Zeus domain...</pre>
+  <pre id="output">{}</pre>
 
   <script>
     const ZEUS = {
@@ -43,30 +43,25 @@
       sovereignty_level: 1.0,
       judgments: [],
 
-      // Render a binding judgment
       judge: function(context, action) {
         const judgment = {
           olympian: 'zeus',
           operation: 'judge',
-          context,
-          action,
+          context, action,
           timestamp: new Date().toISOString(),
-          verdict: this._determineVerdict(context, action),
+          verdict: this._determineVerdict(action),
           sovereignty_score: this.sovereignty_level,
           precedent_cited: this._findPrecedent(context),
           binding: true,
           appeal_window: '24 ticks'
         };
-        
         this.judgments.push(judgment);
         return judgment;
       },
 
-      _determineVerdict: function(context, action) {
-        // Core sovereignty logic
+      _determineVerdict: function(action) {
         const lawfulActions = ['mark_interval', 'measure_succession', 'illuminate', 'nourish', 'record', 'bind'];
         const chaosActions = ['overthrow', 'usurp', 'sever', 'dissolve'];
-        
         if (chaosActions.includes(action)) return 'overruled';
         if (lawfulActions.includes(action)) return 'lawful';
         return 'acknowledged';
@@ -74,8 +69,7 @@
 
       _findPrecedent: function(context) {
         const past = this.judgments.filter(j => j.context === context);
-        if (past.length > 0) return past[past.length - 1].verdict;
-        return 'first_of_kind';
+        return past.length > 0 ? past[past.length - 1].verdict : 'first_of_kind';
       },
 
       getStatus: function() {
@@ -93,25 +87,25 @@
       }
     };
 
-    async function queryTitanMemory(queries) {
-      const results = {};
-      for (const q of queries) {
-        try {
-          const url = `../titans/${q.titan}/api.html?view=events&type=${q.type}&limit=5`;
-          const resp = await fetch(url);
-          if (resp.ok) {
-            const text = await resp.text();
-            // Extract JSON from the HTML response (Titan API returns JSON in <pre>)
-            const match = text.match(/<pre[^>]*id="output"[^>]*>([\s\S]*?)<\/pre>/);
-            if (match) {
-              results[`${q.titan}_${q.type}`] = JSON.parse(match[1]);
-            }
+    // ─── Fetch JSON from an api.html page ─────────────────────────────
+    async function fetchAPI(url) {
+      try {
+        const resp = await fetch(url);
+        if (!resp.ok) return { error: `HTTP ${resp.status}` };
+        const html = await resp.text();
+        const match = html.match(/<pre[^>]*id="output"[^>]*>([\s\S]*?)<\/pre>/);
+        if (match) {
+          const raw = match[1].trim();
+          // Only parse if it looks like JSON
+          if (raw.startsWith('{') || raw.startsWith('[')) {
+            return JSON.parse(raw);
           }
-        } catch(e) {
-          results[`${q.titan}_${q.type}`] = { error: e.message };
+          return { error: 'Response not JSON', raw: raw.substring(0, 100) };
         }
+        return { error: 'Could not find output element' };
+      } catch(e) {
+        return { error: e.message };
       }
-      return results;
     }
 
     async function handleRequest() {
@@ -124,20 +118,26 @@
 
       if (view === 'judge') {
         if (!context || !action) {
-          result = { error: 'judge requires ?context=X&action=Y', example: '?view=judge&context=charge_grounding&action=mark_interval' };
+          result = { error: 'judge requires ?context=X&action=Y' };
         } else {
-          // Query Titan memory for context
-          const titanQueries = [
-            { titan: 'kronos', type: 'judge' },
-            { titan: 'themis', type: 'binding' }
-          ];
-          const titanMemory = await queryTitanMemory(titanQueries);
+          // Validate through Kronos gatekeeper
+          const validation = await fetchAPI(`../titans/kronos/api.html?view=validate&olympian=zeus&operation=judge`);
+          
+          // Get prior ledger context
+          const ledger = await fetchAPI(`../titans/kronos/api.html?view=ledger&type=judge&limit=5`);
           
           // Render judgment
           const judgment = ZEUS.judge(context, action);
+          
+          // Route through Kronos gatekeeper
+          const outputStr = encodeURIComponent(JSON.stringify(judgment));
+          const routing = await fetchAPI(`../titans/kronos/api.html?view=route&olympian=zeus&operation=judge&output=${outputStr}`);
+          
           result = {
             ...judgment,
-            titan_context: titanMemory
+            gatekeeper_validation: validation,
+            ledger_context: ledger,
+            memory_routing: routing
           };
         }
       } else if (view === 'status') {
@@ -147,8 +147,7 @@
           result = { error: 'precedents requires ?context=X' };
         } else {
           result = {
-            olympian: 'zeus',
-            context,
+            olympian: 'zeus', context,
             precedents: ZEUS.getPrecedents(context),
             count: ZEUS.getPrecedents(context).length
           };
