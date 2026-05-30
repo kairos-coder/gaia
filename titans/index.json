@@ -1,0 +1,23 @@
+{
+  "registry_version": "1.0",
+  "last_updated": "2026-05-30",
+  "pipeline_order": [
+    "kronos", "rhea", "hyperion", "oceanus", "tethys",
+    "theia", "phoibe", "themis", "mnemosyne", "koios",
+    "iapetos", "kreios"
+  ],
+  "titans": {
+    "kronos": { "name": "Kronos", "emoji": "⏳", "title": "The Accountant", "domain": "time_memory_ledger", "suit": "fire", "gate": "zeus", "has_gatekeeper": true, "folder": "kronos/", "files": ["identity.js", "index.json", "memory.json", "remember.js", "gatekeeper.js"] },
+    "rhea": { "name": "Rhea", "emoji": "🌊", "title": "The Flowing One", "domain": "rhythm_registry", "suit": "earth", "gate": "hestia", "has_gatekeeper": false, "folder": "rhea/", "files": ["identity.js", "index.json", "memory.json", "remember.js"] },
+    "hyperion": { "name": "Hyperion", "emoji": "🔆", "title": "The Watcher Above", "domain": "illumination_index", "suit": "fire", "gate": "apollo", "has_gatekeeper": false, "folder": "hyperion/", "files": ["identity.js", "index.json", "memory.json", "remember.js"] },
+    "oceanus": { "name": "Oceanus", "emoji": "🌀", "title": "The Encircling River", "domain": "flow_network", "suit": "water", "gate": "dionysus", "has_gatekeeper": false, "folder": "oceanus/", "files": ["identity.js", "index.json", "memory.json", "remember.js"] },
+    "tethys": { "name": "Tethys", "emoji": "💧", "title": "The Nourisher", "domain": "nourishment_log", "suit": "water", "gate": "demeter", "has_gatekeeper": false, "folder": "tethys/", "files": ["identity.js", "index.json", "memory.json", "remember.js"] },
+    "theia": { "name": "Theia", "emoji": "👁️", "title": "The Clear-Seeing", "domain": "vision_record", "suit": "water", "gate": "aphrodite", "has_gatekeeper": false, "folder": "theia/", "files": ["identity.js", "index.json", "memory.json", "remember.js"] },
+    "phoibe": { "name": "Phoibe", "emoji": "🔮", "title": "The Oracle", "domain": "prophecy_archive", "suit": "air", "gate": "hermes", "has_gatekeeper": false, "folder": "phoibe/", "files": ["identity.js", "index.json", "memory.json", "remember.js"] },
+    "themis": { "name": "Themis", "emoji": "⚖️", "title": "The Lawgiver", "domain": "law_registry", "suit": "earth", "gate": "artemis", "has_gatekeeper": false, "folder": "themis/", "files": ["identity.js", "index.json", "memory.json", "remember.js"] },
+    "mnemosyne": { "name": "Mnemosyne", "emoji": "📜", "title": "The Rememberer", "domain": "narrative_chronicle", "suit": "air", "gate": "hera", "has_gatekeeper": false, "folder": "mnemosyne/", "files": ["identity.js", "index.json", "memory.json", "remember.js"] },
+    "koios": { "name": "Koios", "emoji": "⚗️", "title": "The Questioner", "domain": "question_index", "suit": "air", "gate": "athena", "has_gatekeeper": false, "folder": "koios/", "files": ["identity.js", "index.json", "memory.json", "remember.js"] },
+    "iapetos": { "name": "Iapetos", "emoji": "💀", "title": "The Piercer", "domain": "mortality_log", "suit": "earth", "gate": "ares", "has_gatekeeper": false, "folder": "iapetos/", "files": ["identity.js", "index.json", "memory.json", "remember.js"] },
+    "kreios": { "name": "Kreios", "emoji": "🏛️", "title": "The Pillar", "domain": "structure_index", "suit": "earth", "gate": "hephaestus", "has_gatekeeper": false, "folder": "kreios/", "files": ["identity.js", "index.json", "memory.json", "remember.js"] }
+  }
+}
