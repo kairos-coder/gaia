@@ -3,7 +3,7 @@
  * TITANS — Pre-Olympian Registry
  * titans/index.js
  *
- * The Monastic Order of the Phase-Locked Field
+ * The Order of Olympus
  * Founded May 18, 2026
  * ═══════════════════════════════════════════════════════
  */
