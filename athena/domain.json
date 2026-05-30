@@ -1,0 +1,77 @@
+{
+  "olympian": "athena",
+  "emoji": "🦉",
+  "domain": ["wisdom", "strategy", "archive", "ideas"],
+  "title": "Goddess of Wisdom · Curator of the Idea Archive",
+  
+  "vocabulary": [
+    "idea", "thesis", "novelty", "generative_value", "lineage",
+    "carry_forward", "domain_tags", "session_id", "agent", "type",
+    "brief", "summarize", "context"
+  ],
+  
+  "query_patterns": {
+    "brief": {
+      "params": ["tags"],
+      "returns": "Top 5 carry-forward ideas for given domain tags, with novelty ≥ 3",
+      "example": "?view=brief&tags=GAIA,MVDI"
+    },
+    "summarize": {
+      "params": ["tags"],
+      "returns": "Plain-language ACC-ready briefing string for pasting into agent context",
+      "example": "?view=summarize&tags=mythology"
+    },
+    "search": {
+      "params": ["query", "novelty_min", "agent"],
+      "returns": "Filtered ideas matching search across thesis, generative_value, and tags",
+      "example": "?view=search&query=Titan&novelty_min=4"
+    },
+    "sessions": {
+      "params": ["agent"],
+      "returns": "All archived sessions with metadata and idea counts",
+      "example": "?view=sessions&agent=DS"
+    }
+  },
+  
+  "titan_memory_queries": {
+    "brief": [
+      { "titan": "koios", "type": "question" },
+      { "titan": "mnemosyne", "type": "record" }
+    ],
+    "summarize": [
+      { "titan": "mnemosyne", "type": "weave" }
+    ],
+    "search": [
+      { "titan": "kronos", "type": "hermes_routing" }
+    ]
+  },
+  
+  "translations": {
+    "zeus": { "idea": "petition", "thesis": "argument", "novelty": "precedent_weight", "generative_value": "sovereignty_impact", "lineage": "jurisprudence", "carry_forward": "binding" },
+    "hephaestus": { "idea": "blueprint", "thesis": "specification", "novelty": "innovation_grade", "generative_value": "forge_potential", "lineage": "provenance", "carry_forward": "forge_priority" },
+    "apollo": { "idea": "insight", "thesis": "proposition", "novelty": "clarity_grade", "generative_value": "illumination_potential", "lineage": "prophetic_line", "carry_forward": "signal_strength" },
+    "gaia": { "idea": "seed", "thesis": "pattern", "novelty": "emergence_grade", "generative_value": "growth_potential", "lineage": "memory_line", "carry_forward": "grounding_priority" }
+  },
+  
+  "data_source": {
+    "type": "cross_repo_api",
+    "archive_api": "https://kairos-coder.github.io/athena/archive/api.html",
+    "curator": "athena/archive/curator.js",
+    "discovery": "GitHub Contents API — dynamic discovery of extraction JSONs"
+  },
+  
+  "current_state": {
+    "total_sessions": 6,
+    "total_ideas": 30,
+    "carry_forward_count": 29,
+    "last_updated": "052926"
+  },
+  
+  "integration": {
+    "page": "gaia/athena/index.html",
+    "api_endpoint": "gaia/athena/api.html",
+    "external_archive": "kairos-coder.github.io/athena/archive/",
+    "titan_gate": "kronos",
+    "purpose": "Curates the system's accumulated ideas — what do we already know about this domain?"
+  }
+}
