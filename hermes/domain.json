@@ -1,0 +1,63 @@
+{
+  "olympian": "hermes",
+  "emoji": "🪄",
+  "domain": ["translation", "message_routing", "memory_ingestion", "cross_domain_conduit"],
+  "title": "Messenger of the Gods · Cross-Domain Conduit",
+  
+  "vocabulary": [
+    "translate", "route", "deliver", "fidelity", "message",
+    "from_domain", "to_domain", "translation_map", "passthrough"
+  ],
+  
+  "query_patterns": {
+    "routes": {
+      "params": [],
+      "returns": "All available Olympian→Titan memory routes",
+      "example": "?view=routes"
+    },
+    "translate": {
+      "params": ["message", "from", "to"],
+      "returns": "Translated message with fidelity score",
+      "example": "?view=translate&message={JSON}&from=zeus&to=athena"
+    },
+    "route": {
+      "params": ["olympian", "operation", "output"],
+      "returns": "Delivery confirmation — routes output to all relevant Titan memory domains",
+      "example": "?view=route&olympian=zeus&operation=judge&output={JSON}"
+    },
+    "delivery": {
+      "params": ["titan"],
+      "returns": "Delivery stats for a specific Titan's memory",
+      "example": "?view=delivery&titan=kronos"
+    }
+  },
+  
+  "titan_memory_routes": [],
+  
+  "translation_maps": {
+    "built_in": "Hermes reads each Olympian's domain.json translations field at runtime",
+    "passthrough_fidelity": 0.7,
+    "note": "Translation maps are defined in each Olympian's domain.json, not in Hermes. Hermes reads and applies them."
+  },
+  
+  "memory_ingestion": {
+    "method": "localStorage",
+    "key_pattern": "{titan_id}_memory",
+    "future": "Supabase GaiaDB sync",
+    "note": "Each Titan's memory is stored in localStorage under their ID. Kronos also receives a copy of every routing event as the master ledger."
+  },
+  
+  "current_state": {
+    "domains_loaded": 0,
+    "routes_available": 0,
+    "total_deliveries": 0,
+    "last_delivery": null
+  },
+  
+  "integration": {
+    "page": "gaia/hermes/index.html",
+    "api_endpoint": "gaia/hermes/api.html",
+    "engine": "translator.js (inline in api.html)",
+    "purpose": "Critical plumbing — without Hermes, Olympians cannot write to Titan memory"
+  }
+}
