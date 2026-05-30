@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Titan Memory · API</title>
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Cinzel:wght@400;600;900&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --steel: #8a9bb0; --steel-dim: #4a5a6a; --steel-bright: #c8d8e8;
+      --void: #07090c; --void-surface: #141b22; --void-raised: #1a2330;
+      --accent: #c9a85c; --accent-dim: #6b5a32;
+      --text: #c0ccd8; --text-dim: #6a7a8a;
+      --border: rgba(138,155,176,0.15); --border-bright: rgba(138,155,176,0.35);
+      --green: #6abf8a; --red: #c85050;
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      background: var(--void); color: var(--text);
+      font-family: 'DM Sans', sans-serif; font-weight: 300;
+      min-height: 100vh; display: grid; grid-template-rows: auto 1fr auto;
+    }
+    body::before {
+      content:''; position:fixed; inset:0;
+      background-image:
+        linear-gradient(rgba(138,155,176,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(138,155,176,0.03) 1px, transparent 1px);
+      background-size: 40px 40px; pointer-events:none; z-index:0;
+    }
+    header {
+      position:relative; z-index:10; border-bottom:1px solid var(--border);
+      padding:0 2rem; display:flex; align-items:center; justify-content:space-between;
+      height:56px;
+    }
+    .breadcrumb { font-family:'Share Tech Mono',monospace; font-size:0.62rem; color:var(--text-dim); letter-spacing:0.12em; text-transform:uppercase; }
+    .breadcrumb a { color:var(--steel); text-decoration:none; }
+    .breadcrumb a:hover { color:var(--steel-bright); }
+    .header-tag { font-family:'Share Tech Mono',monospace; font-size:0.6rem; color:var(--accent-dim); letter-spacing:0.1em; border:1px solid var(--accent-dim); padding:3px 8px; }
+    
+    .layout { position:relative; z-index:5; display:grid; grid-template-columns:340px 1fr; min-height:0; }
+    
+    .controls {
+      border-right:1px solid var(--border); padding:1.5rem;
+      display:flex; flex-direction:column; gap:1.25rem; overflow-y:auto;
+    }
+    .panel-title { font-family:'Cinzel',serif; font-size:1.3rem; font-weight:900; color:var(--steel-bright); letter-spacing:0.05em; }
+    .panel-title span { color:var(--accent); }
+    .panel-desc { font-family:'Share Tech Mono',monospace; font-size:0.6rem; color:var(--text-dim); letter-spacing:0.1em; line-height:1.6; }
+    
+    .section-label {
+      font-family:'Share Tech Mono',monospace; font-size:0.58rem; color:var(--text-dim);
+      letter-spacing:0.2em; text-transform:uppercase; padding-bottom:0.4rem;
+      border-bottom:1px solid var(--border); margin-bottom:0.5rem;
+    }
+    
+    .btn-group { display:flex; flex-direction:column; gap:0.25rem; }
+    .ctrl-btn {
+      background:none; border:1px solid transparent; color:var(--text-dim);
+      font-family:'Share Tech Mono',monospace; font-size:0.65rem;
+      letter-spacing:0.08em; padding:0.4rem 0.6rem; text-align:left;
+      cursor:pointer; transition:all 0.15s;
+    }
+    .ctrl-btn:hover { color:var(--steel-bright); border-color:var(--border); background:var(--void-surface); }
+    .ctrl-btn.active { color:var(--accent); border-color:var(--accent-dim); background:rgba(201,168,92,0.05); }
+    
+    select, input {
+      width:100%; background:var(--void-surface); border:1px solid var(--border);
+      color:var(--text); font-family:'Share Tech Mono',monospace;
+      font-size:0.65rem; padding:0.45rem 0.6rem; outline:none;
+    }
+    select:focus, input:focus { border-color:var(--steel-dim); }
+    
+    .run-btn {
+      width:100%; background:rgba(201,168,92,0.08); border:1px solid var(--accent-dim);
+      color:var(--accent); font-family:'Share Tech Mono',monospace;
+      font-size:0.7rem; letter-spacing:0.2em; text-transform:uppercase;
+      padding:0.65rem; cursor:pointer; transition:all 0.2s;
+    }
+    .run-btn:hover { background:rgba(201,168,92,0.15); border-color:var(--accent); }
+    
+    .status-line {
+      font-family:'Share Tech Mono',monospace; font-size:0.58rem;
+      letter-spacing:0.1em; padding:0.4rem 0.6rem; border:1px solid var(--border);
+    }
+    .status-line.ok { color:var(--green); border-color:rgba(106,191,138,0.3); background:rgba(106,191,138,0.05); }
+    .status-line.info { color:var(--text-dim); }
+    
+    .output-panel { display:flex; flex-direction:column; overflow:hidden; }
+    .output-header {
+      display:flex; align-items:center; justify-content:space-between;
+      padding:0.6rem 1.5rem; border-bottom:1px solid var(--border); flex-shrink:0;
+    }
+    .output-meta { font-family:'Share Tech Mono',monospace; font-size:0.6rem; color:var(--text-dim); letter-spacing:0.1em; }
+    .output-meta span { color:var(--accent); }
+    .output-actions { display:flex; gap:0.4rem; }
+    .action-btn {
+      background:none; border:1px solid var(--border); color:var(--text-dim);
+      font-family:'Share Tech Mono',monospace; font-size:0.55rem;
+      letter-spacing:0.1em; padding:0.3rem 0.6rem; cursor:pointer;
+    }
+    .action-btn:hover { color:var(--steel-bright); border-color:var(--border-bright); }
+    
+    .output-body { flex:1; overflow-y:auto; padding:1.5rem; }
+    pre { font-family:'Share Tech Mono',monospace; font-size:0.68rem; line-height:1.6; color:var(--text); white-space:pre-wrap; }
+    .j-key { color:var(--steel); }
+    .j-str { color:var(--green); }
+    .j-num { color:var(--accent); }
+    .j-bool { color:#bf8a6a; }
+    
+    .idle-block {
+      display:flex; flex-direction:column; align-items:center;
+      justify-content:center; padding:4rem; gap:0.75rem; text-align:center;
+    }
+    .idle-glyph { font-size:2.5rem; }
+    .idle-text { font-family:'Share Tech Mono',monospace; font-size:0.6rem; color:var(--text-dim); letter-spacing:0.12em; }
+    
+    footer {
+      position:relative; z-index:5; border-top:1px solid var(--border);
+      padding:1rem 2rem; display:flex; align-items:center; justify-content:space-between;
+    }
+    .footer-text { font-family:'Share Tech Mono',monospace; font-size:0.58rem; color:var(--text-dim); letter-spacing:0.1em; }
+    
+    @media(max-width:768px){ .layout { grid-template-columns:1fr; } .controls { border-right:none; border-bottom:1px solid var(--border); } }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="breadcrumb">
+    <a href="https://kairos-coder.github.io/gaia">GAIA</a> &nbsp;/&nbsp;
+    <a href="https://kairos-coder.github.io/gaia/titans">Titans</a> &nbsp;/&nbsp; API
+  </div>
+  <div class="header-tag">TITAN MEMORY · API</div>
+</header>
+
+<div class="layout">
+
+  <aside class="controls">
+    <div>
+      <div class="panel-title">Titan <span>API</span></div>
+      <div style="margin-top:0.4rem" class="panel-desc">Machine-readable memory queries.<br>Query any Titan's accumulated memory.</div>
+    </div>
+
+    <div>
+      <div class="section-label">View Mode</div>
+      <div class="btn-group">
+        <button class="ctrl-btn active" data-view="all">All Titans (registry + stats)</button>
+        <button class="ctrl-btn" data-view="pipeline">Pipeline Order</button>
+        <button class="ctrl-btn" data-view="titan">Single Titan Memory</button>
+      </div>
+    </div>
+
+    <div id="titanSelectGroup">
+      <div class="section-label">Titan</div>
+      <select id="titanSelect">
+        <option value="kronos">⏳ Kronos — Time & Ledger</option>
+        <option value="rhea">🌊 Rhea — Rhythm & Tremors</option>
+        <option value="hyperion">🔆 Hyperion — Light & Illumination</option>
+        <option value="oceanus">🌀 Oceanus — Flow & Connections</option>
+        <option value="tethys">💧 Tethys — Nourishment & Purification</option>
+        <option value="theia">👁️ Theia — Sight & Vision</option>
+        <option value="phoibe">🔮 Phoibe — Prophecy & Naming</option>
+        <option value="themis">⚖️ Themis — Law & Binding</option>
+        <option value="mnemosyne">📜 Mnemosyne — Memory & Narrative</option>
+        <option value="koios">⚗️ Koios — Intellect & Questioning</option>
+        <option value="iapetos">💀 Iapetos — Mortality & Consequence</option>
+        <option value="kreios">🏛️ Kreios — Architecture & Structure</option>
+      </select>
+    </div>
+
+    <div>
+      <div class="section-label">Query Type (optional)</div>
+      <input type="text" id="queryType" placeholder="e.g. disturbance, illumination, prophecy..." />
+    </div>
+
+    <div>
+      <div class="section-label">Limit</div>
+      <select id="limitSelect">
+        <option value="10">10 results</option>
+        <option value="25">25 results</option>
+        <option value="50">50 results</option>
+        <option value="100">100 results</option>
+      </select>
+    </div>
+
+    <div class="status-line info" id="statusLine">Registry loaded. Ready.</div>
+
+    <button class="run-btn" onclick="runQuery()">▶ &nbsp; Query Memory</button>
+  </aside>
+
+  <section class="output-panel">
+    <div class="output-header">
+      <div class="output-meta">Results: <span id="resultCount">—</span></div>
+      <div class="output-actions">
+        <button class="action-btn" onclick="copyOutput()">Copy JSON</button>
+      </div>
+    </div>
+    <div class="output-body" id="outputBody">
+      <div class="idle-block">
+        <div class="idle-glyph">⏳</div>
+        <div class="idle-text">Select a query and run.<br>Results return as JSON.</div>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  <div class="footer-text">TITAN MEMORY API · kairos-coder.github.io/gaia/titans/api.html</div>
+  <div class="footer-text">12 Domain-Specific Memory Indexes · Machine-Readable</div>
+</footer>
+
+<script>
+  let REGISTRY = null;
+  let lastOutput = null;
+  let params = { view: 'all', titan: 'kronos', queryType: '', limit: 10 };
+
+  async function boot() {
+    try {
+      const resp = await fetch('index.json');
+      REGISTRY = await resp.json();
+      document.getElementById('statusLine').textContent = `Registry loaded. ${REGISTRY.pipeline_order.length} Titans.`;
+      document.getElementById('statusLine').className = 'status-line ok';
+    } catch(e) {
+      document.getElementById('statusLine').textContent = 'Registry load failed.';
+      document.getElementById('statusLine').className = 'status-line err';
+    }
+  }
+
+  window.runQuery = async function() {
+    if (!REGISTRY) return;
+
+    if (params.view === 'all') {
+      lastOutput = REGISTRY;
+    } else if (params.view === 'pipeline') {
+      lastOutput = { pipeline: REGISTRY.pipeline_order, titans: REGISTRY.pipeline_order.map(id => ({ id, ...REGISTRY.titans[id] })) };
+    } else if (params.view === 'titan') {
+      const titan = REGISTRY.titans[params.titan];
+      if (!titan) { lastOutput = { error: `Titan "${params.titan}" not found in registry` }; }
+      else {
+        try {
+          const resp = await fetch(`${titan.folder}index.json`);
+          if (resp.ok) {
+            const data = await resp.json();
+            let result = { titan: params.titan, ...titan, memory: data };
+            
+            // Filter by query type if specified
+            if (params.queryType) {
+              const events = data.ledger || data.registry || data.index || data.flows || 
+                            data.log || data.visions || data.prophecies || data.laws || 
+                            data.narratives || data.questions || data.endings || data.structures || [];
+              result.filtered_events = events.filter(e => e.type === params.queryType).slice(0, params.limit);
+              result.filtered_count = result.filtered_events.length;
+            }
+            
+            lastOutput = result;
+          } else {
+            lastOutput = { error: `Could not load memory for ${params.titan}`, titan: params.titan };
+          }
+        } catch(e) {
+          lastOutput = { error: `Failed to fetch ${titan.folder}index.json: ${e.message}` };
+        }
+      }
+    }
+
+    renderOutput(lastOutput);
+    document.getElementById('resultCount').textContent = 
+      lastOutput.error ? 'Error' : 
+      lastOutput.filtered_count !== undefined ? lastOutput.filtered_count :
+      lastOutput.pipeline ? lastOutput.pipeline.length :
+      lastOutput.titans ? Object.keys(lastOutput.titans).length : '—';
+  };
+
+  function renderOutput(result) {
+    const body = document.getElementById('outputBody');
+    const json = JSON.stringify(result, null, 2);
+    body.innerHTML = `<pre>${syntaxHighlight(json)}</pre>`;
+  }
+
+  function syntaxHighlight(json) {
+    return json
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+      .replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, m => {
+        if (/^"/.test(m)) { if (/:$/.test(m)) return `<span class="j-key">${m}</span>`; return `<span class="j-str">${m}</span>`; }
+        if (/true|false/.test(m)) return `<span class="j-bool">${m}</span>`;
+        if (/null/.test(m)) return `<span class="j-null">${m}</span>`;
+        return `<span class="j-num">${m}</span>`;
+      });
+  }
+
+  window.copyOutput = function() {
+    if (!lastOutput) return;
+    navigator.clipboard.writeText(JSON.stringify(lastOutput, null, 2));
+  };
+
+  // Event bindings
+  document.querySelectorAll('[data-view]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('[data-view]').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      params.view = btn.dataset.view;
+    });
+  });
+
+  document.getElementById('titanSelect').addEventListener('change', e => { params.titan = e.target.value; });
+  document.getElementById('queryType').addEventListener('input', e => { params.queryType = e.target.value.trim(); });
+  document.getElementById('limitSelect').addEventListener('change', e => { params.limit = parseInt(e.target.value); });
+
+  boot();
+</script>
+</body>
+</html>
