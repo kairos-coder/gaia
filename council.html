@@ -11,155 +11,59 @@
       --void: #07090c; --void-surface: #141b22; --void-raised: #1a2330;
       --accent: #c9a85c; --accent-dim: #6b5a32;
       --text: #c0ccd8; --text-dim: #6a7a8a;
-      --border: rgba(138,155,176,0.15); --border-bright: rgba(138,155,176,0.35);
-      --green: #6abf8a; --red: #c85050; --blue: #44aaff;
+      --border: rgba(138,155,176,0.15); --green: #6abf8a; --red: #c85050; --blue: #44aaff;
     }
     * { margin:0; padding:0; box-sizing:border-box; }
-    body {
-      background: var(--void); color: var(--text);
-      font-family: 'DM Sans', sans-serif; font-weight: 300;
-      min-height: 100vh;
-    }
-    body::before {
-      content:''; position:fixed; inset:0;
-      background-image:
-        linear-gradient(rgba(138,155,176,0.03) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(138,155,176,0.03) 1px, transparent 1px);
-      background-size: 40px 40px; pointer-events:none; z-index:0;
-    }
-    
-    header {
-      position:relative; z-index:10; border-bottom:1px solid var(--border);
-      padding:0 1.5rem; display:flex; align-items:center; justify-content:space-between;
-      height:48px;
-    }
+    body { background:var(--void); color:var(--text); font-family:'DM Sans',sans-serif; font-weight:300; min-height:100vh; }
+    body::before { content:''; position:fixed; inset:0; background-image:linear-gradient(rgba(138,155,176,0.03) 1px, transparent 1px),linear-gradient(90deg, rgba(138,155,176,0.03) 1px, transparent 1px); background-size:40px 40px; pointer-events:none; z-index:0; }
+    header { position:relative; z-index:10; border-bottom:1px solid var(--border); padding:0 1.5rem; display:flex; align-items:center; justify-content:space-between; height:48px; }
     .breadcrumb { font-family:'Share Tech Mono',monospace; font-size:0.58rem; color:var(--text-dim); letter-spacing:0.1em; }
     .breadcrumb a { color:var(--steel); text-decoration:none; }
     .header-tag { font-family:'Share Tech Mono',monospace; font-size:0.5rem; color:var(--accent-dim); letter-spacing:0.1em; border:1px solid var(--accent-dim); padding:2px 6px; }
-    
-    .main-layout {
-      position:relative; z-index:5; display:grid;
-      grid-template-columns: 1fr 1fr;
-      gap:1px; background:var(--border); min-height:calc(100vh - 48px);
-    }
+    .main-layout { position:relative; z-index:5; display:grid; grid-template-columns:1fr 1fr; gap:1px; background:var(--border); min-height:calc(100vh - 48px); }
     @media(max-width:900px){ .main-layout { grid-template-columns:1fr; } }
-    
-    .orchestration {
-      background:var(--void-surface); display:flex; flex-direction:column;
-      overflow-y:auto;
-    }
-    
-    .section-label {
-      font-family:'Share Tech Mono',monospace; font-size:0.48rem; color:var(--text-dim);
-      letter-spacing:0.2em; text-transform:uppercase;
-      padding:0.5rem 1rem; background:var(--void-raised);
-      border-bottom:1px solid var(--border);
-    }
-    
-    .chain-builder {
-      padding:1rem; display:flex; flex-direction:column; gap:0.75rem;
-      border-bottom:1px solid var(--border);
-    }
-    .chain-row {
-      display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap;
-    }
-    .chain-label {
-      font-family:'Share Tech Mono',monospace; font-size:0.55rem;
-      color:var(--accent); letter-spacing:0.1em; min-width:80px;
-    }
-    .chain-select, .chain-input {
-      background:var(--void); border:1px solid var(--border);
-      color:var(--text); font-family:'Share Tech Mono',monospace;
-      font-size:0.58rem; padding:0.35rem 0.5rem; outline:none; flex:1;
-    }
-    .chain-select:focus, .chain-input:focus { border-color:var(--steel-dim); }
-    
-    .fire-btn {
-      width:100%; background:rgba(201,168,92,0.1); border:1px solid var(--accent-dim);
-      color:var(--accent); font-family:'Share Tech Mono',monospace;
-      font-size:0.7rem; letter-spacing:0.2em; text-transform:uppercase;
-      padding:0.6rem; cursor:pointer; transition:all 0.2s;
-    }
-    .fire-btn:hover { background:rgba(201,168,92,0.2); border-color:var(--accent); }
-    
+    .orchestration { background:var(--void-surface); display:flex; flex-direction:column; overflow-y:auto; }
+    .section-label { font-family:'Share Tech Mono',monospace; font-size:0.48rem; color:var(--text-dim); letter-spacing:0.2em; text-transform:uppercase; padding:0.5rem 1rem; background:var(--void-raised); border-bottom:1px solid var(--border); }
+    .chain-builder { padding:1rem; display:flex; flex-direction:column; gap:0.75rem; border-bottom:1px solid var(--border); }
+    .chain-row { display:flex; align-items:center; gap:0.5rem; }
+    .chain-label { font-family:'Share Tech Mono',monospace; font-size:0.55rem; color:var(--accent); letter-spacing:0.1em; min-width:70px; }
+    .chain-select, .chain-input { background:var(--void); border:1px solid var(--border); color:var(--text); font-family:'Share Tech Mono',monospace; font-size:0.58rem; padding:0.35rem 0.5rem; outline:none; flex:1; }
+    .fire-btn { width:100%; background:rgba(201,168,92,0.1); border:1px solid var(--accent-dim); color:var(--accent); font-family:'Share Tech Mono',monospace; font-size:0.7rem; letter-spacing:0.2em; text-transform:uppercase; padding:0.6rem; cursor:pointer; }
+    .fire-btn:hover { background:rgba(201,168,92,0.2); }
     .preset-btns { display:flex; gap:0.3rem; flex-wrap:wrap; padding:0 1rem 0.75rem; }
-    .preset-btn {
-      background:var(--void); border:1px solid var(--border);
-      color:var(--text-dim); font-family:'Share Tech Mono',monospace;
-      font-size:0.5rem; padding:0.3rem 0.6rem; cursor:pointer;
-      letter-spacing:0.05em;
-    }
-    .preset-btn:hover { color:var(--steel-bright); border-color:var(--border-bright); }
-    
-    .event-log {
-      flex:1; padding:0.75rem 1rem; overflow-y:auto;
-      font-family:'Share Tech Mono',monospace; font-size:0.52rem;
-      line-height:1.6; color:var(--text-dim);
-    }
-    .event-entry {
-      padding:0.3rem 0.5rem; margin-bottom:0.2rem;
-      border-left:2px solid var(--border); background:var(--void);
-    }
+    .preset-btn { background:var(--void); border:1px solid var(--border); color:var(--text-dim); font-family:'Share Tech Mono',monospace; font-size:0.5rem; padding:0.3rem 0.6rem; cursor:pointer; }
+    .preset-btn:hover { color:var(--steel-bright); }
+    .event-log { flex:1; padding:0.75rem 1rem; overflow-y:auto; font-family:'Share Tech Mono',monospace; font-size:0.52rem; line-height:1.6; color:var(--text-dim); }
+    .event-entry { padding:0.3rem 0.5rem; margin-bottom:0.2rem; border-left:2px solid var(--border); background:var(--void); }
     .event-entry.step1 { border-left-color:var(--accent); }
     .event-entry.step2 { border-left-color:var(--blue); }
     .event-entry.step3 { border-left-color:var(--green); }
     .event-entry .ts { color:var(--text-dim); font-size:0.45rem; }
     .event-entry .actor { color:var(--accent); }
-    .event-entry .action { color:var(--steel); }
-    
-    .memory-viewer {
-      background:var(--void-surface); display:flex; flex-direction:column;
-      overflow-y:auto;
-    }
-    
-    .memory-toolbar {
-      display:flex; gap:0.5rem; padding:0.5rem 1rem; flex-wrap:wrap;
-      border-bottom:1px solid var(--border);
-    }
-    .titan-tab {
-      font-family:'Share Tech Mono',monospace; font-size:0.52rem;
-      color:var(--text-dim); padding:0.3rem 0.6rem; cursor:pointer;
-      border:1px solid transparent; letter-spacing:0.05em;
-    }
+    .memory-viewer { background:var(--void-surface); display:flex; flex-direction:column; overflow-y:auto; }
+    .memory-toolbar { display:flex; gap:0.4rem; padding:0.5rem 1rem; flex-wrap:wrap; border-bottom:1px solid var(--border); }
+    .titan-tab { font-family:'Share Tech Mono',monospace; font-size:0.5rem; color:var(--text-dim); padding:0.25rem 0.5rem; cursor:pointer; border:1px solid transparent; }
     .titan-tab:hover { color:var(--steel-bright); border-color:var(--border); }
     .titan-tab.active { color:var(--accent); border-color:var(--accent-dim); background:rgba(201,168,92,0.05); }
-    
-    .memory-display {
-      flex:1; padding:0.75rem 1rem; overflow-y:auto;
-      font-family:'Share Tech Mono',monospace; font-size:0.52rem;
-      line-height:1.5; color:var(--text-dim);
-    }
-    .memory-entry {
-      padding:0.25rem 0.5rem; margin-bottom:0.15rem;
-      background:var(--void); border-left:1px solid var(--border);
-    }
+    .memory-display { flex:1; padding:0.75rem 1rem; overflow-y:auto; font-family:'Share Tech Mono',monospace; font-size:0.52rem; line-height:1.5; color:var(--text-dim); }
+    .memory-entry { padding:0.2rem 0.5rem; margin-bottom:0.15rem; background:var(--void); border-left:1px solid var(--border); }
     .memory-entry .tick { color:var(--accent); }
-    .memory-entry .type { color:var(--steel); }
     .memory-empty { color:var(--text-dim); font-style:italic; padding:1rem; text-align:center; }
-    
-    .memory-stats-row {
-      display:flex; gap:1rem; padding:0.5rem 1rem; flex-wrap:wrap;
-      font-family:'Share Tech Mono',monospace; font-size:0.5rem; color:var(--text-dim);
-      border-top:1px solid var(--border);
-    }
+    .memory-stats-row { display:flex; gap:1rem; padding:0.5rem 1rem; font-family:'Share Tech Mono',monospace; font-size:0.5rem; color:var(--text-dim); border-top:1px solid var(--border); }
     .memory-stats-row span { color:var(--steel); }
   </style>
 </head>
 <body>
 
 <header>
-  <div class="breadcrumb">
-    <a href="https://kairos-coder.github.io/gaia">GAIA</a> &nbsp;/&nbsp; Council
-  </div>
+  <div class="breadcrumb"><a href="https://kairos-coder.github.io/gaia">GAIA</a> &nbsp;/&nbsp; Council</div>
   <div class="header-tag">EVENT ORCHESTRATION · MEMORY CONSOLE</div>
 </header>
 
 <div class="main-layout">
   
   <div class="orchestration">
-    
-    <div class="section-label">Ⅰ · Chain Builder — Compose and Fire Events</div>
-    
+    <div class="section-label">Ⅰ · Chain Builder</div>
     <div class="chain-builder">
       <div class="chain-row">
         <span class="chain-label">Olympian</span>
@@ -169,37 +73,31 @@
         </select>
       </div>
       <div class="chain-row">
-        <span class="chain-label">Operation</span>
-        <select class="chain-select" id="chainOperation">
-          <option value="judge">judge — Render binding judgment</option>
-          <option value="brief">brief — Curate top ideas</option>
-        </select>
+        <span class="chain-label">Context</span>
+        <input class="chain-input" id="chainContext" value="charge_grounding" />
       </div>
       <div class="chain-row">
-        <span class="chain-label">Payload</span>
-        <input class="chain-input" id="chainPayload" value='{"context":"test","action":"mark_interval"}' />
+        <span class="chain-label">Action</span>
+        <input class="chain-input" id="chainAction" value="mark_interval" />
       </div>
       <button class="fire-btn" onclick="fireChain()">⚡ Fire Full Chain</button>
     </div>
     
     <div class="preset-btns">
-      <button class="preset-btn" onclick="firePreset('zeusLawful')">Zeus: Lawful Mark</button>
-      <button class="preset-btn" onclick="firePreset('zeusOverrule')">Zeus: Overrule</button>
-      <button class="preset-btn" onclick="firePreset('athenaBrief')">Athena: GAIA Brief</button>
-      <button class="preset-btn" onclick="firePreset('clearMemory')">Clear All Memory</button>
+      <button class="preset-btn" onclick="firePreset('lawful')">Lawful Mark</button>
+      <button class="preset-btn" onclick="firePreset('overrule')">Overrule</button>
+      <button class="preset-btn" onclick="firePreset('athena')">Athena Brief</button>
+      <button class="preset-btn" onclick="firePreset('clear')">Clear Memory</button>
     </div>
     
-    <div class="section-label">Ⅱ · Event Log — Live Chain Trace</div>
+    <div class="section-label">Ⅱ · Event Log</div>
     <div class="event-log" id="eventLog">
-      <div style="color:var(--text-dim);padding:1rem;text-align:center;">Fire a chain to see the event trace.</div>
+      <div style="color:var(--text-dim);padding:1rem;text-align:center;">Fire a chain to begin.</div>
     </div>
-    
   </div>
   
   <div class="memory-viewer">
-    
-    <div class="section-label">Ⅲ · Titan Memory Viewer</div>
-    
+    <div class="section-label">Ⅲ · Titan Memory</div>
     <div class="memory-toolbar" id="memoryTabs">
       <button class="titan-tab active" data-titan="kronos">⏳ Kronos</button>
       <button class="titan-tab" data-titan="themis">⚖️ Themis</button>
@@ -214,131 +112,131 @@
       <button class="titan-tab" data-titan="iapetos">💀 Iapetos</button>
       <button class="titan-tab" data-titan="kreios">🏛️ Kreios</button>
     </div>
-    
-    <div class="memory-display" id="memoryDisplay">
-      <div class="memory-empty">Select a Titan tab to view memory.</div>
-    </div>
-    
-    <div class="memory-stats-row" id="memoryStatsRow">
-      <span>Total Events: <span id="statTotal">0</span></span>
-      <span>Active Titans: <span id="statActive">0</span></span>
-    </div>
-    
+    <div class="memory-display" id="memoryDisplay"><div class="memory-empty">Select a Titan tab.</div></div>
+    <div class="memory-stats-row"><span>Total: <span id="statTotal">0</span></span><span>Active: <span id="statActive">0</span></span></div>
   </div>
 
 </div>
 
 <script>
-  // ─── Fetch API helper ────────────────────────────────────────────────
-  async function fetchAPI(url) {
-    try {
-      const resp = await fetch(url);
-      if (!resp.ok) return { error: `HTTP ${resp.status}` };
-      const html = await resp.text();
-      const match = html.match(/<pre[^>]*id="output"[^>]*>([\s\S]*?)<\/pre>/);
-      if (match) {
-        const raw = match[1].trim();
-        if (raw.startsWith('{') || raw.startsWith('[')) {
-          return JSON.parse(raw);
-        }
-        return { error: 'Not JSON', raw: raw.substring(0, 80) };
-      }
-      return { error: 'No output element' };
-    } catch(e) {
-      return { error: e.message };
-    }
+  // ═══════════════════════════════════════════
+  // SHARED HELPERS (all pages on this origin)
+  // ═══════════════════════════════════════════
+  
+  function getLedger() {
+    const s = localStorage.getItem('kronos_memory');
+    return s ? JSON.parse(s) : { events: [], last_tick: 0, total_events: 0 };
   }
-
-  // ─── Event Log ───────────────────────────────────────────────────────
+  
+  function saveLedger(ledger) {
+    localStorage.setItem('kronos_memory', JSON.stringify(ledger));
+  }
+  
+  function logToLedger(olympian, operation, params, summary) {
+    const ledger = getLedger();
+    const entry = {
+      entry_id: `kronos_${String(ledger.total_events + 1).padStart(4, '0')}`,
+      tick: ledger.total_events + 1,
+      timestamp: new Date().toISOString(),
+      olympian, operation,
+      query_params: params,
+      response_summary: summary
+    };
+    ledger.events.push(entry);
+    ledger.last_tick = entry.tick;
+    ledger.total_events = ledger.events.length;
+    if (ledger.events.length > 2000) ledger.events = ledger.events.slice(-2000);
+    saveLedger(ledger);
+    return entry;
+  }
+  
+  function deliverToTitan(titanId, event) {
+    const key = `${titanId}_memory`;
+    const stored = JSON.parse(localStorage.getItem(key) || '{"events":[],"last_tick":0,"total_events":0}');
+    stored.last_tick++;
+    event.tick = stored.last_tick;
+    stored.events.push(event);
+    stored.total_events = stored.events.length;
+    if (stored.events.length > 1000) stored.events = stored.events.slice(-1000);
+    localStorage.setItem(key, JSON.stringify(stored));
+    return { success: true, event_id: `${titanId}_${stored.total_events}` };
+  }
+  
+  // ═══════════════════════════════════════════
+  // EVENT LOG
+  // ═══════════════════════════════════════════
   function logEvent(step, actor, action, detail) {
     const log = document.getElementById('eventLog');
-    const time = new Date().toLocaleTimeString();
     const entry = document.createElement('div');
     entry.className = `event-entry step${step}`;
-    entry.innerHTML = `<span class="ts">${time}</span> <span class="actor">${actor}</span> <span class="action">${action}</span> ${detail}`;
+    entry.innerHTML = `<span class="ts">${new Date().toLocaleTimeString()}</span> <span class="actor">${actor}</span> <span class="action">${action}</span> ${detail}`;
     log.prepend(entry);
     while (log.children.length > 50) log.removeChild(log.lastChild);
   }
-
-  // ─── Fire Chain ──────────────────────────────────────────────────────
-  window.fireChain = async function() {
+  
+  // ═══════════════════════════════════════════
+  // FIRE CHAIN
+  // ═══════════════════════════════════════════
+  window.fireChain = function() {
     const olympian = document.getElementById('chainOlympian').value;
-    const operation = document.getElementById('chainOperation').value;
-    const payloadRaw = document.getElementById('chainPayload').value;
+    const context = document.getElementById('chainContext').value || 'test';
+    const action = document.getElementById('chainAction').value || 'mark_interval';
     
-    let payload;
-    try { payload = JSON.parse(payloadRaw); } catch(e) { payload = { raw: payloadRaw }; }
-    
-    logEvent(1, olympian, operation, `→ Starting chain`);
-    
-    if (olympian === 'zeus' && operation === 'judge') {
-      const context = payload.context || 'test';
-      const action = payload.action || 'mark_interval';
+    if (olympian === 'zeus') {
+      logEvent(1, 'zeus', 'judge', `→ ${context} / ${action}`);
       
-      // Call Zeus API
-      const zeusResult = await fetchAPI(`zeus/api.html?view=judge&context=${context}&action=${action}`);
+      // Zeus judgment logic (same as in zeus/api.html)
+      const lawfulActions = ['mark_interval', 'measure_succession', 'illuminate', 'nourish', 'record', 'bind'];
+      const chaosActions = ['overthrow', 'usurp', 'sever', 'dissolve'];
+      let verdict = 'acknowledged';
+      if (chaosActions.includes(action)) verdict = 'overruled';
+      else if (lawfulActions.includes(action)) verdict = 'lawful';
       
-      if (zeusResult.error) {
-        logEvent(1, 'zeus', 'error', `→ ${zeusResult.error}`);
-      } else {
-        logEvent(1, 'zeus', 'judge', `→ Verdict: ${zeusResult.verdict} | Score: ${zeusResult.sovereignty_score}`);
-        logEvent(2, 'kronos', 'gatekeeper', `→ Validated & logged`);
-        
-        if (zeusResult.memory_routing?.deliveries) {
-          for (const d of zeusResult.memory_routing.deliveries) {
-            logEvent(3, 'hermes', '→', `${d.titan} (${d.type}) — ${d.delivered ? '✓' : '✗'}`);
-          }
-        }
-        logEvent(3, 'kronos', 'ledger', `→ Chain complete. Entry: ${zeusResult.memory_routing?.ledger_entry?.entry_id || '—'}`);
-      }
+      logEvent(1, 'zeus', 'verdict', `→ ${verdict.toUpperCase()} | Sovereignty: 1.0`);
       
-    } else if (olympian === 'athena' && operation === 'brief') {
-      const tags = payload.tags || 'GAIA';
-      logEvent(1, 'athena', 'brief', `→ Querying archive for: ${tags}`);
+      // Log to Kronos ledger
+      const summary = `Verdict: ${verdict} | Context: ${context} | Action: ${action}`;
+      const entry = logToLedger('zeus', 'judge', { context, action }, summary);
+      logEvent(2, 'kronos', 'ledger', `→ Entry: ${entry.entry_id}`);
       
-      const athenaResult = await fetchAPI(`athena/api.html?view=brief&tags=${tags}`);
+      // Route to Titan memory
+      const d1 = deliverToTitan('kronos', { type: 'judge', olympian: 'zeus', operation: 'judge', verdict, context, action, timestamp: new Date().toISOString() });
+      const d2 = deliverToTitan('themis', { type: 'binding', olympian: 'zeus', operation: 'judge', verdict, context, action, timestamp: new Date().toISOString() });
       
-      if (athenaResult.error) {
-        logEvent(1, 'athena', 'error', `→ ${athenaResult.error}`);
-      } else {
-        const count = Array.isArray(athenaResult.ideas) ? athenaResult.ideas.length : '—';
-        logEvent(1, 'athena', 'brief', `→ Retrieved ${count} ideas about ${tags}`);
-        logEvent(2, 'kronos', 'gatekeeper', `→ Athena query logged`);
-      }
+      logEvent(3, 'hermes', '→', `kronos (judge) ✓ | themis (binding) ✓`);
+      logEvent(3, 'kronos', 'complete', `→ Chain complete. Ledger: ${entry.entry_id}`);
+      
+    } else if (olympian === 'athena') {
+      const tags = context || 'GAIA';
+      logEvent(1, 'athena', 'brief', `→ Querying for: ${tags}`);
+      
+      const entry = logToLedger('athena', 'brief', { tags }, `Brief requested for: ${tags}`);
+      logEvent(2, 'kronos', 'ledger', `→ Entry: ${entry.entry_id}`);
+      logEvent(3, 'athena', 'complete', `→ Brief logged. Archive query external.`);
     }
     
     refreshMemoryView();
   };
-
-  // ─── Presets ─────────────────────────────────────────────────────────
-  window.firePreset = function(preset) {
-    if (preset === 'zeusLawful') {
-      document.getElementById('chainOlympian').value = 'zeus';
-      document.getElementById('chainOperation').value = 'judge';
-      document.getElementById('chainPayload').value = '{"context":"charge_grounding","action":"mark_interval"}';
-      fireChain();
-    } else if (preset === 'zeusOverrule') {
-      document.getElementById('chainOlympian').value = 'zeus';
-      document.getElementById('chainOperation').value = 'judge';
-      document.getElementById('chainPayload').value = '{"context":"succession","action":"overthrow"}';
-      fireChain();
-    } else if (preset === 'athenaBrief') {
-      document.getElementById('chainOlympian').value = 'athena';
-      document.getElementById('chainOperation').value = 'brief';
-      document.getElementById('chainPayload').value = '{"tags":"GAIA"}';
-      fireChain();
-    } else if (preset === 'clearMemory') {
-      const titans = ['kronos','themis','mnemosyne','koios','rhea','hyperion','oceanus','tethys','theia','phoibe','iapetos','kreios'];
-      for (const t of titans) localStorage.removeItem(`${t}_memory`);
+  
+  // ═══════════════════════════════════════════
+  // PRESETS
+  // ═══════════════════════════════════════════
+  window.firePreset = function(p) {
+    if (p === 'lawful') { document.getElementById('chainAction').value = 'mark_interval'; fireChain(); }
+    else if (p === 'overrule') { document.getElementById('chainAction').value = 'overthrow'; fireChain(); }
+    else if (p === 'athena') { document.getElementById('chainOlympian').value = 'athena'; document.getElementById('chainContext').value = 'GAIA'; fireChain(); }
+    else if (p === 'clear') {
+      ['kronos','themis','mnemosyne','koios','rhea','hyperion','oceanus','tethys','theia','phoibe','iapetos','kreios'].forEach(t => localStorage.removeItem(`${t}_memory`));
       logEvent(0, 'system', 'clear', '→ All Titan memory cleared');
       refreshMemoryView();
     }
   };
-
-  // ─── Memory Viewer ───────────────────────────────────────────────────
-  let activeTitan = 'kronos';
   
-  document.getElementById('memoryTabs').addEventListener('click', function(e) {
+  // ═══════════════════════════════════════════
+  // MEMORY VIEWER
+  // ═══════════════════════════════════════════
+  let activeTitan = 'kronos';
+  document.getElementById('memoryTabs').addEventListener('click', e => {
     if (e.target.classList.contains('titan-tab')) {
       document.querySelectorAll('.titan-tab').forEach(b => b.classList.remove('active'));
       e.target.classList.add('active');
@@ -349,46 +247,29 @@
   
   window.refreshMemoryView = function() {
     const display = document.getElementById('memoryDisplay');
-    const stored = localStorage.getItem(`${activeTitan}_memory`);
+    const key = `${activeTitan}_memory`;
+    const stored = localStorage.getItem(key);
     
-    let totalEvents = 0;
-    let activeCount = 0;
-    const titans = ['kronos','themis','mnemosyne','koios','rhea','hyperion','oceanus','tethys','theia','phoibe','iapetos','kreios'];
-    for (const t of titans) {
+    let total = 0, active = 0;
+    ['kronos','themis','mnemosyne','koios','rhea','hyperion','oceanus','tethys','theia','phoibe','iapetos','kreios'].forEach(t => {
       const s = localStorage.getItem(`${t}_memory`);
-      if (s) {
-        try {
-          const d = JSON.parse(s);
-          totalEvents += d.total_events || 0;
-          if (d.total_events > 0) activeCount++;
-        } catch(e) {}
-      }
-    }
-    document.getElementById('statTotal').textContent = totalEvents;
-    document.getElementById('statActive').textContent = activeCount;
+      if (s) { try { const d = JSON.parse(s); total += d.total_events || 0; if (d.total_events > 0) active++; } catch(e) {} }
+    });
+    document.getElementById('statTotal').textContent = total;
+    document.getElementById('statActive').textContent = active;
     
-    if (!stored) {
-      display.innerHTML = `<div class="memory-empty">No memory for ${activeTitan}. Fire a chain to create events.</div>`;
-      return;
-    }
-    
+    if (!stored) { display.innerHTML = `<div class="memory-empty">No memory for ${activeTitan}.</div>`; return; }
     try {
       const data = JSON.parse(stored);
       const events = (data.events || []).slice(-30).reverse();
-      if (events.length === 0) {
-        display.innerHTML = `<div class="memory-empty">${activeTitan} memory is empty.</div>`;
-      } else {
-        display.innerHTML = events.map(e => 
-          `<div class="memory-entry"><span class="tick">#${e.tick||'—'}</span> <span class="type">${e.type||e.operation||'—'}</span> ${e.olympian ? 'from ' + e.olympian : ''} <span style="color:var(--text-dim)">${new Date(e.timestamp).toLocaleTimeString()}</span></div>`
-        ).join('');
-      }
-    } catch(e) {
-      display.innerHTML = `<div class="memory-empty">Error: ${e.message}</div>`;
-    }
+      display.innerHTML = events.length === 0 
+        ? `<div class="memory-empty">${activeTitan} memory is empty.</div>`
+        : events.map(e => `<div class="memory-entry"><span class="tick">#${e.tick||'—'}</span> ${e.type||e.operation||'—'} ${e.olympian?'from '+e.olympian:''} <span style="color:var(--text-dim)">${new Date(e.timestamp).toLocaleTimeString()}</span></div>`).join('');
+    } catch(e) { display.innerHTML = `<div class="memory-empty">Error: ${e.message}</div>`; }
   };
   
   refreshMemoryView();
-  console.log('🏛️ Council orchestration console ready.');
+  console.log('🏛️ Council ready. Shared localStorage engine active.');
 </script>
 </body>
 </html>
