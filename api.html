@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GAIA · System API Index</title>
+  <style>
+    :root {
+      --bg: #07090c; --surface: #141b22; --text: #c0ccd8; --text-dim: #6a7a8a;
+      --accent: #c9a85c; --accent-dim: #6b5a32; --border: rgba(138,155,176,0.15);
+      --green: #6abf8a;
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      background:var(--bg); color:var(--text);
+      font-family:'Courier New',monospace; padding:1.5rem; min-height:100vh;
+    }
+    h1 { color:var(--accent); font-size:0.9rem; margin-bottom:0.25rem; }
+    .subtitle { color:var(--text-dim); font-size:0.65rem; margin-bottom:1.5rem; }
+    .endpoint { font-size:0.65rem; color:var(--text-dim); margin-bottom:0.3rem; padding:0.3rem 0.5rem; background:var(--surface); border-left:2px solid var(--accent); }
+    .endpoint a { color:var(--accent); text-decoration:none; }
+    .section { margin-bottom:1.5rem; }
+    .section-title { color:var(--steel); font-size:0.7rem; margin-bottom:0.5rem; letter-spacing:0.1em; }
+    pre {
+      background:var(--surface); border:1px solid var(--border);
+      padding:1rem; font-size:0.7rem; line-height:1.5; white-space:pre-wrap;
+      max-height:70vh; overflow-y:auto;
+    }
+  </style>
+</head>
+<body>
+  <h1>🌍 GAIA · System API Index</h1>
+  <p class="subtitle">Root entry point for AI collaborators. Append ?view=routes to any endpoint for capabilities. Append ?view=status for health.</p>
+
+  <div class="endpoint"><a href="api.html?view=index">?view=index</a> — This index (default)</div>
+  <div class="endpoint"><a href="api.html?view=status">?view=status</a> — System-wide health and stats</div>
+  <div class="endpoint"><a href="api.html?view=olympians">?view=olympians</a> — All Olympian API endpoints</div>
+  <div class="endpoint"><a href="api.html?view=titans">?view=titans</a> — All Titan memory API endpoints</div>
+  <div class="endpoint"><a href="api.html?view=conduit">?view=conduit</a> — Hermes routing status</div>
+
+  <pre id="output">🌍 GAIA system index loading...</pre>
+
+  <script>
+    const SYSTEM = {
+      name: 'GAIA — Olympian Cognitive Network',
+      version: '1.0',
+      created: '2026-05-18',
+      description: 'A distributed cognitive system where Olympians serve as domain-specific APIs, Titans serve as memory accumulators, and Hermes routes between them. All queryable. All $0. All static.',
+      
+      olympians: {
+        active: {
+          zeus:   { emoji:'⚡', domain:'Law, Sovereignty, Judgment', api:'zeus/api.html', index:'zeus/index.html', module:'zeus/judge.js', status:'active' },
+          athena: { emoji:'🦉', domain:'Wisdom, Archive, Ideas', api:'athena/api.html', index:'athena/index.html', module:'athena/curator.js', status:'active' },
+          hermes: { emoji:'🪄', domain:'Translation, Memory Routing', api:'hermes/api.html', index:'hermes/index.html', module:'hermes/translator.js', status:'active' }
+        },
+        planned: {
+          hera:      { emoji:'👑', domain:'Covenant, Bond, Fidelity' },
+          poseidon:  { emoji:'🔱', domain:'Boundary, Stress, Fracture' },
+          apollo:    { emoji:'☀️', domain:'Clarity, Signal, Prophecy' },
+          artemis:   { emoji:'🏹', domain:'Precision, Target, Scope' },
+          hephaestus:{ emoji:'🔨', domain:'Forge, Craft, Build' },
+          aphrodite: { emoji:'💗', domain:'Desire, Beauty, Resonance' },
+          ares:      { emoji:'⚔️', domain:'Challenge, Arena, Opposition' },
+          demeter:   { emoji:'🌾', domain:'Season, Nourishment, Harvest' },
+          dionysus:  { emoji:'🍇', domain:'Ecstasy, Rupture, Transformation' },
+          hestia:    { emoji:'🔥', domain:'Hearth, Center, Still Point' }
+        }
+      },
+      
+      titans: {
+        memory_indexes: {
+          kronos:    { emoji:'⏳', domain:'Time & Ledger', api:'titans/kronos/api.html', gatekeeper:true },
+          rhea:      { emoji:'🌊', domain:'Rhythm & Tremors', api:'titans/rhea/api.html' },
+          hyperion:  { emoji:'🔆', domain:'Light & Illumination', api:'titans/hyperion/api.html' },
+          oceanus:   { emoji:'🌀', domain:'Flow & Connections', api:'titans/oceanus/api.html' },
+          tethys:    { emoji:'💧', domain:'Nourishment & Purification', api:'titans/tethys/api.html' },
+          theia:     { emoji:'👁️', domain:'Sight & Vision', api:'titans/theia/api.html' },
+          phoibe:    { emoji:'🔮', domain:'Prophecy & Naming', api:'titans/phoibe/api.html' },
+          themis:    { emoji:'⚖️', domain:'Law & Binding', api:'titans/themis/api.html' },
+          mnemosyne: { emoji:'📜', domain:'Memory & Narrative', api:'titans/mnemosyne/api.html' },
+          koios:     { emoji:'⚗️', domain:'Intellect & Questioning', api:'titans/koios/api.html' },
+          iapetos:   { emoji:'💀', domain:'Mortality & Consequence', api:'titans/iapetos/api.html' },
+          kreios:    { emoji:'🏛️', domain:'Architecture & Structure', api:'titans/kreios/api.html' }
+        }
+      },
+      
+      conduit: {
+        hermes: { api:'hermes/api.html', role:'Cross-domain message translation and memory ingestion routing' }
+      },
+      
+      dashboards: {
+        council: 'council.html',
+        titan_council: 'titans/index.html',
+        gaia_primordial: 'gaia.html'
+      },
+      
+      query_convention: 'Append ?view=routes to any api.html to discover its capabilities. Append ?view=status for health.',
+      framework_cost: '$0 — GitHub Pages static hosting, localStorage for memory, Supabase for future persistence',
+      
+      stats: {
+        active_olympians: 3,
+        planned_olympians: 10,
+        titan_memory_indexes: 12,
+        titan_gatekeeper: 'kronos'
+      }
+    };
+
+    async function handleRequest() {
+      const params = new URLSearchParams(window.location.search);
+      const view = params.get('view') || 'index';
+      
+      let result;
+      
+      if (view === 'status') {
+        result = {
+          system: SYSTEM.name,
+          version: SYSTEM.version,
+          stats: SYSTEM.stats,
+          active_olympians: Object.keys(SYSTEM.olympians.active),
+          planned_olympians: Object.keys(SYSTEM.olympians.planned),
+          titan_count: Object.keys(SYSTEM.titans.memory_indexes).length,
+          conduit: 'hermes (active)',
+          cost: SYSTEM.framework_cost
+        };
+      } else if (view === 'olympians') {
+        result = SYSTEM.olympians;
+      } else if (view === 'titans') {
+        result = SYSTEM.titans;
+      } else if (view === 'conduit') {
+        result = SYSTEM.conduit;
+      } else {
+        result = SYSTEM;
+      }
+      
+      document.getElementById('output').textContent = JSON.stringify(result, null, 2);
+    }
+    
+    handleRequest();
+  </script>
+</body>
+</html>
