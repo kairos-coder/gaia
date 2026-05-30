@@ -1,0 +1,24 @@
+{
+  "titan": "hyperion",
+  "title": "The Watcher Above",
+  "domain": "illumination_index",
+  "description": "Index of everything Hyperion's light has revealed. Clarity scores, signal events, beacons cast, and what was illuminated.",
+  "version": "1.0",
+  "created": "2026-05-30",
+  "index": [],
+  "stats": {
+    "total_illuminations": 0,
+    "by_type": { "illumination": 0, "beacon": 0, "reveal": 0 },
+    "first_light": null,
+    "last_light": null
+  },
+  "schema": {
+    "light_id": "hyperion_NNN",
+    "tick": "integer",
+    "timestamp": "ISO 8601",
+    "type": "illumination | beacon | reveal",
+    "target": "what was illuminated",
+    "clarity": "0-1",
+    "description": "what the light revealed"
+  }
+}
