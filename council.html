@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GAIA · Olympian Council</title>
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Cinzel:wght@400;600;900&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --steel: #8a9bb0; --steel-dim: #4a5a6a; --steel-bright: #c8d8e8;
+      --void: #07090c; --void-surface: #141b22; --void-raised: #1a2330;
+      --accent: #c9a85c; --accent-dim: #6b5a32;
+      --text: #c0ccd8; --text-dim: #6a7a8a;
+      --border: rgba(138,155,176,0.15); --border-bright: rgba(138,155,176,0.35);
+      --green: #6abf8a; --red: #c85050;
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      background: var(--void); color: var(--text);
+      font-family: 'DM Sans', sans-serif; font-weight: 300;
+      min-height: 100vh;
+    }
+    body::before {
+      content:''; position:fixed; inset:0;
+      background-image:
+        linear-gradient(rgba(138,155,176,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(138,155,176,0.03) 1px, transparent 1px);
+      background-size: 40px 40px; pointer-events:none; z-index:0;
+    }
+    
+    header {
+      position:relative; z-index:10; border-bottom:1px solid var(--border);
+      padding:0 1.5rem; display:flex; align-items:center; justify-content:space-between;
+      height:52px;
+    }
+    .breadcrumb { font-family:'Share Tech Mono',monospace; font-size:0.6rem; color:var(--text-dim); letter-spacing:0.1em; }
+    .breadcrumb a { color:var(--steel); text-decoration:none; }
+    .header-tag { font-family:'Share Tech Mono',monospace; font-size:0.55rem; color:var(--accent-dim); letter-spacing:0.1em; border:1px solid var(--accent-dim); padding:2px 6px; }
+    .header-right { display:flex; gap:0.75rem; align-items:center; }
+    .active-badge { font-family:'Share Tech Mono',monospace; font-size:0.5rem; color:var(--green); background:rgba(106,191,138,0.1); border:1px solid rgba(106,191,138,0.3); padding:2px 6px; }
+    
+    /* SECTION ROWS */
+    .council-section {
+      position:relative; z-index:5; border-bottom:1px solid var(--border);
+    }
+    .section-label {
+      font-family:'Share Tech Mono',monospace; font-size:0.5rem; color:var(--text-dim);
+      letter-spacing:0.2em; text-transform:uppercase;
+      padding:0.6rem 1.5rem; background:var(--void-surface);
+      border-bottom:1px solid var(--border);
+    }
+    
+    .olympian-row {
+      display:grid; grid-template-columns:repeat(3, 1fr);
+      gap:1px; background:var(--border);
+    }
+    @media(max-width:900px){ .olympian-row { grid-template-columns:1fr; } }
+    
+    /* OLYMPIAN PANEL */
+    .olympian-panel {
+      background:var(--void-surface); padding:1rem;
+      display:flex; flex-direction:column; gap:0.6rem;
+      min-height:220px;
+    }
+    .olympian-panel.planned { opacity:0.45; }
+    .olympian-panel.active {}
+    
+    .panel-header { display:flex; align-items:center; gap:0.5rem; }
+    .panel-emoji { font-size:1.3rem; }
+    .panel-name { font-family:'Cinzel',serif; font-size:0.8rem; font-weight:600; color:var(--steel-bright); }
+    .panel-endpoint { font-family:'Share Tech Mono',monospace; font-size:0.45rem; color:var(--text-dim); }
+    .panel-status {
+      font-family:'Share Tech Mono',monospace; font-size:0.45rem;
+      padding:1px 5px; margin-left:auto;
+    }
+    .panel-status.active { color:var(--green); border:1px solid rgba(106,191,138,0.3); background:rgba(106,191,138,0.08); }
+    .panel-status.planned { color:var(--text-dim); border:1px solid var(--border); }
+    
+    .quick-btns { display:flex; gap:0.25rem; flex-wrap:wrap; }
+    .quick-btn {
+      background:var(--void); border:1px solid var(--border);
+      color:var(--text-dim); font-family:'Share Tech Mono',monospace;
+      font-size:0.5rem; padding:0.25rem 0.5rem; cursor:pointer;
+      letter-spacing:0.04em; white-space:nowrap;
+    }
+    .quick-btn:hover { color:var(--steel-bright); border-color:var(--border-bright); }
+    .quick-btn:disabled { opacity:0.3; cursor:not-allowed; }
+    
+    .query-row { display:flex; gap:0.25rem; }
+    .query-input {
+      flex:1; background:var(--void); border:1px solid var(--border);
+      color:var(--text); font-family:'Share Tech Mono',monospace;
+      font-size:0.55rem; padding:0.3rem 0.4rem; outline:none;
+    }
+    .query-input:focus { border-color:var(--steel-dim); }
+    .query-input:disabled { opacity:0.3; }
+    .query-btn {
+      background:rgba(201,168,92,0.08); border:1px solid var(--accent-dim);
+      color:var(--accent); font-family:'Share Tech Mono',monospace;
+      font-size:0.55rem; padding:0.3rem 0.6rem; cursor:pointer;
+      white-space:nowrap; letter-spacing:0.05em;
+    }
+    .query-btn:hover { background:rgba(201,168,92,0.15); }
+    .query-btn:disabled { opacity:0.3; cursor:not-allowed; }
+    
+    .response-box {
+      flex:1; background:var(--void); border:1px solid var(--border);
+      padding:0.6rem; font-family:'Share Tech Mono',monospace;
+      font-size:0.52rem; line-height:1.4; overflow-y:auto;
+      max-height:150px; white-space:pre-wrap; color:var(--text-dim);
+    }
+    .response-box .ok { color:var(--green); }
+    .response-box .err { color:var(--red); }
+    
+    /* CONDUIT BAR */
+    .conduit-bar {
+      position:relative; z-index:5; border-bottom:1px solid var(--border);
+      padding:1rem 1.5rem; background:var(--void-surface);
+      display:flex; align-items:center; gap:1rem; flex-wrap:wrap;
+    }
+    .conduit-emoji { font-size:1.5rem; }
+    .conduit-name { font-family:'Cinzel',serif; font-size:0.9rem; font-weight:600; color:var(--steel-bright); }
+    .conduit-endpoint { font-family:'Share Tech Mono',monospace; font-size:0.5rem; color:var(--text-dim); }
+    .conduit-btns { display:flex; gap:0.3rem; flex-wrap:wrap; margin-left:auto; }
+    
+    /* MEMORY BAR */
+    .memory-bar {
+      position:relative; z-index:5; border-bottom:1px solid var(--border);
+      padding:0.75rem 1.5rem; display:flex; align-items:center; gap:1rem; flex-wrap:wrap;
+      background:var(--void);
+    }
+    .memory-bar h3 { font-family:'Share Tech Mono',monospace; font-size:0.6rem; color:var(--accent); letter-spacing:0.12em; text-transform:uppercase; }
+    .memory-stats { display:flex; gap:1rem; flex-wrap:wrap; font-family:'Share Tech Mono',monospace; font-size:0.5rem; color:var(--text-dim); }
+    .memory-stats span { color:var(--steel); }
+    
+    .memory-log {
+      position:relative; z-index:5; padding:0.75rem 1.5rem;
+      font-family:'Share Tech Mono',monospace; font-size:0.5rem;
+      color:var(--text-dim); max-height:180px; overflow-y:auto;
+      line-height:1.5;
+    }
+    .memory-entry { padding:0.15rem 0; border-bottom:1px solid rgba(255,255,255,0.02); }
+    .memory-entry .tick { color:var(--accent); }
+    .memory-entry .from { color:var(--steel); }
+    
+    footer {
+      position:relative; z-index:5; border-top:1px solid var(--border);
+      padding:0.6rem 1.5rem; display:flex; align-items:center; justify-content:space-between;
+    }
+    .footer-text { font-family:'Share Tech Mono',monospace; font-size:0.5rem; color:var(--text-dim); letter-spacing:0.08em; }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="breadcrumb">
+    <a href="https://kairos-coder.github.io/gaia">GAIA</a> &nbsp;/&nbsp; Council
+  </div>
+  <div class="header-right">
+    <span class="active-badge">3 ACTIVE</span>
+    <span class="header-tag">OLYMPIAN COUNCIL · DEV CONSOLE</span>
+  </div>
+</header>
+
+<!-- ═══════════════ ROW 1: SOVEREIGNTY TRIAD ═══════════════ -->
+<div class="council-section">
+  <div class="section-label">Ⅰ · Sovereignty Triad — Law, Covenant, Boundary</div>
+  <div class="olympian-row" id="rowSovereignty"></div>
+</div>
+
+<!-- ═══════════════ ROW 2: WISDOM TRIAD ═══════════════ -->
+<div class="council-section">
+  <div class="section-label">Ⅱ · Wisdom Triad — Archive, Clarity, Precision</div>
+  <div class="olympian-row" id="rowWisdom"></div>
+</div>
+
+<!-- ═══════════════ ROW 3: CREATION TRIAD ═══════════════ -->
+<div class="council-section">
+  <div class="section-label">Ⅲ · Creation Triad — Forge, Desire, Challenge</div>
+  <div class="olympian-row" id="rowCreation"></div>
+</div>
+
+<!-- ═══════════════ ROW 4: CYCLICAL TRIAD ═══════════════ -->
+<div class="council-section">
+  <div class="section-label">Ⅳ · Cyclical Triad — Season, Rupture, Center</div>
+  <div class="olympian-row" id="rowCyclical"></div>
+</div>
+
+<!-- ═══════════════ CONDUIT: HERMES ═══════════════ -->
+<div class="conduit-bar">
+  <div class="conduit-emoji">🪄</div>
+  <div>
+    <div class="conduit-name">Hermes</div>
+    <div class="conduit-endpoint">hermes/api.html · Cross-domain conduit</div>
+  </div>
+  <div class="conduit-btns">
+    <button class="quick-btn" onclick="queryOlympian('hermes','routes','')">All Routes</button>
+    <button class="quick-btn" onclick="queryOlympian('hermes','delivery','titan=kronos')">Kronos Delivery</button>
+    <button class="quick-btn" onclick="queryOlympian('hermes','delivery','titan=themis')">Themis Delivery</button>
+    <button class="quick-btn" onclick="queryOlympian('hermes','delivery','titan=mnemosyne')">Mnemosyne Delivery</button>
+    <button class="quick-btn" onclick="testZeusRoute()">Test: Zeus→Kronos</button>
+  </div>
+</div>
+
+<!-- ═══════════════ MEMORY VIEWER ═══════════════ -->
+<div class="memory-bar">
+  <h3>⏳ Kronos Ledger</h3>
+  <div class="memory-stats" id="memoryStats">
+    <span>Total: <span id="memTotal">—</span></span>
+    <span>Zeus: <span id="memZeus">—</span></span>
+    <span>Athena: <span id="memAthena">—</span></span>
+    <span>Hermes: <span id="memHermes">—</span></span>
+  </div>
+  <button class="quick-btn" onclick="refreshMemory()" style="margin-left:auto;">Refresh Ledger</button>
+</div>
+<div class="memory-log" id="memoryLog">
+  <span style="color:var(--text-dim)">Memory ledger loading...</span>
+</div>
+
+<footer>
+  <div class="footer-text">GAIA · OLYMPIAN COUNCIL · kairos-coder.github.io/gaia/council.html</div>
+  <div class="footer-text">12 Olympians · 4 Triads · 1 Conduit · Titan Memory</div>
+</footer>
+
+<script>
+  // ═══════════════════════════════════════════════
+  // OLYMPIAN REGISTRY — Flip status to 'active' as built
+  // ═══════════════════════════════════════════════
+  const OLYMPIANS = {
+    // ROW 1: SOVEREIGNTY
+    zeus: {
+      id:'zeus', emoji:'⚡', name:'Zeus', endpoint:'zeus/api.html', status:'active',
+      domain:'Law, Sovereignty, Judgment', module:'judge.js',
+      quickTests:[
+        {label:'judge: mark', view:'judge', params:'context=charge_grounding&action=mark_interval'},
+        {label:'judge: overthrow', view:'judge', params:'context=succession&action=overthrow'},
+        {label:'status', view:'status', params:''},
+        {label:'precedents', view:'precedents', params:'context=charge_grounding'}
+      ],
+      inputPlaceholder:'context=X&action=Y',
+      inputDefault:'context=charge_grounding&action=mark_interval',
+      titanRoutes:['kronos','themis']
+    },
+    hera: {
+      id:'hera', emoji:'👑', name:'Hera', endpoint:'hera/api.html', status:'planned',
+      domain:'Covenant, Bond, Fidelity', module:'covenant.js',
+      quickTests:[
+        {label:'covenant: check', view:'covenant', params:'entities=zeus,kronos'},
+        {label:'bond: status', view:'bond', params:'bond_id=1'},
+        {label:'oath: verify', view:'oath', params:'oath_id=1'}
+      ],
+      inputPlaceholder:'entities=X,Y', inputDefault:'entities=zeus,kronos',
+      titanRoutes:['kronos','mnemosyne']
+    },
+    poseidon: {
+      id:'poseidon', emoji:'🔱', name:'Poseidon', endpoint:'poseidon/api.html', status:'planned',
+      domain:'Boundary, Stress, Fracture', module:'stress.js',
+      quickTests:[
+        {label:'stress: boundary', view:'stress', params:'component=circuit'},
+        {label:'test: fracture', view:'fracture', params:'component=circuit'},
+        {label:'stability', view:'stability', params:''}
+      ],
+      inputPlaceholder:'component=X', inputDefault:'component=circuit',
+      titanRoutes:['oceanus','kreios']
+    },
+    // ROW 2: WISDOM
+    athena: {
+      id:'athena', emoji:'🦉', name:'Athena', endpoint:'athena/api.html', status:'active',
+      domain:'Wisdom, Archive, Ideas', module:'curator.js',
+      quickTests:[
+        {label:'brief: GAIA', view:'brief', params:'tags=GAIA'},
+        {label:'brief: MVDI', view:'brief', params:'tags=MVDI'},
+        {label:'summarize: myth', view:'summarize', params:'tags=mythology'},
+        {label:'sessions: DS', view:'sessions', params:'agent=DS'}
+      ],
+      inputPlaceholder:'tags=GAIA,MVDI', inputDefault:'tags=GAIA',
+      titanRoutes:['koios','mnemosyne']
+    },
+    apollo: {
+      id:'apollo', emoji:'☀️', name:'Apollo', endpoint:'apollo/api.html', status:'planned',
+      domain:'Clarity, Signal, Prophecy', module:'clarity.js',
+      quickTests:[
+        {label:'clarify: signal', view:'clarify', params:'signal=test'},
+        {label:'illuminate', view:'illuminate', params:'target=shadow'},
+        {label:'prophecy', view:'prophecy', params:''}
+      ],
+      inputPlaceholder:'signal=X', inputDefault:'signal=test',
+      titanRoutes:['hyperion','phoibe']
+    },
+    artemis: {
+      id:'artemis', emoji:'🏹', name:'Artemis', endpoint:'artemis/api.html', status:'planned',
+      domain:'Precision, Target, Scope', module:'precision.js',
+      quickTests:[
+        {label:'target: narrow', view:'target', params:'intent=judgment'},
+        {label:'precision: check', view:'precision', params:'output=test'},
+        {label:'scope', view:'scope', params:''}
+      ],
+      inputPlaceholder:'intent=X', inputDefault:'intent=judgment',
+      titanRoutes:['themis','koios']
+    },
+    // ROW 3: CREATION
+    hephaestus: {
+      id:'hephaestus', emoji:'🔨', name:'Hephaestus', endpoint:'hephaestus/api.html', status:'planned',
+      domain:'Forge, Craft, Build', module:'forge.js',
+      quickTests:[
+        {label:'forge: test', view:'forge', params:'output=test'},
+        {label:'build: validate', view:'validate', params:'blueprint=test'},
+        {label:'craft: assess', view:'craft', params:'artifact=test'}
+      ],
+      inputPlaceholder:'output=X', inputDefault:'output=test',
+      titanRoutes:['kreios','hyperion']
+    },
+    aphrodite: {
+      id:'aphrodite', emoji:'💗', name:'Aphrodite', endpoint:'aphrodite/api.html', status:'planned',
+      domain:'Desire, Beauty, Resonance', module:'desire.js',
+      quickTests:[
+        {label:'desire: pull', view:'desire', params:'output=test'},
+        {label:'beauty: assess', view:'beauty', params:'output=test'},
+        {label:'resonance', view:'resonance', params:''}
+      ],
+      inputPlaceholder:'output=X', inputDefault:'output=test',
+      titanRoutes:['theia','tethys']
+    },
+    ares: {
+      id:'ares', emoji:'⚔️', name:'Ares', endpoint:'ares/api.html', status:'planned',
+      domain:'Challenge, Arena, Opposition', module:'arena.js',
+      quickTests:[
+        {label:'challenge: arena', view:'challenge', params:'output=test'},
+        {label:'oppose: test', view:'oppose', params:'opponent=test'},
+        {label:'survive', view:'survive', params:''}
+      ],
+      inputPlaceholder:'output=X', inputDefault:'output=test',
+      titanRoutes:['iapetos','hyperion']
+    },
+    // ROW 4: CYCLICAL
+    demeter: {
+      id:'demeter', emoji:'🌾', name:'Demeter', endpoint:'demeter/api.html', status:'planned',
+      domain:'Season, Nourishment, Harvest', module:'season.js',
+      quickTests:[
+        {label:'season: check', view:'season', params:'context=current'},
+        {label:'harvest: ready', view:'harvest', params:'crop=test'},
+        {label:'nourish', view:'nourish', params:'target=field'}
+      ],
+      inputPlaceholder:'context=X', inputDefault:'context=current',
+      titanRoutes:['tethys','rhea']
+    },
+    dionysus: {
+      id:'dionysus', emoji:'🍇', name:'Dionysus', endpoint:'dionysus/api.html', status:'planned',
+      domain:'Ecstasy, Rupture, Transformation', module:'rupture.js',
+      quickTests:[
+        {label:'rupture: edge', view:'rupture', params:'context=stable'},
+        {label:'transform: break', view:'transform', params:'target=order'},
+        {label:'ecstasy', view:'ecstasy', params:''}
+      ],
+      inputPlaceholder:'context=X', inputDefault:'context=stable',
+      titanRoutes:['oceanus','iapetos']
+    },
+    hestia: {
+      id:'hestia', emoji:'🔥', name:'Hestia', endpoint:'hestia/api.html', status:'planned',
+      domain:'Hearth, Center, Still Point', module:'hearth.js',
+      quickTests:[
+        {label:'center: ground', view:'center', params:'context=chaos'},
+        {label:'hearth: tend', view:'hearth', params:''},
+        {label:'still', view:'still', params:''}
+      ],
+      inputPlaceholder:'context=X', inputDefault:'context=chaos',
+      titanRoutes:['rhea','kronos']
+    }
+  };
+
+  const ROWS = {
+    rowSovereignty: ['zeus','hera','poseidon'],
+    rowWisdom: ['athena','apollo','artemis'],
+    rowCreation: ['hephaestus','aphrodite','ares'],
+    rowCyclical: ['demeter','dionysus','hestia']
+  };
+
+  // ═══════════════════════════════════════════════
+  // RENDER ALL PANELS
+  // ═══════════════════════════════════════════════
+  function renderAll() {
+    for (const [rowId, olympianIds] of Object.entries(ROWS)) {
+      const row = document.getElementById(rowId);
+      row.innerHTML = olympianIds.map(id => renderPanel(OLYMPIANS[id])).join('');
+    }
+  }
+
+  function renderPanel(o) {
+    const isActive = o.status === 'active';
+    const panelClass = isActive ? 'active' : 'planned';
+    const statusBadge = `<span class="panel-status ${o.status}">${o.status.toUpperCase()}</span>`;
+    
+    const quickBtns = o.quickTests.map(q => 
+      `<button class="quick-btn" ${isActive ? '' : 'disabled'} onclick="${isActive ? `queryOlympian('${o.id}','${q.view}','${q.params}')` : ''}">${q.label}</button>`
+    ).join('');
+    
+    return `
+      <div class="olympian-panel ${panelClass}" id="panel-${o.id}">
+        <div class="panel-header">
+          <div class="panel-emoji">${o.emoji}</div>
+          <div>
+            <div class="panel-name">${o.name}</div>
+            <div class="panel-endpoint">${o.endpoint} · ${o.module}</div>
+          </div>
+          ${statusBadge}
+        </div>
+        <div class="quick-btns">${quickBtns}</div>
+        <div class="query-row">
+          <input class="query-input" id="${o.id}Params" placeholder="${o.inputPlaceholder}" value="${o.inputDefault}" ${isActive ? '' : 'disabled'} />
+          <button class="query-btn" ${isActive ? '' : 'disabled'} onclick="${isActive ? `queryOlympian('${o.id}','${o.quickTests[0].view}',document.getElementById('${o.id}Params').value)` : ''}">Query</button>
+        </div>
+        <div class="response-box" id="${o.id}Response">${o.emoji} ${isActive ? 'Awaiting query...' : 'Planned — endpoint not yet built'}</div>
+      </div>`;
+  }
+
+  // ═══════════════════════════════════════════════
+  // QUERY ENGINE
+  // ═══════════════════════════════════════════════
+  window.queryOlympian = async function(id, view, params) {
+    const o = OLYMPIANS[id];
+    if (!o || o.status !== 'active') return;
+    
+    const box = document.getElementById(`${id}Response`);
+    box.textContent = `${o.emoji} Querying...`;
+    
+    try {
+      const url = `${o.endpoint}?view=${view}&${params}`;
+      const resp = await fetch(url);
+      const html = await resp.text();
+      const match = html.match(/<pre[^>]*id="output"[^>]*>([\s\S]*?)<\/pre>/);
+      if (match) {
+        const data = JSON.parse(match[1]);
+        box.innerHTML = `<span class="ok">✓ ${o.name} responded</span>\n${JSON.stringify(data, null, 2)}`;
+        
+        // Auto-route judgments through Hermes
+        if (id === 'zeus' && view === 'judge' && data.verdict) {
+          routeToHermes('zeus', 'judge', data);
+        }
+        if (id === 'athena' && view === 'brief' && data.ideas) {
+          routeToHermes('athena', 'brief', { count: Array.isArray(data.ideas) ? data.ideas.length : 0 });
+        }
+      }
+    } catch(e) {
+      box.innerHTML = `<span class="err">✗ ${e.message}</span>`;
+    }
+  };
+
+  // ═══════════════════════════════════════════════
+  // HERMES ROUTING
+  // ═══════════════════════════════════════════════
+  async function routeToHermes(olympian, operation, output) {
+    const outputStr = encodeURIComponent(JSON.stringify(output));
+    const url = `hermes/api.html?view=route&olympian=${olympian}&operation=${operation}&output=${outputStr}`;
+    try {
+      const resp = await fetch(url);
+      const html = await resp.text();
+      const match = html.match(/<pre[^>]*id="output"[^>]*>([\s\S]*?)<\/pre>/);
+      if (match) {
+        const data = JSON.parse(match[1]);
+        console.log(`[Council] ${olympian} → Hermes:`, data.all_delivered ? '✓' : '✗');
+        refreshMemory();
+      }
+    } catch(e) {
+      console.warn(`[Council] Route failed: ${e.message}`);
+    }
+  }
+
+  window.testZeusRoute = function() {
+    const output = { verdict:'lawful', sovereignty_score:0.95, context:'test', action:'mark_interval' };
+    routeToHermes('zeus','judge', output);
+  };
+
+  // ═══════════════════════════════════════════════
+  // MEMORY VIEWER
+  // ═══════════════════════════════════════════════
+  window.refreshMemory = function() {
+    const log = document.getElementById('memoryLog');
+    const titans = ['kronos','themis','mnemosyne','koios','rhea','hyperion','oceanus','tethys','theia','phoibe','iapetos','kreios'];
+    let totalEvents = 0;
+    const counts = {};
+
+    for (const titan of titans) {
+      const stored = localStorage.getItem(`${titan}_memory`);
+      if (stored) {
+        try {
+          const data = JSON.parse(stored);
+          counts[titan] = data.total_events || 0;
+          totalEvents += data.total_events || 0;
+        } catch(e) {}
+      }
+    }
+
+    document.getElementById('memTotal').textContent = totalEvents;
+
+    const kronosStored = localStorage.getItem('kronos_memory');
+    if (kronosStored) {
+      try {
+        const kronosData = JSON.parse(kronosStored);
+        const events = (kronosData.events || []).slice(-30).reverse();
+        log.innerHTML = events.map(e => 
+          `<div class="memory-entry"><span class="tick">#${e.tick||'—'}</span> <span class="from">${e.olympian||'—'}</span>.${e.operation||e.type||'—'} → ${e.type||''} <span style="color:var(--text-dim)">${new Date(e.timestamp).toLocaleTimeString()}</span></div>`
+        ).join('') || '<span style="color:var(--text-dim)">No events in ledger.</span>';
+      } catch(e) {
+        log.innerHTML = '<span class="err">Error reading ledger.</span>';
+      }
+    } else {
+      log.innerHTML = '<span style="color:var(--text-dim)">No Kronos ledger yet. Query Zeus to start.</span>';
+    }
+  };
+
+  // Boot
+  renderAll();
+  refreshMemory();
+  console.log('🏛️ Olympian Council ready.');
+  console.log('  Active: Zeus, Athena, Hermes');
+  console.log('  Planned: 9 Olympians — scaffolded, awaiting endpoints');
+  console.log('  Memory: localStorage (12 Titan domains)');
+</script>
+</body>
+</html>
