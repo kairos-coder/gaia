@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>🦉 Athena · Wisdom API</title>
+  <style>
+    :root {
+      --bg: #07090c; --surface: #141b22; --text: #c0ccd8; --text-dim: #6a7a8a;
+      --accent: #c9a85c; --accent-dim: #6b5a32; --border: rgba(138,155,176,0.15);
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      background:var(--bg); color:var(--text);
+      font-family:'Courier New',monospace; padding:1.5rem; min-height:100vh;
+    }
+    h1 { color:var(--accent); font-size:0.9rem; margin-bottom:0.25rem; }
+    .subtitle { color:var(--text-dim); font-size:0.65rem; margin-bottom:1.5rem; }
+    .endpoint { font-size:0.65rem; color:var(--text-dim); margin-bottom:0.3rem; padding:0.3rem 0.5rem; background:var(--surface); border-left:2px solid var(--accent); }
+    pre {
+      background:var(--surface); border:1px solid var(--border);
+      padding:1rem; font-size:0.7rem; line-height:1.5; white-space:pre-wrap;
+      max-height:70vh; overflow-y:auto;
+    }
+  </style>
+</head>
+<body>
+  <h1>🦉 Athena · Wisdom API</h1>
+  <p class="subtitle">Idea Archive Curator · Structured Thought · Context Construction</p>
+
+  <div class="endpoint">?view=brief&tags=TAG1,TAG2 — Top 5 carry-forward ideas for domain</div>
+  <div class="endpoint">?view=summarize&tags=TAG1 — ACC-ready plain-language briefing</div>
+  <div class="endpoint">?view=search&query=TEXT&novelty_min=3 — Search all ideas</div>
+  <div class="endpoint">?view=sessions&agent=DS — Session index by agent</div>
+
+  <pre id="output">🦉 Consulting the archive...</pre>
+
+  <script>
+    const ATHENA_ARCHIVE_API = 'https://kairos-coder.github.io/athena/archive/api.html';
+
+    async function queryArchive(params) {
+      const url = `${ATHENA_ARCHIVE_API}?${params}`;
+      try {
+        const resp = await fetch(url);
+        if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+        const html = await resp.text();
+        const match = html.match(/<pre[^>]*id="output"[^>]*>([\s\S]*?)<\/pre>/);
+        if (match) {
+          return JSON.parse(match[1]);
+        }
+        throw new Error('Could not parse archive response');
+      } catch(e) {
+        return { error: `Archive query failed: ${e.message}`, archive_url: url };
+      }
+    }
+
+    async function queryTitanMemory(queries) {
+      const results = {};
+      for (const q of queries) {
+        try {
+          const url = `../titans/${q.titan}/api.html?view=events&type=${q.type}&limit=5`;
+          const resp = await fetch(url);
+          if (resp.ok) {
+            const html = await resp.text();
+            const match = html.match(/<pre[^>]*id="output"[^>]*>([\s\S]*?)<\/pre>/);
+            if (match) {
+              results[`${q.titan}_${q.type}`] = JSON.parse(match[1]);
+            }
+          }
+        } catch(e) {
+          results[`${q.titan}_${q.type}`] = { error: e.message };
+        }
+      }
+      return results;
+    }
+
+    async function handleRequest() {
+      const params = new URLSearchParams(window.location.search);
+      const view = params.get('view') || 'brief';
+      const tags = params.get('tags') || '';
+      const query = params.get('query') || '';
+      const noveltyMin = params.get('novelty_min') || '3';
+      const agent = params.get('agent') || '';
+
+      let result;
+
+      if (view === 'brief') {
+        const archiveParams = new URLSearchParams({ view: 'brief' });
+        if (tags) archiveParams.set('tags', tags);
+        
+        const archiveResult = await queryArchive(archiveParams.toString());
+        
+        // Also query Titan memory for context
+        const titanQueries = [
+          { titan: 'koios', type: 'question' },
+          { titan: 'mnemosyne', type: 'record' }
+        ];
+        const titanMemory = await queryTitanMemory(titanQueries);
+        
+        result = {
+          view: 'brief',
+          tags: tags ? tags.split(',') : [],
+          ideas: archiveResult,
+          titan_context: titanMemory,
+          note: 'Ideas from Athena archive. Titan context from Koios + Mnemosyne.'
+        };
+
+      } else if (view === 'summarize') {
+        const archiveParams = new URLSearchParams({ view: 'summarize' });
+        if (tags) archiveParams.set('tags', tags);
+        
+        const archiveResult = await queryArchive(archiveParams.toString());
+        
+        // summarize returns plain text from the archive
+        result = {
+          view: 'summarize',
+          tags: tags ? tags.split(',') : [],
+          briefing: typeof archiveResult === 'string' ? archiveResult : archiveResult.briefing || JSON.stringify(archiveResult)
+        };
+
+      } else if (view === 'search') {
+        if (!query) {
+          result = { error: 'search requires ?query=TEXT' };
+        } else {
+          const archiveParams = new URLSearchParams({ view: 'all' });
+          if (query) archiveParams.set('search', query);
+          if (noveltyMin) archiveParams.set('novelty', noveltyMin);
+          
+          result = await queryArchive(archiveParams.toString());
+          result.view = 'search';
+          result.query = query;
+        }
+
+      } else if (view === 'sessions') {
+        const archiveParams = new URLSearchParams({ view: 'sessions' });
+        if (agent) archiveParams.set('agent', agent);
+        
+        result = await queryArchive(archiveParams.toString());
+        result.view = 'sessions';
+
+      } else {
+        result = {
+          error: `Unknown view: ${view}`,
+          valid_views: ['brief', 'summarize', 'search', 'sessions']
+        };
+      }
+
+      document.getElementById('output').textContent = typeof result === 'string' 
+        ? result 
+        : JSON.stringify(result, null, 2);
+    }
+
+    handleRequest();
+  </script>
+</body>
+</html>
