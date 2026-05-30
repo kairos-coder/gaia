@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>GAIA · Olympian Council</title>
+  <title>GAIA · Council — Event Orchestration</title>
   <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Cinzel:wght@400;600;900&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
   <style>
     :root {
@@ -12,7 +12,7 @@
       --accent: #c9a85c; --accent-dim: #6b5a32;
       --text: #c0ccd8; --text-dim: #6a7a8a;
       --border: rgba(138,155,176,0.15); --border-bright: rgba(138,155,176,0.35);
-      --green: #6abf8a; --red: #c85050;
+      --green: #6abf8a; --red: #c85050; --blue: #44aaff;
     }
     * { margin:0; padding:0; box-sizing:border-box; }
     body {
@@ -31,123 +31,121 @@
     header {
       position:relative; z-index:10; border-bottom:1px solid var(--border);
       padding:0 1.5rem; display:flex; align-items:center; justify-content:space-between;
-      height:52px;
+      height:48px;
     }
-    .breadcrumb { font-family:'Share Tech Mono',monospace; font-size:0.6rem; color:var(--text-dim); letter-spacing:0.1em; }
+    .breadcrumb { font-family:'Share Tech Mono',monospace; font-size:0.58rem; color:var(--text-dim); letter-spacing:0.1em; }
     .breadcrumb a { color:var(--steel); text-decoration:none; }
-    .header-tag { font-family:'Share Tech Mono',monospace; font-size:0.55rem; color:var(--accent-dim); letter-spacing:0.1em; border:1px solid var(--accent-dim); padding:2px 6px; }
-    .header-right { display:flex; gap:0.75rem; align-items:center; }
-    .active-badge { font-family:'Share Tech Mono',monospace; font-size:0.5rem; color:var(--green); background:rgba(106,191,138,0.1); border:1px solid rgba(106,191,138,0.3); padding:2px 6px; }
+    .header-tag { font-family:'Share Tech Mono',monospace; font-size:0.5rem; color:var(--accent-dim); letter-spacing:0.1em; border:1px solid var(--accent-dim); padding:2px 6px; }
     
-    /* SECTION ROWS */
-    .council-section {
-      position:relative; z-index:5; border-bottom:1px solid var(--border);
+    .main-layout {
+      position:relative; z-index:5; display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:1px; background:var(--border); min-height:calc(100vh - 48px);
     }
+    @media(max-width:900px){ .main-layout { grid-template-columns:1fr; } }
+    
+    /* LEFT: ORCHESTRATION PANELS */
+    .orchestration {
+      background:var(--void-surface); display:flex; flex-direction:column;
+      overflow-y:auto;
+    }
+    
     .section-label {
-      font-family:'Share Tech Mono',monospace; font-size:0.5rem; color:var(--text-dim);
+      font-family:'Share Tech Mono',monospace; font-size:0.48rem; color:var(--text-dim);
       letter-spacing:0.2em; text-transform:uppercase;
-      padding:0.6rem 1.5rem; background:var(--void-surface);
+      padding:0.5rem 1rem; background:var(--void-raised);
       border-bottom:1px solid var(--border);
     }
     
-    .olympian-row {
-      display:grid; grid-template-columns:repeat(3, 1fr);
-      gap:1px; background:var(--border);
+    .chain-builder {
+      padding:1rem; display:flex; flex-direction:column; gap:0.75rem;
+      border-bottom:1px solid var(--border);
     }
-    @media(max-width:900px){ .olympian-row { grid-template-columns:1fr; } }
-    
-    /* OLYMPIAN PANEL */
-    .olympian-panel {
-      background:var(--void-surface); padding:1rem;
-      display:flex; flex-direction:column; gap:0.6rem;
-      min-height:220px;
+    .chain-row {
+      display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap;
     }
-    .olympian-panel.planned { opacity:0.45; }
-    .olympian-panel.active {}
-    
-    .panel-header { display:flex; align-items:center; gap:0.5rem; }
-    .panel-emoji { font-size:1.3rem; }
-    .panel-name { font-family:'Cinzel',serif; font-size:0.8rem; font-weight:600; color:var(--steel-bright); }
-    .panel-endpoint { font-family:'Share Tech Mono',monospace; font-size:0.45rem; color:var(--text-dim); }
-    .panel-status {
-      font-family:'Share Tech Mono',monospace; font-size:0.45rem;
-      padding:1px 5px; margin-left:auto;
+    .chain-label {
+      font-family:'Share Tech Mono',monospace; font-size:0.55rem;
+      color:var(--accent); letter-spacing:0.1em; min-width:80px;
     }
-    .panel-status.active { color:var(--green); border:1px solid rgba(106,191,138,0.3); background:rgba(106,191,138,0.08); }
-    .panel-status.planned { color:var(--text-dim); border:1px solid var(--border); }
+    .chain-select, .chain-input {
+      background:var(--void); border:1px solid var(--border);
+      color:var(--text); font-family:'Share Tech Mono',monospace;
+      font-size:0.58rem; padding:0.35rem 0.5rem; outline:none;
+    }
+    .chain-select:focus, .chain-input:focus { border-color:var(--steel-dim); }
     
-    .quick-btns { display:flex; gap:0.25rem; flex-wrap:wrap; }
-    .quick-btn {
+    .fire-btn {
+      width:100%; background:rgba(201,168,92,0.1); border:1px solid var(--accent-dim);
+      color:var(--accent); font-family:'Share Tech Mono',monospace;
+      font-size:0.7rem; letter-spacing:0.2em; text-transform:uppercase;
+      padding:0.6rem; cursor:pointer; transition:all 0.2s;
+    }
+    .fire-btn:hover { background:rgba(201,168,92,0.2); border-color:var(--accent); }
+    
+    .preset-btns { display:flex; gap:0.3rem; flex-wrap:wrap; padding:0 1rem 0.75rem; }
+    .preset-btn {
       background:var(--void); border:1px solid var(--border);
       color:var(--text-dim); font-family:'Share Tech Mono',monospace;
-      font-size:0.5rem; padding:0.25rem 0.5rem; cursor:pointer;
-      letter-spacing:0.04em; white-space:nowrap;
+      font-size:0.5rem; padding:0.3rem 0.6rem; cursor:pointer;
+      letter-spacing:0.05em;
     }
-    .quick-btn:hover { color:var(--steel-bright); border-color:var(--border-bright); }
-    .quick-btn:disabled { opacity:0.3; cursor:not-allowed; }
+    .preset-btn:hover { color:var(--steel-bright); border-color:var(--border-bright); }
     
-    .query-row { display:flex; gap:0.25rem; }
-    .query-input {
-      flex:1; background:var(--void); border:1px solid var(--border);
-      color:var(--text); font-family:'Share Tech Mono',monospace;
-      font-size:0.55rem; padding:0.3rem 0.4rem; outline:none;
+    /* EVENT LOG */
+    .event-log {
+      flex:1; padding:0.75rem 1rem; overflow-y:auto;
+      font-family:'Share Tech Mono',monospace; font-size:0.52rem;
+      line-height:1.6; color:var(--text-dim);
     }
-    .query-input:focus { border-color:var(--steel-dim); }
-    .query-input:disabled { opacity:0.3; }
-    .query-btn {
-      background:rgba(201,168,92,0.08); border:1px solid var(--accent-dim);
-      color:var(--accent); font-family:'Share Tech Mono',monospace;
-      font-size:0.55rem; padding:0.3rem 0.6rem; cursor:pointer;
-      white-space:nowrap; letter-spacing:0.05em;
+    .event-entry {
+      padding:0.3rem 0.5rem; margin-bottom:0.2rem;
+      border-left:2px solid var(--border); background:var(--void);
     }
-    .query-btn:hover { background:rgba(201,168,92,0.15); }
-    .query-btn:disabled { opacity:0.3; cursor:not-allowed; }
+    .event-entry.step1 { border-left-color:var(--accent); }
+    .event-entry.step2 { border-left-color:var(--blue); }
+    .event-entry.step3 { border-left-color:var(--green); }
+    .event-entry .ts { color:var(--text-dim); font-size:0.45rem; }
+    .event-entry .actor { color:var(--accent); }
+    .event-entry .action { color:var(--steel); }
     
-    .response-box {
-      flex:1; background:var(--void); border:1px solid var(--border);
-      padding:0.6rem; font-family:'Share Tech Mono',monospace;
-      font-size:0.52rem; line-height:1.4; overflow-y:auto;
-      max-height:150px; white-space:pre-wrap; color:var(--text-dim);
+    /* RIGHT: MEMORY VIEWER */
+    .memory-viewer {
+      background:var(--void-surface); display:flex; flex-direction:column;
+      overflow-y:auto;
     }
-    .response-box .ok { color:var(--green); }
-    .response-box .err { color:var(--red); }
     
-    /* CONDUIT BAR */
-    .conduit-bar {
-      position:relative; z-index:5; border-bottom:1px solid var(--border);
-      padding:1rem 1.5rem; background:var(--void-surface);
-      display:flex; align-items:center; gap:1rem; flex-wrap:wrap;
+    .memory-toolbar {
+      display:flex; gap:0.5rem; padding:0.5rem 1rem; flex-wrap:wrap;
+      border-bottom:1px solid var(--border);
     }
-    .conduit-emoji { font-size:1.5rem; }
-    .conduit-name { font-family:'Cinzel',serif; font-size:0.9rem; font-weight:600; color:var(--steel-bright); }
-    .conduit-endpoint { font-family:'Share Tech Mono',monospace; font-size:0.5rem; color:var(--text-dim); }
-    .conduit-btns { display:flex; gap:0.3rem; flex-wrap:wrap; margin-left:auto; }
+    .titan-tab {
+      font-family:'Share Tech Mono',monospace; font-size:0.52rem;
+      color:var(--text-dim); padding:0.3rem 0.6rem; cursor:pointer;
+      border:1px solid transparent; letter-spacing:0.05em;
+    }
+    .titan-tab:hover { color:var(--steel-bright); border-color:var(--border); }
+    .titan-tab.active { color:var(--accent); border-color:var(--accent-dim); background:rgba(201,168,92,0.05); }
     
-    /* MEMORY BAR */
-    .memory-bar {
-      position:relative; z-index:5; border-bottom:1px solid var(--border);
-      padding:0.75rem 1.5rem; display:flex; align-items:center; gap:1rem; flex-wrap:wrap;
-      background:var(--void);
+    .memory-display {
+      flex:1; padding:0.75rem 1rem; overflow-y:auto;
+      font-family:'Share Tech Mono',monospace; font-size:0.52rem;
+      line-height:1.5; color:var(--text-dim);
     }
-    .memory-bar h3 { font-family:'Share Tech Mono',monospace; font-size:0.6rem; color:var(--accent); letter-spacing:0.12em; text-transform:uppercase; }
-    .memory-stats { display:flex; gap:1rem; flex-wrap:wrap; font-family:'Share Tech Mono',monospace; font-size:0.5rem; color:var(--text-dim); }
-    .memory-stats span { color:var(--steel); }
-    
-    .memory-log {
-      position:relative; z-index:5; padding:0.75rem 1.5rem;
-      font-family:'Share Tech Mono',monospace; font-size:0.5rem;
-      color:var(--text-dim); max-height:180px; overflow-y:auto;
-      line-height:1.5;
+    .memory-entry {
+      padding:0.25rem 0.5rem; margin-bottom:0.15rem;
+      background:var(--void); border-left:1px solid var(--border);
     }
-    .memory-entry { padding:0.15rem 0; border-bottom:1px solid rgba(255,255,255,0.02); }
     .memory-entry .tick { color:var(--accent); }
-    .memory-entry .from { color:var(--steel); }
+    .memory-entry .type { color:var(--steel); }
+    .memory-empty { color:var(--text-dim); font-style:italic; padding:1rem; text-align:center; }
     
-    footer {
-      position:relative; z-index:5; border-top:1px solid var(--border);
-      padding:0.6rem 1.5rem; display:flex; align-items:center; justify-content:space-between;
+    .memory-stats-row {
+      display:flex; gap:1rem; padding:0.5rem 1rem; flex-wrap:wrap;
+      font-family:'Share Tech Mono',monospace; font-size:0.5rem; color:var(--text-dim);
+      border-top:1px solid var(--border);
     }
-    .footer-text { font-family:'Share Tech Mono',monospace; font-size:0.5rem; color:var(--text-dim); letter-spacing:0.08em; }
+    .memory-stats-row span { color:var(--steel); }
   </style>
 </head>
 <body>
@@ -156,365 +154,259 @@
   <div class="breadcrumb">
     <a href="https://kairos-coder.github.io/gaia">GAIA</a> &nbsp;/&nbsp; Council
   </div>
-  <div class="header-right">
-    <span class="active-badge">3 ACTIVE</span>
-    <span class="header-tag">OLYMPIAN COUNCIL · DEV CONSOLE</span>
-  </div>
+  <div class="header-tag">EVENT ORCHESTRATION · MEMORY CONSOLE</div>
 </header>
 
-<!-- ═══════════════ ROW 1: SOVEREIGNTY TRIAD ═══════════════ -->
-<div class="council-section">
-  <div class="section-label">Ⅰ · Sovereignty Triad — Law, Covenant, Boundary</div>
-  <div class="olympian-row" id="rowSovereignty"></div>
-</div>
-
-<!-- ═══════════════ ROW 2: WISDOM TRIAD ═══════════════ -->
-<div class="council-section">
-  <div class="section-label">Ⅱ · Wisdom Triad — Archive, Clarity, Precision</div>
-  <div class="olympian-row" id="rowWisdom"></div>
-</div>
-
-<!-- ═══════════════ ROW 3: CREATION TRIAD ═══════════════ -->
-<div class="council-section">
-  <div class="section-label">Ⅲ · Creation Triad — Forge, Desire, Challenge</div>
-  <div class="olympian-row" id="rowCreation"></div>
-</div>
-
-<!-- ═══════════════ ROW 4: CYCLICAL TRIAD ═══════════════ -->
-<div class="council-section">
-  <div class="section-label">Ⅳ · Cyclical Triad — Season, Rupture, Center</div>
-  <div class="olympian-row" id="rowCyclical"></div>
-</div>
-
-<!-- ═══════════════ CONDUIT: HERMES ═══════════════ -->
-<div class="conduit-bar">
-  <div class="conduit-emoji">🪄</div>
-  <div>
-    <div class="conduit-name">Hermes</div>
-    <div class="conduit-endpoint">hermes/api.html · Cross-domain conduit</div>
+<div class="main-layout">
+  
+  <!-- LEFT: ORCHESTRATION -->
+  <div class="orchestration">
+    
+    <div class="section-label">Ⅰ · Chain Builder — Compose and Fire Events</div>
+    
+    <div class="chain-builder">
+      <div class="chain-row">
+        <span class="chain-label">Olympian</span>
+        <select class="chain-select" id="chainOlympian">
+          <option value="zeus">⚡ Zeus — Judge</option>
+          <option value="athena">🦉 Athena — Curate</option>
+          <option value="hermes">🪄 Hermes — Route</option>
+        </select>
+      </div>
+      <div class="chain-row">
+        <span class="chain-label">Operation</span>
+        <select class="chain-select" id="chainOperation">
+          <option value="judge">judge — Render binding judgment</option>
+          <option value="brief">brief — Curate top ideas</option>
+          <option value="route">route — Route to Titan memory</option>
+        </select>
+      </div>
+      <div class="chain-row">
+        <span class="chain-label">Payload</span>
+        <input class="chain-input" id="chainPayload" value='{"verdict":"lawful","sovereignty_score":0.95,"context":"test","action":"mark_interval"}' />
+      </div>
+      <button class="fire-btn" onclick="fireChain()">⚡ Fire Full Chain</button>
+    </div>
+    
+    <div class="preset-btns">
+      <button class="preset-btn" onclick="firePreset('zeusLawful')">Zeus: Lawful Mark</button>
+      <button class="preset-btn" onclick="firePreset('zeusOverrule')">Zeus: Overrule</button>
+      <button class="preset-btn" onclick="firePreset('athenaBrief')">Athena: GAIA Brief</button>
+      <button class="preset-btn" onclick="firePreset('syntheticRoute')">Synthetic: Route to All</button>
+      <button class="preset-btn" onclick="firePreset('clearMemory')">Clear All Memory</button>
+    </div>
+    
+    <div class="section-label">Ⅱ · Event Log — Live Chain Trace</div>
+    <div class="event-log" id="eventLog">
+      <div style="color:var(--text-dim);padding:1rem;text-align:center;">Fire a chain to see the event trace.</div>
+    </div>
+    
   </div>
-  <div class="conduit-btns">
-    <button class="quick-btn" onclick="queryOlympian('hermes','routes','')">All Routes</button>
-    <button class="quick-btn" onclick="queryOlympian('hermes','delivery','titan=kronos')">Kronos Delivery</button>
-    <button class="quick-btn" onclick="queryOlympian('hermes','delivery','titan=themis')">Themis Delivery</button>
-    <button class="quick-btn" onclick="queryOlympian('hermes','delivery','titan=mnemosyne')">Mnemosyne Delivery</button>
-    <button class="quick-btn" onclick="testZeusRoute()">Test: Zeus→Kronos</button>
+  
+  <!-- RIGHT: MEMORY VIEWER -->
+  <div class="memory-viewer">
+    
+    <div class="section-label">Ⅲ · Titan Memory Viewer</div>
+    
+    <div class="memory-toolbar" id="memoryTabs">
+      <button class="titan-tab active" data-titan="kronos">⏳ Kronos</button>
+      <button class="titan-tab" data-titan="themis">⚖️ Themis</button>
+      <button class="titan-tab" data-titan="mnemosyne">📜 Mnemosyne</button>
+      <button class="titan-tab" data-titan="koios">⚗️ Koios</button>
+      <button class="titan-tab" data-titan="rhea">🌊 Rhea</button>
+      <button class="titan-tab" data-titan="hyperion">🔆 Hyperion</button>
+      <button class="titan-tab" data-titan="oceanus">🌀 Oceanus</button>
+      <button class="titan-tab" data-titan="tethys">💧 Tethys</button>
+      <button class="titan-tab" data-titan="theia">👁️ Theia</button>
+      <button class="titan-tab" data-titan="phoibe">🔮 Phoibe</button>
+      <button class="titan-tab" data-titan="iapetos">💀 Iapetos</button>
+      <button class="titan-tab" data-titan="kreios">🏛️ Kreios</button>
+    </div>
+    
+    <div class="memory-display" id="memoryDisplay">
+      <div class="memory-empty">Select a Titan tab to view memory.</div>
+    </div>
+    
+    <div class="memory-stats-row" id="memoryStatsRow">
+      <span>Total Events: <span id="statTotal">0</span></span>
+      <span>Active Titans: <span id="statActive">0</span></span>
+    </div>
+    
   </div>
-</div>
 
-<!-- ═══════════════ MEMORY VIEWER ═══════════════ -->
-<div class="memory-bar">
-  <h3>⏳ Kronos Ledger</h3>
-  <div class="memory-stats" id="memoryStats">
-    <span>Total: <span id="memTotal">—</span></span>
-    <span>Zeus: <span id="memZeus">—</span></span>
-    <span>Athena: <span id="memAthena">—</span></span>
-    <span>Hermes: <span id="memHermes">—</span></span>
-  </div>
-  <button class="quick-btn" onclick="refreshMemory()" style="margin-left:auto;">Refresh Ledger</button>
 </div>
-<div class="memory-log" id="memoryLog">
-  <span style="color:var(--text-dim)">Memory ledger loading...</span>
-</div>
-
-<footer>
-  <div class="footer-text">GAIA · OLYMPIAN COUNCIL · kairos-coder.github.io/gaia/council.html</div>
-  <div class="footer-text">12 Olympians · 4 Triads · 1 Conduit · Titan Memory</div>
-</footer>
 
 <script>
-  // ═══════════════════════════════════════════════
-  // OLYMPIAN REGISTRY — Flip status to 'active' as built
-  // ═══════════════════════════════════════════════
-  const OLYMPIANS = {
-    // ROW 1: SOVEREIGNTY
-    zeus: {
-      id:'zeus', emoji:'⚡', name:'Zeus', endpoint:'zeus/api.html', status:'active',
-      domain:'Law, Sovereignty, Judgment', module:'judge.js',
-      quickTests:[
-        {label:'judge: mark', view:'judge', params:'context=charge_grounding&action=mark_interval'},
-        {label:'judge: overthrow', view:'judge', params:'context=succession&action=overthrow'},
-        {label:'status', view:'status', params:''},
-        {label:'precedents', view:'precedents', params:'context=charge_grounding'}
-      ],
-      inputPlaceholder:'context=X&action=Y',
-      inputDefault:'context=charge_grounding&action=mark_interval',
-      titanRoutes:['kronos','themis']
-    },
-    hera: {
-      id:'hera', emoji:'👑', name:'Hera', endpoint:'hera/api.html', status:'planned',
-      domain:'Covenant, Bond, Fidelity', module:'covenant.js',
-      quickTests:[
-        {label:'covenant: check', view:'covenant', params:'entities=zeus,kronos'},
-        {label:'bond: status', view:'bond', params:'bond_id=1'},
-        {label:'oath: verify', view:'oath', params:'oath_id=1'}
-      ],
-      inputPlaceholder:'entities=X,Y', inputDefault:'entities=zeus,kronos',
-      titanRoutes:['kronos','mnemosyne']
-    },
-    poseidon: {
-      id:'poseidon', emoji:'🔱', name:'Poseidon', endpoint:'poseidon/api.html', status:'planned',
-      domain:'Boundary, Stress, Fracture', module:'stress.js',
-      quickTests:[
-        {label:'stress: boundary', view:'stress', params:'component=circuit'},
-        {label:'test: fracture', view:'fracture', params:'component=circuit'},
-        {label:'stability', view:'stability', params:''}
-      ],
-      inputPlaceholder:'component=X', inputDefault:'component=circuit',
-      titanRoutes:['oceanus','kreios']
-    },
-    // ROW 2: WISDOM
-    athena: {
-      id:'athena', emoji:'🦉', name:'Athena', endpoint:'athena/api.html', status:'active',
-      domain:'Wisdom, Archive, Ideas', module:'curator.js',
-      quickTests:[
-        {label:'brief: GAIA', view:'brief', params:'tags=GAIA'},
-        {label:'brief: MVDI', view:'brief', params:'tags=MVDI'},
-        {label:'summarize: myth', view:'summarize', params:'tags=mythology'},
-        {label:'sessions: DS', view:'sessions', params:'agent=DS'}
-      ],
-      inputPlaceholder:'tags=GAIA,MVDI', inputDefault:'tags=GAIA',
-      titanRoutes:['koios','mnemosyne']
-    },
-    apollo: {
-      id:'apollo', emoji:'☀️', name:'Apollo', endpoint:'apollo/api.html', status:'planned',
-      domain:'Clarity, Signal, Prophecy', module:'clarity.js',
-      quickTests:[
-        {label:'clarify: signal', view:'clarify', params:'signal=test'},
-        {label:'illuminate', view:'illuminate', params:'target=shadow'},
-        {label:'prophecy', view:'prophecy', params:''}
-      ],
-      inputPlaceholder:'signal=X', inputDefault:'signal=test',
-      titanRoutes:['hyperion','phoibe']
-    },
-    artemis: {
-      id:'artemis', emoji:'🏹', name:'Artemis', endpoint:'artemis/api.html', status:'planned',
-      domain:'Precision, Target, Scope', module:'precision.js',
-      quickTests:[
-        {label:'target: narrow', view:'target', params:'intent=judgment'},
-        {label:'precision: check', view:'precision', params:'output=test'},
-        {label:'scope', view:'scope', params:''}
-      ],
-      inputPlaceholder:'intent=X', inputDefault:'intent=judgment',
-      titanRoutes:['themis','koios']
-    },
-    // ROW 3: CREATION
-    hephaestus: {
-      id:'hephaestus', emoji:'🔨', name:'Hephaestus', endpoint:'hephaestus/api.html', status:'planned',
-      domain:'Forge, Craft, Build', module:'forge.js',
-      quickTests:[
-        {label:'forge: test', view:'forge', params:'output=test'},
-        {label:'build: validate', view:'validate', params:'blueprint=test'},
-        {label:'craft: assess', view:'craft', params:'artifact=test'}
-      ],
-      inputPlaceholder:'output=X', inputDefault:'output=test',
-      titanRoutes:['kreios','hyperion']
-    },
-    aphrodite: {
-      id:'aphrodite', emoji:'💗', name:'Aphrodite', endpoint:'aphrodite/api.html', status:'planned',
-      domain:'Desire, Beauty, Resonance', module:'desire.js',
-      quickTests:[
-        {label:'desire: pull', view:'desire', params:'output=test'},
-        {label:'beauty: assess', view:'beauty', params:'output=test'},
-        {label:'resonance', view:'resonance', params:''}
-      ],
-      inputPlaceholder:'output=X', inputDefault:'output=test',
-      titanRoutes:['theia','tethys']
-    },
-    ares: {
-      id:'ares', emoji:'⚔️', name:'Ares', endpoint:'ares/api.html', status:'planned',
-      domain:'Challenge, Arena, Opposition', module:'arena.js',
-      quickTests:[
-        {label:'challenge: arena', view:'challenge', params:'output=test'},
-        {label:'oppose: test', view:'oppose', params:'opponent=test'},
-        {label:'survive', view:'survive', params:''}
-      ],
-      inputPlaceholder:'output=X', inputDefault:'output=test',
-      titanRoutes:['iapetos','hyperion']
-    },
-    // ROW 4: CYCLICAL
-    demeter: {
-      id:'demeter', emoji:'🌾', name:'Demeter', endpoint:'demeter/api.html', status:'planned',
-      domain:'Season, Nourishment, Harvest', module:'season.js',
-      quickTests:[
-        {label:'season: check', view:'season', params:'context=current'},
-        {label:'harvest: ready', view:'harvest', params:'crop=test'},
-        {label:'nourish', view:'nourish', params:'target=field'}
-      ],
-      inputPlaceholder:'context=X', inputDefault:'context=current',
-      titanRoutes:['tethys','rhea']
-    },
-    dionysus: {
-      id:'dionysus', emoji:'🍇', name:'Dionysus', endpoint:'dionysus/api.html', status:'planned',
-      domain:'Ecstasy, Rupture, Transformation', module:'rupture.js',
-      quickTests:[
-        {label:'rupture: edge', view:'rupture', params:'context=stable'},
-        {label:'transform: break', view:'transform', params:'target=order'},
-        {label:'ecstasy', view:'ecstasy', params:''}
-      ],
-      inputPlaceholder:'context=X', inputDefault:'context=stable',
-      titanRoutes:['oceanus','iapetos']
-    },
-    hestia: {
-      id:'hestia', emoji:'🔥', name:'Hestia', endpoint:'hestia/api.html', status:'planned',
-      domain:'Hearth, Center, Still Point', module:'hearth.js',
-      quickTests:[
-        {label:'center: ground', view:'center', params:'context=chaos'},
-        {label:'hearth: tend', view:'hearth', params:''},
-        {label:'still', view:'still', params:''}
-      ],
-      inputPlaceholder:'context=X', inputDefault:'context=chaos',
-      titanRoutes:['rhea','kronos']
-    }
-  };
-
-  const ROWS = {
-    rowSovereignty: ['zeus','hera','poseidon'],
-    rowWisdom: ['athena','apollo','artemis'],
-    rowCreation: ['hephaestus','aphrodite','ares'],
-    rowCyclical: ['demeter','dionysus','hestia']
-  };
-
-  // ═══════════════════════════════════════════════
-  // RENDER ALL PANELS
-  // ═══════════════════════════════════════════════
-  function renderAll() {
-    for (const [rowId, olympianIds] of Object.entries(ROWS)) {
-      const row = document.getElementById(rowId);
-      row.innerHTML = olympianIds.map(id => renderPanel(OLYMPIANS[id])).join('');
-    }
+  // ═══════════════════════════════════════════
+  // EVENT LOG
+  // ═══════════════════════════════════════════
+  function logEvent(step, actor, action, detail) {
+    const log = document.getElementById('eventLog');
+    const time = new Date().toLocaleTimeString();
+    const entry = document.createElement('div');
+    entry.className = `event-entry step${step}`;
+    entry.innerHTML = `<span class="ts">${time}</span> <span class="actor">${actor}</span> <span class="action">${action}</span> ${detail}`;
+    log.prepend(entry);
+    
+    // Keep last 50 events
+    while (log.children.length > 50) log.removeChild(log.lastChild);
   }
 
-  function renderPanel(o) {
-    const isActive = o.status === 'active';
-    const panelClass = isActive ? 'active' : 'planned';
-    const statusBadge = `<span class="panel-status ${o.status}">${o.status.toUpperCase()}</span>`;
+  // ═══════════════════════════════════════════
+  // CHAIN EXECUTION
+  // ═══════════════════════════════════════════
+  window.fireChain = async function() {
+    const olympian = document.getElementById('chainOlympian').value;
+    const operation = document.getElementById('chainOperation').value;
+    const payloadRaw = document.getElementById('chainPayload').value;
     
-    const quickBtns = o.quickTests.map(q => 
-      `<button class="quick-btn" ${isActive ? '' : 'disabled'} onclick="${isActive ? `queryOlympian('${o.id}','${q.view}','${q.params}')` : ''}">${q.label}</button>`
-    ).join('');
+    let payload;
+    try { payload = JSON.parse(payloadRaw); } catch(e) { payload = { raw: payloadRaw }; }
     
-    return `
-      <div class="olympian-panel ${panelClass}" id="panel-${o.id}">
-        <div class="panel-header">
-          <div class="panel-emoji">${o.emoji}</div>
-          <div>
-            <div class="panel-name">${o.name}</div>
-            <div class="panel-endpoint">${o.endpoint} · ${o.module}</div>
-          </div>
-          ${statusBadge}
-        </div>
-        <div class="quick-btns">${quickBtns}</div>
-        <div class="query-row">
-          <input class="query-input" id="${o.id}Params" placeholder="${o.inputPlaceholder}" value="${o.inputDefault}" ${isActive ? '' : 'disabled'} />
-          <button class="query-btn" ${isActive ? '' : 'disabled'} onclick="${isActive ? `queryOlympian('${o.id}','${o.quickTests[0].view}',document.getElementById('${o.id}Params').value)` : ''}">Query</button>
-        </div>
-        <div class="response-box" id="${o.id}Response">${o.emoji} ${isActive ? 'Awaiting query...' : 'Planned — endpoint not yet built'}</div>
-      </div>`;
-  }
-
-  // ═══════════════════════════════════════════════
-  // QUERY ENGINE
-  // ═══════════════════════════════════════════════
-  window.queryOlympian = async function(id, view, params) {
-    const o = OLYMPIANS[id];
-    if (!o || o.status !== 'active') return;
+    logEvent(1, olympian, operation, `→ Starting chain`);
     
-    const box = document.getElementById(`${id}Response`);
-    box.textContent = `${o.emoji} Querying...`;
+    // Step 1: Query the Olympian
+    if (olympian === 'zeus' && operation === 'judge') {
+      const context = payload.context || 'test';
+      const action = payload.action || 'mark_interval';
+      
+      try {
+        const resp = await fetch(`zeus/api.html?view=judge&context=${context}&action=${action}`);
+        const html = await resp.text();
+        const match = html.match(/<pre[^>]*id="output"[^>]*>([\s\S]*?)<\/pre>/);
+        if (match) {
+          const data = JSON.parse(match[1]);
+          logEvent(1, 'zeus', 'judge', `→ Verdict: ${data.verdict} | Score: ${data.sovereignty_score}`);
+          payload = data;
+        }
+      } catch(e) {
+        logEvent(1, 'zeus', 'error', `→ ${e.message}`);
+      }
+    } else if (olympian === 'athena' && operation === 'brief') {
+      const tags = payload.tags || 'GAIA';
+      logEvent(1, 'athena', 'brief', `→ Querying archive for: ${tags}`);
+      // Athena queries external archive — simulate for now
+      payload = { count: 5, tags, source: 'athena archive' };
+      logEvent(1, 'athena', 'brief', `→ Retrieved ${payload.count} ideas about ${tags}`);
+    }
+    
+    // Step 2: Route through Hermes
+    logEvent(2, 'hermes', 'route', `→ Routing to Titan memory...`);
+    const outputStr = encodeURIComponent(JSON.stringify(payload));
     
     try {
-      const url = `${o.endpoint}?view=${view}&${params}`;
-      const resp = await fetch(url);
+      const resp = await fetch(`hermes/api.html?view=route&olympian=${olympian}&operation=${operation}&output=${outputStr}`);
       const html = await resp.text();
       const match = html.match(/<pre[^>]*id="output"[^>]*>([\s\S]*?)<\/pre>/);
       if (match) {
         const data = JSON.parse(match[1]);
-        box.innerHTML = `<span class="ok">✓ ${o.name} responded</span>\n${JSON.stringify(data, null, 2)}`;
-        
-        // Auto-route judgments through Hermes
-        if (id === 'zeus' && view === 'judge' && data.verdict) {
-          routeToHermes('zeus', 'judge', data);
+        const delivered = data.deliveries || [];
+        for (const d of delivered) {
+          logEvent(2, 'hermes', '→', `${d.titan} (${d.type}) — ${d.delivered ? '✓' : '✗'}`);
         }
-        if (id === 'athena' && view === 'brief' && data.ideas) {
-          routeToHermes('athena', 'brief', { count: Array.isArray(data.ideas) ? data.ideas.length : 0 });
-        }
+        logEvent(3, 'kronos', 'ledger', `→ ${delivered.length} Titans updated. All delivered: ${data.all_delivered}`);
       }
     } catch(e) {
-      box.innerHTML = `<span class="err">✗ ${e.message}</span>`;
+      logEvent(2, 'hermes', 'error', `→ ${e.message}`);
+    }
+    
+    // Refresh memory viewer
+    refreshMemoryView();
+  };
+
+  // ═══════════════════════════════════════════
+  // PRESETS
+  // ═══════════════════════════════════════════
+  window.firePreset = function(preset) {
+    if (preset === 'zeusLawful') {
+      document.getElementById('chainOlympian').value = 'zeus';
+      document.getElementById('chainOperation').value = 'judge';
+      document.getElementById('chainPayload').value = '{"verdict":"lawful","sovereignty_score":0.95,"context":"charge_grounding","action":"mark_interval"}';
+      fireChain();
+    } else if (preset === 'zeusOverrule') {
+      document.getElementById('chainOlympian').value = 'zeus';
+      document.getElementById('chainOperation').value = 'judge';
+      document.getElementById('chainPayload').value = '{"verdict":"overruled","sovereignty_score":0.6,"context":"succession","action":"overthrow"}';
+      fireChain();
+    } else if (preset === 'athenaBrief') {
+      document.getElementById('chainOlympian').value = 'athena';
+      document.getElementById('chainOperation').value = 'brief';
+      document.getElementById('chainPayload').value = '{"tags":"GAIA","count":5}';
+      fireChain();
+    } else if (preset === 'syntheticRoute') {
+      document.getElementById('chainOlympian').value = 'hermes';
+      document.getElementById('chainOperation').value = 'route';
+      document.getElementById('chainPayload').value = '{"synthetic":true,"test":"Synthetic event — routing to all Titans"}';
+      fireChain();
+    } else if (preset === 'clearMemory') {
+      const titans = ['kronos','themis','mnemosyne','koios','rhea','hyperion','oceanus','tethys','theia','phoibe','iapetos','kreios'];
+      for (const t of titans) localStorage.removeItem(`${t}_memory`);
+      logEvent(0, 'system', 'clear', '→ All Titan memory cleared');
+      refreshMemoryView();
     }
   };
 
-  // ═══════════════════════════════════════════════
-  // HERMES ROUTING
-  // ═══════════════════════════════════════════════
-  async function routeToHermes(olympian, operation, output) {
-    const outputStr = encodeURIComponent(JSON.stringify(output));
-    const url = `hermes/api.html?view=route&olympian=${olympian}&operation=${operation}&output=${outputStr}`;
-    try {
-      const resp = await fetch(url);
-      const html = await resp.text();
-      const match = html.match(/<pre[^>]*id="output"[^>]*>([\s\S]*?)<\/pre>/);
-      if (match) {
-        const data = JSON.parse(match[1]);
-        console.log(`[Council] ${olympian} → Hermes:`, data.all_delivered ? '✓' : '✗');
-        refreshMemory();
-      }
-    } catch(e) {
-      console.warn(`[Council] Route failed: ${e.message}`);
-    }
-  }
-
-  window.testZeusRoute = function() {
-    const output = { verdict:'lawful', sovereignty_score:0.95, context:'test', action:'mark_interval' };
-    routeToHermes('zeus','judge', output);
-  };
-
-  // ═══════════════════════════════════════════════
+  // ═══════════════════════════════════════════
   // MEMORY VIEWER
-  // ═══════════════════════════════════════════════
-  window.refreshMemory = function() {
-    const log = document.getElementById('memoryLog');
-    const titans = ['kronos','themis','mnemosyne','koios','rhea','hyperion','oceanus','tethys','theia','phoibe','iapetos','kreios'];
+  // ═══════════════════════════════════════════
+  let activeTitan = 'kronos';
+  
+  document.getElementById('memoryTabs').addEventListener('click', function(e) {
+    if (e.target.classList.contains('titan-tab')) {
+      document.querySelectorAll('.titan-tab').forEach(b => b.classList.remove('active'));
+      e.target.classList.add('active');
+      activeTitan = e.target.dataset.titan;
+      refreshMemoryView();
+    }
+  });
+  
+  window.refreshMemoryView = function() {
+    const display = document.getElementById('memoryDisplay');
+    const stored = localStorage.getItem(`${activeTitan}_memory`);
+    
+    // Update stats
     let totalEvents = 0;
-    const counts = {};
-
-    for (const titan of titans) {
-      const stored = localStorage.getItem(`${titan}_memory`);
-      if (stored) {
+    let activeCount = 0;
+    const titans = ['kronos','themis','mnemosyne','koios','rhea','hyperion','oceanus','tethys','theia','phoibe','iapetos','kreios'];
+    for (const t of titans) {
+      const s = localStorage.getItem(`${t}_memory`);
+      if (s) {
         try {
-          const data = JSON.parse(stored);
-          counts[titan] = data.total_events || 0;
-          totalEvents += data.total_events || 0;
+          const d = JSON.parse(s);
+          totalEvents += d.total_events || 0;
+          if (d.total_events > 0) activeCount++;
         } catch(e) {}
       }
     }
-
-    document.getElementById('memTotal').textContent = totalEvents;
-
-    const kronosStored = localStorage.getItem('kronos_memory');
-    if (kronosStored) {
-      try {
-        const kronosData = JSON.parse(kronosStored);
-        const events = (kronosData.events || []).slice(-30).reverse();
-        log.innerHTML = events.map(e => 
-          `<div class="memory-entry"><span class="tick">#${e.tick||'—'}</span> <span class="from">${e.olympian||'—'}</span>.${e.operation||e.type||'—'} → ${e.type||''} <span style="color:var(--text-dim)">${new Date(e.timestamp).toLocaleTimeString()}</span></div>`
-        ).join('') || '<span style="color:var(--text-dim)">No events in ledger.</span>';
-      } catch(e) {
-        log.innerHTML = '<span class="err">Error reading ledger.</span>';
+    document.getElementById('statTotal').textContent = totalEvents;
+    document.getElementById('statActive').textContent = activeCount;
+    
+    if (!stored) {
+      display.innerHTML = `<div class="memory-empty">No memory for ${activeTitan}. Fire a chain to create events.</div>`;
+      return;
+    }
+    
+    try {
+      const data = JSON.parse(stored);
+      const events = (data.events || []).slice(-30).reverse();
+      if (events.length === 0) {
+        display.innerHTML = `<div class="memory-empty">${activeTitan} memory is empty.</div>`;
+      } else {
+        display.innerHTML = events.map(e => 
+          `<div class="memory-entry"><span class="tick">#${e.tick||'—'}</span> <span class="type">${e.type||e.operation||'—'}</span> ${e.olympian ? 'from ' + e.olympian : ''} <span style="color:var(--text-dim)">${new Date(e.timestamp).toLocaleTimeString()}</span></div>`
+        ).join('');
       }
-    } else {
-      log.innerHTML = '<span style="color:var(--text-dim)">No Kronos ledger yet. Query Zeus to start.</span>';
+    } catch(e) {
+      display.innerHTML = `<div class="memory-empty">Error reading memory: ${e.message}</div>`;
     }
   };
-
+  
   // Boot
-  renderAll();
-  refreshMemory();
-  console.log('🏛️ Olympian Council ready.');
-  console.log('  Active: Zeus, Athena, Hermes');
-  console.log('  Planned: 9 Olympians — scaffolded, awaiting endpoints');
-  console.log('  Memory: localStorage (12 Titan domains)');
+  refreshMemoryView();
+  console.log('🏛️ Council orchestration console ready.');
+  console.log('  Left: Chain builder + Event log');
+  console.log('  Right: Titan memory viewer (12 tabs)');
+  console.log('  Presets for quick testing');
 </script>
 </body>
 </html>
