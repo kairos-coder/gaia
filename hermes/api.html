@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>🪄 Hermes · Translation & Memory API</title>
+  <style>
+    :root {
+      --bg: #07090c; --surface: #141b22; --text: #c0ccd8; --text-dim: #6a7a8a;
+      --accent: #e8a850; --accent-dim: #9a7030; --border: rgba(138,155,176,0.15);
+      --green: #6abf8a; --red: #c85050;
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      background:var(--bg); color:var(--text);
+      font-family:'Courier New',monospace; padding:1.5rem; min-height:100vh;
+    }
+    h1 { color:var(--accent); font-size:0.9rem; margin-bottom:0.25rem; }
+    .subtitle { color:var(--text-dim); font-size:0.65rem; margin-bottom:1.5rem; }
+    .endpoint { font-size:0.65rem; color:var(--text-dim); margin-bottom:0.3rem; padding:0.3rem 0.5rem; background:var(--surface); border-left:2px solid var(--accent); }
+    .endpoint a { color:var(--accent); text-decoration:none; }
+    pre {
+      background:var(--surface); border:1px solid var(--border);
+      padding:1rem; font-size:0.7rem; line-height:1.5; white-space:pre-wrap;
+      max-height:70vh; overflow-y:auto;
+    }
+  </style>
+</head>
+<body>
+  <h1>🪄 Hermes · Translation & Memory API</h1>
+  <p class="subtitle">Cross-domain message translation · Memory ingestion routing · Olympian→Titan conduit</p>
+
+  <div class="endpoint">?view=translate&message={JSON}&from=OLYMPIAN&to=OLYMPIAN — Translate between domain vocabularies</div>
+  <div class="endpoint">?view=route&olympian=NAME&operation=OP&output={JSON} — Route output to Titan memory domains</div>
+  <div class="endpoint">?view=routes — List all available Olympian→Titan routes</div>
+  <div class="endpoint">?view=delivery&titan=NAME — Check delivery status for a Titan</div>
+
+  <pre id="output">🪄 Hermes awaits your message...</pre>
+
+  <script>
+    // ═══════════════════════════════════════════
+    // HERMES TRANSLATOR — Inline engine
+    // ═══════════════════════════════════════════
+    const Hermes = {
+      domains: {},
+      deliveryLog: [],
+
+      // Load an Olympian's domain.json
+      loadDomain: async function(name) {
+        if (this.domains[name]) return this.domains[name];
+        try {
+          const resp = await fetch(`../${name}/domain.json`);
+          if (resp.ok) {
+            this.domains[name] = await resp.json();
+            console.log(`[Hermes] Domain loaded: ${name}`);
+            return this.domains[name];
+          }
+        } catch(e) { /* not yet built */ }
+        return null;
+      },
+
+      // Translate message from one domain vocabulary to another
+      translate: function(message, fromDomain, toDomainName) {
+        if (!fromDomain?.translations?.[toDomainName]) {
+          return {
+            translated: message,
+            fidelity: 0.7,
+            fidelity_note: `No direct translation map from ${fromDomain.olympian} to ${toDomainName}. Passthrough with 70% fidelity.`
+          };
+        }
+
+        const map = fromDomain.translations[toDomainName];
+        const translated = {};
+        let translatedFields = 0;
+        let totalFields = 0;
+
+        for (const [key, value] of Object.entries(message)) {
+          totalFields++;
+          if (map[key]) {
+            translated[map[key]] = value;
+            translatedFields++;
+          } else {
+            translated[key] = value;
+          }
+        }
+
+        return {
+          translated,
+          fidelity: totalFields > 0 ? Math.round((translatedFields / totalFields) * 100) / 100 : 1.0,
+          fidelity_note: totalFields > 0 && translatedFields === totalFields 
+            ? 'Perfect translation. No fidelity loss.' 
+            : `${totalFields - translatedFields} field(s) passed through untranslated.`,
+          from: fromDomain.olympian,
+          to: toDomainName,
+          fields_translated: translatedFields,
+          fields_total: totalFields
+        };
+      },
+
+      // The critical function: route Olympian output to Titan memory
+      route: async function(olympianId, operation, output) {
+        const domain = this.domains[olympianId];
+        if (!domain) {
+          return { error: `Domain not loaded for ${olympianId}. Load it first.` };
+        }
+
+        if (!domain.titan_memory_queries?.[operation]) {
+          return { 
+            error: `No Titan routing defined for ${olympianId}.${operation}`,
+            available_operations: Object.keys(domain.titan_memory_queries || {})
+          };
+        }
+
+        const routes = domain.titan_memory_queries[operation];
+        const deliveries = [];
+
+        for (const route of routes) {
+          // Build the memory event in Titan's vocabulary
+          const event = {
+            type: route.type,
+            olympian: olympianId,
+            operation: operation,
+            timestamp: new Date().toISOString(),
+            ...output
+          };
+
+          // Deliver to Titan's localStorage memory
+          const delivery = this._deliverToTitan(route.titan, event);
+          deliveries.push({
+            titan: route.titan,
+            type: route.type,
+            delivered: delivery.success,
+            event_id: delivery.event_id,
+            titan_total_events: delivery.total_events
+          });
+
+          this.deliveryLog.push({
+            timestamp: new Date().toISOString(),
+            from: olympianId,
+            operation,
+            to: route.titan,
+            type: route.type,
+            success: delivery.success
+          });
+        }
+
+        const result = {
+          olympian: olympianId,
+          operation: operation,
+          deliveries: deliveries,
+          all_delivered: deliveries.every(d => d.delivered),
+          delivered_count: deliveries.filter(d => d.delivered).length,
+          total_routes: deliveries.length
+        };
+
+        // Also log to Kronos as the master ledger
+        this._deliverToKronos(result);
+
+        return result;
+      },
+
+      // Deliver an event to a Titan's localStorage
+      _deliverToTitan: function(titanId, event) {
+        try {
+          const key = `${titanId}_memory`;
+          const stored = JSON.parse(localStorage.getItem(key) || '{"events":[],"last_tick":0,"total_events":0}');
+          
+          // Add tick
+          stored.last_tick++;
+          event.tick = stored.last_tick;
+          
+          stored.events.push(event);
+          stored.total_events = stored.events.length;
+          
+          // Keep last 1000 events
+          if (stored.events.length > 1000) {
+            stored.events = stored.events.slice(-1000);
+          }
+          
+          localStorage.setItem(key, JSON.stringify(stored));
+          
+          console.log(`[Hermes] → ${titanId}: "${event.type}" delivered. Total: ${stored.total_events}`);
+          
+          return { 
+            success: true, 
+            event_id: `${titanId}_${stored.total_events}`,
+            total_events: stored.total_events
+          };
+        } catch(e) {
+          console.warn(`[Hermes] → ${titanId}: Delivery failed — ${e.message}`);
+          return { success: false, error: e.message };
+        }
+      },
+
+      // Log every routing to Kronos as the master ledger
+      _deliverToKronos: function(routingResult) {
+        const event = {
+          type: 'hermes_routing',
+          olympian: 'hermes',
+          operation: 'route',
+          timestamp: new Date().toISOString(),
+          routing: routingResult
+        };
+        this._deliverToTitan('kronos', event);
+      },
+
+      // Get all available Olympian→Titan routes
+      getRoutes: function() {
+        const routes = [];
+        for (const [name, domain] of Object.entries(this.domains)) {
+          if (domain?.titan_memory_queries) {
+            for (const [operation, titanRoutes] of Object.entries(domain.titan_memory_queries)) {
+              for (const route of titanRoutes) {
+                routes.push({
+                  from_olympian: name,
+                  operation: operation,
+                  to_titan: route.titan,
+                  event_type: route.type
+                });
+              }
+            }
+          }
+        }
+        return routes;
+      },
+
+      // Check delivery stats for a specific Titan
+      getDeliveryStatus: function(titanId) {
+        const key = `${titanId}_memory`;
+        const stored = JSON.parse(localStorage.getItem(key) || '{"events":[],"total_events":0,"last_tick":0}');
+        const recentDeliveries = this.deliveryLog
+          .filter(d => d.to === titanId)
+          .slice(-10);
+        
+        return {
+          titan: titanId,
+          total_events: stored.total_events,
+          last_tick: stored.last_tick,
+          recent_deliveries: recentDeliveries,
+          event_types: [...new Set(stored.events.map(e => e.type))]
+        };
+      }
+    };
+
+    // ═══════════════════════════════════════════
+    // API HANDLER
+    // ═══════════════════════════════════════════
+    async function handleRequest() {
+      const params = new URLSearchParams(window.location.search);
+      const view = params.get('view') || 'routes';
+      
+      let result;
+
+      if (view === 'routes') {
+        // Pre-load all known domains
+        await Hermes.loadDomain('zeus');
+        await Hermes.loadDomain('athena');
+        await Hermes.loadDomain('apollo');
+        await Hermes.loadDomain('hephaestus');
+        
+        result = {
+          view: 'routes',
+          total_routes: Hermes.getRoutes().length,
+          routes: Hermes.getRoutes()
+        };
+
+      } else if (view === 'translate') {
+        const messageRaw = params.get('message') || '{}';
+        const fromName = params.get('from') || '';
+        const toName = params.get('to') || '';
+        
+        if (!fromName || !toName) {
+          result = { error: 'translate requires ?from=OLYMPIAN&to=OLYMPIAN&message={JSON}' };
+        } else {
+          let message;
+          try { message = JSON.parse(messageRaw); } catch(e) { message = { raw: messageRaw }; }
+          
+          const fromDomain = await Hermes.loadDomain(fromName);
+          if (!fromDomain) {
+            result = { error: `Domain not found: ${fromName}` };
+          } else {
+            result = {
+              view: 'translate',
+              ...Hermes.translate(message, fromDomain, toName)
+            };
+          }
+        }
+
+      } else if (view === 'route') {
+        const olympian = params.get('olympian') || '';
+        const operation = params.get('operation') || '';
+        const outputRaw = params.get('output') || '{}';
+        
+        if (!olympian || !operation) {
+          result = { error: 'route requires ?olympian=NAME&operation=OP&output={JSON}' };
+        } else {
+          let output;
+          try { output = JSON.parse(outputRaw); } catch(e) { output = { raw: outputRaw }; }
+          
+          await Hermes.loadDomain(olympian);
+          result = await Hermes.route(olympian, operation, output);
+        }
+
+      } else if (view === 'delivery') {
+        const titan = params.get('titan') || 'kronos';
+        result = Hermes.getDeliveryStatus(titan);
+
+      } else {
+        result = { 
+          error: `Unknown view: ${view}`,
+          valid_views: ['routes', 'translate', 'route', 'delivery']
+        };
+      }
+
+      document.getElementById('output').textContent = JSON.stringify(result, null, 2);
+    }
+
+    // Auto-load common domains on boot
+    (async function boot() {
+      await Hermes.loadDomain('zeus');
+      await Hermes.loadDomain('athena');
+      console.log('[Hermes] Ready. Routes available:', Hermes.getRoutes().length);
+      
+      // Handle the request
+      handleRequest();
+    })();
+  </script>
+</body>
+</html>
