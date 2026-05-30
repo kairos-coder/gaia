@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GAIA · Titan Memory Council</title>
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Cinzel:wght@400;600;900&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --steel: #8a9bb0; --steel-dim: #4a5a6a; --steel-bright: #c8d8e8;
+      --void: #07090c; --void-surface: #141b22; --void-raised: #1a2330;
+      --accent: #c9a85c; --accent-dim: #6b5a32;
+      --text: #c0ccd8; --text-dim: #6a7a8a;
+      --border: rgba(138,155,176,0.15); --border-bright: rgba(138,155,176,0.35);
+      --fire: #ff6644; --earth: #88aa44; --water: #44ccff; --air: #aaccff;
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      background: var(--void); color: var(--text);
+      font-family: 'DM Sans', sans-serif; font-weight: 300;
+      min-height: 100vh;
+    }
+    body::before {
+      content:''; position:fixed; inset:0;
+      background-image:
+        linear-gradient(rgba(138,155,176,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(138,155,176,0.03) 1px, transparent 1px);
+      background-size: 40px 40px; pointer-events:none; z-index:0;
+    }
+    header {
+      position:relative; z-index:10; border-bottom:1px solid var(--border);
+      padding:0 2rem; display:flex; align-items:center; justify-content:space-between;
+      height:56px;
+    }
+    .breadcrumb { font-family:'Share Tech Mono',monospace; font-size:0.62rem; color:var(--text-dim); letter-spacing:0.12em; text-transform:uppercase; }
+    .breadcrumb a { color:var(--steel); text-decoration:none; }
+    .breadcrumb a:hover { color:var(--steel-bright); }
+    .header-tag { font-family:'Share Tech Mono',monospace; font-size:0.6rem; color:var(--accent-dim); letter-spacing:0.1em; border:1px solid var(--accent-dim); padding:3px 8px; }
+    
+    .hero {
+      position:relative; z-index:5; padding:3rem 2rem 2rem;
+      border-bottom:1px solid var(--border); text-align:center;
+    }
+    .hero h1 { font-family:'Cinzel',serif; font-size:2rem; font-weight:900; color:var(--steel-bright); letter-spacing:0.05em; }
+    .hero h1 span { color:var(--accent); }
+    .hero p { font-family:'Share Tech Mono',monospace; font-size:0.65rem; color:var(--text-dim); letter-spacing:0.1em; margin-top:0.75rem; }
+    
+    .stats-row {
+      position:relative; z-index:5; display:grid;
+      grid-template-columns:repeat(4, 1fr); border-bottom:1px solid var(--border);
+    }
+    .stat { padding:1.25rem 1.5rem; border-right:1px solid var(--border); text-align:center; }
+    .stat:last-child { border-right:none; }
+    .stat-value { font-family:'Cinzel',serif; font-size:1.8rem; font-weight:900; color:var(--accent); }
+    .stat-label { font-family:'Share Tech Mono',monospace; font-size:0.55rem; color:var(--text-dim); letter-spacing:0.12em; text-transform:uppercase; }
+    
+    .titan-grid {
+      position:relative; z-index:5; display:grid;
+      grid-template-columns:repeat(auto-fill, minmax(300px, 1fr));
+      gap:1px; background:var(--border); padding:0;
+    }
+    .titan-card {
+      background:var(--void-surface); padding:1.5rem;
+      transition:border-color 0.2s; border-left:2px solid transparent;
+    }
+    .titan-card:hover { border-left-color:var(--accent); }
+    .titan-card.fire { border-left-color:var(--fire); }
+    .titan-card.earth { border-left-color:var(--earth); }
+    .titan-card.water { border-left-color:var(--water); }
+    .titan-card.air { border-left-color:var(--air); }
+    
+    .titan-header { display:flex; align-items:center; gap:0.75rem; margin-bottom:0.75rem; }
+    .titan-emoji { font-size:1.8rem; }
+    .titan-name { font-family:'Cinzel',serif; font-size:1rem; font-weight:600; color:var(--steel-bright); }
+    .titan-title { font-family:'Share Tech Mono',monospace; font-size:0.6rem; color:var(--text-dim); letter-spacing:0.08em; }
+    
+    .titan-domain { font-family:'Share Tech Mono',monospace; font-size:0.6rem; color:var(--accent); letter-spacing:0.1em; margin-bottom:0.75rem; }
+    .titan-files { display:flex; flex-wrap:wrap; gap:0.25rem; margin-bottom:0.75rem; }
+    .file-badge { font-family:'Share Tech Mono',monospace; font-size:0.5rem; color:var(--text-dim); background:var(--void-raised); padding:2px 6px; }
+    
+    .titan-stats { display:flex; gap:1rem; font-family:'Share Tech Mono',monospace; font-size:0.6rem; color:var(--text-dim); }
+    .titan-stats span { color:var(--steel); }
+    
+    .gatekeeper-badge { font-family:'Share Tech Mono',monospace; font-size:0.5rem; color:var(--accent); background:rgba(201,168,92,0.1); border:1px solid var(--accent-dim); padding:2px 6px; }
+    
+    footer {
+      position:relative; z-index:5; border-top:1px solid var(--border);
+      padding:1rem 2rem; display:flex; align-items:center; justify-content:space-between;
+    }
+    .footer-text { font-family:'Share Tech Mono',monospace; font-size:0.58rem; color:var(--text-dim); letter-spacing:0.1em; }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="breadcrumb">
+    <a href="https://kairos-coder.github.io/gaia">GAIA</a> &nbsp;/&nbsp; Titans
+  </div>
+  <div class="header-tag">TITAN MEMORY COUNCIL</div>
+</header>
+
+<section class="hero">
+  <h1>The <span>Titan</span> Memory Council</h1>
+  <p>12 domain-specific memory indexes. Immutable ledgers. Every Olympian query recorded here.</p>
+</section>
+
+<div class="stats-row" id="statsRow">
+  <div class="stat"><div class="stat-value" id="statTitans">12</div><div class="stat-label">Titans</div></div>
+  <div class="stat"><div class="stat-value" id="statFiles">—</div><div class="stat-label">Memory Files</div></div>
+  <div class="stat"><div class="stat-value" id="statGatekeeper">1</div><div class="stat-label">Gatekeeper</div></div>
+  <div class="stat"><div class="stat-value" id="statPipeline">12</div><div class="stat-label">Pipeline Order</div></div>
+</div>
+
+<div class="titan-grid" id="titanGrid"></div>
+
+<footer>
+  <div class="footer-text">GAIA · TITANS · kairos-coder.github.io/gaia/titans</div>
+  <div class="footer-text">12 Titans · Domain-Specific Memory · Immutable Ledgers</div>
+</footer>
+
+<script>
+  async function loadRegistry() {
+    try {
+      const resp = await fetch('index.json');
+      const registry = await resp.json();
+      renderTitans(registry);
+    } catch(e) {
+      document.getElementById('titanGrid').innerHTML = '<div style="padding:3rem;text-align:center;color:var(--text-dim)">Unable to load Titan registry.</div>';
+    }
+  }
+
+  function renderTitans(registry) {
+    const grid = document.getElementById('titanGrid');
+    const pipeline = registry.pipeline_order;
+    let html = '';
+    
+    for (const id of pipeline) {
+      const t = registry.titans[id];
+      if (!t) continue;
+      
+      const suitClass = t.suit || '';
+      const gatekeeperBadge = t.has_gatekeeper ? '<span class="gatekeeper-badge">GATEKEEPER</span>' : '';
+      
+      html += `
+        <div class="titan-card ${suitClass}">
+          <div class="titan-header">
+            <div class="titan-emoji">${t.emoji}</div>
+            <div>
+              <div class="titan-name">${t.name}</div>
+              <div class="titan-title">${t.title}</div>
+            </div>
+            ${gatekeeperBadge}
+          </div>
+          <div class="titan-domain">${t.domain} · ${t.gate}</div>
+          <div class="titan-files">
+            ${(t.files || []).map(f => `<span class="file-badge">${f}</span>`).join('')}
+          </div>
+          <div class="titan-stats">
+            <span>Suit:</span> ${t.suit}
+            <span style="margin-left:0.5rem">Gate:</span> ${t.gate}
+            <span style="margin-left:0.5rem">Folder:</span> ${t.folder}
+          </div>
+        </div>`;
+    }
+    
+    grid.innerHTML = html;
+    document.getElementById('statFiles').textContent = 
+      Object.values(registry.titans).reduce((sum, t) => sum + (t.files || []).length, 0);
+  }
+
+  loadRegistry();
+</script>
+</body>
+</html>
