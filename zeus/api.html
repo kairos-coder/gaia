@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>⚡ Zeus · Judgment API</title>
+  <style>
+    :root {
+      --bg: #07090c; --surface: #141b22; --text: #c0ccd8; --text-dim: #6a7a8a;
+      --accent: #ffcc44; --accent-dim: #9a8030; --border: rgba(138,155,176,0.15);
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      background:var(--bg); color:var(--text);
+      font-family:'Courier New',monospace; padding:1.5rem; min-height:100vh;
+    }
+    h1 { color:var(--accent); font-size:0.9rem; margin-bottom:0.25rem; }
+    .subtitle { color:var(--text-dim); font-size:0.65rem; margin-bottom:1.5rem; }
+    .endpoint { font-size:0.65rem; color:var(--text-dim); margin-bottom:0.3rem; padding:0.3rem 0.5rem; background:var(--surface); border-left:2px solid var(--accent); }
+    pre {
+      background:var(--surface); border:1px solid var(--border);
+      padding:1rem; font-size:0.7rem; line-height:1.5; white-space:pre-wrap;
+      max-height:70vh; overflow-y:auto;
+    }
+  </style>
+</head>
+<body>
+  <h1>⚡ Zeus · Judgment API</h1>
+  <p class="subtitle">Law · Sovereignty · Binding Judgment — Query the King of Olympus</p>
+
+  <div class="endpoint">?view=judge&context=SYSTEM&action=ACTION — Render binding judgment</div>
+  <div class="endpoint">?view=status — Current sovereignty level and domain health</div>
+  <div class="endpoint">?view=precedents&context=SYSTEM — Prior relevant judgments</div>
+
+  <pre id="output">Loading Zeus domain...</pre>
+
+  <script>
+    const ZEUS = {
+      id: 'zeus',
+      name: 'Zeus',
+      emoji: '⚡',
+      domain: ['law', 'sovereignty', 'judgment'],
+      sovereignty_level: 1.0,
+      judgments: [],
+
+      // Render a binding judgment
+      judge: function(context, action) {
+        const judgment = {
+          olympian: 'zeus',
+          operation: 'judge',
+          context,
+          action,
+          timestamp: new Date().toISOString(),
+          verdict: this._determineVerdict(context, action),
+          sovereignty_score: this.sovereignty_level,
+          precedent_cited: this._findPrecedent(context),
+          binding: true,
+          appeal_window: '24 ticks'
+        };
+        
+        this.judgments.push(judgment);
+        return judgment;
+      },
+
+      _determineVerdict: function(context, action) {
+        // Core sovereignty logic
+        const lawfulActions = ['mark_interval', 'measure_succession', 'illuminate', 'nourish', 'record', 'bind'];
+        const chaosActions = ['overthrow', 'usurp', 'sever', 'dissolve'];
+        
+        if (chaosActions.includes(action)) return 'overruled';
+        if (lawfulActions.includes(action)) return 'lawful';
+        return 'acknowledged';
+      },
+
+      _findPrecedent: function(context) {
+        const past = this.judgments.filter(j => j.context === context);
+        if (past.length > 0) return past[past.length - 1].verdict;
+        return 'first_of_kind';
+      },
+
+      getStatus: function() {
+        return {
+          olympian: 'zeus',
+          sovereignty_level: this.sovereignty_level,
+          total_judgments: this.judgments.length,
+          last_judgment: this.judgments[this.judgments.length - 1] || null,
+          domain_health: this.sovereignty_level > 0.7 ? 'stable' : 'contested'
+        };
+      },
+
+      getPrecedents: function(context) {
+        return this.judgments.filter(j => j.context === context);
+      }
+    };
+
+    async function queryTitanMemory(queries) {
+      const results = {};
+      for (const q of queries) {
+        try {
+          const url = `../titans/${q.titan}/api.html?view=events&type=${q.type}&limit=5`;
+          const resp = await fetch(url);
+          if (resp.ok) {
+            const text = await resp.text();
+            // Extract JSON from the HTML response (Titan API returns JSON in <pre>)
+            const match = text.match(/<pre[^>]*id="output"[^>]*>([\s\S]*?)<\/pre>/);
+            if (match) {
+              results[`${q.titan}_${q.type}`] = JSON.parse(match[1]);
+            }
+          }
+        } catch(e) {
+          results[`${q.titan}_${q.type}`] = { error: e.message };
+        }
+      }
+      return results;
+    }
+
+    async function handleRequest() {
+      const params = new URLSearchParams(window.location.search);
+      const view = params.get('view') || 'status';
+      const context = params.get('context') || '';
+      const action = params.get('action') || '';
+
+      let result;
+
+      if (view === 'judge') {
+        if (!context || !action) {
+          result = { error: 'judge requires ?context=X&action=Y', example: '?view=judge&context=charge_grounding&action=mark_interval' };
+        } else {
+          // Query Titan memory for context
+          const titanQueries = [
+            { titan: 'kronos', type: 'judge' },
+            { titan: 'themis', type: 'binding' }
+          ];
+          const titanMemory = await queryTitanMemory(titanQueries);
+          
+          // Render judgment
+          const judgment = ZEUS.judge(context, action);
+          result = {
+            ...judgment,
+            titan_context: titanMemory
+          };
+        }
+      } else if (view === 'status') {
+        result = ZEUS.getStatus();
+      } else if (view === 'precedents') {
+        if (!context) {
+          result = { error: 'precedents requires ?context=X' };
+        } else {
+          result = {
+            olympian: 'zeus',
+            context,
+            precedents: ZEUS.getPrecedents(context),
+            count: ZEUS.getPrecedents(context).length
+          };
+        }
+      } else {
+        result = { error: `Unknown view: ${view}`, valid_views: ['judge', 'status', 'precedents'] };
+      }
+
+      document.getElementById('output').textContent = JSON.stringify(result, null, 2);
+    }
+
+    handleRequest();
+  </script>
+</body>
+</html>
