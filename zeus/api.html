@@ -10,69 +10,64 @@
       --accent: #ffcc44; --accent-dim: #9a8030; --border: rgba(138,155,176,0.15);
     }
     * { margin:0; padding:0; box-sizing:border-box; }
-    body {
-      background:var(--bg); color:var(--text);
-      font-family:'Courier New',monospace; padding:1.5rem; min-height:100vh;
-    }
+    body { background:var(--bg); color:var(--text); font-family:'Courier New',monospace; padding:1.5rem; min-height:100vh; }
     h1 { color:var(--accent); font-size:0.9rem; margin-bottom:0.25rem; }
     .subtitle { color:var(--text-dim); font-size:0.65rem; margin-bottom:1.5rem; }
     .endpoint { font-size:0.65rem; color:var(--text-dim); margin-bottom:0.3rem; padding:0.3rem 0.5rem; background:var(--surface); border-left:2px solid var(--accent); }
-    pre {
-      background:var(--surface); border:1px solid var(--border);
-      padding:1rem; font-size:0.7rem; line-height:1.5; white-space:pre-wrap;
-      max-height:70vh; overflow-y:auto;
-    }
+    pre { background:var(--surface); border:1px solid var(--border); padding:1rem; font-size:0.7rem; line-height:1.5; white-space:pre-wrap; max-height:70vh; overflow-y:auto; }
   </style>
 </head>
 <body>
   <h1>⚡ Zeus · Judgment API</h1>
-  <p class="subtitle">Law · Sovereignty · Binding Judgment — Query the King of Olympus</p>
-
-  <div class="endpoint">?view=judge&context=SYSTEM&action=ACTION — Render binding judgment</div>
-  <div class="endpoint">?view=status — Current sovereignty level and domain health</div>
-  <div class="endpoint">?view=precedents&context=SYSTEM — Prior relevant judgments</div>
-
+  <p class="subtitle">Law · Sovereignty · Binding Judgment</p>
+  <div class="endpoint">?view=judge&context=X&action=Y — Render binding judgment</div>
+  <div class="endpoint">?view=status — Sovereignty level and domain health</div>
+  <div class="endpoint">?view=precedents&context=X — Prior judgments</div>
   <pre id="output">{}</pre>
 
   <script>
     const ZEUS = {
-      id: 'zeus',
-      name: 'Zeus',
-      emoji: '⚡',
+      id: 'zeus', name: 'Zeus', emoji: '⚡',
       domain: ['law', 'sovereignty', 'judgment'],
       sovereignty_level: 1.0,
       judgments: [],
 
-      judge: function(context, action) {
+      judge(context, action) {
+        const lawfulActions = ['mark_interval', 'measure_succession', 'illuminate', 'nourish', 'record', 'bind'];
+        const chaosActions = ['overthrow', 'usurp', 'sever', 'dissolve'];
+        let verdict = 'acknowledged';
+        if (chaosActions.includes(action)) verdict = 'overruled';
+        else if (lawfulActions.includes(action)) verdict = 'lawful';
+        
+        const past = this.judgments.filter(j => j.context === context);
+        const precedent = past.length > 0 ? past[past.length - 1].verdict : 'first_of_kind';
+        
         const judgment = {
-          olympian: 'zeus',
-          operation: 'judge',
+          olympian: 'zeus', operation: 'judge',
           context, action,
           timestamp: new Date().toISOString(),
-          verdict: this._determineVerdict(action),
+          verdict,
           sovereignty_score: this.sovereignty_level,
-          precedent_cited: this._findPrecedent(context),
-          binding: true,
+          precedent_cited: precedent,
+          binding: verdict !== 'overruled',
           appeal_window: '24 ticks'
         };
+        
         this.judgments.push(judgment);
+        
+        // Log to Kronos ledger (shared localStorage)
+        if (window.KronosGatekeeper) {
+          const summary = `Verdict: ${verdict} | Score: ${this.sovereignty_level}`;
+          const entry = window.KronosGatekeeper.log('zeus', 'judge', { context, action }, summary, {
+            titan_routes: [{ titan: 'kronos', type: 'judge' }, { titan: 'themis', type: 'binding' }]
+          });
+          judgment.ledger_entry = entry.entry_id;
+        }
+        
         return judgment;
       },
 
-      _determineVerdict: function(action) {
-        const lawfulActions = ['mark_interval', 'measure_succession', 'illuminate', 'nourish', 'record', 'bind'];
-        const chaosActions = ['overthrow', 'usurp', 'sever', 'dissolve'];
-        if (chaosActions.includes(action)) return 'overruled';
-        if (lawfulActions.includes(action)) return 'lawful';
-        return 'acknowledged';
-      },
-
-      _findPrecedent: function(context) {
-        const past = this.judgments.filter(j => j.context === context);
-        return past.length > 0 ? past[past.length - 1].verdict : 'first_of_kind';
-      },
-
-      getStatus: function() {
+      getStatus() {
         return {
           olympian: 'zeus',
           sovereignty_level: this.sovereignty_level,
@@ -82,84 +77,37 @@
         };
       },
 
-      getPrecedents: function(context) {
+      getPrecedents(context) {
         return this.judgments.filter(j => j.context === context);
       }
     };
 
-    // ─── Fetch JSON from an api.html page ─────────────────────────────
-    async function fetchAPI(url) {
-      try {
-        const resp = await fetch(url);
-        if (!resp.ok) return { error: `HTTP ${resp.status}` };
-        const html = await resp.text();
-        const match = html.match(/<pre[^>]*id="output"[^>]*>([\s\S]*?)<\/pre>/);
-        if (match) {
-          const raw = match[1].trim();
-          // Only parse if it looks like JSON
-          if (raw.startsWith('{') || raw.startsWith('[')) {
-            return JSON.parse(raw);
-          }
-          return { error: 'Response not JSON', raw: raw.substring(0, 100) };
-        }
-        return { error: 'Could not find output element' };
-      } catch(e) {
-        return { error: e.message };
-      }
-    }
+    // Expose for council.html
+    window.ZeusAPI = ZEUS;
 
-    async function handleRequest() {
-      const params = new URLSearchParams(window.location.search);
-      const view = params.get('view') || 'status';
-      const context = params.get('context') || '';
-      const action = params.get('action') || '';
-
+    (function handleRequest() {
+      const p = new URLSearchParams(window.location.search);
+      const view = p.get('view') || 'status';
+      const context = p.get('context') || '';
+      const action = p.get('action') || '';
       let result;
 
       if (view === 'judge') {
         if (!context || !action) {
           result = { error: 'judge requires ?context=X&action=Y' };
         } else {
-          // Validate through Kronos gatekeeper
-          const validation = await fetchAPI(`../titans/kronos/api.html?view=validate&olympian=zeus&operation=judge`);
-          
-          // Get prior ledger context
-          const ledger = await fetchAPI(`../titans/kronos/api.html?view=ledger&type=judge&limit=5`);
-          
-          // Render judgment
-          const judgment = ZEUS.judge(context, action);
-          
-          // Route through Kronos gatekeeper
-          const outputStr = encodeURIComponent(JSON.stringify(judgment));
-          const routing = await fetchAPI(`../titans/kronos/api.html?view=route&olympian=zeus&operation=judge&output=${outputStr}`);
-          
-          result = {
-            ...judgment,
-            gatekeeper_validation: validation,
-            ledger_context: ledger,
-            memory_routing: routing
-          };
+          result = ZEUS.judge(context, action);
         }
       } else if (view === 'status') {
         result = ZEUS.getStatus();
       } else if (view === 'precedents') {
-        if (!context) {
-          result = { error: 'precedents requires ?context=X' };
-        } else {
-          result = {
-            olympian: 'zeus', context,
-            precedents: ZEUS.getPrecedents(context),
-            count: ZEUS.getPrecedents(context).length
-          };
-        }
+        result = context ? { olympian: 'zeus', context, precedents: ZEUS.getPrecedents(context) } : { error: 'precedents requires ?context=X' };
       } else {
         result = { error: `Unknown view: ${view}`, valid_views: ['judge', 'status', 'precedents'] };
       }
 
       document.getElementById('output').textContent = JSON.stringify(result, null, 2);
-    }
-
-    handleRequest();
+    })();
   </script>
 </body>
 </html>
