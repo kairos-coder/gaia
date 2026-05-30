@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>🦉 Athena — Goddess of Wisdom</title>
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Cinzel:wght@400;600;900&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --steel: #8a9bb0; --steel-dim: #4a5a6a; --steel-bright: #c8d8e8;
+      --void: #07090c; --void-surface: #141b22; --void-raised: #1a2330;
+      --accent: #c9a85c; --accent-dim: #6b5a32;
+      --text: #c0ccd8; --text-dim: #6a7a8a;
+      --border: rgba(138,155,176,0.15); --border-bright: rgba(138,155,176,0.35);
+      --green: #6abf8a;
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      background: var(--void); color: var(--text);
+      font-family: 'DM Sans', sans-serif; font-weight: 300;
+      min-height: 100vh; display: flex; align-items: center; justify-content: center;
+    }
+    body::before {
+      content:''; position:fixed; inset:0;
+      background-image:
+        linear-gradient(rgba(138,155,176,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(138,155,176,0.03) 1px, transparent 1px);
+      background-size: 40px 40px; pointer-events:none; z-index:0;
+    }
+    #athena-page {
+      position:relative; z-index:5;
+      max-width: 640px; width: 100%; padding: 48px; text-align: center;
+    }
+    .sigil {
+      font-size: 5rem; margin-bottom: 16px;
+      filter: drop-shadow(0 0 24px rgba(201,168,92,0.4));
+    }
+    h1 {
+      font-family:'Cinzel',serif; font-size:2rem; font-weight:900;
+      color: var(--accent); letter-spacing:0.1em; margin-bottom:8px;
+    }
+    .domain {
+      color: var(--text-dim); font-style: italic;
+      margin-bottom: 32px; font-size:0.95rem;
+    }
+    
+    .info-card {
+      background: var(--void-surface); border: 1px solid var(--border);
+      border-radius: 12px; padding: 20px; margin-bottom: 24px; text-align: left;
+    }
+    .info-card h3 {
+      font-family:'Share Tech Mono',monospace; font-size:0.65rem;
+      color: var(--accent); letter-spacing:0.15em; text-transform:uppercase;
+      margin-bottom: 12px; font-weight: normal;
+    }
+    .info-row {
+      display: flex; justify-content: space-between; padding: 6px 0;
+      border-bottom: 1px solid var(--border); font-size:0.82rem;
+    }
+    .info-row:last-child { border-bottom:none; }
+    .info-label { color: var(--text-dim); }
+    .info-value { color: var(--text); font-family:'Share Tech Mono',monospace; font-size:0.72rem; }
+    
+    .stat-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+    }
+    .stat-item {
+      background: var(--void); border: 1px solid var(--border);
+      padding: 12px; text-align: center;
+    }
+    .stat-num {
+      font-family:'Cinzel',serif; font-size:1.5rem; font-weight:900;
+      color: var(--accent); line-height: 1;
+    }
+    .stat-label {
+      font-family:'Share Tech Mono',monospace; font-size:0.5rem;
+      color: var(--text-dim); letter-spacing:0.12em; text-transform:uppercase;
+      margin-top: 4px;
+    }
+    
+    .btn-row { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+    .btn {
+      background: rgba(201,168,92,0.08); border: 1px solid var(--accent-dim);
+      color: var(--accent); font-family:'Share Tech Mono',monospace;
+      font-size:0.75rem; letter-spacing:0.15em; text-transform:uppercase;
+      padding: 12px 24px; cursor: pointer; transition: all 0.2s;
+      text-decoration: none; display: inline-block;
+    }
+    .btn:hover { background: rgba(201,168,92,0.15); border-color: var(--accent); }
+    
+    .status-line {
+      font-family:'Share Tech Mono',monospace; font-size:0.62rem;
+      color: var(--green); letter-spacing:0.1em; margin-top: 24px;
+    }
+  </style>
+</head>
+<body>
+
+<div id="athena-page">
+  <div class="sigil">🦉</div>
+  <h1>ATHENA</h1>
+  <p class="domain">Goddess of Wisdom · Strategy · Archive · Curator of Ideas</p>
+  
+  <div class="info-card">
+    <h3>Domain Profile</h3>
+    <div class="info-row">
+      <span class="info-label">Olympian</span>
+      <span class="info-value">Athena</span>
+    </div>
+    <div class="info-row">
+      <span class="info-label">Domain</span>
+      <span class="info-value">wisdom, strategy, archive, ideas</span>
+    </div>
+    <div class="info-row">
+      <span class="info-label">Role</span>
+      <span class="info-value">Idea curator — queries archive + Titan memory, returns structured thought</span>
+    </div>
+    <div class="info-row">
+      <span class="info-label">API Endpoint</span>
+      <span class="info-value">api.html</span>
+    </div>
+    <div class="info-row">
+      <span class="info-label">Data Source</span>
+      <span class="info-value">GitHub Contents API (athena repo archive)</span>
+    </div>
+    <div class="info-row">
+      <span class="info-label">Titan Memory</span>
+      <span class="info-value">Koios (questions), Mnemosyne (narratives), Kronos (ledger)</span>
+    </div>
+  </div>
+  
+  <div class="info-card">
+    <h3>Archive Stats</h3>
+    <div class="stat-grid" id="archiveStats">
+      <div class="stat-item">
+        <div class="stat-num">—</div>
+        <div class="stat-label">Sessions</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num">—</div>
+        <div class="stat-label">Ideas</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num">—</div>
+        <div class="stat-label">Carry Forward</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num">—</div>
+        <div class="stat-label">Agents</div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="btn-row">
+    <a href="api.html?view=brief&tags=GAIA" class="btn">🦉 Brief: GAIA</a>
+    <a href="api.html?view=summarize&tags=mythology" class="btn">📜 Summarize: Mythology</a>
+    <a href="domain.json" class="btn">📋 Domain Spec</a>
+  </div>
+  
+  <div class="status-line" id="statusLine">🦉 Athena awaits your query.</div>
+</div>
+
+<script>
+  async function loadStats() {
+    try {
+      // Try to load from the Athena archive API
+      const resp = await fetch('https://kairos-coder.github.io/athena/archive/api.html?view=sessions');
+      if (resp.ok) {
+        const text = await resp.text();
+        const match = text.match(/<pre[^>]*id="output"[^>]*>([\s\S]*?)<\/pre>/);
+        if (match) {
+          const data = JSON.parse(match[1]);
+          const sessions = data.sessions || data;
+          const stats = document.getElementById('archiveStats');
+          stats.innerHTML = `
+            <div class="stat-item"><div class="stat-num">${sessions.length || 0}</div><div class="stat-label">Sessions</div></div>
+            <div class="stat-item"><div class="stat-num">—</div><div class="stat-label">Ideas</div></div>
+            <div class="stat-item"><div class="stat-num">—</div><div class="stat-label">Carry Forward</div></div>
+            <div class="stat-item"><div class="stat-num">4</div><div class="stat-label">Agents</div></div>
+          `;
+          document.getElementById('statusLine').textContent = '🦉 Archive connected · ' + sessions.length + ' sessions indexed';
+        }
+      }
+    } catch(e) {
+      document.getElementById('statusLine').textContent = '🦉 Athena ready · Archive connection pending';
+    }
+  }
+  
+  loadStats();
+</script>
+</body>
+</html>
