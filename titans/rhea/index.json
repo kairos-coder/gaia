@@ -1,0 +1,28 @@
+{
+  "titan": "rhea",
+  "title": "The Flowing One",
+  "domain": "rhythm_registry",
+  "description": "Registry of every tremor, disturbance, and rhythm shift in the GAIA field. Rhea records what stirs beneath the surface.",
+  "version": "1.0",
+  "created": "2026-05-30",
+  
+  "registry": [],
+  
+  "stats": {
+    "total_tremors": 0,
+    "by_type": { "disturbance": 0, "rhythm_shift": 0, "birth": 0 },
+    "first_tremor": null,
+    "last_tremor": null,
+    "last_updated": null
+  },
+  
+  "schema": {
+    "tremor_id": "rhea_NNN",
+    "tick": "integer",
+    "timestamp": "ISO 8601",
+    "type": "disturbance | rhythm_shift | birth",
+    "source": "what triggered the tremor",
+    "intensity": "0-1",
+    "description": "what Rhea felt"
+  }
+}
