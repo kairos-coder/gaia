@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>⏳ Kronos · Gatekeeper API</title>
+  <style>
+    :root {
+      --bg: #07090c; --surface: #141b22; --text: #c0ccd8; --text-dim: #6a7a8a;
+      --accent: #c9a85c; --accent-dim: #6b5a32; --border: rgba(138,155,176,0.15);
+      --green: #6abf8a; --red: #c85050;
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      background:var(--bg); color:var(--text);
+      font-family:'Courier New',monospace; padding:1.5rem; min-height:100vh;
+    }
+    h1 { color:var(--accent); font-size:0.9rem; margin-bottom:0.25rem; }
+    .subtitle { color:var(--text-dim); font-size:0.65rem; margin-bottom:1.5rem; }
+    .endpoint { font-size:0.65rem; color:var(--text-dim); margin-bottom:0.3rem; padding:0.3rem 0.5rem; background:var(--surface); border-left:2px solid var(--accent); }
+    .endpoint a { color:var(--accent); text-decoration:none; }
+    pre {
+      background:var(--surface); border:1px solid var(--border);
+      padding:1rem; font-size:0.7rem; line-height:1.5; white-space:pre-wrap;
+      max-height:70vh; overflow-y:auto;
+    }
+  </style>
+</head>
+<body>
+  <h1>⏳ Kronos · Gatekeeper API</h1>
+  <p class="subtitle">Immutable Ledger · Query Validation · Titan Memory Router · The Accountant</p>
+
+  <div class="endpoint"><a href="?view=ledger">?view=ledger</a> — Full immutable ledger of all Olympian interactions</div>
+  <div class="endpoint"><a href="?view=ledger&type=judge&limit=5">?view=ledger&type=judge&limit=5</a> — Filtered ledger entries</div>
+  <div class="endpoint"><a href="?view=stats">?view=stats</a> — Ledger statistics</div>
+  <div class="endpoint"><a href="?view=validate&olympian=zeus&operation=judge">?view=validate&olympian=X&operation=Y</a> — Validate a query pattern</div>
+  <div class="endpoint"><a href="?view=route&olympian=zeus&operation=judge&output={JSON}">?view=route&olympian=X&operation=Y&output={}</a> — Log and route to Titan memory</div>
+
+  <pre id="output">⏳ Kronos ledger loading...</pre>
+
+  <script>
+    // ═══════════════════════════════════════════
+    // KRONOS — The Gatekeeper
+    // Validates queries, maintains immutable ledger, routes to Titan memory
+    // ═══════════════════════════════════════════
+    
+    const LEDGER_KEY = 'kronos_memory';
+    
+    const Kronos = {
+      
+      // ── Load Ledger ──────────────────────────────────────────────────
+      loadLedger: function() {
+        const stored = localStorage.getItem(LEDGER_KEY);
+        if (stored) {
+          try { return JSON.parse(stored); } catch(e) {}
+        }
+        return { events: [], last_tick: 0, total_events: 0 };
+      },
+      
+      saveLedger: function(ledger) {
+        localStorage.setItem(LEDGER_KEY, JSON.stringify(ledger));
+      },
+      
+      // ── Validate Query ───────────────────────────────────────────────
+      // Checks if an Olympian's operation is valid
+      validate: async function(olympian, operation) {
+        // Try to load the Olympian's domain.json
+        try {
+          const resp = await fetch(`../../${olympian}/domain.json`);
+          if (resp.ok) {
+            const domain = await resp.json();
+            if (domain.query_patterns?.[operation]) {
+              return {
+                valid: true,
+                olympian,
+                operation,
+                pattern: domain.query_patterns[operation],
+                titan_routes: domain.titan_memory_queries?.[operation] || []
+              };
+            }
+            return {
+              valid: false,
+              reason: `"${operation}" is not a valid operation for ${olympian}`,
+              valid_operations: Object.keys(domain.query_patterns || {})
+            };
+          }
+        } catch(e) {
+          // Domain file not found — allow passthrough
+          return { valid: true, olympian, operation, note: 'domain.json not found — passthrough allowed' };
+        }
+        
+        return { valid: true, olympian, operation, note: 'no validation rules found — passthrough' };
+      },
+      
+      // ── Log Entry ────────────────────────────────────────────────────
+      // Append to the immutable ledger
+      log: function(olympian, operation, queryParams, responseSummary, metadata = {}) {
+        const ledger = this.loadLedger();
+        
+        const entry = {
+          entry_id: `kronos_${String(ledger.total_events + 1).padStart(4, '0')}`,
+          tick: ledger.total_events + 1,
+          timestamp: new Date().toISOString(),
+          olympian,
+          operation,
+          query_params: queryParams,
+          response_summary: responseSummary,
+          fidelity: metadata.fidelity || null,
+          from_domain: metadata.from_domain || null,
+          to_domain: metadata.to_domain || null,
+          titan_routes: metadata.titan_routes || []
+        };
+        
+        ledger.events.push(entry);
+        ledger.last_tick = entry.tick;
+        ledger.total_events = ledger.events.length;
+        
+        // Keep last 2000 entries
+        if (ledger.events.length > 2000) {
+          ledger.events = ledger.events.slice(-2000);
+        }
+        
+        this.saveLedger(ledger);
+        console.log(`[Kronos] #${entry.tick}: ${olympian}.${operation} — ${responseSummary}`);
+        
+        return entry;
+      },
+      
+      // ── Route to Titan Memory ────────────────────────────────────────
+      // Deliver an event to the appropriate Titan memory domains
+      route: function(olympian, operation, output, titanRoutes) {
+        const deliveries = [];
+        
+        for (const route of titanRoutes) {
+          const event = {
+            type: route.type || route.event_type,
+            olympian,
+            operation,
+            timestamp: new Date().toISOString(),
+            ...output
+          };
+          
+          const delivery = this._deliverToTitan(route.titan || route.to_titan, event);
+          deliveries.push({
+            titan: route.titan || route.to_titan,
+            type: route.type || route.event_type,
+            delivered: delivery.success,
+            event_id: delivery.event_id
+          });
+        }
+        
+        return deliveries;
+      },
+      
+      _deliverToTitan: function(titanId, event) {
+        try {
+          const key = `${titanId}_memory`;
+          const stored = JSON.parse(localStorage.getItem(key) || '{"events":[],"last_tick":0,"total_events":0}');
+          
+          stored.last_tick++;
+          event.tick = stored.last_tick;
+          stored.events.push(event);
+          stored.total_events = stored.events.length;
+          
+          if (stored.events.length > 1000) {
+            stored.events = stored.events.slice(-1000);
+          }
+          
+          localStorage.setItem(key, JSON.stringify(stored));
+          
+          return { success: true, event_id: `${titanId}_${stored.total_events}` };
+        } catch(e) {
+          return { success: false, error: e.message };
+        }
+      },
+      
+      // ── Get Ledger ───────────────────────────────────────────────────
+      getLedger: function(type, limit = 25) {
+        const ledger = this.loadLedger();
+        let events = ledger.events;
+        if (type) events = events.filter(e => e.operation === type || e.type === type);
+        return events.slice(-limit).reverse();
+      },
+      
+      getStats: function() {
+        const ledger = this.loadLedger();
+        const byOlympian = {};
+        const byOperation = {};
+        for (const e of ledger.events) {
+          byOlympian[e.olympian] = (byOlympian[e.olympian] || 0) + 1;
+          byOperation[e.operation] = (byOperation[e.operation] || 0) + 1;
+        }
+        return {
+          total_entries: ledger.total_events,
+          last_tick: ledger.last_tick,
+          first_entry: ledger.events[0]?.timestamp || null,
+          last_entry: ledger.events[ledger.events.length - 1]?.timestamp || null,
+          by_olympian: byOlympian,
+          by_operation: byOperation
+        };
+      }
+    };
+
+    // ═══════════════════════════════════════════
+    // API HANDLER
+    // ═══════════════════════════════════════════
+    async function handleRequest() {
+      const params = new URLSearchParams(window.location.search);
+      const view = params.get('view') || 'ledger';
+      const type = params.get('type') || '';
+      const limit = parseInt(params.get('limit') || '25');
+      const olympian = params.get('olympian') || '';
+      const operation = params.get('operation') || '';
+      const outputRaw = params.get('output') || '';
+      
+      let result;
+      
+      if (view === 'ledger') {
+        result = {
+          titan: 'kronos',
+          view: 'ledger',
+          entries: Kronos.getLedger(type || null, limit),
+          stats: Kronos.getStats()
+        };
+        
+      } else if (view === 'stats') {
+        result = {
+          titan: 'kronos',
+          view: 'stats',
+          ...Kronos.getStats()
+        };
+        
+      } else if (view === 'validate') {
+        if (!olympian || !operation) {
+          result = { error: 'validate requires ?olympian=X&operation=Y' };
+        } else {
+          result = await Kronos.validate(olympian, operation);
+        }
+        
+      } else if (view === 'route') {
+        if (!olympian || !operation) {
+          result = { error: 'route requires ?olympian=X&operation=Y&output={JSON}' };
+        } else {
+          let output = {};
+          if (outputRaw) {
+            try { output = JSON.parse(outputRaw); } catch(e) { output = { raw: outputRaw }; }
+          }
+          
+          // Validate the operation first
+          const validation = await Kronos.validate(olympian, operation);
+          
+          if (!validation.valid) {
+            result = { error: 'Invalid operation', validation };
+          } else {
+            // Log to ledger
+            const summary = `${olympian}.${operation} — ${JSON.stringify(output).substring(0, 80)}`;
+            const entry = Kronos.log(olympian, operation, output, summary, {
+              titan_routes: validation.titan_routes
+            });
+            
+            // Route to Titan memory
+            const deliveries = Kronos.route(olympian, operation, output, validation.titan_routes);
+            
+            result = {
+              titan: 'kronos',
+              operation: 'route',
+              validation: { valid: true, pattern: validation.pattern },
+              ledger_entry: entry,
+              deliveries,
+              all_delivered: deliveries.every(d => d.delivered)
+            };
+          }
+        }
+        
+      } else {
+        result = {
+          error: `Unknown view: ${view}`,
+          valid_views: ['ledger', 'stats', 'validate', 'route']
+        };
+      }
+      
+      document.getElementById('output').textContent = JSON.stringify(result, null, 2);
+    }
+    
+    handleRequest();
+  </script>
+</body>
+</html>
