@@ -1,20 +1,32 @@
 {
-  "ledger": [
-    {
-      "entry_id": "kronos_001",
-      "tick": 1,
-      "timestamp": "...",
-      "olympian": "zeus",
-      "operation": "judge",
-      "query_params": { "context": "charge_grounding" },
-      "response_summary": "judgment: lawful",
-      "fidelity": null
-    }
-  ],
+  "titan": "kronos",
+  "title": "The Accountant",
+  "domain": "time_memory_ledger",
+  "description": "Immutable ledger of every Olympian API interaction. Kronos records what was asked, who answered, and what the result was. This file grows with every query — never deleted, only appended.",
+  "version": "1.0",
+  "created": "2026-05-30",
+  
+  "ledger": [],
+  
   "stats": {
     "total_entries": 0,
     "by_olympian": {},
+    "by_operation": {},
     "first_entry": null,
-    "last_entry": null
+    "last_entry": null,
+    "last_updated": null
+  },
+  
+  "schema": {
+    "entry_id": "kronos_NNN — unique sequential ID",
+    "tick": "integer — Kronos's own tick counter, increments per entry",
+    "timestamp": "ISO 8601 — when the query was processed",
+    "olympian": "string — which Olympian was queried (zeus, athena, hermes, ...)",
+    "operation": "string — which query pattern was invoked (judge, brief, translate, ...)",
+    "query_params": "object — the parameters passed to the Olympian",
+    "response_summary": "string — compressed summary of the Olympian's response",
+    "fidelity": "number or null — translation fidelity (Hermes only), null for non-translations",
+    "from_domain": "string or null — source domain (Hermes only)",
+    "to_domain": "string or null — target domain (Hermes only)"
   }
 }
