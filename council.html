@@ -44,7 +44,6 @@
     }
     @media(max-width:900px){ .main-layout { grid-template-columns:1fr; } }
     
-    /* LEFT: ORCHESTRATION PANELS */
     .orchestration {
       background:var(--void-surface); display:flex; flex-direction:column;
       overflow-y:auto;
@@ -71,7 +70,7 @@
     .chain-select, .chain-input {
       background:var(--void); border:1px solid var(--border);
       color:var(--text); font-family:'Share Tech Mono',monospace;
-      font-size:0.58rem; padding:0.35rem 0.5rem; outline:none;
+      font-size:0.58rem; padding:0.35rem 0.5rem; outline:none; flex:1;
     }
     .chain-select:focus, .chain-input:focus { border-color:var(--steel-dim); }
     
@@ -92,7 +91,6 @@
     }
     .preset-btn:hover { color:var(--steel-bright); border-color:var(--border-bright); }
     
-    /* EVENT LOG */
     .event-log {
       flex:1; padding:0.75rem 1rem; overflow-y:auto;
       font-family:'Share Tech Mono',monospace; font-size:0.52rem;
@@ -109,7 +107,6 @@
     .event-entry .actor { color:var(--accent); }
     .event-entry .action { color:var(--steel); }
     
-    /* RIGHT: MEMORY VIEWER */
     .memory-viewer {
       background:var(--void-surface); display:flex; flex-direction:column;
       overflow-y:auto;
@@ -159,7 +156,6 @@
 
 <div class="main-layout">
   
-  <!-- LEFT: ORCHESTRATION -->
   <div class="orchestration">
     
     <div class="section-label">Ⅰ · Chain Builder — Compose and Fire Events</div>
@@ -170,7 +166,6 @@
         <select class="chain-select" id="chainOlympian">
           <option value="zeus">⚡ Zeus — Judge</option>
           <option value="athena">🦉 Athena — Curate</option>
-          <option value="hermes">🪄 Hermes — Route</option>
         </select>
       </div>
       <div class="chain-row">
@@ -178,12 +173,11 @@
         <select class="chain-select" id="chainOperation">
           <option value="judge">judge — Render binding judgment</option>
           <option value="brief">brief — Curate top ideas</option>
-          <option value="route">route — Route to Titan memory</option>
         </select>
       </div>
       <div class="chain-row">
         <span class="chain-label">Payload</span>
-        <input class="chain-input" id="chainPayload" value='{"verdict":"lawful","sovereignty_score":0.95,"context":"test","action":"mark_interval"}' />
+        <input class="chain-input" id="chainPayload" value='{"context":"test","action":"mark_interval"}' />
       </div>
       <button class="fire-btn" onclick="fireChain()">⚡ Fire Full Chain</button>
     </div>
@@ -192,7 +186,6 @@
       <button class="preset-btn" onclick="firePreset('zeusLawful')">Zeus: Lawful Mark</button>
       <button class="preset-btn" onclick="firePreset('zeusOverrule')">Zeus: Overrule</button>
       <button class="preset-btn" onclick="firePreset('athenaBrief')">Athena: GAIA Brief</button>
-      <button class="preset-btn" onclick="firePreset('syntheticRoute')">Synthetic: Route to All</button>
       <button class="preset-btn" onclick="firePreset('clearMemory')">Clear All Memory</button>
     </div>
     
@@ -203,7 +196,6 @@
     
   </div>
   
-  <!-- RIGHT: MEMORY VIEWER -->
   <div class="memory-viewer">
     
     <div class="section-label">Ⅲ · Titan Memory Viewer</div>
@@ -237,9 +229,27 @@
 </div>
 
 <script>
-  // ═══════════════════════════════════════════
-  // EVENT LOG
-  // ═══════════════════════════════════════════
+  // ─── Fetch API helper ────────────────────────────────────────────────
+  async function fetchAPI(url) {
+    try {
+      const resp = await fetch(url);
+      if (!resp.ok) return { error: `HTTP ${resp.status}` };
+      const html = await resp.text();
+      const match = html.match(/<pre[^>]*id="output"[^>]*>([\s\S]*?)<\/pre>/);
+      if (match) {
+        const raw = match[1].trim();
+        if (raw.startsWith('{') || raw.startsWith('[')) {
+          return JSON.parse(raw);
+        }
+        return { error: 'Not JSON', raw: raw.substring(0, 80) };
+      }
+      return { error: 'No output element' };
+    } catch(e) {
+      return { error: e.message };
+    }
+  }
+
+  // ─── Event Log ───────────────────────────────────────────────────────
   function logEvent(step, actor, action, detail) {
     const log = document.getElementById('eventLog');
     const time = new Date().toLocaleTimeString();
@@ -247,14 +257,10 @@
     entry.className = `event-entry step${step}`;
     entry.innerHTML = `<span class="ts">${time}</span> <span class="actor">${actor}</span> <span class="action">${action}</span> ${detail}`;
     log.prepend(entry);
-    
-    // Keep last 50 events
     while (log.children.length > 50) log.removeChild(log.lastChild);
   }
 
-  // ═══════════════════════════════════════════
-  // CHAIN EXECUTION
-  // ═══════════════════════════════════════════
+  // ─── Fire Chain ──────────────────────────────────────────────────────
   window.fireChain = async function() {
     const olympian = document.getElementById('chainOlympian').value;
     const operation = document.getElementById('chainOperation').value;
@@ -265,78 +271,61 @@
     
     logEvent(1, olympian, operation, `→ Starting chain`);
     
-    // Step 1: Query the Olympian
     if (olympian === 'zeus' && operation === 'judge') {
       const context = payload.context || 'test';
       const action = payload.action || 'mark_interval';
       
-      try {
-        const resp = await fetch(`zeus/api.html?view=judge&context=${context}&action=${action}`);
-        const html = await resp.text();
-        const match = html.match(/<pre[^>]*id="output"[^>]*>([\s\S]*?)<\/pre>/);
-        if (match) {
-          const data = JSON.parse(match[1]);
-          logEvent(1, 'zeus', 'judge', `→ Verdict: ${data.verdict} | Score: ${data.sovereignty_score}`);
-          payload = data;
+      // Call Zeus API
+      const zeusResult = await fetchAPI(`zeus/api.html?view=judge&context=${context}&action=${action}`);
+      
+      if (zeusResult.error) {
+        logEvent(1, 'zeus', 'error', `→ ${zeusResult.error}`);
+      } else {
+        logEvent(1, 'zeus', 'judge', `→ Verdict: ${zeusResult.verdict} | Score: ${zeusResult.sovereignty_score}`);
+        logEvent(2, 'kronos', 'gatekeeper', `→ Validated & logged`);
+        
+        if (zeusResult.memory_routing?.deliveries) {
+          for (const d of zeusResult.memory_routing.deliveries) {
+            logEvent(3, 'hermes', '→', `${d.titan} (${d.type}) — ${d.delivered ? '✓' : '✗'}`);
+          }
         }
-      } catch(e) {
-        logEvent(1, 'zeus', 'error', `→ ${e.message}`);
+        logEvent(3, 'kronos', 'ledger', `→ Chain complete. Entry: ${zeusResult.memory_routing?.ledger_entry?.entry_id || '—'}`);
       }
+      
     } else if (olympian === 'athena' && operation === 'brief') {
       const tags = payload.tags || 'GAIA';
       logEvent(1, 'athena', 'brief', `→ Querying archive for: ${tags}`);
-      // Athena queries external archive — simulate for now
-      payload = { count: 5, tags, source: 'athena archive' };
-      logEvent(1, 'athena', 'brief', `→ Retrieved ${payload.count} ideas about ${tags}`);
-    }
-    
-    // Step 2: Route through Hermes
-    logEvent(2, 'hermes', 'route', `→ Routing to Titan memory...`);
-    const outputStr = encodeURIComponent(JSON.stringify(payload));
-    
-    try {
-      const resp = await fetch(`hermes/api.html?view=route&olympian=${olympian}&operation=${operation}&output=${outputStr}`);
-      const html = await resp.text();
-      const match = html.match(/<pre[^>]*id="output"[^>]*>([\s\S]*?)<\/pre>/);
-      if (match) {
-        const data = JSON.parse(match[1]);
-        const delivered = data.deliveries || [];
-        for (const d of delivered) {
-          logEvent(2, 'hermes', '→', `${d.titan} (${d.type}) — ${d.delivered ? '✓' : '✗'}`);
-        }
-        logEvent(3, 'kronos', 'ledger', `→ ${delivered.length} Titans updated. All delivered: ${data.all_delivered}`);
+      
+      const athenaResult = await fetchAPI(`athena/api.html?view=brief&tags=${tags}`);
+      
+      if (athenaResult.error) {
+        logEvent(1, 'athena', 'error', `→ ${athenaResult.error}`);
+      } else {
+        const count = Array.isArray(athenaResult.ideas) ? athenaResult.ideas.length : '—';
+        logEvent(1, 'athena', 'brief', `→ Retrieved ${count} ideas about ${tags}`);
+        logEvent(2, 'kronos', 'gatekeeper', `→ Athena query logged`);
       }
-    } catch(e) {
-      logEvent(2, 'hermes', 'error', `→ ${e.message}`);
     }
     
-    // Refresh memory viewer
     refreshMemoryView();
   };
 
-  // ═══════════════════════════════════════════
-  // PRESETS
-  // ═══════════════════════════════════════════
+  // ─── Presets ─────────────────────────────────────────────────────────
   window.firePreset = function(preset) {
     if (preset === 'zeusLawful') {
       document.getElementById('chainOlympian').value = 'zeus';
       document.getElementById('chainOperation').value = 'judge';
-      document.getElementById('chainPayload').value = '{"verdict":"lawful","sovereignty_score":0.95,"context":"charge_grounding","action":"mark_interval"}';
+      document.getElementById('chainPayload').value = '{"context":"charge_grounding","action":"mark_interval"}';
       fireChain();
     } else if (preset === 'zeusOverrule') {
       document.getElementById('chainOlympian').value = 'zeus';
       document.getElementById('chainOperation').value = 'judge';
-      document.getElementById('chainPayload').value = '{"verdict":"overruled","sovereignty_score":0.6,"context":"succession","action":"overthrow"}';
+      document.getElementById('chainPayload').value = '{"context":"succession","action":"overthrow"}';
       fireChain();
     } else if (preset === 'athenaBrief') {
       document.getElementById('chainOlympian').value = 'athena';
       document.getElementById('chainOperation').value = 'brief';
-      document.getElementById('chainPayload').value = '{"tags":"GAIA","count":5}';
-      fireChain();
-    } else if (preset === 'syntheticRoute') {
-      document.getElementById('chainOlympian').value = 'hermes';
-      document.getElementById('chainOperation').value = 'route';
-      document.getElementById('chainPayload').value = '{"synthetic":true,"test":"Synthetic event — routing to all Titans"}';
+      document.getElementById('chainPayload').value = '{"tags":"GAIA"}';
       fireChain();
     } else if (preset === 'clearMemory') {
       const titans = ['kronos','themis','mnemosyne','koios','rhea','hyperion','oceanus','tethys','theia','phoibe','iapetos','kreios'];
@@ -346,9 +335,7 @@
     }
   };
 
-  // ═══════════════════════════════════════════
-  // MEMORY VIEWER
-  // ═══════════════════════════════════════════
+  // ─── Memory Viewer ───────────────────────────────────────────────────
   let activeTitan = 'kronos';
   
   document.getElementById('memoryTabs').addEventListener('click', function(e) {
@@ -364,7 +351,6 @@
     const display = document.getElementById('memoryDisplay');
     const stored = localStorage.getItem(`${activeTitan}_memory`);
     
-    // Update stats
     let totalEvents = 0;
     let activeCount = 0;
     const titans = ['kronos','themis','mnemosyne','koios','rhea','hyperion','oceanus','tethys','theia','phoibe','iapetos','kreios'];
@@ -397,16 +383,12 @@
         ).join('');
       }
     } catch(e) {
-      display.innerHTML = `<div class="memory-empty">Error reading memory: ${e.message}</div>`;
+      display.innerHTML = `<div class="memory-empty">Error: ${e.message}</div>`;
     }
   };
   
-  // Boot
   refreshMemoryView();
   console.log('🏛️ Council orchestration console ready.');
-  console.log('  Left: Chain builder + Event log');
-  console.log('  Right: Titan memory viewer (12 tabs)');
-  console.log('  Presets for quick testing');
 </script>
 </body>
 </html>
