@@ -47,41 +47,85 @@
     
     .stats-row {
       position:relative; z-index:5; display:grid;
-      grid-template-columns:repeat(4, 1fr); border-bottom:1px solid var(--border);
+      grid-template-columns:repeat(5, 1fr); border-bottom:1px solid var(--border);
     }
-    .stat { padding:1.25rem 1.5rem; border-right:1px solid var(--border); text-align:center; }
+    .stat { padding:1.25rem 1rem; border-right:1px solid var(--border); text-align:center; }
     .stat:last-child { border-right:none; }
     .stat-value { font-family:'Cinzel',serif; font-size:1.8rem; font-weight:900; color:var(--accent); }
     .stat-label { font-family:'Share Tech Mono',monospace; font-size:0.55rem; color:var(--text-dim); letter-spacing:0.12em; text-transform:uppercase; }
     
+    .pipeline-arrow {
+      display:flex; align-items:center; justify-content:center;
+      padding:1rem; gap:0.4rem; flex-wrap:wrap;
+      border-bottom:1px solid var(--border);
+      position:relative; z-index:5; overflow-x:auto;
+    }
+    .pipeline-node {
+      font-family:'Share Tech Mono',monospace; font-size:0.58rem;
+      color:var(--text-dim); letter-spacing:0.06em; white-space:nowrap;
+    }
+    .pipeline-arrow-symbol { color:var(--accent-dim); font-size:0.65rem; }
+    
     .titan-grid {
       position:relative; z-index:5; display:grid;
-      grid-template-columns:repeat(auto-fill, minmax(300px, 1fr));
+      grid-template-columns:repeat(auto-fill, minmax(350px, 1fr));
       gap:1px; background:var(--border); padding:0;
     }
     .titan-card {
       background:var(--void-surface); padding:1.5rem;
-      transition:border-color 0.2s; border-left:2px solid transparent;
+      transition:all 0.2s; border-left:3px solid transparent;
+      cursor:pointer;
     }
-    .titan-card:hover { border-left-color:var(--accent); }
+    .titan-card:hover { background:var(--void-raised); }
     .titan-card.fire { border-left-color:var(--fire); }
     .titan-card.earth { border-left-color:var(--earth); }
     .titan-card.water { border-left-color:var(--water); }
     .titan-card.air { border-left-color:var(--air); }
+    .titan-card.planned { opacity:0.5; border-left-color:var(--border); }
     
-    .titan-header { display:flex; align-items:center; gap:0.75rem; margin-bottom:0.75rem; }
+    .titan-header { display:flex; align-items:center; gap:0.75rem; margin-bottom:0.5rem; }
     .titan-emoji { font-size:1.8rem; }
     .titan-name { font-family:'Cinzel',serif; font-size:1rem; font-weight:600; color:var(--steel-bright); }
-    .titan-title { font-family:'Share Tech Mono',monospace; font-size:0.6rem; color:var(--text-dim); letter-spacing:0.08em; }
+    .titan-title { font-family:'Share Tech Mono',monospace; font-size:0.6rem; color:var(--text-dim); letter-spacing:0.06em; }
     
-    .titan-domain { font-family:'Share Tech Mono',monospace; font-size:0.6rem; color:var(--accent); letter-spacing:0.1em; margin-bottom:0.75rem; }
-    .titan-files { display:flex; flex-wrap:wrap; gap:0.25rem; margin-bottom:0.75rem; }
-    .file-badge { font-family:'Share Tech Mono',monospace; font-size:0.5rem; color:var(--text-dim); background:var(--void-raised); padding:2px 6px; }
+    .titan-role { font-family:'Share Tech Mono',monospace; font-size:0.6rem; color:var(--accent); letter-spacing:0.08em; margin-bottom:0.5rem; }
     
-    .titan-stats { display:flex; gap:1rem; font-family:'Share Tech Mono',monospace; font-size:0.6rem; color:var(--text-dim); }
-    .titan-stats span { color:var(--steel); }
+    .titan-sections { display:flex; flex-direction:column; gap:0.75rem; }
     
-    .gatekeeper-badge { font-family:'Share Tech Mono',monospace; font-size:0.5rem; color:var(--accent); background:rgba(201,168,92,0.1); border:1px solid var(--accent-dim); padding:2px 6px; }
+    .section-box {
+      background:var(--void); border:1px solid var(--border);
+      padding:0.75rem;
+    }
+    .section-box-label {
+      font-family:'Share Tech Mono',monospace; font-size:0.5rem;
+      color:var(--text-dim); letter-spacing:0.15em; text-transform:uppercase;
+      margin-bottom:0.5rem; padding-bottom:0.3rem; border-bottom:1px solid var(--border);
+    }
+    
+    .live-output {
+      font-family:'Share Tech Mono',monospace; font-size:0.6rem;
+      color:var(--steel-bright); line-height:1.5; white-space:pre-wrap;
+      max-height:120px; overflow-y:auto;
+    }
+    .live-output .fn-name { color:var(--accent); }
+    .live-output .fn-result { color:var(--green); }
+    
+    .memory-stats {
+      display:grid; grid-template-columns:1fr 1fr; gap:0.3rem;
+      font-family:'Share Tech Mono',monospace; font-size:0.55rem;
+    }
+    .mem-stat { color:var(--text-dim); }
+    .mem-stat span { color:var(--steel); }
+    
+    .titan-files { display:flex; flex-wrap:wrap; gap:0.2rem; }
+    .file-badge { font-family:'Share Tech Mono',monospace; font-size:0.48rem; color:var(--text-dim); background:var(--void-raised); padding:1px 5px; }
+    .file-badge.primordial { color:var(--accent); background:rgba(201,168,92,0.1); border:1px solid var(--accent-dim); }
+    
+    .badge-row { display:flex; gap:0.4rem; flex-wrap:wrap; margin-bottom:0.5rem; }
+    .gatekeeper-badge { font-family:'Share Tech Mono',monospace; font-size:0.48rem; color:var(--accent); background:rgba(201,168,92,0.1); border:1px solid var(--accent-dim); padding:1px 5px; }
+    .status-badge { font-family:'Share Tech Mono',monospace; font-size:0.48rem; padding:1px 5px; }
+    .status-badge.active { color:var(--green); background:rgba(106,191,138,0.1); border:1px solid rgba(106,191,138,0.3); }
+    .status-badge.planned { color:var(--text-dim); background:var(--void-raised); border:1px solid var(--border); }
     
     footer {
       position:relative; z-index:5; border-top:1px solid var(--border);
@@ -101,74 +145,297 @@
 
 <section class="hero">
   <h1>The <span>Titan</span> Memory Council</h1>
-  <p>12 domain-specific memory indexes. Immutable ledgers. Every Olympian query recorded here.</p>
+  <p>Primordial functions + Memory indexes · 12 domain-specific ledgers · Machine-readable</p>
 </section>
 
 <div class="stats-row" id="statsRow">
-  <div class="stat"><div class="stat-value" id="statTitans">12</div><div class="stat-label">Titans</div></div>
-  <div class="stat"><div class="stat-value" id="statFiles">—</div><div class="stat-label">Memory Files</div></div>
-  <div class="stat"><div class="stat-value" id="statGatekeeper">1</div><div class="stat-label">Gatekeeper</div></div>
-  <div class="stat"><div class="stat-value" id="statPipeline">12</div><div class="stat-label">Pipeline Order</div></div>
+  <div class="stat"><div class="stat-value" id="statTitans">—</div><div class="stat-label">Total Titans</div></div>
+  <div class="stat"><div class="stat-value" id="statActive">—</div><div class="stat-label">Active</div></div>
+  <div class="stat"><div class="stat-value" id="statPlanned">—</div><div class="stat-label">Planned</div></div>
+  <div class="stat"><div class="stat-value" id="statFiles">—</div><div class="stat-label">Files</div></div>
+  <div class="stat"><div class="stat-value" id="statTotalMem">—</div><div class="stat-label">Memory Events</div></div>
 </div>
+
+<div class="pipeline-arrow" id="pipelineArrow"></div>
 
 <div class="titan-grid" id="titanGrid"></div>
 
 <footer>
   <div class="footer-text">GAIA · TITANS · kairos-coder.github.io/gaia/titans</div>
-  <div class="footer-text">12 Titans · Domain-Specific Memory · Immutable Ledgers</div>
+  <div class="footer-text">12 Titans · Primordial + Memory · <a href="api.html" style="color:var(--accent);text-decoration:none;">API</a></div>
 </footer>
 
-<script>
-  async function loadRegistry() {
+<script type="module">
+  // ─── Import primordial Titan functions ──────────────────────────────────
+  import { 
+    TITAN_PIPELINE, TITAN_COUNTS,
+    kronos, kronosState, kronosGetPhase,
+    rhea, rheaState, rheaBand,
+    hyperion,
+    oceanus, oceanusState, oceanusCurrents,
+    tethys, tethysState,
+    theia, theiaState, theiaTheme, theiaAge,
+    phoibe, phoibeState,
+    themis, themisState,
+    mnemosyne, mnemosyneState, mnemosyneRemember,
+    koios, koiosState, koiosStreakReport
+  } from './index.js';
+
+  // ─── Map Titan IDs to their primordial modules ─────────────────────────
+  const PRIMORDIAL_STATE = {
+    kronos:    { obj: kronos,    state: kronosState,    fn: { phase: kronosGetPhase } },
+    rhea:      { obj: rhea,      state: rheaState,      fn: { band: rheaBand } },
+    hyperion:  { obj: hyperion,  state: null,           fn: {} },
+    oceanus:   { obj: oceanus,   state: oceanusState,   fn: { currents: oceanusCurrents } },
+    tethys:    { obj: tethys,    state: tethysState,    fn: {} },
+    theia:     { obj: theia,     state: theiaState,     fn: { theme: theiaTheme, age: theiaAge } },
+    phoibe:    { obj: phoibe,    state: phoibeState,    fn: {} },
+    themis:    { obj: themis,    state: themisState,    fn: {} },
+    mnemosyne: { obj: mnemosyne, state: mnemosyneState, fn: { remember: mnemosyneRemember } },
+    koios:     { obj: koios,     state: koiosState,     fn: { streak: koiosStreakReport } },
+    iapetos:   null,
+    kreios:    null
+  };
+
+  // ─── Load registry and render ──────────────────────────────────────────
+  async function loadAll() {
     try {
       const resp = await fetch('index.json');
       const registry = await resp.json();
-      renderTitans(registry);
+      renderStats(registry);
+      renderPipeline(registry);
+      await renderTitans(registry);
     } catch(e) {
-      document.getElementById('titanGrid').innerHTML = '<div style="padding:3rem;text-align:center;color:var(--text-dim)">Unable to load Titan registry.</div>';
+      console.warn('Registry not loaded:', e.message);
+      // Fall back to TITAN_PIPELINE from index.js
+      renderStatsFromPipeline();
+      renderPipelineFromPipeline();
+      renderTitansFromPipeline();
     }
   }
 
-  function renderTitans(registry) {
+  function renderStats(registry) {
+    document.getElementById('statTitans').textContent = TITAN_COUNTS.total;
+    document.getElementById('statActive').textContent = TITAN_COUNTS.built;
+    document.getElementById('statPlanned').textContent = TITAN_COUNTS.planned;
+    
+    let totalFiles = 0;
+    for (const t of Object.values(registry.titans)) totalFiles += (t.files || []).length;
+    document.getElementById('statFiles').textContent = totalFiles;
+    
+    // Count memory events
+    countMemoryEvents(registry);
+  }
+
+  function renderStatsFromPipeline() {
+    document.getElementById('statTitans').textContent = TITAN_COUNTS.total;
+    document.getElementById('statActive').textContent = TITAN_COUNTS.built;
+    document.getElementById('statPlanned').textContent = TITAN_COUNTS.planned;
+    document.getElementById('statFiles').textContent = '—';
+    document.getElementById('statTotalMem').textContent = '—';
+  }
+
+  async function countMemoryEvents(registry) {
+    let total = 0;
+    for (const id of registry.pipeline_order) {
+      const t = registry.titans[id];
+      if (!t || t.status === 'planned') continue;
+      try {
+        const resp = await fetch(`${t.folder}index.json`);
+        if (resp.ok) {
+          const data = await resp.json();
+          total += data.stats?.total_entries || data.stats?.total_tremors || 
+                  data.stats?.total_illuminations || data.stats?.total_flows ||
+                  data.stats?.total_events || data.stats?.total_prophecies ||
+                  data.stats?.total_laws || data.stats?.total_narratives ||
+                  data.stats?.total_questions || data.stats?.total_endings ||
+                  data.stats?.total_structures || 0;
+        }
+      } catch(e) {}
+    }
+    document.getElementById('statTotalMem').textContent = total;
+  }
+
+  function renderPipeline(registry) {
+    const container = document.getElementById('pipelineArrow');
+    const pipeline = registry?.pipeline_order || TITAN_PIPELINE.map(t => t.name);
+    const titans = registry?.titans || {};
+    
+    let html = '';
+    for (let i = 0; i < pipeline.length; i++) {
+      const id = pipeline[i];
+      const t = titans[id] || TITAN_PIPELINE.find(p => p.name === id);
+      html += `<span class="pipeline-node">${t?.emoji || TITAN_PIPELINE.find(p=>p.name===id)?.glyph || ''} ${id}</span>`;
+      if (i < pipeline.length - 1) html += '<span class="pipeline-arrow-symbol">→</span>';
+    }
+    container.innerHTML = html;
+  }
+
+  function renderPipelineFromPipeline() {
+    const container = document.getElementById('pipelineArrow');
+    let html = '';
+    for (let i = 0; i < TITAN_PIPELINE.length; i++) {
+      const t = TITAN_PIPELINE[i];
+      html += `<span class="pipeline-node">${t.glyph} ${t.name}</span>`;
+      if (i < TITAN_PIPELINE.length - 1) html += '<span class="pipeline-arrow-symbol">→</span>';
+    }
+    container.innerHTML = html;
+  }
+
+  function getPrimordialLiveOutput(id) {
+    const p = PRIMORDIAL_STATE[id];
+    if (!p || !p.obj) return null;
+    
+    const lines = [];
+    const obj = p.obj;
+    const state = p.state;
+    
+    // Titan object identity
+    if (obj.id) lines.push(`<span class="fn-name">${obj.id}</span>: ${obj.title || ''}`);
+    if (obj.domain) lines.push(`  domain: ${obj.domain}`);
+    
+    // Live state
+    if (state) {
+      if (typeof state === 'object') {
+        for (const [k, v] of Object.entries(state)) {
+          if (typeof v !== 'function' && typeof v !== 'object') {
+            lines.push(`  <span class="fn-result">${k}</span>: ${v}`);
+          }
+        }
+      }
+    }
+    
+    // Function results
+    if (p.fn.phase) lines.push(`  phase: ${p.fn.phase()}`);
+    if (p.fn.band) lines.push(`  band: ${p.fn.band()}`);
+    if (p.fn.theme) lines.push(`  theme: ${p.fn.theme()}`);
+    if (p.fn.age) lines.push(`  age: ${p.fn.age()}`);
+    if (p.fn.streak) lines.push(`  ${p.fn.streak()}`);
+    
+    return lines.length > 0 ? lines.join('\n') : '(loaded, no live output)';
+  }
+
+  async function renderTitans(registry) {
     const grid = document.getElementById('titanGrid');
-    const pipeline = registry.pipeline_order;
+    const pipeline = registry?.pipeline_order || TITAN_PIPELINE.map(t => t.name);
+    const titans = registry?.titans || {};
     let html = '';
     
     for (const id of pipeline) {
-      const t = registry.titans[id];
-      if (!t) continue;
+      const t = titans[id];
+      const pipelineEntry = TITAN_PIPELINE.find(p => p.name === id);
+      const status = t?.status || pipelineEntry?.status || 'planned';
+      const isPlanned = status === 'planned';
+      const suitClass = t?.suit || '';
+      const cardClass = isPlanned ? 'planned' : suitClass;
       
-      const suitClass = t.suit || '';
-      const gatekeeperBadge = t.has_gatekeeper ? '<span class="gatekeeper-badge">GATEKEEPER</span>' : '';
+      // Live output from primordial functions
+      const liveOutput = getPrimordialLiveOutput(id);
+      
+      // Badges
+      let badges = '';
+      if (t?.has_gatekeeper) badges += '<span class="gatekeeper-badge">GATEKEEPER</span>';
+      badges += `<span class="status-badge ${status}">${status.toUpperCase()}</span>`;
+      
+      // Memory files
+      const primordialFiles = pipelineEntry ? ['index.js (exported)'] : [];
+      const memoryFiles = t?.files || [];
+      const allFiles = [...primordialFiles, ...memoryFiles];
+      
+      // Memory stats
+      let memoryHtml = '';
+      if (!isPlanned && t) {
+        memoryHtml = `
+          <div class="memory-stats">
+            <div class="mem-stat">Suit: <span>${t.suit || '—'}</span></div>
+            <div class="mem-stat">Gate: <span>${t.gate || '—'}</span></div>
+            <div class="mem-stat">Folder: <span>${t.folder || '—'}</span></div>
+            <div class="mem-stat" id="mem-${id}">Events: <span>—</span></div>
+          </div>`;
+      }
       
       html += `
-        <div class="titan-card ${suitClass}">
+        <div class="titan-card ${cardClass}" id="titan-${id}">
+          <div class="badge-row">${badges}</div>
           <div class="titan-header">
-            <div class="titan-emoji">${t.emoji}</div>
+            <div class="titan-emoji">${t?.emoji || pipelineEntry?.glyph || '—'}</div>
             <div>
-              <div class="titan-name">${t.name}</div>
-              <div class="titan-title">${t.title}</div>
+              <div class="titan-name">${t?.name || id}</div>
+              <div class="titan-title">${t?.title || pipelineEntry?.role || ''}</div>
             </div>
-            ${gatekeeperBadge}
           </div>
-          <div class="titan-domain">${t.domain} · ${t.gate}</div>
-          <div class="titan-files">
-            ${(t.files || []).map(f => `<span class="file-badge">${f}</span>`).join('')}
-          </div>
-          <div class="titan-stats">
-            <span>Suit:</span> ${t.suit}
-            <span style="margin-left:0.5rem">Gate:</span> ${t.gate}
-            <span style="margin-left:0.5rem">Folder:</span> ${t.folder}
+          <div class="titan-role">${pipelineEntry?.role || t?.domain || ''}</div>
+          
+          ${liveOutput ? `
+          <div class="titan-sections">
+            <div class="section-box">
+              <div class="section-box-label">⚡ Primordial Live State</div>
+              <div class="live-output">${liveOutput}</div>
+            </div>
+          </div>` : (isPlanned ? '' : '<div class="titan-sections"><div class="section-box"><div class="section-box-label">⚡ Primordial</div><div class="live-output" style="color:var(--text-dim)">(module loaded, no live state exported)</div></div></div>')}
+          
+          ${memoryHtml ? `
+          <div class="titan-sections" style="margin-top:0.75rem">
+            <div class="section-box">
+              <div class="section-box-label">🧠 Memory Index</div>
+              ${memoryHtml}
+            </div>
+          </div>` : (isPlanned ? '<div class="titan-sections" style="margin-top:0.75rem"><div class="section-box"><div class="section-box-label">🧠 Memory</div><div class="live-output" style="color:var(--text-dim)">Planned — not yet built</div></div></div>' : '')}
+          
+          <div style="margin-top:0.75rem">
+            <div class="titan-files">
+              ${allFiles.map(f => {
+                const isPrimordial = f.includes('index.js');
+                return `<span class="file-badge ${isPrimordial ? 'primordial' : ''}">${f}</span>`;
+              }).join('')}
+            </div>
           </div>
         </div>`;
     }
     
     grid.innerHTML = html;
-    document.getElementById('statFiles').textContent = 
-      Object.values(registry.titans).reduce((sum, t) => sum + (t.files || []).length, 0);
+    
+    // Load memory event counts async
+    if (registry) loadMemoryEventCounts(registry);
   }
 
-  loadRegistry();
+  function renderTitansFromPipeline() {
+    // Fallback when no registry — use TITAN_PIPELINE
+    const fakeRegistry = {
+      pipeline_order: TITAN_PIPELINE.map(t => t.name),
+      titans: {}
+    };
+    for (const t of TITAN_PIPELINE) {
+      fakeRegistry.titans[t.name] = {
+        name: t.name, emoji: t.glyph, title: t.role,
+        status: t.status, suit: '', gate: '', folder: '', files: []
+      };
+    }
+    renderTitans(fakeRegistry);
+  }
+
+  async function loadMemoryEventCounts(registry) {
+    for (const id of registry.pipeline_order) {
+      const t = registry.titans[id];
+      if (!t || t.status === 'planned') continue;
+      try {
+        const resp = await fetch(`${t.folder}index.json`);
+        if (resp.ok) {
+          const data = await resp.json();
+          const events = data.stats?.total_entries || data.stats?.total_tremors || 
+                        data.stats?.total_illuminations || data.stats?.total_flows ||
+                        data.stats?.total_events || data.stats?.total_prophecies ||
+                        data.stats?.total_laws || data.stats?.total_narratives ||
+                        data.stats?.total_questions || data.stats?.total_endings ||
+                        data.stats?.total_structures || 0;
+          const el = document.getElementById(`mem-${id}`);
+          if (el) el.innerHTML = `Events: <span>${events}</span>`;
+        }
+      } catch(e) {}
+    }
+  }
+
+  loadAll();
 </script>
 </body>
 </html>
