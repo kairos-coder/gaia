@@ -1,0 +1,57 @@
+{
+  "olympian": "zeus",
+  "emoji": "⚡",
+  "domain": ["law", "sovereignty", "judgment"],
+  "title": "Lord of Lightning · King of Olympus",
+  
+  "vocabulary": [
+    "judgment", "sovereignty_score", "precedent", "violation_risk",
+    "binding", "lawful", "overruled", "verdict"
+  ],
+  
+  "query_patterns": {
+    "judge": {
+      "params": ["context", "action"],
+      "returns": "binding judgment with sovereignty_score, precedent citations, and violation risk",
+      "example": "?view=judge&context=charge_grounding&action=mark_interval"
+    },
+    "status": {
+      "params": [],
+      "returns": "current sovereignty level, active judgments, domain health"
+    },
+    "precedents": {
+      "params": ["context"],
+      "returns": "relevant prior judgments for this context",
+      "example": "?view=precedents&context=succession"
+    }
+  },
+  
+  "titan_memory_queries": {
+    "judge": [
+      { "titan": "kronos", "view": "events", "type": "judge" },
+      { "titan": "themis", "view": "events", "type": "binding" }
+    ],
+    "precedents": [
+      { "titan": "mnemosyne", "view": "events", "type": "record" }
+    ]
+  },
+  
+  "translations": {
+    "athena": { "judgment": "assessment", "sovereignty_score": "authority", "precedent": "prior_idea", "violation_risk": "contradiction_risk" },
+    "hephaestus": { "judgment": "forge_verdict", "sovereignty_score": "build_authority", "precedent": "prior_art", "violation_risk": "structural_risk" },
+    "gaia": { "judgment": "grounding_approval", "sovereignty_score": "system_order", "precedent": "prior_grounding", "violation_risk": "instability_risk" }
+  },
+  
+  "current_state": {
+    "judgments_rendered": 0,
+    "sovereignty_level": 1.0,
+    "last_judgment": null,
+    "supabase_synced": false
+  },
+  
+  "integration": {
+    "page": "gaia/zeus/index.html",
+    "api_endpoint": "gaia/zeus/api.html",
+    "titan_gate": "kronos"
+  }
+}
