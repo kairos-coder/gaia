@@ -13,6 +13,7 @@
       --text: #c0ccd8; --text-dim: #6a7a8a;
       --border: rgba(138,155,176,0.15); --border-bright: rgba(138,155,176,0.35);
       --fire: #ff6644; --earth: #88aa44; --water: #44ccff; --air: #aaccff;
+      --green: #6abf8a;
     }
     * { margin:0; padding:0; box-sizing:border-box; }
     body {
@@ -167,32 +168,34 @@
 
 <script type="module">
   // ─── Import primordial Titan functions ──────────────────────────────────
+  // Only imports what index.js actually exports
   import { 
     TITAN_PIPELINE, TITAN_COUNTS,
     kronos, kronosState, kronosGetPhase,
     rhea, rheaState, rheaBand,
     hyperion,
     oceanus, oceanusState, oceanusCurrents,
-    tethys, tethysState,
+    tethys,
     theia, theiaState, theiaTheme, theiaAge,
-    phoibe, phoibeState,
-    themis, themisState,
+    phoibe,
+    themis, themisWeigh,
     mnemosyne, mnemosyneState, mnemosyneRemember,
-    koios, koiosState, koiosStreakReport
+    koios
   } from './index.js';
 
   // ─── Map Titan IDs to their primordial modules ─────────────────────────
+  // Only references exports that actually exist
   const PRIMORDIAL_STATE = {
     kronos:    { obj: kronos,    state: kronosState,    fn: { phase: kronosGetPhase } },
     rhea:      { obj: rhea,      state: rheaState,      fn: { band: rheaBand } },
     hyperion:  { obj: hyperion,  state: null,           fn: {} },
     oceanus:   { obj: oceanus,   state: oceanusState,   fn: { currents: oceanusCurrents } },
-    tethys:    { obj: tethys,    state: tethysState,    fn: {} },
+    tethys:    { obj: tethys,    state: null,           fn: {} },
     theia:     { obj: theia,     state: theiaState,     fn: { theme: theiaTheme, age: theiaAge } },
-    phoibe:    { obj: phoibe,    state: phoibeState,    fn: {} },
-    themis:    { obj: themis,    state: themisState,    fn: {} },
+    phoibe:    { obj: phoibe,    state: null,           fn: {} },
+    themis:    { obj: themis,    state: null,           fn: { weigh: themisWeigh } },
     mnemosyne: { obj: mnemosyne, state: mnemosyneState, fn: { remember: mnemosyneRemember } },
-    koios:     { obj: koios,     state: koiosState,     fn: { streak: koiosStreakReport } },
+    koios:     { obj: koios,     state: null,           fn: {} },
     iapetos:   null,
     kreios:    null
   };
@@ -206,8 +209,7 @@
       renderPipeline(registry);
       await renderTitans(registry);
     } catch(e) {
-      console.warn('Registry not loaded:', e.message);
-      // Fall back to TITAN_PIPELINE from index.js
+      console.warn('Registry not loaded, falling back to pipeline:', e.message);
       renderStatsFromPipeline();
       renderPipelineFromPipeline();
       renderTitansFromPipeline();
@@ -220,10 +222,11 @@
     document.getElementById('statPlanned').textContent = TITAN_COUNTS.planned;
     
     let totalFiles = 0;
-    for (const t of Object.values(registry.titans)) totalFiles += (t.files || []).length;
+    for (const t of Object.values(registry.titans || {})) {
+      totalFiles += (t.files || []).length;
+    }
     document.getElementById('statFiles').textContent = totalFiles;
     
-    // Count memory events
     countMemoryEvents(registry);
   }
 
@@ -237,8 +240,8 @@
 
   async function countMemoryEvents(registry) {
     let total = 0;
-    for (const id of registry.pipeline_order) {
-      const t = registry.titans[id];
+    for (const id of (registry.pipeline_order || [])) {
+      const t = registry.titans?.[id];
       if (!t || t.status === 'planned') continue;
       try {
         const resp = await fetch(`${t.folder}index.json`);
@@ -251,7 +254,7 @@
                   data.stats?.total_questions || data.stats?.total_endings ||
                   data.stats?.total_structures || 0;
         }
-      } catch(e) {}
+      } catch(e) { /* folder may not exist yet */ }
     }
     document.getElementById('statTotalMem').textContent = total;
   }
@@ -264,8 +267,10 @@
     let html = '';
     for (let i = 0; i < pipeline.length; i++) {
       const id = pipeline[i];
-      const t = titans[id] || TITAN_PIPELINE.find(p => p.name === id);
-      html += `<span class="pipeline-node">${t?.emoji || TITAN_PIPELINE.find(p=>p.name===id)?.glyph || ''} ${id}</span>`;
+      const t = titans[id];
+      const pipe = TITAN_PIPELINE.find(p => p.name === id);
+      const emoji = t?.emoji || pipe?.glyph || '';
+      html += `<span class="pipeline-node">${emoji} ${id}</span>`;
       if (i < pipeline.length - 1) html += '<span class="pipeline-arrow-symbol">→</span>';
     }
     container.innerHTML = html;
@@ -282,6 +287,7 @@
     container.innerHTML = html;
   }
 
+  // ─── Get live output from primordial Titan functions ───────────────────
   function getPrimordialLiveOutput(id) {
     const p = PRIMORDIAL_STATE[id];
     if (!p || !p.obj) return null;
@@ -290,31 +296,38 @@
     const obj = p.obj;
     const state = p.state;
     
-    // Titan object identity
+    // Titan identity
     if (obj.id) lines.push(`<span class="fn-name">${obj.id}</span>: ${obj.title || ''}`);
     if (obj.domain) lines.push(`  domain: ${obj.domain}`);
     
-    // Live state
-    if (state) {
-      if (typeof state === 'object') {
-        for (const [k, v] of Object.entries(state)) {
-          if (typeof v !== 'function' && typeof v !== 'object') {
-            lines.push(`  <span class="fn-result">${k}</span>: ${v}`);
-          }
+    // Live state values
+    if (state && typeof state === 'object') {
+      for (const [k, v] of Object.entries(state)) {
+        if (typeof v !== 'function' && typeof v !== 'object' && v !== null) {
+          lines.push(`  <span class="fn-result">${k}</span>: ${v}`);
         }
       }
     }
     
-    // Function results
-    if (p.fn.phase) lines.push(`  phase: ${p.fn.phase()}`);
-    if (p.fn.band) lines.push(`  band: ${p.fn.band()}`);
-    if (p.fn.theme) lines.push(`  theme: ${p.fn.theme()}`);
-    if (p.fn.age) lines.push(`  age: ${p.fn.age()}`);
-    if (p.fn.streak) lines.push(`  ${p.fn.streak()}`);
+    // Function results — safely call if exists
+    const safeCall = (fn, label) => {
+      if (typeof fn === 'function') {
+        try { lines.push(`  ${label}: ${fn()}`); } catch(e) { /* silent */ }
+      }
+    };
     
-    return lines.length > 0 ? lines.join('\n') : '(loaded, no live output)';
+    safeCall(p.fn.phase, 'phase');
+    safeCall(p.fn.band, 'band');
+    safeCall(p.fn.theme, 'theme');
+    safeCall(p.fn.age, 'age');
+    safeCall(p.fn.currents, 'currents');
+    safeCall(p.fn.weigh, 'weigh');
+    safeCall(p.fn.remember, 'remember');
+    
+    return lines.length > 0 ? lines.join('\n') : null;
   }
 
+  // ─── Render Titan cards ────────────────────────────────────────────────
   async function renderTitans(registry) {
     const grid = document.getElementById('titanGrid');
     const pipeline = registry?.pipeline_order || TITAN_PIPELINE.map(t => t.name);
@@ -329,7 +342,6 @@
       const suitClass = t?.suit || '';
       const cardClass = isPlanned ? 'planned' : suitClass;
       
-      // Live output from primordial functions
       const liveOutput = getPrimordialLiveOutput(id);
       
       // Badges
@@ -337,20 +349,53 @@
       if (t?.has_gatekeeper) badges += '<span class="gatekeeper-badge">GATEKEEPER</span>';
       badges += `<span class="status-badge ${status}">${status.toUpperCase()}</span>`;
       
-      // Memory files
+      // Files display
       const primordialFiles = pipelineEntry ? ['index.js (exported)'] : [];
       const memoryFiles = t?.files || [];
       const allFiles = [...primordialFiles, ...memoryFiles];
       
-      // Memory stats
+      // Memory stats section
       let memoryHtml = '';
       if (!isPlanned && t) {
         memoryHtml = `
-          <div class="memory-stats">
-            <div class="mem-stat">Suit: <span>${t.suit || '—'}</span></div>
-            <div class="mem-stat">Gate: <span>${t.gate || '—'}</span></div>
-            <div class="mem-stat">Folder: <span>${t.folder || '—'}</span></div>
-            <div class="mem-stat" id="mem-${id}">Events: <span>—</span></div>
+          <div class="titan-sections" style="margin-top:0.75rem">
+            <div class="section-box">
+              <div class="section-box-label">🧠 Memory Index</div>
+              <div class="memory-stats">
+                <div class="mem-stat">Suit: <span>${t.suit || '—'}</span></div>
+                <div class="mem-stat">Gate: <span>${t.gate || '—'}</span></div>
+                <div class="mem-stat">Folder: <span>${t.folder || '—'}</span></div>
+                <div class="mem-stat" id="mem-${id}">Events: <span>—</span></div>
+              </div>
+            </div>
+          </div>`;
+      } else if (isPlanned) {
+        memoryHtml = `
+          <div class="titan-sections" style="margin-top:0.75rem">
+            <div class="section-box">
+              <div class="section-box-label">🧠 Memory</div>
+              <div class="live-output" style="color:var(--text-dim)">Planned — not yet built</div>
+            </div>
+          </div>`;
+      }
+      
+      // Primordial section
+      let primordialHtml = '';
+      if (liveOutput) {
+        primordialHtml = `
+          <div class="titan-sections">
+            <div class="section-box">
+              <div class="section-box-label">⚡ Primordial Live State</div>
+              <div class="live-output">${liveOutput}</div>
+            </div>
+          </div>`;
+      } else if (!isPlanned) {
+        primordialHtml = `
+          <div class="titan-sections">
+            <div class="section-box">
+              <div class="section-box-label">⚡ Primordial</div>
+              <div class="live-output" style="color:var(--text-dim)">(module loaded, no live state exported)</div>
+            </div>
           </div>`;
       }
       
@@ -365,23 +410,8 @@
             </div>
           </div>
           <div class="titan-role">${pipelineEntry?.role || t?.domain || ''}</div>
-          
-          ${liveOutput ? `
-          <div class="titan-sections">
-            <div class="section-box">
-              <div class="section-box-label">⚡ Primordial Live State</div>
-              <div class="live-output">${liveOutput}</div>
-            </div>
-          </div>` : (isPlanned ? '' : '<div class="titan-sections"><div class="section-box"><div class="section-box-label">⚡ Primordial</div><div class="live-output" style="color:var(--text-dim)">(module loaded, no live state exported)</div></div></div>')}
-          
-          ${memoryHtml ? `
-          <div class="titan-sections" style="margin-top:0.75rem">
-            <div class="section-box">
-              <div class="section-box-label">🧠 Memory Index</div>
-              ${memoryHtml}
-            </div>
-          </div>` : (isPlanned ? '<div class="titan-sections" style="margin-top:0.75rem"><div class="section-box"><div class="section-box-label">🧠 Memory</div><div class="live-output" style="color:var(--text-dim)">Planned — not yet built</div></div></div>' : '')}
-          
+          ${primordialHtml}
+          ${memoryHtml}
           <div style="margin-top:0.75rem">
             <div class="titan-files">
               ${allFiles.map(f => {
@@ -395,12 +425,10 @@
     
     grid.innerHTML = html;
     
-    // Load memory event counts async
     if (registry) loadMemoryEventCounts(registry);
   }
 
   function renderTitansFromPipeline() {
-    // Fallback when no registry — use TITAN_PIPELINE
     const fakeRegistry = {
       pipeline_order: TITAN_PIPELINE.map(t => t.name),
       titans: {}
@@ -415,8 +443,8 @@
   }
 
   async function loadMemoryEventCounts(registry) {
-    for (const id of registry.pipeline_order) {
-      const t = registry.titans[id];
+    for (const id of (registry.pipeline_order || [])) {
+      const t = registry.titans?.[id];
       if (!t || t.status === 'planned') continue;
       try {
         const resp = await fetch(`${t.folder}index.json`);
@@ -431,7 +459,7 @@
           const el = document.getElementById(`mem-${id}`);
           if (el) el.innerHTML = `Events: <span>${events}</span>`;
         }
-      } catch(e) {}
+      } catch(e) { /* folder may not be deployed yet */ }
     }
   }
 
