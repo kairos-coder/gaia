@@ -1,0 +1,20 @@
+{
+  "ledger": [
+    {
+      "entry_id": "kronos_001",
+      "tick": 1,
+      "timestamp": "...",
+      "olympian": "zeus",
+      "operation": "judge",
+      "query_params": { "context": "charge_grounding" },
+      "response_summary": "judgment: lawful",
+      "fidelity": null
+    }
+  ],
+  "stats": {
+    "total_entries": 0,
+    "by_olympian": {},
+    "first_entry": null,
+    "last_entry": null
+  }
+}
