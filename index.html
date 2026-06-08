@@ -7,9 +7,6 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&family=Cinzel:wght@400;600&family=EB+Garamond:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
     <style>
-        /* ══════════════════════════════════════════════
-           ALL EXISTING CSS PRESERVED — NO CHANGES
-           ══════════════════════════════════════════════ */
         :root {
             --gold: #c9a84c; --gold-bright: #f0d080; --gold-dim: #6b5520;
             --copper: #b87333; --deep: #05050f; --mist: #e8e0d0;
@@ -59,9 +56,9 @@
         .ouranos-header { display:flex; justify-content:space-between; align-items:center; padding:0.75rem 1.25rem; border-bottom:1px solid rgba(60,100,180,0.2); }
         .ouranos-title { font-family:'Cinzel Decorative',serif; font-size:0.88rem; letter-spacing:0.2em; color:var(--sky-bright); }
         .ouranos-meta { font-family:'Cinzel',serif; font-size:0.62rem; letter-spacing:0.18em; color:rgba(100,150,220,0.55); }
-        .ouranos-body { display:grid; grid-template-columns:1fr 320px; gap:0; }
-        #ouranosCvs { width:100%; height:320px; display:block; }
-        .ouranos-sidebar { padding:1rem; border-left:1px solid rgba(60,100,180,0.18); display:flex; flex-direction:column; gap:0.6rem; overflow-y:auto; max-height:320px; }
+        .ouranos-body { display:grid; grid-template-columns:1fr 320px; gap:0; min-height:500px; }
+        #ouranosCvs { width:100%; height:100%; min-height:500px; display:block; }
+        .ouranos-sidebar { padding:1rem; border-left:1px solid rgba(60,100,180,0.18); display:flex; flex-direction:column; gap:0.6rem; overflow-y:auto; max-height:500px; }
         .sky-section-lbl { font-family:'Cinzel',serif; font-size:0.56rem; letter-spacing:0.3em; color:var(--gold-dim); padding-bottom:0.3rem; border-bottom:1px solid rgba(201,168,76,0.1); margin-bottom:0.2rem; }
         .sun-moon-strip { display:flex; gap:0.5rem; }
         .sm-card { flex:1; background:rgba(0,0,0,0.3); border-radius:3px; padding:0.5rem 0.6rem; border:1px solid rgba(60,100,180,0.15); }
@@ -70,14 +67,13 @@
         .sm-phase { font-family:'Cinzel',serif; font-size:0.56rem; color:rgba(140,180,240,0.55); margin-top:0.15rem; }
         .planet-row { display:flex; align-items:center; gap:0.4rem; padding:0.18rem 0; border-bottom:1px solid rgba(60,100,180,0.07); }
         .planet-row:last-child { border-bottom:none; }
-        .planet-icon { font-size:0.78rem; width:18px; text-align:center; }
-        .planet-name { font-family:'Cinzel',serif; font-size:0.58rem; letter-spacing:0.1em; color:rgba(160,200,240,0.65); width:62px; }
-        .planet-god { font-family:'Cinzel',serif; font-size:0.52rem; letter-spacing:0.08em; color:rgba(180,200,240,0.45); width:52px; }
+        .planet-icon { font-size:0.78rem; width:18px; text-align:center; flex-shrink:0; }
+        .planet-god { font-family:'Cinzel',serif; font-size:0.55rem; letter-spacing:0.08em; color:rgba(180,200,240,0.55); width:58px; flex-shrink:0; }
         .planet-sign { font-size:0.75rem; }
-        .planet-sign-name { font-family:'Cinzel',serif; font-size:0.58rem; color:rgba(140,180,220,0.5); }
-        .planet-deg { font-family:'Cinzel',serif; font-size:0.55rem; color:rgba(100,150,200,0.4); margin-left:auto; }
-        .planet-arcana { font-family:'Cinzel',serif; font-size:0.5rem; color:rgba(201,168,76,0.4); margin-left:auto; }
-        .planet-horizon { width:6px; height:6px; border-radius:50%; margin-left:0.2rem; flex-shrink:0; }
+        .planet-sign-name { font-family:'Cinzel',serif; font-size:0.55rem; color:rgba(140,180,220,0.5); }
+        .planet-deg { font-family:'Cinzel',serif; font-size:0.52rem; color:rgba(100,150,200,0.4); margin-left:auto; }
+        .planet-arcana { font-family:'Cinzel',serif; font-size:0.48rem; color:rgba(201,168,76,0.4); margin-left:0.3rem; white-space:nowrap; }
+        .planet-horizon { width:5px; height:5px; border-radius:50%; margin-left:0.2rem; flex-shrink:0; }
         .ph-above { background:#44cc88; box-shadow:0 0 4px #44cc88; }
         .ph-below { background:rgba(100,100,100,0.3); }
 
@@ -89,8 +85,6 @@
         .war-bar-olympian { height:100%; background:linear-gradient(to right,var(--sky),#aaccff); border-radius:2px; transition:width 1s; }
         .war-dominant { font-family:'Cinzel',serif; font-size:0.6rem; letter-spacing:0.2em; color:var(--gold-dim); margin-left:auto; }
         .ouranos-invocation { padding:0.6rem 1.25rem 0.75rem; border-top:1px solid rgba(60,100,180,0.08); font-size:0.78rem; font-style:italic; color:rgba(140,180,230,0.45); text-align:center; min-height:1.8rem; transition:opacity 0.5s; }
-
-        /* [ALL REMAINING CSS SECTIONS PRESERVED — Pontus, Ourea, Eros, Threshold, etc.] */
 
         /* ══ PONTUS ══ */
         .pontus-zone { background:linear-gradient(180deg,rgba(5,10,25,0.95),rgba(8,15,35,0.9)); border:1px solid rgba(30,80,150,0.3); border-top:2px solid #2255aa; border-radius:4px; overflow:hidden; }
@@ -111,8 +105,6 @@
         .c-badge { font-family:'Cinzel',serif; font-size:0.63rem; letter-spacing:0.2em; padding:0.3rem 0.7rem; border:1px solid var(--kronos); border-radius:2px; color:var(--kronos-bright); transition:all 0.5s; white-space:nowrap; text-align:center; }
         .c-badge.locked { border-color:var(--locked); color:var(--locked); box-shadow:0 0 12px rgba(68,204,136,0.3); }
 
-        /* [OUREA, EROS, DESCENT THRESHOLD CSS — ALL PRESERVED FROM YOUR VERSION] */
-        
         /* ══ OUREA ══ */
         .ourea-zone { background:linear-gradient(160deg,rgba(8,18,12,0.95),rgba(5,15,10,0.98)); border:1px solid rgba(30,100,60,0.3); border-top:2px solid #2a7a4a; border-radius:4px; overflow:hidden; }
         .ourea-header { display:flex; justify-content:space-between; align-items:center; padding:0.75rem 1.25rem; border-bottom:1px solid rgba(30,100,60,0.18); }
@@ -262,8 +254,9 @@
         #toast.fire { border-color:var(--fire); color:var(--fire-bright); }
 
         @media(max-width:900px) {
-            .ouranos-body { grid-template-columns:1fr; }
+            .ouranos-body { grid-template-columns:1fr; min-height:auto; }
             .ouranos-sidebar { max-height:none; border-left:none; border-top:1px solid rgba(60,100,180,0.18); }
+            #ouranosCvs { min-height:380px; }
             .koios-layout { grid-template-columns:1fr; }
             .gate-paths { grid-template-columns:1fr; }
             .kronos-controls { grid-template-columns:1fr 1fr; }
@@ -532,7 +525,6 @@
 
 <!-- ══════════════════════════════════════════════
      GAIA NATIVE CELESTIAL ENGINE
-     Replaces: astronomy-engine, suncalc, observe.js
      ══════════════════════════════════════════════ -->
 <script src="js/gaia-celestial.js"></script>
 <script src="js/gaia-suncalc.js"></script>
@@ -542,7 +534,7 @@
 
 <script>
 // ══════════════════════════════════════════════
-// SUPABASE — GaiaDB (UNCHANGED)
+// SUPABASE — GaiaDB
 // ══════════════════════════════════════════════
 const SUPABASE_URL = 'https://nbdvavzqvxrlxhsbrluz.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_6x1xlieXjs3dWqEETQcxnQ_4L1UO2uR';
@@ -559,7 +551,7 @@ const dbFetch = async (n=5) => {
 };
 
 // ══════════════════════════════════════════════
-// TITAN REGISTRY (UNCHANGED)
+// TITAN REGISTRY
 // ══════════════════════════════════════════════
 const TITANS = [
     {name:'kronos',    glyph:'⏳', role:'Phase Accumulator',   phaseOffset:0},
@@ -575,7 +567,7 @@ const TITANS = [
 ];
 
 // ══════════════════════════════════════════════
-// DESCENT GATE STATE (UNCHANGED)
+// DESCENT GATE STATE
 // ══════════════════════════════════════════════
 let descentUnlocked = false;
 let koiosGateStreak = 0;
@@ -646,7 +638,7 @@ function crackTheStone() {
 }
 
 // ══════════════════════════════════════════════
-// FIELD STATE (UNCHANGED)
+// FIELD STATE
 // ══════════════════════════════════════════════
 let phaseK=0, phaseA=0, kBase=0.43, aBase=0.50, coupK=0.8, curKFreq=0.43;
 let cohThresh=0.3, wasLocked=false, tickN=0, fieldInt=null;
@@ -654,7 +646,7 @@ let sessLocks=0, sessBandTrans=0, sessSaves=0, prevBand='dormant', curBand='dorm
 const pontusOffsets = TITANS.map(()=>Math.random()*Math.PI*2);
 
 // ══════════════════════════════════════════════
-// STARFIELD (UNCHANGED)
+// STARFIELD
 // ══════════════════════════════════════════════
 const starCvs=document.getElementById('starfield'), starCtx=starCvs.getContext('2d');
 const stars=Array.from({length:200},()=>({x:Math.random(),y:Math.random(),r:Math.random()*1.2,a:Math.random()*0.5+0.1,tw:Math.random()*Math.PI*2}));
@@ -665,16 +657,17 @@ const drawStars=t=>{starCtx.clearRect(0,0,starCvs.width,starCvs.height);stars.fo
 
 // ══════════════════════════════════════════════
 // OURANOS CANVAS — ENHANCED SKY RENDERER
-// Now uses GAIA native engine with god/arcana data
 // ══════════════════════════════════════════════
 const oCvs = document.getElementById('ouranosCvs');
 const oCtx = oCvs.getContext('2d');
 let skyData = null;
 
 const resizeO = () => {
+    const sidebarWidth = 320;
     const parent = oCvs.parentElement;
-    oCvs.width = parent ? parent.clientWidth || 600 : 600;
-    oCvs.height = 320;
+    const availableWidth = parent ? parent.clientWidth - sidebarWidth : 600;
+    oCvs.width = Math.max(availableWidth, 400);
+    oCvs.height = 500;
 };
 window.addEventListener('resize', resizeO); resizeO();
 
@@ -688,11 +681,10 @@ const CONSTELLATIONS = [
 ];
 
 const PLANET_COLORS = {
-    sun:     '#ffcc44', moon:    '#ccddff', mercury: '#aaaacc', venus:   '#ffbbaa',
-    mars:    '#ff6644', jupiter: '#ddbb88', saturn:  '#ccaa66', uranus:  '#88ddcc',
-    neptune: '#6688cc', pluto:   '#886688'
+    sun:'#ffcc44', moon:'#ccddff', mercury:'#aaaacc', venus:'#ffbbaa',
+    mars:'#ff6644', jupiter:'#ddbb88', saturn:'#ccaa66', uranus:'#88ddcc',
+    neptune:'#6688cc', pluto:'#886688'
 };
-
 const PLANET_RADII = {
     sun:12, moon:8, mercury:5, venus:7, mars:6, jupiter:10, saturn:9, uranus:7, neptune:7, pluto:5
 };
@@ -702,29 +694,32 @@ let ouranosTick = 0;
 function drawOuranos() {
     const W = oCvs.width, H = oCvs.height;
     oCtx.clearRect(0, 0, W, H);
-    ouranosTick += 0.002;
+    ouranosTick += 0.0015;
 
-    // Deep sky gradient
-    const grad = oCtx.createRadialGradient(W/2, H/2, 0, W/2, H/2, Math.max(W,H)*0.7);
-    grad.addColorStop(0, 'rgba(8,12,35,0.95)');
-    grad.addColorStop(1, 'rgba(2,4,15,0.98)');
+    const cx = W/2, cy = H/2;
+
+    // Deep sky gradient — centered on zodiac
+    const grad = oCtx.createRadialGradient(cx, cy, 0, cx, cy, Math.max(W,H)*0.55);
+    grad.addColorStop(0, 'rgba(12,16,40,0.95)');
+    grad.addColorStop(0.5, 'rgba(6,10,28,0.97)');
+    grad.addColorStop(1, 'rgba(2,4,15,0.99)');
     oCtx.fillStyle = grad;
     oCtx.fillRect(0, 0, W, H);
 
     // Background stars
-    for(let i=0;i<120;i++){
+    for(let i=0;i<200;i++){
         const sx = ((i*137.5)%100)/100*W;
         const sy = ((i*97.3)%100)/100*H;
-        const sa = 0.15 + 0.15*Math.sin(ouranosTick*0.5 + i*0.3);
+        const sa = 0.12 + 0.18*Math.sin(ouranosTick*0.5 + i*0.3);
         oCtx.beginPath();
-        oCtx.arc(sx, sy, 0.7, 0, Math.PI*2);
+        oCtx.arc(sx, sy, 0.6 + (i%3)*0.4, 0, Math.PI*2);
         oCtx.fillStyle = `rgba(200,210,240,${sa})`;
         oCtx.fill();
     }
 
     // Constellation lines
     CONSTELLATIONS.forEach(c => {
-        oCtx.strokeStyle = 'rgba(100,130,200,0.12)';
+        oCtx.strokeStyle = 'rgba(100,130,200,0.10)';
         oCtx.lineWidth = 0.5;
         c.lines.forEach(([a,b]) => {
             oCtx.beginPath();
@@ -733,92 +728,138 @@ function drawOuranos() {
             oCtx.stroke();
         });
         c.stars.forEach(([x,y],i) => {
-            const pulse = 0.4 + 0.2*Math.sin(ouranosTick + i*0.7);
+            const pulse = 0.35 + 0.2*Math.sin(ouranosTick + i*0.7);
             oCtx.beginPath();
-            oCtx.arc(x*W, y*H, 1.5, 0, Math.PI*2);
+            oCtx.arc(x*W, y*H, 1.8, 0, Math.PI*2);
             oCtx.fillStyle = `rgba(180,200,240,${pulse})`;
             oCtx.fill();
         });
+        if(c.stars.length > 0){
+            const labelX = c.stars.reduce((s,st)=>s+st[0],0)/c.stars.length*W;
+            const labelY = c.stars.reduce((s,st)=>s+st[1],0)/c.stars.length*H;
+            oCtx.font = '8px Cinzel, serif';
+            oCtx.fillStyle = 'rgba(100,130,180,0.22)';
+            oCtx.textAlign = 'center';
+            oCtx.fillText(c.name.toUpperCase(), labelX, labelY+14);
+        }
     });
 
-    // Zodiac ring
-    const cx = W/2, cy = H/2;
-    const rZodiac = Math.min(W,H) * 0.38;
-    oCtx.strokeStyle = 'rgba(201,168,76,0.10)';
+    // ══ ZODIAC RINGS ══
+    const rZodiac = Math.min(W, H) * 0.42;
+    const rInner = rZodiac * 0.82;
+
+    // Outer ring
+    oCtx.strokeStyle = 'rgba(201,168,76,0.12)';
     oCtx.lineWidth = 1;
-    oCtx.setLineDash([2,6]);
+    oCtx.setLineDash([3, 7]);
     oCtx.beginPath();
     oCtx.arc(cx, cy, rZodiac, 0, Math.PI*2);
     oCtx.stroke();
     oCtx.setLineDash([]);
 
-    // Zodiac glyphs at positions
+    // Inner ring
+    oCtx.strokeStyle = 'rgba(201,168,76,0.05)';
+    oCtx.lineWidth = 0.5;
+    oCtx.setLineDash([1, 10]);
+    oCtx.beginPath();
+    oCtx.arc(cx, cy, rInner, 0, Math.PI*2);
+    oCtx.stroke();
+    oCtx.setLineDash([]);
+
+    // Zodiac glyphs + names
     const SIGN_GLYPHS = ['♈','♉','♊','♋','♌','♍','♎','♏','♐','♑','♒','♓'];
+    const SIGN_NAMES = ['Aries','Taurus','Gemini','Cancer','Leo','Virgo','Libra','Scorpio','Sagittarius','Capricorn','Aquarius','Pisces'];
+
     for(let i=0;i<12;i++){
         const angle = (i/12)*Math.PI*2 - Math.PI/2;
-        const tx = cx + Math.cos(angle)*(rZodiac+10);
-        const ty = cy + Math.sin(angle)*(rZodiac+10);
-        oCtx.font = '10px serif';
-        oCtx.fillStyle = 'rgba(201,168,76,0.3)';
+
+        // Tick mark
+        oCtx.strokeStyle = 'rgba(201,168,76,0.15)';
+        oCtx.lineWidth = 0.5;
+        oCtx.beginPath();
+        oCtx.moveTo(cx + Math.cos(angle)*(rZodiac-3), cy + Math.sin(angle)*(rZodiac-3));
+        oCtx.lineTo(cx + Math.cos(angle)*(rZodiac+3), cy + Math.sin(angle)*(rZodiac+3));
+        oCtx.stroke();
+
+        // Glyph
+        const gx = cx + Math.cos(angle)*(rZodiac+14);
+        const gy = cy + Math.sin(angle)*(rZodiac+14);
+        oCtx.font = '11px serif';
+        oCtx.fillStyle = 'rgba(201,168,76,0.35)';
         oCtx.textAlign = 'center';
         oCtx.textBaseline = 'middle';
-        oCtx.fillText(SIGN_GLYPHS[i], tx, ty);
+        oCtx.fillText(SIGN_GLYPHS[i], gx, gy);
+
+        // Name
+        const nx = cx + Math.cos(angle)*(rZodiac+30);
+        const ny = cy + Math.sin(angle)*(rZodiac+30);
+        oCtx.font = '6px Cinzel, serif';
+        oCtx.fillStyle = 'rgba(201,168,76,0.18)';
+        oCtx.fillText(SIGN_NAMES[i].toUpperCase(), nx, ny);
     }
 
-    // Draw planets with god names and arcana
+    // ══ PLANETS ══
     if(skyData && skyData.planets) {
         const SIGN_ORDER = ['Aries','Taurus','Gemini','Cancer','Leo','Virgo','Libra','Scorpio','Sagittarius','Capricorn','Aquarius','Pisces'];
-        
+        const placedLabels = [];
+
         Object.entries(skyData.planets).forEach(([name, pos]) => {
             if(!pos || !pos.sign) return;
             const signIdx = SIGN_ORDER.indexOf(pos.sign);
             if(signIdx < 0) return;
-            
+
             const signAngle = (signIdx/12)*Math.PI*2 - Math.PI/2;
             const degAngle = ((pos.degree||0)/30)*(Math.PI*2/12);
             const totalAngle = signAngle + degAngle;
-            
+
             const nameHash = name.charCodeAt(0)*17 + (name.charCodeAt(name.length-1)||0)*7;
-            const rVariance = (nameHash % 30) - 15;
-            const pr = rZodiac + rVariance;
+            const rVariance = (nameHash % 40) - 20;
+            const pr = rZodiac * 0.92 + rVariance;
+
             const px = cx + Math.cos(totalAngle)*pr;
             const py = cy + Math.sin(totalAngle)*pr;
-            
+
             const color = PLANET_COLORS[name] || '#ffffff';
             const radius = PLANET_RADII[name] || 5;
-            
+
             // Glow
             oCtx.shadowColor = color;
-            oCtx.shadowBlur = 8;
+            oCtx.shadowBlur = 12;
             oCtx.beginPath();
-            oCtx.arc(px, py, radius*0.7, 0, Math.PI*2);
+            oCtx.arc(px, py, radius*0.8, 0, Math.PI*2);
             oCtx.fillStyle = color;
             oCtx.fill();
             oCtx.shadowBlur = 0;
-            
-            // God glyph label
-            const glyph = pos.glyph || '·';
-            oCtx.font = '10px serif';
+
+            // Label position — avoid overlap
+            let labelY = py - radius - 9;
+            const tooClose = placedLabels.find(l => Math.abs(l.x - px) < 30 && Math.abs(l.y - labelY) < 14);
+            if(tooClose) labelY = py + radius + 15;
+            placedLabels.push({x: px, y: labelY});
+
+            // Glyph
+            oCtx.font = '11px serif';
             oCtx.fillStyle = color;
             oCtx.textAlign = 'center';
             oCtx.textBaseline = 'middle';
-            oCtx.fillText(glyph, px, py - radius - 7);
-            
-            // God name (small)
+            oCtx.fillText(pos.glyph || '·', px, labelY);
+
+            // God name
             if(pos.god) {
                 oCtx.font = '7px Cinzel, serif';
-                oCtx.fillStyle = color + '88';
-                oCtx.fillText(pos.god, px, py - radius - 17);
+                oCtx.fillStyle = color + '77';
+                oCtx.fillText(pos.god, px, labelY + 12);
             }
         });
     }
 
     // Equator line
-    oCtx.strokeStyle = 'rgba(100,150,200,0.07)';
+    oCtx.strokeStyle = 'rgba(100,150,200,0.06)';
     oCtx.lineWidth = 0.5;
-    oCtx.setLineDash([4,12]);
+    oCtx.setLineDash([4, 16]);
     oCtx.beginPath();
-    oCtx.moveTo(0, H/2); oCtx.lineTo(W, H/2);
+    oCtx.moveTo(0, cy);
+    oCtx.lineTo(W, cy);
     oCtx.stroke();
     oCtx.setLineDash([]);
 
@@ -829,21 +870,16 @@ function drawOuranos() {
 drawOuranos();
 
 // ══════════════════════════════════════════════
-// SKY LOADER — Now uses GAIA native engine
+// SKY LOADER — GAIA native engine
 // ══════════════════════════════════════════════
-
 const PLANET_ORDER = ['mercury','venus','mars','jupiter','saturn','uranus','neptune','pluto'];
 
 function loadSky() {
     try {
-        // Use GAIA native engines
         const state = GaiaSuncalc.getFullState();
         const planets = GaiaAstronomy.getAllPlanets();
-        
-        // Merge
         skyData = { ...state, planets };
-        
-        // Auto-detect location from browser if available
+
         if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition(pos => {
                 const lat = pos.coords.latitude;
@@ -852,18 +888,13 @@ function loadSky() {
                 const localPlanets = GaiaAstronomy.getAllPlanets(new Date(), lat, lng);
                 skyData = { ...localState, planets: localPlanets };
                 renderSkyData(skyData);
-            }, () => {
-                // Fallback to default location
-                renderSkyData(skyData);
-            });
+            }, () => { renderSkyData(skyData); });
         } else {
             renderSkyData(skyData);
         }
-        
+
         document.getElementById('statusSky').textContent = 'Sky: live';
         document.getElementById('statusSky').style.color = 'var(--locked)';
-        
-        // Refresh every 5 minutes
         setTimeout(loadSky, 5 * 60 * 1000);
     } catch(e) {
         console.warn('Sky load failed:', e);
@@ -878,19 +909,16 @@ function renderSkyData(sky) {
     const sun = sky.planets?.sun;
     const moon = sky.planets?.moon;
     const asc = sky.ascendant;
-
-    // Header meta
     const period = sky.period === 'SUN' ? '☀️ Day — Apollo Reigns' : '🌙 Night — Artemis Watches';
+
     document.getElementById('ouranosMeta').textContent =
         `${period} · Asc: ${asc?.sign||'—'} ${asc?.glyph||''} · ${new Date(sky.timestamp).toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'})}`;
 
-    // Sun card
     if(sun) {
         document.getElementById('sunSign').textContent = `${sun.sign} ${sun.glyph}`;
         document.getElementById('sunArcana').textContent = sun.arcana ? `${sun.arcana.glyph} ${sun.arcana.name}` : 'XIX The Sun';
     }
-    
-    // Moon card
+
     if(moon) {
         const moonEmoji = moon.phase < 0.0625 || moon.phase > 0.9375 ? '🌑' :
                           moon.phase < 0.25 ? '🌒' :
@@ -902,7 +930,6 @@ function renderSkyData(sky) {
         document.getElementById('moonArcana').textContent = moon.arcana ? `${moon.arcana.glyph} ${moon.arcana.name}` : 'XVIII The Moon';
     }
 
-    // Planet list
     const list = document.getElementById('planetList');
     list.innerHTML = PLANET_ORDER.map(p => {
         const pos = sky.planets?.[p];
@@ -920,10 +947,7 @@ function renderSkyData(sky) {
         </div>`;
     }).join('');
 
-    // War report
     renderWarReport(sky.planets);
-
-    // Ouranos invocation
     renderInvocation(sky);
 }
 
@@ -955,7 +979,7 @@ function renderInvocation(sky) {
 }
 
 // ══════════════════════════════════════════════
-// PONTUS CANVAS (UNCHANGED)
+// PONTUS CANVAS
 // ══════════════════════════════════════════════
 const pCvs=document.getElementById('pontusCanvas'), pCtx=pCvs.getContext('2d');
 const resizeP=()=>{pCvs.width=pCvs.parentElement.clientWidth; pCvs.height=240;};
@@ -1004,7 +1028,7 @@ const drawPontus=(coh,isLocked,pontHz)=>{
 };
 
 // ══════════════════════════════════════════════
-// BAND + AGE + LORE + TICKER (UNCHANGED)
+// BAND + AGE + LORE + TICKER
 // ══════════════════════════════════════════════
 const inferBand=c=>{if(c>=0.90)return'torrent';if(c>=0.75)return'surge';if(c>=0.55)return'flow';if(c>=0.30)return'stir';if(c>=0.15)return'whisper';return'dormant';};
 const inferAge=(hz,locked)=>{
@@ -1043,7 +1067,7 @@ const drainT=()=>{
 };
 
 // ══════════════════════════════════════════════
-// MAIN FIELD LOOP (UNCHANGED)
+// MAIN FIELD LOOP
 // ══════════════════════════════════════════════
 const startField=()=>{
     if(fieldInt)clearInterval(fieldInt);
@@ -1101,7 +1125,7 @@ const startField=()=>{
 };
 
 // ══════════════════════════════════════════════
-// ORACLE TAB (UNCHANGED)
+// ORACLE TAB
 // ══════════════════════════════════════════════
 const updatePhoibe=(coh,isLocked,sd)=>{
     let proph,conf;
@@ -1125,7 +1149,7 @@ const updateTitanVoices=(coh,isLocked)=>{
 };
 
 // ══════════════════════════════════════════════
-// KOIOS TRIVIA + GATE (UNCHANGED)
+// KOIOS TRIVIA + GATE
 // ══════════════════════════════════════════════
 const QS=[
     {id:'m001',q:'Who is the Titaness of Memory and mother of the Nine Muses?',c:['Themis','Mnemosyne','Rhea','Tethys'],a:1,e:'Mnemosyne lay with Zeus for nine nights and bore the nine Muses. Her name is the root of "mnemonic."',tier:0,dom:'mythology'},
@@ -1214,7 +1238,7 @@ document.getElementById('koiosSkip').onclick=()=>{
 };
 
 // ══════════════════════════════════════════════
-// CHTHONIC CARD DRAW (UNCHANGED)
+// CHTHONIC CARD DRAW
 // ══════════════════════════════════════════════
 document.getElementById('drawChthonicBtn').onclick = () => {
     if(cardAccepted >= GATE_CARDS_NEEDED) return;
@@ -1273,7 +1297,7 @@ document.getElementById('drawChthonicBtn').onclick = () => {
 };
 
 // ══════════════════════════════════════════════
-// GALLERY (UNCHANGED)
+// GALLERY
 // ══════════════════════════════════════════════
 const autoPrompt=()=>{
     const age=inferAge(Math.abs(curKFreq-aBase),wasLocked);
@@ -1298,7 +1322,7 @@ document.getElementById('galleryGen').onclick=async()=>{
 };
 
 // ══════════════════════════════════════════════
-// COMPAT MATRIX (UNCHANGED)
+// COMPAT MATRIX
 // ══════════════════════════════════════════════
 const CM={
     kronos:{kronos:null,rhea:3,hyperion:4,oceanus:3,tethys:3,theia:3,phoibe:4,themis:4,mnemosyne:3,koios:3},
@@ -1351,7 +1375,7 @@ window.showPair=(a,b)=>{
 buildMatrix();
 
 // ══════════════════════════════════════════════
-// TABS (UNCHANGED)
+// TABS
 // ══════════════════════════════════════════════
 document.querySelectorAll('.tab-btn').forEach(btn=>{
     btn.onclick=()=>{
@@ -1364,7 +1388,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
 });
 
 // ══════════════════════════════════════════════
-// CONTROLS (UNCHANGED)
+// CONTROLS
 // ══════════════════════════════════════════════
 document.getElementById('kairosBase').oninput=e=>{kBase=parseFloat(e.target.value);document.getElementById('kBV').textContent=kBase.toFixed(2);};
 document.getElementById('apolloBase').oninput=e=>{aBase=parseFloat(e.target.value);document.getElementById('aBV').textContent=aBase.toFixed(2);};
@@ -1372,19 +1396,18 @@ document.getElementById('coupling').oninput=e=>{coupK=parseFloat(e.target.value)
 document.getElementById('resetPhaseBtn').onclick=()=>{phaseK=0;phaseA=0;ticker('⟳ Kronos begins again. The ledger opens to a fresh page.');};
 
 // ══════════════════════════════════════════════
-// DESCENT BUTTON → NOW POINTS TO descent.html
+// DESCENT BUTTON → descent.html
 // ══════════════════════════════════════════════
 document.getElementById('descentBtn').onclick = () => {
     if(!descentUnlocked) return;
     ticker('🌀 The pilgrim descends. Phobos and Deimos stir. The path opens downward.');
     toast('🌀 Descending into the Underworld...', 'fire');
-    // Save state before leaving
     document.getElementById('saveBtn').click();
     setTimeout(() => { window.location.href = 'descent.html'; }, 1500);
 };
 
 // ══════════════════════════════════════════════
-// SAVE / LOAD (UNCHANGED)
+// SAVE / LOAD
 // ══════════════════════════════════════════════
 document.getElementById('saveBtn').onclick=async()=>{
     const pd=phaseA-phaseK,nd=((pd%(2*Math.PI))+2*Math.PI)%(2*Math.PI),sd=nd>Math.PI?nd-2*Math.PI:nd;
@@ -1418,7 +1441,7 @@ document.getElementById('loadBtn').onclick=async()=>{
 };
 
 // ══════════════════════════════════════════════
-// TOAST (UNCHANGED)
+// TOAST
 // ══════════════════════════════════════════════
 let toastT;
 const toast=(msg,type='')=>{const el=document.getElementById('toast');el.className='show '+(type||'');el.textContent=msg;clearTimeout(toastT);toastT=setTimeout(()=>{el.className='';},4000);};
