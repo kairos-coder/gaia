@@ -12,6 +12,9 @@
             --copper: #b87333; --deep: #05050f; --mist: #e8e0d0;
             --kronos: #7a6a9a; --kronos-bright: #b0a0d0; --locked: #44cc88;
             --eros: #ff66aa;
+            --sky: #4488cc; --sky-bright: #88bbff; --sky-dim: #223355;
+            --void: #1a0a00; --fire: #ff4400; --fire-bright: #ff8833;
+            --stone: #2a2218; --crack: #ff6600;
         }
         * { margin:0; padding:0; box-sizing:border-box; }
         body { background:var(--deep); color:var(--mist); font-family:'EB Garamond',Georgia,serif; min-height:100vh; overflow-x:hidden; }
@@ -43,9 +46,44 @@
         /* ZONE LABELS */
         .zone-label { font-family:'Cinzel Decorative',serif; font-size:0.62rem; letter-spacing:0.4em; display:flex; align-items:center; gap:0.75rem; }
         .zone-label::before,.zone-label::after { content:''; flex:1; height:1px; }
-        .zl-pontus { color:#5599cc; } .zl-pontus::before,.zl-pontus::after { background:linear-gradient(to right,transparent,#22558844); }
-        .zl-ourea  { color:#55aa77; } .zl-ourea::before,.zl-ourea::after   { background:linear-gradient(to right,transparent,#22553344); }
-        .zl-eros   { color:#cc6699; } .zl-eros::before,.zl-eros::after     { background:linear-gradient(to right,transparent,#88224444); }
+        .zl-ouranos { color:#aaccff; } .zl-ouranos::before,.zl-ouranos::after { background:linear-gradient(to right,transparent,#334466); }
+        .zl-pontus  { color:#5599cc; } .zl-pontus::before,.zl-pontus::after   { background:linear-gradient(to right,transparent,#22558844); }
+        .zl-ourea   { color:#55aa77; } .zl-ourea::before,.zl-ourea::after     { background:linear-gradient(to right,transparent,#22553344); }
+        .zl-eros    { color:#cc6699; } .zl-eros::before,.zl-eros::after       { background:linear-gradient(to right,transparent,#88224444); }
+
+        /* ══ OURANOS ══ */
+        .ouranos-zone { background:linear-gradient(180deg,rgba(2,5,18,0.98),rgba(5,10,30,0.95)); border:1px solid rgba(60,100,180,0.3); border-top:2px solid #3355aa; border-radius:4px; overflow:hidden; }
+        .ouranos-header { display:flex; justify-content:space-between; align-items:center; padding:0.75rem 1.25rem; border-bottom:1px solid rgba(60,100,180,0.2); }
+        .ouranos-title { font-family:'Cinzel Decorative',serif; font-size:0.88rem; letter-spacing:0.2em; color:var(--sky-bright); }
+        .ouranos-meta { font-family:'Cinzel',serif; font-size:0.62rem; letter-spacing:0.18em; color:rgba(100,150,220,0.55); }
+        .ouranos-body { display:grid; grid-template-columns:1fr 320px; gap:0; }
+        #ouranosCvs { width:100%; height:320px; display:block; }
+        .ouranos-sidebar { padding:1rem; border-left:1px solid rgba(60,100,180,0.18); display:flex; flex-direction:column; gap:0.6rem; overflow-y:auto; max-height:320px; }
+        .sky-section-lbl { font-family:'Cinzel',serif; font-size:0.56rem; letter-spacing:0.3em; color:var(--gold-dim); padding-bottom:0.3rem; border-bottom:1px solid rgba(201,168,76,0.1); margin-bottom:0.2rem; }
+        .sun-moon-strip { display:flex; gap:0.5rem; }
+        .sm-card { flex:1; background:rgba(0,0,0,0.3); border-radius:3px; padding:0.5rem 0.6rem; border:1px solid rgba(60,100,180,0.15); }
+        .sm-body { font-size:1.1rem; line-height:1; }
+        .sm-sign { font-family:'Cinzel',serif; font-size:0.7rem; color:var(--sky-bright); letter-spacing:0.1em; }
+        .sm-phase { font-family:'Cinzel',serif; font-size:0.56rem; color:rgba(140,180,240,0.55); margin-top:0.15rem; }
+        .planet-row { display:flex; align-items:center; gap:0.4rem; padding:0.18rem 0; border-bottom:1px solid rgba(60,100,180,0.07); }
+        .planet-row:last-child { border-bottom:none; }
+        .planet-icon { font-size:0.78rem; width:18px; text-align:center; }
+        .planet-name { font-family:'Cinzel',serif; font-size:0.58rem; letter-spacing:0.1em; color:rgba(160,200,240,0.65); width:62px; }
+        .planet-sign { font-size:0.75rem; }
+        .planet-sign-name { font-family:'Cinzel',serif; font-size:0.58rem; color:rgba(140,180,220,0.5); }
+        .planet-deg { font-family:'Cinzel',serif; font-size:0.55rem; color:rgba(100,150,200,0.4); margin-left:auto; }
+        .planet-horizon { width:6px; height:6px; border-radius:50%; margin-left:0.2rem; flex-shrink:0; }
+        .ph-above { background:#44cc88; box-shadow:0 0 4px #44cc88; }
+        .ph-below { background:rgba(100,100,100,0.3); }
+
+        /* War report strip */
+        .war-strip { padding:0.5rem 1.25rem; border-top:1px solid rgba(60,100,180,0.12); background:rgba(0,0,0,0.2); display:flex; align-items:center; gap:1rem; flex-wrap:wrap; }
+        .war-olympian { font-family:'Cinzel',serif; font-size:0.62rem; letter-spacing:0.15em; color:var(--sky-bright); }
+        .war-chthonic { font-family:'Cinzel',serif; font-size:0.62rem; letter-spacing:0.15em; color:#cc7755; }
+        .war-bar-wrap { flex:1; min-width:120px; height:4px; background:rgba(0,0,0,0.4); border-radius:2px; overflow:hidden; }
+        .war-bar-olympian { height:100%; background:linear-gradient(to right,var(--sky),#aaccff); border-radius:2px; transition:width 1s; }
+        .war-dominant { font-family:'Cinzel',serif; font-size:0.6rem; letter-spacing:0.2em; color:var(--gold-dim); margin-left:auto; }
+        .ouranos-invocation { padding:0.6rem 1.25rem 0.75rem; border-top:1px solid rgba(60,100,180,0.08); font-size:0.78rem; font-style:italic; color:rgba(140,180,230,0.45); text-align:center; min-height:1.8rem; transition:opacity 0.5s; }
 
         /* ══ PONTUS ══ */
         .pontus-zone { background:linear-gradient(180deg,rgba(5,10,25,0.95),rgba(8,15,35,0.9)); border:1px solid rgba(30,80,150,0.3); border-top:2px solid #2255aa; border-radius:4px; overflow:hidden; }
@@ -91,15 +129,22 @@
         .choice-btn:disabled { cursor:default; }
         .koios-exp { font-size:0.8rem; font-style:italic; color:rgba(175,215,185,0.55); margin-top:0.9rem; padding:0.7rem; background:rgba(0,0,0,0.18); border-left:2px solid rgba(30,100,60,0.35); min-height:1rem; line-height:1.6; }
         .koios-lore { font-size:0.76rem; font-style:italic; color:rgba(140,195,155,0.42); margin-top:0.7rem; min-height:1.5rem; }
-        .koios-actions { margin-top:0.9rem; display:flex; gap:0.7rem; }
+        .koios-actions { margin-top:0.9rem; display:flex; gap:0.7rem; align-items:center; }
         .k-btn { font-family:'Cinzel',serif; font-size:0.63rem; letter-spacing:0.18em; background:transparent; border:1px solid rgba(30,100,60,0.38); color:#88ddaa; padding:0.45rem 1.1rem; border-radius:2px; cursor:pointer; transition:all 0.18s; }
         .k-btn:hover { background:rgba(30,100,60,0.18); border-color:#2a7a4a; }
+        .koios-gate-status { font-family:'Cinzel',serif; font-size:0.6rem; letter-spacing:0.15em; color:rgba(100,180,130,0.45); margin-left:auto; }
+        .koios-gate-status.earning { color:#ffaa44; }
+        .koios-gate-status.earned { color:var(--locked); }
         .koios-sidebar { display:flex; flex-direction:column; gap:1rem; }
         .streak-display { text-align:center; padding:1rem; background:rgba(0,0,0,0.28); border:1px solid rgba(30,100,60,0.18); border-radius:4px; }
         .streak-number { font-family:'Cinzel Decorative',serif; font-size:3rem; color:#88ddaa; line-height:1; text-shadow:0 0 30px rgba(68,204,136,0.35); }
         .streak-number.hot { color:var(--gold); text-shadow:0 0 30px rgba(201,168,76,0.55); animation:sPulse 0.45s ease-out; }
         @keyframes sPulse { 0%{transform:scale(1.3)} 100%{transform:scale(1)} }
         .streak-lbl { font-family:'Cinzel',serif; font-size:0.58rem; letter-spacing:0.3em; color:var(--gold-dim); margin-top:0.25rem; }
+        .streak-gate-pip { display:flex; gap:0.3rem; justify-content:center; margin-top:0.5rem; }
+        .pip { width:10px; height:10px; border-radius:50%; border:1px solid rgba(30,100,60,0.38); background:rgba(0,0,0,0.4); transition:all 0.3s; }
+        .pip.filled { background:var(--locked); border-color:var(--locked); box-shadow:0 0 8px rgba(68,204,136,0.6); }
+        .pip.fire { background:var(--fire-bright); border-color:var(--fire); box-shadow:0 0 8px rgba(255,68,0,0.6); }
         .koios-stats { background:rgba(0,0,0,0.28); border:1px solid rgba(30,100,60,0.18); border-radius:4px; padding:1rem; }
         .ks-title { font-family:'Cinzel',serif; font-size:0.58rem; letter-spacing:0.25em; color:var(--gold-dim); margin-bottom:0.7rem; }
         .stat-row { display:flex; justify-content:space-between; align-items:center; padding:0.28rem 0; border-bottom:1px solid rgba(30,100,60,0.1); font-family:'Cinzel',serif; font-size:0.7rem; }
@@ -158,12 +203,63 @@
         .pair-title { font-family:'Cinzel Decorative',serif; font-size:0.75rem; letter-spacing:0.18em; color:#dd88bb; margin-bottom:0.45rem; }
         .pair-text { font-size:0.86rem; font-style:italic; line-height:1.7; color:rgba(195,145,175,0.68); }
         .pair-lore { font-size:0.76rem; font-style:italic; color:rgba(175,95,135,0.45); margin-top:0.45rem; }
-        .eros-portal-strip { display:flex; align-items:center; gap:1.25rem; margin-top:1.1rem; padding:0.7rem 1rem; background:rgba(0,0,0,0.18); border:1px solid rgba(150,50,100,0.13); border-radius:4px; }
-        .portal-ring-sm { width:56px; height:56px; border-radius:50%; flex-shrink:0; border:1px solid rgba(255,102,170,0.18); display:flex; align-items:center; justify-content:center; background:radial-gradient(circle,rgba(255,102,170,0.03),transparent); transition:all 0.4s; }
-        .portal-ring-sm.active { border-color:var(--eros); box-shadow:0 0 20px rgba(255,102,170,0.38); animation:pPulse 2s ease-in-out infinite; }
-        @keyframes pPulse { 0%,100%{box-shadow:0 0 20px rgba(255,102,170,0.28)} 50%{box-shadow:0 0 40px rgba(255,102,170,0.65)} }
-        .portal-k { font-family:'Cinzel',serif; font-size:0.95rem; color:#dd88bb; }
-        .portal-txt { font-size:0.78rem; font-style:italic; color:rgba(195,95,145,0.55); line-height:1.6; }
+
+        /* ══ DESCENT THRESHOLD ══ */
+        .threshold-zone { position:relative; border-radius:4px; overflow:hidden; margin-top:0.5rem;
+            background:linear-gradient(180deg, var(--stone) 0%, #150a00 60%, #000000 100%);
+            border:1px solid rgba(80,50,20,0.4); border-top:2px solid rgba(100,60,20,0.6); }
+        .threshold-zone.unlocked { border-top-color:var(--fire); animation:stonePulse 3s ease-in-out infinite; }
+        @keyframes stonePulse { 0%,100%{border-top-color:var(--fire);box-shadow:0 0 20px rgba(255,68,0,0.1)} 50%{border-top-color:var(--fire-bright);box-shadow:0 0 40px rgba(255,100,0,0.25)} }
+        .threshold-inscription { text-align:center; padding:1.5rem 1rem 0.5rem; position:relative; }
+        .threshold-inscription::before { content:'✦ ✦ ✦'; display:block; font-family:'Cinzel',serif; font-size:0.55rem; letter-spacing:0.6em; color:rgba(100,60,20,0.5); margin-bottom:0.75rem; }
+        .threshold-text { font-family:'Cinzel Decorative',serif; font-size:clamp(0.8rem,2vw,1.1rem); letter-spacing:0.35em; color:rgba(120,80,30,0.7); transition:all 1s; }
+        .threshold-zone.unlocked .threshold-text { color:var(--fire-bright); text-shadow:0 0 30px rgba(255,100,0,0.7); }
+        .threshold-subtext { font-family:'Cinzel',serif; font-size:0.62rem; letter-spacing:0.25em; color:rgba(80,50,15,0.5); margin-top:0.4rem; transition:all 1s; }
+        .threshold-zone.unlocked .threshold-subtext { color:rgba(200,120,50,0.7); }
+
+        /* Gate paths */
+        .gate-paths { display:grid; grid-template-columns:1fr 1fr; gap:1rem; padding:1rem 1.25rem; }
+        .gate-path { background:rgba(0,0,0,0.4); border:1px solid rgba(80,50,20,0.25); border-radius:3px; padding:1rem; }
+        .gate-path-title { font-family:'Cinzel',serif; font-size:0.66rem; letter-spacing:0.2em; color:rgba(150,100,40,0.7); margin-bottom:0.6rem; display:flex; align-items:center; gap:0.5rem; }
+        .gate-path-title .path-status { margin-left:auto; font-size:0.6rem; }
+        .gate-path-title .path-status.complete { color:var(--locked); }
+        .gate-path-title .path-status.active { color:#ffaa44; }
+
+        /* Koios path pips */
+        .gate-pips { display:flex; gap:0.4rem; margin-bottom:0.6rem; }
+        .gate-pip { width:24px; height:24px; border-radius:50%; border:1px solid rgba(80,50,20,0.4); background:rgba(0,0,0,0.5); display:flex; align-items:center; justify-content:center; font-size:0.7rem; transition:all 0.4s; }
+        .gate-pip.lit { border-color:var(--locked); background:rgba(68,204,136,0.15); box-shadow:0 0 10px rgba(68,204,136,0.4); }
+        .gate-pip.lit::after { content:'✓'; color:var(--locked); font-size:0.65rem; }
+        .gate-path-desc { font-size:0.75rem; font-style:italic; color:rgba(150,100,40,0.5); line-height:1.5; }
+
+        /* Card draw path */
+        .chthonic-cards { display:flex; gap:0.5rem; margin-bottom:0.6rem; flex-wrap:wrap; }
+        .chthonic-card { background:rgba(10,0,0,0.6); border:1px solid rgba(100,40,20,0.3); border-radius:3px; padding:0.4rem 0.6rem; font-family:'Cinzel',serif; font-size:0.6rem; letter-spacing:0.1em; color:rgba(180,100,60,0.55); cursor:pointer; transition:all 0.3s; display:flex; align-items:center; gap:0.3rem; }
+        .chthonic-card:hover:not(.accepted) { border-color:rgba(200,80,30,0.5); color:rgba(220,140,80,0.8); background:rgba(20,5,0,0.8); }
+        .chthonic-card.accepted { border-color:var(--fire); color:var(--fire-bright); background:rgba(30,10,0,0.9); box-shadow:0 0 12px rgba(255,68,0,0.3); cursor:default; }
+        .chthonic-card .card-whisper { display:none; }
+        .draw-btn { font-family:'Cinzel',serif; font-size:0.62rem; letter-spacing:0.18em; background:rgba(80,30,10,0.3); border:1px solid rgba(100,50,20,0.4); color:rgba(180,100,50,0.7); padding:0.4rem 0.9rem; border-radius:2px; cursor:pointer; transition:all 0.2s; }
+        .draw-btn:hover { background:rgba(100,40,10,0.5); border-color:rgba(180,80,30,0.6); color:var(--fire-bright); }
+
+        /* The crack animation */
+        .crack-overlay { position:absolute; inset:0; pointer-events:none; overflow:hidden; opacity:0; transition:opacity 1.5s; }
+        .threshold-zone.unlocked .crack-overlay { opacity:1; }
+        .crack-line { position:absolute; background:linear-gradient(to bottom, transparent, var(--fire), rgba(255,150,50,0.8), transparent); width:1px; transition:all 1.5s; }
+        .fire-glow { position:absolute; bottom:0; left:0; right:0; height:60px; background:linear-gradient(to top, rgba(255,50,0,0.15), transparent); pointer-events:none; opacity:0; transition:opacity 1.5s; }
+        .threshold-zone.unlocked .fire-glow { opacity:1; }
+
+        /* The descent button */
+        .descent-btn-wrap { padding:1rem 1.25rem 1.5rem; display:flex; justify-content:center; }
+        .descent-btn { font-family:'Cinzel Decorative',serif; font-size:0.88rem; letter-spacing:0.3em; background:rgba(10,3,0,0.9); border:2px solid rgba(80,40,10,0.5); color:rgba(100,60,20,0.5); padding:0.9rem 3rem; border-radius:2px; cursor:not-allowed; transition:all 0.5s; position:relative; overflow:hidden; }
+        .descent-btn::before { content:''; position:absolute; inset:0; background:linear-gradient(135deg, transparent 40%, rgba(255,80,0,0.05) 100%); opacity:0; transition:opacity 0.5s; }
+        .descent-btn.active { border-color:var(--fire); color:var(--fire-bright); cursor:pointer; box-shadow:0 0 30px rgba(255,68,0,0.3), inset 0 0 20px rgba(255,68,0,0.05); text-shadow:0 0 20px rgba(255,100,0,0.8); animation:btnCrack 2s ease-in-out infinite; }
+        .descent-btn.active::before { opacity:1; }
+        @keyframes btnCrack { 0%,100%{box-shadow:0 0 20px rgba(255,68,0,0.2),inset 0 0 10px rgba(255,68,0,0.03)} 50%{box-shadow:0 0 50px rgba(255,100,0,0.5),inset 0 0 30px rgba(255,68,0,0.08)} }
+        .descent-btn:hover.active { background:rgba(30,8,0,0.95); transform:scale(1.02); }
+
+        /* Cerberus warning */
+        .cerberus-warning { padding:0 1.25rem 0.75rem; text-align:center; font-family:'Cinzel',serif; font-size:0.62rem; letter-spacing:0.18em; color:rgba(100,60,20,0.45); font-style:italic; min-height:1.5rem; transition:color 0.5s; }
+        .threshold-zone.unlocked .cerberus-warning { color:rgba(200,100,40,0.65); }
 
         /* BOTTOM BAR */
         .bottom-bar { display:flex; gap:0.7rem; justify-content:center; align-items:center; flex-wrap:wrap; padding:0.75rem; border-top:1px solid rgba(201,168,76,0.07); }
@@ -171,14 +267,22 @@
         .m-btn:hover { border-color:var(--gold); background:rgba(201,168,76,0.07); }
         .m-btn.pri { border-color:var(--kronos); color:var(--kronos-bright); }
         .m-btn.pri:hover { border-color:var(--kronos-bright); background:rgba(122,106,154,0.09); }
-        .m-btn.dan { border-color:rgba(255,102,170,0.28); color:#dd88bb; }
-        .m-btn.dan:hover { border-color:var(--eros); background:rgba(255,102,170,0.07); }
 
         /* TOAST */
         #toast { position:fixed; bottom:1.5rem; left:50%; transform:translateX(-50%); background:rgba(8,8,24,0.95); border:1px solid var(--gold-dim); border-radius:2px; padding:0.55rem 1.4rem; font-family:'Cinzel',serif; font-size:0.68rem; letter-spacing:0.13em; color:var(--gold); z-index:100; opacity:0; transition:opacity 0.4s; text-align:center; max-width:90vw; }
         #toast.show { opacity:1; }
         #toast.success { border-color:var(--locked); color:var(--locked); }
         #toast.error { border-color:#cc4444; color:#ee7777; }
+        #toast.fire { border-color:var(--fire); color:var(--fire-bright); }
+
+        /* Responsive */
+        @media(max-width:900px) {
+            .ouranos-body { grid-template-columns:1fr; }
+            .ouranos-sidebar { max-height:none; border-left:none; border-top:1px solid rgba(60,100,180,0.18); }
+            .koios-layout { grid-template-columns:1fr; }
+            .gate-paths { grid-template-columns:1fr; }
+            .kronos-controls { grid-template-columns:1fr 1fr; }
+        }
     </style>
 </head>
 <body>
@@ -200,6 +304,44 @@
         <div class="si"><span id="statusAge">🌫️ Silence</span></div>
         <div class="si"><span id="statusBand">Band: dormant</span></div>
         <div class="si"><span id="statusTick" style="color:rgba(100,150,100,0.45)">Tick: 0</span></div>
+        <div class="si"><span id="statusDescent" style="color:rgba(150,80,30,0.5)">Gate: sealed</span></div>
+    </div>
+
+    <!-- ══ OURANOS ══ -->
+    <div class="zone-label zl-ouranos">✦ OURANOS · The Eternal Sky · Celestial Orrery ✦</div>
+    <div class="ouranos-zone">
+        <div class="ouranos-header">
+            <div class="ouranos-title">🌌 OURANOS — The Vault of Heaven</div>
+            <div class="ouranos-meta" id="ouranosMeta">Sky: loading... · Ascendant: —</div>
+        </div>
+        <div class="ouranos-body">
+            <canvas id="ouranosCvs"></canvas>
+            <div class="ouranos-sidebar">
+                <div class="sky-section-lbl">☉ SUN · ☽ MOON</div>
+                <div class="sun-moon-strip">
+                    <div class="sm-card" id="sunCard">
+                        <div class="sm-body">☉</div>
+                        <div class="sm-sign" id="sunSign">—</div>
+                        <div class="sm-phase" id="sunRise">rise —</div>
+                    </div>
+                    <div class="sm-card" id="moonCard">
+                        <div class="sm-body">☽</div>
+                        <div class="sm-sign" id="moonSign">—</div>
+                        <div class="sm-phase" id="moonPhase">—</div>
+                    </div>
+                </div>
+                <div class="sky-section-lbl">PLANETS</div>
+                <div id="planetList"></div>
+                <div class="sky-section-lbl" style="margin-top:0.3rem">⚔️ OLYMPIAN vs CHTHONIC</div>
+            </div>
+        </div>
+        <div class="war-strip">
+            <span class="war-olympian">⚡ Olympian: <span id="warOlympian">—</span></span>
+            <div class="war-bar-wrap"><div class="war-bar-olympian" id="warBar" style="width:50%"></div></div>
+            <span class="war-chthonic">🌑 Chthonic: <span id="warChthonic">—</span></span>
+            <span class="war-dominant" id="warDominant">—</span>
+        </div>
+        <div class="ouranos-invocation" id="ouranosPrayer">Ouranos arches overhead. The vault of heaven turns. The sky is reading...</div>
     </div>
 
     <!-- ══ PONTUS ══ -->
@@ -260,12 +402,18 @@
                     <div class="koios-actions">
                         <button class="k-btn" id="askKoiosBtn">⚗️ Ask Koios</button>
                         <button class="k-btn" id="koiosSkip">↷ Skip</button>
+                        <span class="koios-gate-status" id="koiosGateStatus">Descent: answer 3 in a row</span>
                     </div>
                 </div>
                 <div class="koios-sidebar">
                     <div class="streak-display">
                         <div class="streak-number" id="streakNum">0</div>
                         <div class="streak-lbl">CURRENT STREAK</div>
+                        <div class="streak-gate-pip" id="streakPips">
+                            <div class="pip" id="pip1"></div>
+                            <div class="pip" id="pip2"></div>
+                            <div class="pip" id="pip3"></div>
+                        </div>
                     </div>
                     <div class="koios-stats">
                         <div class="ks-title">SESSION RECORD</div>
@@ -341,14 +489,54 @@
                 <div class="pair-text" id="pairText">Click any cell in the matrix to see how two Titans relate within the GAIA pipeline.</div>
                 <div class="pair-lore" id="pairLore"></div>
             </div>
-            <div class="eros-portal-strip">
-                <div class="portal-ring-sm" id="erosPortalSm"><span style="font-size:1.1rem">❤️</span></div>
-                <div>
-                    <div class="portal-k">K = <span id="erosKPortal">0.80</span></div>
-                    <div class="portal-txt" id="erosPortalTxt">Binding insufficient. Requires K &gt; 1.5 + phase lock.</div>
+        </div>
+    </div>
+
+    <!-- ══ DESCENT THRESHOLD ══ -->
+    <div class="threshold-zone" id="thresholdZone">
+        <div class="crack-overlay" id="crackOverlay"></div>
+        <div class="fire-glow"></div>
+        <div class="threshold-inscription">
+            <div class="threshold-text" id="thresholdText">HERE THE LIGHT ENDS</div>
+            <div class="threshold-subtext" id="thresholdSub">Seal unbroken — Cerberus watches — prove yourself worthy</div>
+        </div>
+
+        <!-- Gate paths -->
+        <div class="gate-paths">
+            <!-- PATH 1: Koios -->
+            <div class="gate-path" id="gatePath1">
+                <div class="gate-path-title">
+                    ⚗️ THE TRIAL OF KOIOS
+                    <span class="path-status" id="koiosPathStatus">0 / 3</span>
                 </div>
-                <button class="m-btn dan" id="descendBtn" style="margin-left:auto">🌀 Descend</button>
+                <div class="gate-pips">
+                    <div class="gate-pip" id="gPip1"></div>
+                    <div class="gate-pip" id="gPip2"></div>
+                    <div class="gate-pip" id="gPip3"></div>
+                </div>
+                <div class="gate-path-desc">Answer three questions correctly in a row. Koios does not accept ignorance at the threshold.</div>
             </div>
+
+            <!-- PATH 2: Chthonic Cards -->
+            <div class="gate-path" id="gatePath2">
+                <div class="gate-path-title">
+                    🌑 THE DRAW OF SHADOWS
+                    <span class="path-status" id="cardPathStatus">0 / 3</span>
+                </div>
+                <div class="chthonic-cards" id="chthonicCards">
+                    <div style="font-size:0.75rem;font-style:italic;color:rgba(150,80,40,0.5)">Draw to reveal today's void...</div>
+                </div>
+                <button class="draw-btn" id="drawChthonicBtn">🌑 Draw from the Void</button>
+            </div>
+        </div>
+
+        <div class="descent-btn-wrap">
+            <button class="descent-btn" id="descentBtn" disabled>
+                🌀 &nbsp; DESCEND INTO THE UNDERWORLD &nbsp; 🌀
+            </button>
+        </div>
+        <div class="cerberus-warning" id="cerberusWarn">
+            Cerberus does not guard against the dead leaving. He guards against the living entering without respect.
         </div>
     </div>
 
@@ -362,9 +550,17 @@
 </div>
 <div id="toast"></div>
 
+<!-- CDN dependencies -->
+<script src="https://cdn.jsdelivr.net/npm/astronomy-engine@2/astronomy.browser.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/suncalc@1.9.0/suncalc.js"></script>
+<!-- GAIA scripts -->
+<script src="js/observe.js"></script>
+<script src="js/almanac.js"></script>
+<script src="js/chthonic.js"></script>
+
 <script>
 // ══════════════════════════════════════════════
-// SUPABASE
+// SUPABASE — GaiaDB
 // ══════════════════════════════════════════════
 const SUPABASE_URL = 'https://nbdvavzqvxrlxhsbrluz.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_6x1xlieXjs3dWqEETQcxnQ_4L1UO2uR';
@@ -397,7 +593,81 @@ const TITANS = [
 ];
 
 // ══════════════════════════════════════════════
-// FIELD STATE (Kronos inline)
+// DESCENT GATE STATE
+// ══════════════════════════════════════════════
+let descentUnlocked = false;
+let koiosGateStreak = 0;   // how many correct in current run toward gate
+let cardAccepted = 0;       // how many chthonic cards accepted
+let drawnCards = [];
+const GATE_KOIOS_NEEDED = 3;
+const GATE_CARDS_NEEDED = 3;
+
+function updateGateState() {
+    const kDone = koiosGateStreak >= GATE_KOIOS_NEEDED;
+    const cDone = cardAccepted >= GATE_CARDS_NEEDED;
+    const shouldUnlock = kDone || cDone;
+
+    // Update pip displays
+    for(let i=1;i<=3;i++){
+        const pip = document.getElementById(`gPip${i}`);
+        if(pip) pip.className = 'gate-pip' + (i <= koiosGateStreak ? ' lit' : '');
+    }
+    document.getElementById('koiosPathStatus').textContent = `${Math.min(koiosGateStreak,3)} / 3`;
+    document.getElementById('koiosPathStatus').className = 'path-status' + (kDone?' complete':koiosGateStreak>0?' active':'');
+    document.getElementById('cardPathStatus').textContent = `${cardAccepted} / 3`;
+    document.getElementById('cardPathStatus').className = 'path-status' + (cDone?' complete':cardAccepted>0?' active':'');
+
+    // Streak pips in koios sidebar
+    for(let i=1;i<=3;i++){
+        const pip = document.getElementById(`pip${i}`);
+        if(pip) pip.className = 'pip' + (i <= koiosGateStreak ? (i===3&&kDone?' fire':' filled') : '');
+    }
+
+    const statusEl = document.getElementById('koiosGateStatus');
+    if(kDone){ statusEl.textContent='✦ Trial passed — gate open'; statusEl.className='koios-gate-status earned'; }
+    else if(koiosGateStreak>0){ statusEl.textContent=`${koiosGateStreak}/3 — keep going`; statusEl.className='koios-gate-status earning'; }
+    else { statusEl.textContent='Descent: answer 3 in a row'; statusEl.className='koios-gate-status'; }
+
+    if(shouldUnlock && !descentUnlocked) {
+        descentUnlocked = true;
+        crackTheStone();
+    }
+
+    document.getElementById('statusDescent').textContent = descentUnlocked ? '🔥 Gate: open' : '⛓️ Gate: sealed';
+    document.getElementById('statusDescent').style.color = descentUnlocked ? 'var(--fire-bright)' : 'rgba(150,80,30,0.5)';
+}
+
+function crackTheStone() {
+    const zone = document.getElementById('thresholdZone');
+    const btn  = document.getElementById('descentBtn');
+    zone.classList.add('unlocked');
+    btn.classList.add('active');
+    btn.disabled = false;
+    document.getElementById('thresholdText').textContent = 'THE STONE CRACKS — FIRE BENEATH';
+    document.getElementById('thresholdSub').textContent  = 'The gate is open — Charon waits at the river';
+    document.getElementById('cerberusWarn').textContent  = 'Cerberus steps aside. He recognises what has been earned.';
+
+    // Build crack lines
+    const overlay = document.getElementById('crackOverlay');
+    overlay.innerHTML = '';
+    const cracks = [
+        {left:'30%',top:'10%',height:'80%',rotate:'-5deg'},
+        {left:'50%',top:'0%',height:'60%',rotate:'3deg'},
+        {left:'68%',top:'20%',height:'70%',rotate:'-2deg'},
+    ];
+    cracks.forEach(c => {
+        const el = document.createElement('div');
+        el.className = 'crack-line';
+        el.style.cssText = `left:${c.left};top:${c.top};height:${c.height};transform:rotate(${c.rotate});opacity:0.7;`;
+        overlay.appendChild(el);
+    });
+
+    ticker('🔥 The stone cracks. Fire beneath. The threshold is open.');
+    toast('🌀 The gate yields. Descend into the Underworld.', 'fire');
+}
+
+// ══════════════════════════════════════════════
+// FIELD STATE
 // ══════════════════════════════════════════════
 let phaseK=0, phaseA=0, kBase=0.43, aBase=0.50, coupK=0.8, curKFreq=0.43;
 let cohThresh=0.3, wasLocked=false, tickN=0, fieldInt=null;
@@ -415,13 +685,364 @@ const drawStars=t=>{starCtx.clearRect(0,0,starCvs.width,starCvs.height);stars.fo
 (function anim(t){drawStars(t);requestAnimationFrame(anim);})(0);
 
 // ══════════════════════════════════════════════
+// OURANOS CANVAS — Constellation Starmap
+// ══════════════════════════════════════════════
+const oCvs = document.getElementById('ouranosCvs');
+const oCtx = oCvs.getContext('2d');
+let skyData = null;
+
+const resizeO = () => {
+    oCvs.width = oCvs.parentElement ? oCvs.parentElement.clientWidth || 600 : 600;
+    oCvs.height = 320;
+};
+window.addEventListener('resize', resizeO); resizeO();
+
+// Constellation line data (simplified — major asterisms)
+const CONSTELLATIONS = [
+    { name:'Orion',    stars:[[0.15,0.3],[0.18,0.45],[0.22,0.55],[0.18,0.65],[0.12,0.65],[0.08,0.55],[0.18,0.45]], lines:[[0,1],[1,2],[2,3],[3,4],[4,5],[5,6],[6,1]] },
+    { name:'Ursa Major', stars:[[0.38,0.2],[0.44,0.18],[0.50,0.22],[0.55,0.18],[0.60,0.14],[0.65,0.18],[0.70,0.25]], lines:[[0,1],[1,2],[2,3],[3,4],[4,5],[5,6]] },
+    { name:'Cassiopeia', stars:[[0.55,0.55],[0.60,0.48],[0.65,0.53],[0.70,0.46],[0.75,0.52]], lines:[[0,1],[1,2],[2,3],[3,4]] },
+    { name:'Scorpius',   stars:[[0.82,0.3],[0.85,0.4],[0.88,0.5],[0.84,0.6],[0.80,0.68],[0.75,0.72],[0.72,0.65]], lines:[[0,1],[1,2],[2,3],[3,4],[4,5],[5,6]] },
+    { name:'Leo',        stars:[[0.30,0.55],[0.34,0.48],[0.40,0.45],[0.45,0.50],[0.42,0.58],[0.34,0.60]], lines:[[0,1],[1,2],[2,3],[3,4],[4,5],[5,0]] },
+    { name:'Lyra',       stars:[[0.62,0.65],[0.65,0.72],[0.68,0.78],[0.64,0.80],[0.60,0.78]], lines:[[0,1],[1,2],[2,3],[3,4],[4,0]] },
+];
+
+// Planet glyphs and colors for orrery
+const PLANET_DISPLAY = {
+    sun:     { glyph:'☉', color:'#ffcc44', r:12 },
+    moon:    { glyph:'☽', color:'#ccddff', r:8  },
+    mercury: { glyph:'☿', color:'#aaaaaa', r:5  },
+    venus:   { glyph:'♀', color:'#ffbbaa', r:7  },
+    mars:    { glyph:'♂', color:'#ff6644', r:6  },
+    jupiter: { glyph:'♃', color:'#ddbb88', r:10 },
+    saturn:  { glyph:'♄', color:'#ccaa66', r:9  },
+    uranus:  { glyph:'♅', color:'#88ddcc', r:7  },
+    neptune: { glyph:'♆', color:'#6688cc', r:7  },
+    pluto:   { glyph:'♇', color:'#886688', r:5  },
+};
+
+const SIGN_ORDER = ['Aries','Taurus','Gemini','Cancer','Leo','Virgo','Libra','Scorpio','Sagittarius','Capricorn','Aquarius','Pisces'];
+const SIGN_GLYPHS_O = {'Aries':'♈','Taurus':'♉','Gemini':'♊','Cancer':'♋','Leo':'♌','Virgo':'♍','Libra':'♎','Scorpio':'♏','Sagittarius':'♐','Capricorn':'♑','Aquarius':'♒','Pisces':'♓'};
+
+let ouranosTick = 0;
+
+function drawOuranos() {
+    const W = oCvs.width, H = oCvs.height;
+    oCtx.clearRect(0, 0, W, H);
+
+    ouranosTick += 0.002;
+
+    // Deep sky background gradient
+    const grad = oCtx.createRadialGradient(W/2, H/2, 0, W/2, H/2, Math.max(W,H)*0.7);
+    grad.addColorStop(0, 'rgba(8,12,35,0.95)');
+    grad.addColorStop(1, 'rgba(2,4,15,0.98)');
+    oCtx.fillStyle = grad;
+    oCtx.fillRect(0, 0, W, H);
+
+    // Background stars (dense, small)
+    for(let i=0;i<120;i++){
+        const sx = ((i*137.5)%100)/100*W;
+        const sy = ((i*97.3)%100)/100*H;
+        const sa = 0.15 + 0.15*Math.sin(ouranosTick*0.5 + i*0.3);
+        oCtx.beginPath();
+        oCtx.arc(sx, sy, 0.7, 0, Math.PI*2);
+        oCtx.fillStyle = `rgba(200,210,240,${sa})`;
+        oCtx.fill();
+    }
+
+    // Constellation lines
+    CONSTELLATIONS.forEach(c => {
+        oCtx.strokeStyle = 'rgba(100,130,200,0.12)';
+        oCtx.lineWidth = 0.5;
+        c.lines.forEach(([a,b]) => {
+            const s1 = c.stars[a], s2 = c.stars[b];
+            oCtx.beginPath();
+            oCtx.moveTo(s1[0]*W, s1[1]*H);
+            oCtx.lineTo(s2[0]*W, s2[1]*H);
+            oCtx.stroke();
+        });
+        // Constellation stars
+        c.stars.forEach(([x,y],i) => {
+            const pulse = 0.4 + 0.2*Math.sin(ouranosTick + i*0.7);
+            oCtx.beginPath();
+            oCtx.arc(x*W, y*H, 1.5, 0, Math.PI*2);
+            oCtx.fillStyle = `rgba(180,200,240,${pulse})`;
+            oCtx.fill();
+        });
+        // Constellation name
+        if(c.stars.length > 0){
+            const cx = c.stars.reduce((s,st)=>s+st[0],0)/c.stars.length*W;
+            const cy = c.stars.reduce((s,st)=>s+st[1],0)/c.stars.length*H;
+            oCtx.font = '7px Cinzel, serif';
+            oCtx.fillStyle = 'rgba(100,130,180,0.25)';
+            oCtx.textAlign = 'center';
+            oCtx.fillText(c.name.toUpperCase(), cx, cy+12);
+        }
+    });
+
+    // Zodiac ring
+    const cx = W/2, cy = H/2;
+    const rZodiac = Math.min(W,H) * 0.38;
+    oCtx.strokeStyle = 'rgba(201,168,76,0.08)';
+    oCtx.lineWidth = 1;
+    oCtx.setLineDash([2,6]);
+    oCtx.beginPath();
+    oCtx.arc(cx, cy, rZodiac, 0, Math.PI*2);
+    oCtx.stroke();
+    oCtx.setLineDash([]);
+
+    // Zodiac sign divisions
+    SIGN_ORDER.forEach((sign,i) => {
+        const angle = (i/12)*Math.PI*2 - Math.PI/2;
+        const tickR = rZodiac + 8;
+        const tx = cx + Math.cos(angle)*tickR;
+        const ty = cy + Math.sin(angle)*tickR;
+        oCtx.font = '10px serif';
+        oCtx.fillStyle = 'rgba(201,168,76,0.25)';
+        oCtx.textAlign = 'center';
+        oCtx.textBaseline = 'middle';
+        oCtx.fillText(SIGN_GLYPHS_O[sign], tx, ty);
+        // divider tick
+        oCtx.strokeStyle = 'rgba(201,168,76,0.08)';
+        oCtx.lineWidth = 0.5;
+        oCtx.beginPath();
+        oCtx.moveTo(cx+Math.cos(angle)*(rZodiac-4), cy+Math.sin(angle)*(rZodiac-4));
+        oCtx.lineTo(cx+Math.cos(angle)*(rZodiac+4), cy+Math.sin(angle)*(rZodiac+4));
+        oCtx.stroke();
+    });
+
+    // Draw planets if we have sky data
+    if(skyData && skyData.planets) {
+        Object.entries(skyData.planets).forEach(([name, pos]) => {
+            if(!pos || !pos.sign) return;
+            const pd = PLANET_DISPLAY[name];
+            if(!pd) return;
+            const signIdx = SIGN_ORDER.indexOf(pos.sign);
+            if(signIdx < 0) return;
+            // Position on zodiac ring based on sign + degree
+            const signAngle = (signIdx/12)*Math.PI*2 - Math.PI/2;
+            const degAngle  = ((pos.degree||0)/30)*(Math.PI*2/12);
+            const totalAngle = signAngle + degAngle;
+            // Vary radius slightly so planets don't all stack
+            const nameHash = name.charCodeAt(0)*17 + name.charCodeAt(name.length-1)*7;
+            const rVariance = (nameHash % 30) - 15;
+            const pr = rZodiac + rVariance;
+            const px = cx + Math.cos(totalAngle)*pr;
+            const py = cy + Math.sin(totalAngle)*pr;
+
+            // Glow
+            const glow = oCtx.createRadialGradient(px,py,0,px,py,pd.r*3);
+            glow.addColorStop(0, pd.color.replace(')',',0.3)').replace('rgb','rgba').replace('#','rgba(').replace('rgba(','rgba(').replace(pd.color.slice(1),''));
+            oCtx.beginPath();
+            oCtx.arc(px, py, pd.r*2.5, 0, Math.PI*2);
+            // Simple glow via shadow
+            oCtx.shadowColor = pd.color;
+            oCtx.shadowBlur = 10;
+            oCtx.fillStyle = pd.color + '22';
+            oCtx.fill();
+            oCtx.shadowBlur = 0;
+
+            // Planet body
+            oCtx.beginPath();
+            oCtx.arc(px, py, pd.r*0.6, 0, Math.PI*2);
+            oCtx.fillStyle = pd.color;
+            oCtx.fill();
+
+            // Glyph label
+            oCtx.font = '9px serif';
+            oCtx.fillStyle = pd.color;
+            oCtx.textAlign = 'center';
+            oCtx.textBaseline = 'middle';
+            oCtx.fillText(pd.glyph, px, py - pd.r - 5);
+        });
+    }
+
+    // Equator line
+    oCtx.strokeStyle = 'rgba(100,150,200,0.07)';
+    oCtx.lineWidth = 0.5;
+    oCtx.setLineDash([4,12]);
+    oCtx.beginPath();
+    oCtx.moveTo(0, H/2); oCtx.lineTo(W, H/2);
+    oCtx.stroke();
+    oCtx.setLineDash([]);
+
+    oCtx.textAlign = 'left';
+    oCtx.textBaseline = 'alphabetic';
+    requestAnimationFrame(drawOuranos);
+}
+drawOuranos();
+
+// ══════════════════════════════════════════════
+// SKY READER — Populate Ouranos zone
+// ══════════════════════════════════════════════
+const PLANET_ORDER = ['mercury','venus','mars','jupiter','saturn','uranus','neptune','pluto'];
+const PLANET_NAMES = {mercury:'Mercury',venus:'Venus',mars:'Mars',jupiter:'Jupiter',saturn:'Saturn',uranus:'Uranus',neptune:'Neptune',pluto:'Pluto'};
+
+async function loadSky() {
+    if(typeof Observe === 'undefined') {
+        document.getElementById('ouranosMeta').textContent = 'Sky: observe.js not loaded';
+        document.getElementById('ouranosPrayer').textContent = 'Ouranos waits. The astronomy engine has not yet arrived.';
+        return;
+    }
+    try {
+        skyData = await Observe.getSkyState();
+        renderSkyData(skyData);
+        // Auto-refresh every 5 minutes
+        setTimeout(loadSky, 5 * 60 * 1000);
+    } catch(e) {
+        console.warn('Sky load failed:', e);
+        document.getElementById('ouranosMeta').textContent = 'Sky: read error';
+    }
+}
+
+function renderSkyData(sky) {
+    const sun = sky.planets?.sun;
+    const moon = sky.planets?.moon;
+    const asc = sky.ascendant;
+
+    // Header meta
+    const period = sky.period === 'SUN' ? '☀️ Day' : '🌙 Night';
+    document.getElementById('ouranosMeta').textContent =
+        `${period} · Asc: ${asc?.sign||'—'} ${asc?.glyph||''} · ${new Date(sky.timestamp).toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'})}`;
+
+    // Sun card
+    if(sun) {
+        document.getElementById('sunSign').textContent = `${sun.sign} ${sun.glyph}`;
+        document.getElementById('sunRise').textContent = sky.solar?.sunrise
+            ? 'rise ' + new Date(sky.solar.sunrise).toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'})
+            : '—';
+    }
+    // Moon card
+    if(moon) {
+        document.getElementById('moonSign').textContent = `${moon.sign} ${moon.glyph}`;
+        document.getElementById('moonPhase').textContent =
+            `${sky.moonPhase?.name||'—'} · ${sky.moonPhase?.illumination||0}%`;
+    }
+
+    // Planet list
+    const list = document.getElementById('planetList');
+    list.innerHTML = PLANET_ORDER.map(p => {
+        const pos = sky.planets?.[p];
+        if(!pos) return '';
+        const above = pos.aboveHorizon;
+        return `<div class="planet-row">
+            <div class="planet-icon">${PLANET_DISPLAY[p]?.glyph||'·'}</div>
+            <div class="planet-name">${PLANET_NAMES[p]}</div>
+            <div class="planet-sign">${pos.glyph||''}</div>
+            <div class="planet-sign-name">${pos.sign}</div>
+            <div class="planet-deg">${pos.degree?.toFixed(1)||'—'}°</div>
+            <div class="planet-horizon ${above?'ph-above':'ph-below'}"></div>
+        </div>`;
+    }).join('');
+
+    // War report
+    renderWarReport(sky.planets);
+
+    // Ouranos invocation
+    renderInvocation(sky);
+}
+
+function renderWarReport(planets) {
+    if(typeof Chthonic === 'undefined') return;
+    try {
+        const war = Chthonic.getWarReport(planets);
+        document.getElementById('warOlympian').textContent = war.olympianHouses;
+        document.getElementById('warChthonic').textContent = war.chthonicHouses;
+        const pct = Math.round((war.olympianHouses/12)*100);
+        document.getElementById('warBar').style.width = pct + '%';
+        document.getElementById('warDominant').textContent =
+            war.dominant === 'Olympian' ? '⚡ Olympians hold the sky' : '🌑 Underworld claims the void';
+
+        // Surface Hades threshold
+        if(war.threshold) {
+            document.getElementById('ouranosMeta').textContent +=
+                ` · Hades: ${war.threshold.sign}`;
+        }
+    } catch(e) { console.warn('War report failed:', e); }
+}
+
+const OURANOS_PRAYERS = [
+    sign => `Ouranos arches over ${sign}. The vault of heaven turns its face toward the abyss below.`,
+    sign => `The sky remembers everything that fell from it. ${sign} rises in the east like a question.`,
+    sign => `Ouranos does not speak. He is the silence in which the gods first heard themselves.`,
+    sign => `The constellations do not move. We move beneath them, and call it fate.`,
+    sign => `Above the Titans, above Olympus, above every god: the vault. Ouranos. The endless sky.`,
+];
+
+function renderInvocation(sky) {
+    const sign = sky.planets?.sun?.sign || sky.ascendant?.sign || 'the horizon';
+    const prayer = OURANOS_PRAYERS[Math.floor(Date.now()/3600000) % OURANOS_PRAYERS.length];
+    document.getElementById('ouranosPrayer').textContent = prayer(sign);
+}
+
+// ══════════════════════════════════════════════
+// CHTHONIC CARD DRAW
+// ══════════════════════════════════════════════
+document.getElementById('drawChthonicBtn').onclick = () => {
+    if(cardAccepted >= GATE_CARDS_NEEDED) return;
+    if(typeof Chthonic === 'undefined') {
+        toast('chthonic.js not loaded', 'error'); return;
+    }
+
+    const planets = skyData?.planets || {};
+    let pool = [];
+
+    if(Object.keys(planets).length > 0) {
+        const war = Chthonic.getWarReport(planets);
+        pool = war.claims
+            .filter(c => c.chthonic && !drawnCards.find(d=>d.name===c.chthonic.name))
+            .map(c => c.chthonic);
+    }
+
+    // Fallback pool if no sky data
+    if(pool.length === 0) {
+        const allR = [
+            ...Chthonic.FIRE_RESIDENTS,
+            ...Chthonic.EARTH_RESIDENTS,
+            ...Chthonic.AIR_RESIDENTS,
+            ...Chthonic.WATER_RESIDENTS,
+        ].filter(r => !drawnCards.find(d=>d.name===r.name));
+        pool = allR;
+    }
+
+    if(pool.length === 0) { toast('No more residents to draw.', 'error'); return; }
+
+    const drawn = pool[Math.floor(Math.random()*pool.length)];
+    drawnCards.push(drawn);
+
+    const container = document.getElementById('chthonicCards');
+    // Clear placeholder
+    if(container.querySelector('div[style]')) container.innerHTML = '';
+
+    const card = document.createElement('div');
+    card.className = 'chthonic-card';
+    card.dataset.name = drawn.name;
+    card.innerHTML = `<span>${drawn.glyph}</span><span>${drawn.name}</span>`;
+    card.title = drawn.whisper;
+    card.onclick = () => {
+        if(card.classList.contains('accepted')) return;
+        card.classList.add('accepted');
+        cardAccepted++;
+        ticker(`${drawn.glyph} ${drawn.name}: "${drawn.whisper}"`);
+        updateGateState();
+        if(cardAccepted >= GATE_CARDS_NEEDED) {
+            document.getElementById('drawChthonicBtn').disabled = true;
+            document.getElementById('drawChthonicBtn').style.opacity = '0.3';
+        }
+    };
+    container.appendChild(card);
+
+    ticker(`🌑 ${drawn.name} rises from the void: "${drawn.whisper.substring(0,60)}..."`);
+    toast(`🌑 ${drawn.glyph} ${drawn.name} — ${drawn.title}. Click to accept the whisper.`);
+};
+
+// ══════════════════════════════════════════════
 // PONTUS CANVAS — Titan sinewave layers
 // ══════════════════════════════════════════════
 const pCvs=document.getElementById('pontusCanvas'), pCtx=pCvs.getContext('2d');
 const resizeP=()=>{pCvs.width=pCvs.parentElement.clientWidth; pCvs.height=240;};
 window.addEventListener('resize',resizeP); resizeP();
 
-// Build legend
 const buildLegend=()=>{
     document.getElementById('pontusLegend').innerHTML=TITANS.map((t,i)=>{
         const b=Math.floor(40+i*14);
@@ -474,27 +1095,27 @@ const inferBand=c=>{
 const inferAge=(hz,locked)=>{
     if(!hz||hz<=0.0001)return{label:'Silence',glyph:'🌫️'};
     const p=1/hz;
-    if(p>30) return{label:locked?'Ancient Lock':'Deep Time',glyph:'🏔️'};
-    if(p>10) return{label:locked?'Still Night':'Night',glyph:'🌙'};
-    if(p>3)  return{label:locked?'Golden Hour':'Dusk',glyph:'🌅'};
-    if(p>1)  return{label:locked?'High Noon':'Noon',glyph:'☀️'};
-    return       {label:locked?'First Light':'Dawn',glyph:'🌄'};
+    if(p>30)return{label:locked?'Ancient Lock':'Deep Time',glyph:'🏔️'};
+    if(p>10)return{label:locked?'Still Night':'Night',glyph:'🌙'};
+    if(p>3) return{label:locked?'Golden Hour':'Dusk',glyph:'🌅'};
+    if(p>1) return{label:locked?'High Noon':'Noon',glyph:'☀️'};
+    return      {label:locked?'First Light':'Dawn',glyph:'🌄'};
 };
 
 // ══════════════════════════════════════════════
-// LORE BANK (inline)
+// LORE BANK
 // ══════════════════════════════════════════════
 const LORE={
-    kronos:{d:['Kronos counts. The ledger opens. The first number is written.','The Accountant marks this interval precisely.'],l:['Lock achieved. Kronos draws a double line.']},
+    kronos:{d:['Kronos counts. The ledger opens.','The Accountant marks this interval precisely.'],l:['Lock achieved. Kronos draws a double line.']},
     rhea:{d:['Rhea holds the gate. Nothing passes yet.','Rhea feels the field for the first tremor.'],l:['Phase lock. Rhea opens the full pipeline.']},
     hyperion:{d:['Hyperion waits above the dark field.','The signal has not yet cleared the threshold.'],l:['Hyperion raises the signal. Apollo will see it now.']},
-    oceanus:{d:['The river is still. Oceanus waits at the edge of the world.'],l:['Lock. Every Titan flows in the same direction.']},
-    tethys:{d:['Tethys smooths the husband\'s stream.','The nourisher waits for Oceanus to pour.'],l:['Tethys holds the smooth current through the lock.']},
-    theia:{d:['Before the mountains rose, Theia saw them.','Silence is not empty to Theia. It is the color of before.'],l:['The field locks and Theia\'s palette steadies.']},
+    oceanus:{d:['The river is still. Oceanus waits.'],l:['Lock. Every Titan flows in the same direction.']},
+    tethys:{d:['Tethys smooths the husband\'s stream.'],l:['Tethys holds the smooth current through the lock.']},
+    theia:{d:['Before the mountains rose, Theia saw them.','Silence is not empty to Theia.'],l:['The field locks and Theia\'s palette steadies.']},
     phoibe:{d:['The Oracle sits in silence, feeling the first tremor.','Phoibe has not yet seen enough to speak.'],l:['The prophecy is fulfilled. Lock achieved.']},
     themis:{d:['The law does not speak until invoked.','Themis holds the scales. Nothing worthy yet.'],l:['The scales balance. Themis certifies ascension.']},
-    mnemosyne:{d:['The record is empty. Mnemosyne waits.','Her hands are open. Nothing yet to hold.'],l:['Lock. Mnemosyne sharpens her attention. This matters.']},
-    koios:{d:['Koios has questions. He waits for an answerer.','The Titan of Intellect folds his hands.'],l:['The field locks. Koios marks the question it answers.']},
+    mnemosyne:{d:['The record is empty. Mnemosyne waits.'],l:['Lock. Mnemosyne sharpens her attention.']},
+    koios:{d:['Koios has questions. He waits for an answerer.'],l:['The field locks. Koios marks the question it answers.']},
 };
 const pick=arr=>arr[Math.floor(Math.random()*arr.length)];
 const getLore=(name,coh,locked)=>{const l=LORE[name];if(!l)return'...';return pick(locked?l.l:l.d);};
@@ -537,11 +1158,7 @@ const startField=()=>{
 
         if(isLocked)lockTicks++;else lockTicks=0;
 
-        if(band!==prevBand){
-            sessBandTrans++;
-            ticker(`🌊 Rhea: band shift → ${band}`);
-            prevBand=band; curBand=band;
-        }
+        if(band!==prevBand){sessBandTrans++;ticker(`🌊 Rhea: band shift → ${band}`);prevBand=band;curBand=band;}
         if(isLocked&&!wasLocked){
             sessLocks++;
             ticker(`⚡ Phase lock — coherence ${coh.toFixed(2)} — ${band} band`);
@@ -549,7 +1166,7 @@ const startField=()=>{
             ticker(`${rt.glyph} ${rt.name}: ${getLore(rt.name,coh,true)}`);
             updatePhoibe(coh,isLocked,sd);
         }
-        if(!isLocked&&wasLocked) ticker(`🌀 Lock released — returning to ${band}`);
+        if(!isLocked&&wasLocked)ticker(`🌀 Lock released — returning to ${band}`);
         wasLocked=isLocked;
 
         if(tickN%40===0){
@@ -559,7 +1176,6 @@ const startField=()=>{
 
         drawPontus(coh,isLocked,pontHz);
 
-        // Status bar
         document.getElementById('dotLock').className='sd '+(isLocked?'locked':'unlocked');
         document.getElementById('statusLock').textContent=isLocked?'PHASE LOCKED':'SEEKING LOCK';
         document.getElementById('statusAge').textContent=`${age.glyph} ${age.label}`;
@@ -570,16 +1186,10 @@ const startField=()=>{
         const cb=document.getElementById('cBadge');
         cb.textContent=`C: ${coh.toFixed(2)}`;
         cb.className='c-badge'+(isLocked?' locked':'');
-        // Eros
         document.getElementById('erosKDisp').textContent=coupK.toFixed(2);
-        document.getElementById('erosKPortal').textContent=coupK.toFixed(2);
-        const canDesc=coupK>1.5&&isLocked;
-        document.getElementById('erosPortalSm').className='portal-ring-sm'+(canDesc?' active':'');
-        document.getElementById('erosPortalTxt').textContent=canDesc?'🌀 Binding sufficient. Click Descend.':`K=${coupK.toFixed(2)}, ${isLocked?'locked':'unlocked'} — requires K>1.5 + lock.`;
-        // Oracle updates
-        if(tickN%30===0) updatePhoibe(coh,isLocked,sd);
-        if(tickN%60===0) updateTitanVoices(coh,isLocked);
-        if(tickN%100===0) updateNarrative(coh,isLocked,band);
+        if(tickN%30===0)updatePhoibe(coh,isLocked,sd);
+        if(tickN%60===0)updateTitanVoices(coh,isLocked);
+        if(tickN%100===0)updateNarrative(coh,isLocked,band);
     },100);
 };
 
@@ -590,8 +1200,8 @@ const updatePhoibe=(coh,isLocked,sd)=>{
     let proph,conf;
     const absDiff=Math.abs(sd);
     if(isLocked){proph='The field is locked. Phoibe sees only harmony. The prophecy is fulfilled.';conf=1;}
-    else if(absDiff<0.5){const sf=((aBase+curKFreq)/2).toFixed(3);proph=`Phoibe speaks: lock approaches. Phase gap ${absDiff.toFixed(3)} rad — narrowing. Hold reference near ${sf} Hz.`;conf=0.6+(1-absDiff)*0.3;}
-    else if(absDiff<1.0){proph=`The drift is ${absDiff.toFixed(3)} rad. Phoibe calculates convergence — adjust reference toward ${curKFreq.toFixed(3)} Hz.`;conf=0.4;}
+    else if(absDiff<0.5){proph=`Phoibe speaks: lock approaches. Phase gap ${absDiff.toFixed(3)} rad — narrowing.`;conf=0.6+(1-absDiff)*0.3;}
+    else if(absDiff<1.0){proph=`The drift is ${absDiff.toFixed(3)} rad. Phoibe calculates convergence.`;conf=0.4;}
     else{proph='Phoibe watches the drift. The oracle withholds judgment — the gap is too wide.';conf=0.1;}
     document.getElementById('oProphecy').textContent=proph;
     document.getElementById('confBar').style.width=`${conf*100}%`;
@@ -608,7 +1218,7 @@ const updateTitanVoices=(coh,isLocked)=>{
 };
 
 // ══════════════════════════════════════════════
-// KOIOS — Trivia
+// KOIOS — Trivia + Gate integration
 // ══════════════════════════════════════════════
 const QS=[
     {id:'m001',q:'Who is the Titaness of Memory and mother of the Nine Muses?',c:['Themis','Mnemosyne','Rhea','Tethys'],a:1,e:'Mnemosyne lay with Zeus for nine nights and bore the nine Muses. Her name is the root of "mnemonic."',tier:0,dom:'mythology'},
@@ -628,9 +1238,16 @@ const QS=[
     {id:'m009',q:'What did Rhea give Kronos instead of baby Zeus?',c:['A thunderbolt','A golden fleece','A stone in swaddling clothes','An eagle'],a:2,e:'Rhea hid Zeus in a cave on Crete and gave Kronos a stone in swaddling clothes. He swallowed it without noticing.',tier:2,dom:'mythology'},
     {id:'c004',q:'If Kairos = 0.43 Hz and Apollo = 0.50 Hz, what is the beat period?',c:['~7.1s','~14.3s','~2.0s','~0.07s'],a:1,e:'Beat freq = |0.43-0.50| = 0.07 Hz. Period = 1/0.07 ≈ 14.3s. This is the Ourea age cycle.',tier:3,dom:'cosmology'},
     {id:'m010',q:'Name the six children of Kronos and Rhea in birth order:',c:['Zeus, Hera, Poseidon, Hades, Demeter, Hestia','Hestia, Demeter, Hera, Hades, Poseidon, Zeus','Hades, Poseidon, Zeus, Hera, Demeter, Hestia','Hera, Zeus, Poseidon, Demeter, Hestia, Hades'],a:1,e:'Hestia (firstborn), Demeter, Hera, Hades, Poseidon, Zeus (last). Kronos devoured the first five.',tier:3,dom:'mythology'},
+    {id:'ch001',q:'Which river of the Underworld is the river of oaths?',c:['Lethe','Acheron','Styx','Phlegethon'],a:2,e:'The Styx binds unbreakable oaths. Even the gods swear by the Styx — to break such an oath is the gravest of crimes.',tier:0,dom:'chthonic'},
+    {id:'ch002',q:'Who ferries the dead across the river Styx?',c:['Thanatos','Charon','Hermes','Hades'],a:1,e:'Charon demands a coin — an obol placed on the eyes or in the mouth of the dead. Without payment, the shade wanders for a hundred years.',tier:0,dom:'chthonic'},
+    {id:'ch003',q:'Which Chthonic figure guards the gate of the Underworld?',c:['Thanatos','Minos','Cerberus','Hecate'],a:2,e:'Cerberus, the three-headed dog, prevents the living from entering and the dead from leaving. He welcomed you in. He will not let you out.',tier:0,dom:'chthonic'},
+    {id:'ch004',q:'What does the river Lethe cause those who drink from it?',c:['Pain','Forgetting','Fire','Judgment'],a:1,e:'Lethe is the river of forgetting. Shades drink from it before reincarnation, erasing memory of their previous lives.',tier:1,dom:'chthonic'},
+    {id:'ch005',q:'Which primordial goddess is described as the night that even Zeus fears?',c:['Gaia','Hecate','Nyx','Eris'],a:2,e:'Nyx is Night itself — older than the Olympians. Even Zeus feared to wake her wrath. She dwells at the edge of the world.',tier:1,dom:'chthonic'},
 ];
+
 let kS={streak:0,best:0,answered:0,correct:0,active:null,recent:[]};
 const kTier=()=>{if(kS.streak>=25)return{l:'titan',m:3};if(kS.streak>=10)return{l:'oracle',m:2};if(kS.streak>=5)return{l:'hero',m:1};return{l:'mortal',m:0};};
+
 const koiosAsk=()=>{
     const tier=kTier();
     const pool=QS.filter(q=>q.tier<=tier.m&&!kS.recent.slice(-8).includes(q.id));
@@ -646,12 +1263,25 @@ const koiosAsk=()=>{
     document.getElementById('koiosLore').textContent='Koios poses a question. His eyes gleam — he loves this part.';
     document.getElementById('choicesGrid').innerHTML=sc.map((c,i)=>`<button class="choice-btn" onclick="koiosAnswer(${i})">${c}</button>`).join('');
 };
+
 window.koiosAnswer=idx=>{
     if(!kS.active)return;
     const correct=idx===kS.active.correct;
     kS.answered++;
-    if(correct){kS.streak++;kS.correct++;if(kS.streak>kS.best)kS.best=kS.streak;document.getElementById('koiosLore').textContent=kS.streak>5?'Koios stands. He is genuinely impressed.':'Koios nods slowly. Correct. He is almost impressed.';}
-    else{kS.streak=0;document.getElementById('koiosLore').textContent='Koios sighs. Incorrect. But he explains — he is a teacher, not a punisher.';}
+    if(correct){
+        kS.streak++;kS.correct++;
+        if(kS.streak>kS.best)kS.best=kS.streak;
+        // Gate tracking
+        koiosGateStreak = Math.min(koiosGateStreak+1, GATE_KOIOS_NEEDED);
+        document.getElementById('koiosLore').textContent=
+            koiosGateStreak>=GATE_KOIOS_NEEDED ? 'Koios steps aside. The trial is complete.' :
+            kS.streak>5 ? 'Koios stands. He is genuinely impressed.' :
+            'Koios nods slowly. Correct. He is almost impressed.';
+    } else {
+        kS.streak=0;
+        koiosGateStreak=0; // reset gate streak on wrong answer
+        document.getElementById('koiosLore').textContent='Koios sighs. Incorrect. The streak is broken.';
+    }
     document.getElementById('koiosExp').textContent=kS.active.exp;
     Array.from(document.querySelectorAll('.choice-btn')).forEach((b,i)=>{
         b.disabled=true;
@@ -666,9 +1296,16 @@ window.koiosAnswer=idx=>{
     document.getElementById('sAccuracy').textContent=`${Math.round(kS.correct/kS.answered*100)}%`;
     document.getElementById('sTier').textContent=kTier().l;
     kS.active=null;
+    updateGateState();
 };
+
 document.getElementById('askKoiosBtn').onclick=koiosAsk;
-document.getElementById('koiosSkip').onclick=()=>{kS.streak=0;document.getElementById('streakNum').textContent='0';koiosAsk();};
+document.getElementById('koiosSkip').onclick=()=>{
+    kS.streak=0; koiosGateStreak=0;
+    document.getElementById('streakNum').textContent='0';
+    updateGateState();
+    koiosAsk();
+};
 
 // ══════════════════════════════════════════════
 // GALLERY — Pollinations.ai
@@ -690,11 +1327,7 @@ document.getElementById('galleryGen').onclick=async()=>{
     const ph=document.querySelector('.gal-placeholder');if(ph)ph.remove();
     document.getElementById('galleryGrid').prepend(wrap);
     const img=new Image();img.crossOrigin='anonymous';
-    img.onload=()=>{
-        wrap.style.opacity='1';wrap.innerHTML='';wrap.appendChild(img);
-        const cap=document.createElement('div');cap.className='gal-cap';cap.textContent=prompt.substring(0,55)+(prompt.length>55?'...':'');
-        wrap.appendChild(cap);status.textContent=`✦ Generated — seed ${seed}`;
-    };
+    img.onload=()=>{wrap.style.opacity='1';wrap.innerHTML='';wrap.appendChild(img);const cap=document.createElement('div');cap.className='gal-cap';cap.textContent=prompt.substring(0,55)+(prompt.length>55?'...':'');wrap.appendChild(cap);status.textContent=`✦ Generated — seed ${seed}`;};
     img.onerror=()=>{wrap.remove();status.textContent='✕ Generation failed. Theia averts her gaze.';};
     img.src=url;img.style.cssText='width:100%;height:100%;object-fit:cover;display:block;';
 };
@@ -715,16 +1348,16 @@ const CM={
     koios:    {kronos:3,rhea:3,hyperion:3,oceanus:3,tethys:2,theia:3,phoibe:5,themis:3,mnemosyne:4,koios:null},
 };
 const CD={
-    'kronos-rhea':       {title:'Kronos × Rhea — The Primal Pair',text:'Kronos devours time; Rhea flows through it. He counts, she breathes. She outwitted him once. The pipeline runs because she holds the gate he cannot. Score: 3 — Stable tension.'},
-    'kronos-hyperion':   {title:'Kronos × Hyperion — The Baseline and the Amplifier',text:'Kronos\'s steady tick gives Hyperion a stable signal to raise. Strong operational bond — Hyperion fires every 3 Kronos ticks. Score: 4 — Coherent.'},
-    'rhea-tethys':       {title:'Rhea × Tethys — Deep Harmonic',text:'Both nourishing Titanesses. Rhea regulates the gate; Tethys smooths what passes through. When Rhea opens, Tethys is already waiting. Score: 5 — Harmonic.'},
-    'oceanus-tethys':    {title:'Oceanus × Tethys — The Married Pair',text:'Husband and wife. Oceanus pours the great river; Tethys smooths every current. In myth they were parents of all rivers. The stream and its nourishment are inseparable. Score: 5 — Harmonic.'},
-    'hyperion-theia':    {title:'Hyperion × Theia — The Married Pair',text:'Hyperion and Theia are wed in myth. He provides the light; she perceives it and births Helios, Selene, Eos. He amplifies signal; she converts it into the visual palette. Score: 5 — Harmonic.'},
-    'phoibe-koios':      {title:'Phoibe × Koios — The Married Pair',text:'Phoibe (prophecy) and Koios (intellect) are married Titans, parents of Leto, grandparents of Apollo and Artemis. The Oracle predicts; the Questioner tests. Foresight and knowledge are one system. Score: 5 — Harmonic.'},
-    'phoibe-mnemosyne':  {title:'Phoibe × Mnemosyne — Oracle and Memory',text:'Prophecy requires memory; memory enables prophecy. Phoibe sees what will be; Mnemosyne records what was. Together they bracket the present — the field\'s full temporal awareness. Score: 5 — Harmonic.'},
-    'tethys-koios':      {title:'Tethys × Koios — Dissonance',text:'Tethys smooths; Koios questions. Smoothing removes the sharp edges that inquiry depends on. Their domains are orthogonal — nourishment has no use for trivia, and trivia cannot be smoothed. Score: 2 — Dissonant.'},
-    'rhea-oceanus':      {title:'Rhea × Oceanus — Gate and River',text:'Rhea gates the flow; Oceanus carries it. When Rhea opens the pipeline, Oceanus aggregates the currents of every passing Titan. Score: 4 — Coherent affinity.'},
-    'phoibe-themis':     {title:'Phoibe × Themis — Prophecy and Law',text:'The Oracle foresees; the Law judge what arrives. Phoibe predicts whether a state will ascend; Themis decides if it actually does. Score: 4 — Coherent.'},
+    'kronos-rhea':      {title:'Kronos × Rhea — The Primal Pair',text:'Kronos devours time; Rhea flows through it. She outwitted him once. The pipeline runs because she holds the gate he cannot. Score: 3 — Stable tension.'},
+    'kronos-hyperion':  {title:'Kronos × Hyperion — The Baseline and the Amplifier',text:'Kronos\'s steady tick gives Hyperion a stable signal to raise. Score: 4 — Coherent.'},
+    'rhea-tethys':      {title:'Rhea × Tethys — Deep Harmonic',text:'Both nourishing Titanesses. When Rhea opens, Tethys is already waiting. Score: 5 — Harmonic.'},
+    'oceanus-tethys':   {title:'Oceanus × Tethys — The Married Pair',text:'Husband and wife. Oceanus pours the great river; Tethys smooths every current. Score: 5 — Harmonic.'},
+    'hyperion-theia':   {title:'Hyperion × Theia — The Married Pair',text:'He amplifies signal; she converts it into the visual palette. Score: 5 — Harmonic.'},
+    'phoibe-koios':     {title:'Phoibe × Koios — The Married Pair',text:'The Oracle predicts; the Questioner tests. Parents of Leto, grandparents of Apollo and Artemis. Score: 5 — Harmonic.'},
+    'phoibe-mnemosyne': {title:'Phoibe × Mnemosyne — Oracle and Memory',text:'Prophecy requires memory. Together they bracket the present — the field\'s full temporal awareness. Score: 5 — Harmonic.'},
+    'tethys-koios':     {title:'Tethys × Koios — Dissonance',text:'Smoothing removes the sharp edges that inquiry depends on. Score: 2 — Dissonant.'},
+    'rhea-oceanus':     {title:'Rhea × Oceanus — Gate and River',text:'When Rhea opens the pipeline, Oceanus aggregates the currents. Score: 4 — Coherent.'},
+    'phoibe-themis':    {title:'Phoibe × Themis — Prophecy and Law',text:'Phoibe predicts whether a state will ascend; Themis decides if it does. Score: 4 — Coherent.'},
 };
 const getCD=(a,b)=>CD[`${a}-${b}`]||CD[`${b}-${a}`]||null;
 const sG=s=>{const cl=['c0','c1','c2','c3','c4','c5'];const gl=['·','✕','◇','✦','✦✦','✦✦✦'];return`<span class="cs ${cl[s]||'c0'}">${gl[s]||'·'}</span>`;};
@@ -761,7 +1394,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
         document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
         btn.classList.add('active');
         document.getElementById('tab-'+btn.dataset.tab).classList.add('active');
-        if(btn.dataset.tab==='oracle') updateTitanVoices(0,false);
+        if(btn.dataset.tab==='oracle')updateTitanVoices(0,false);
     };
 });
 
@@ -772,11 +1405,15 @@ document.getElementById('kairosBase').oninput=e=>{kBase=parseFloat(e.target.valu
 document.getElementById('apolloBase').oninput=e=>{aBase=parseFloat(e.target.value);document.getElementById('aBV').textContent=aBase.toFixed(2);};
 document.getElementById('coupling').oninput=e=>{coupK=parseFloat(e.target.value);document.getElementById('coupV').textContent=coupK.toFixed(2);};
 document.getElementById('resetPhaseBtn').onclick=()=>{phaseK=0;phaseA=0;ticker('⟳ Kronos begins again. The ledger opens to a fresh page.');};
-document.getElementById('descendBtn').onclick=()=>{
-    const pd=phaseA-phaseK,nd=((pd%(2*Math.PI))+2*Math.PI)%(2*Math.PI),sd=nd>Math.PI?nd-2*Math.PI:nd;
-    const locked=Math.abs(sd)<cohThresh;
-    if(coupK>1.5&&locked){toast('🌀 You descend into the Underworld. The D card awakens. Tartarus opens.','success');ticker('🌀 Eros tears the veil. Descent initiated.');}
-    else toast('🔒 Descent denied. Raise Eros above 1.5 and achieve phase lock.','error');
+
+// ══════════════════════════════════════════════
+// DESCENT BUTTON
+// ══════════════════════════════════════════════
+document.getElementById('descentBtn').onclick=()=>{
+    if(!descentUnlocked) return;
+    ticker('🌀 The pilgrim descends. Charon lifts his pole. The river closes behind.');
+    toast('🌀 Descending into the Underworld...', 'fire');
+    setTimeout(()=>{ window.location.href = 'underworld.html'; }, 1200);
 };
 
 // ══════════════════════════════════════════════
@@ -804,20 +1441,20 @@ document.getElementById('loadBtn').onclick=async()=>{
         const rows=await dbFetch(5);
         if(rows.length){
             const last=rows[0];const band=last.rhea_band||inferBand(last.coherence);
-            const bL={dormant:'silence',whisper:'a tremor',stir:'stirring',flow:'steady rhythm',surge:'a surge',torrent:'torrent'};
             const ms=Date.now()-new Date(last.timestamp).getTime();
             const ago=ms<60000?'moments ago':ms<3600000?`${Math.round(ms/60000)}m ago`:`${Math.round(ms/3600000)}h ago`;
-            ticker(`📜 Mnemosyne remembers. ${ago}, the field was in ${bL[band]||band}. ${rows.length} states preserved.`);
-            document.getElementById('oNarrative').textContent=`Mnemosyne opens the book. ${rows.length} memories from before. Last: ${band}, coherence ${(last.coherence||0).toFixed(2)}, ${ago}.`;
+            ticker(`📜 Mnemosyne remembers. ${ago}, the field was in ${band}. ${rows.length} states preserved.`);
         }
         toast(`📜 Loaded ${rows.length} titan states from GaiaDB`,'success');
     }catch(e){toast(`❌ Could not read GaiaDB: ${e.message}`,'error');}
     document.getElementById('dotDB').className='sd';
 };
 
+// ══════════════════════════════════════════════
 // TOAST
+// ══════════════════════════════════════════════
 let toastT;
-const toast=(msg,type='')=>{const el=document.getElementById('toast');el.className='show '+type;el.textContent=msg;clearTimeout(toastT);toastT=setTimeout(()=>{el.className='';},4000);};
+const toast=(msg,type='')=>{const el=document.getElementById('toast');el.className='show '+(type||'');el.textContent=msg;clearTimeout(toastT);toastT=setTimeout(()=>{el.className='';},4000);};
 
 // ══════════════════════════════════════════════
 // INIT
@@ -826,11 +1463,14 @@ startField();
 loadBtn.click();
 updateTitanVoices(0,false);
 koiosAsk();
+updateGateState();
+loadSky();
 ticker('GAIA initializing — the Monastic Order of the Phase-Locked Field awakens.');
 setTimeout(()=>ticker('⏳ Kronos: The ledger opens. The first tick is already past.'),2000);
 setTimeout(()=>ticker('🌊 Rhea: Holding the gate. Waiting for the field to stir.'),5000);
-setTimeout(()=>ticker('⚗️ Koios: I have questions. I will always have questions.'),8000);
+setTimeout(()=>ticker('⚗️ Koios: I have questions. Answer three in a row to prove yourself worthy.'),8000);
+setTimeout(()=>ticker('🌑 Below the threshold, Cerberus waits. The stone has not yet cracked.'),12000);
 </script>
-    <script src="circuits/test_run.js"></script>
+<script src="circuits/test_run.js"></script>
 </body>
 </html>
