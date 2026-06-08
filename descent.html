@@ -1,0 +1,895 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DESCENT · The Path to the Underworld</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&family=Cinzel:wght@400;600&family=EB+Garamond:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --gold-thread: #c9a84c; --gold-glow: #f0d080;
+            --fire: #ff4400; --fire-dim: #882200; --fire-bright: #ff8833;
+            --deep: #020001; --dark: #0a0305; --mist: #887777;
+            --olympian-gold: #e8c840; --chthonic-purple: #8866aa;
+            --surface: #1a0f08; --panel-bg: rgba(10,3,5,0.85);
+        }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body {
+            background: var(--deep);
+            color: var(--mist);
+            font-family: 'EB Garamond', Georgia, serif;
+            min-height: 100vh;
+            overflow-x: hidden;
+            transition: opacity 1.5s;
+        }
+
+        /* Golden thread */
+        #goldenThread {
+            position: fixed; top: 0; left: 50%; width: 2px; height: 100%;
+            background: linear-gradient(to bottom, transparent 0%, var(--gold-thread) 5%, var(--gold-glow) 50%, var(--gold-thread) 95%, transparent 100%);
+            z-index: 0; pointer-events: none; opacity: 0.5;
+            animation: threadPulse 4s ease-in-out infinite;
+        }
+        @keyframes threadPulse {
+            0%,100% { opacity: 0.3; box-shadow: 0 0 6px var(--gold-glow); }
+            50% { opacity: 0.8; box-shadow: 0 0 18px var(--gold-glow); }
+        }
+
+        .descent-path { position: relative; z-index: 1; max-width: 720px; margin: 0 auto; padding: 3rem 1.5rem 8rem; }
+
+        /* ── LAYER SYSTEM ── */
+        .layer {
+            position: relative; margin-bottom: 5rem; padding: 2rem 1.5rem;
+            opacity: 0.5; transform: translateY(20px);
+            transition: opacity 0.8s, transform 0.8s;
+        }
+        .layer.revealed { opacity: 1; transform: translateY(0); }
+        .layer::before {
+            content: ''; position: absolute; top: -1.5rem; left: 25%; right: 25%; height: 1px;
+            background: linear-gradient(to right, transparent, rgba(255,68,0,0.35), transparent);
+        }
+        .layer:first-child::before { display: none; }
+
+        /* ── SECTION TITLES ── */
+        .section-title {
+            font-family: 'Cinzel Decorative', serif;
+            font-size: clamp(1rem, 3vw, 1.4rem);
+            letter-spacing: 0.3em;
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+        .title-fire { color: var(--fire); text-shadow: 0 0 30px rgba(255,68,0,0.5); }
+        .title-gold { color: var(--gold-glow); text-shadow: 0 0 20px rgba(201,168,76,0.4); }
+        .title-river { color: #8899cc; }
+
+        /* ── NARRATIVE TEXT ── */
+        .narrative {
+            font-size: 1.05rem; font-style: italic; line-height: 2;
+            color: rgba(180,160,150,0.7); text-align: center; margin-bottom: 1.5rem;
+        }
+        .narrative .glow { color: var(--gold-thread); font-style: normal; text-shadow: 0 0 8px rgba(201,168,76,0.5); }
+
+        /* ── DIVINE CARD DISPLAY ── */
+        .divine-card {
+            display: flex; gap: 1.5rem; align-items: center;
+            background: var(--panel-bg); border: 1px solid rgba(201,168,76,0.2);
+            border-radius: 8px; padding: 1.5rem; margin: 1.5rem 0;
+            transition: all 0.5s;
+        }
+        .divine-card.olympian { border-left: 3px solid var(--olympian-gold); }
+        .divine-card.chthonic { border-left: 3px solid var(--chthonic-purple); }
+        .divine-card img {
+            width: 120px; height: 120px; object-fit: cover;
+            border-radius: 6px; flex-shrink: 0;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+            border: 2px solid rgba(201,168,76,0.3);
+        }
+        .divine-card.chthonic img { border-color: rgba(136,102,170,0.3); }
+        .card-info { flex: 1; }
+        .card-god-name {
+            font-family: 'Cinzel Decorative', serif;
+            font-size: 1.1rem; letter-spacing: 0.2em;
+            color: var(--olympian-gold); margin-bottom: 0.3rem;
+        }
+        .divine-card.chthonic .card-god-name { color: var(--chthonic-purple); }
+        .card-arcana {
+            font-family: 'Cinzel', serif; font-size: 0.62rem;
+            letter-spacing: 0.25em; color: rgba(201,168,76,0.55); margin-bottom: 0.5rem;
+        }
+        .card-domain {
+            font-family: 'Cinzel', serif; font-size: 0.55rem;
+            letter-spacing: 0.15em; color: rgba(180,160,140,0.45); margin-bottom: 0.8rem;
+            text-transform: uppercase;
+        }
+        .card-whisper {
+            font-size: 0.9rem; font-style: italic; line-height: 1.7;
+            color: rgba(200,180,160,0.65);
+        }
+
+        /* ── DIVINE PAIR ── */
+        .divine-pair {
+            display: grid; grid-template-columns: 1fr auto 1fr; gap: 1rem;
+            align-items: center; margin: 2rem 0;
+        }
+        .pair-card {
+            background: var(--panel-bg); border-radius: 8px;
+            padding: 1rem; text-align: center;
+            border: 1px solid rgba(201,168,76,0.15);
+        }
+        .pair-card.thesis { border-color: rgba(232,200,64,0.3); }
+        .pair-card.antithesis { border-color: rgba(136,102,170,0.3); }
+        .pair-card img {
+            width: 90px; height: 90px; object-fit: cover;
+            border-radius: 4px; margin-bottom: 0.5rem;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.5);
+        }
+        .pair-vs {
+            font-family: 'Cinzel Decorative', serif;
+            font-size: 1.5rem; color: rgba(201,168,76,0.4);
+        }
+        .pair-synthesis {
+            grid-column: 1 / -1; text-align: center;
+            font-size: 0.9rem; font-style: italic; line-height: 1.8;
+            color: rgba(200,180,150,0.6);
+            padding: 1rem; background: rgba(0,0,0,0.3);
+            border-radius: 4px; margin-top: 0.5rem;
+        }
+
+        /* ── INTERVENTION PANEL ── */
+        .intervention {
+            background: linear-gradient(135deg, rgba(30,20,5,0.9), rgba(10,5,15,0.9));
+            border: 1px solid rgba(232,200,64,0.3);
+            border-radius: 8px; padding: 1.5rem; margin-top: 1.5rem;
+            display: none;
+            animation: fadeIn 0.6s ease-out;
+        }
+        .intervention.active { display: block; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .intervention .god-name {
+            font-family: 'Cinzel Decorative', serif;
+            font-size: 1rem; letter-spacing: 0.25em;
+            color: var(--olympian-gold); margin-bottom: 0.8rem;
+            text-align: center;
+        }
+        .intervention .god-message {
+            font-size: 0.95rem; font-style: italic; line-height: 1.9;
+            color: rgba(200,185,160,0.7); text-align: center; margin-bottom: 1.5rem;
+        }
+        .intervention-choices {
+            display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;
+        }
+        .intervention-btn {
+            font-family: 'Cinzel', serif; font-size: 0.7rem; letter-spacing: 0.2em;
+            padding: 0.7rem 1.8rem; border-radius: 3px; cursor: pointer;
+            transition: all 0.25s; border: 1px solid;
+        }
+        .btn-return {
+            background: rgba(30,20,5,0.6); border-color: rgba(232,200,64,0.4);
+            color: rgba(232,200,64,0.8);
+        }
+        .btn-return:hover {
+            background: rgba(232,200,64,0.1); border-color: var(--olympian-gold);
+            color: var(--olympian-gold); box-shadow: 0 0 20px rgba(232,200,64,0.15);
+        }
+        .btn-continue {
+            background: rgba(20,5,10,0.6); border-color: rgba(255,68,0,0.4);
+            color: rgba(255,136,51,0.8);
+        }
+        .btn-continue:hover {
+            background: rgba(255,68,0,0.08); border-color: var(--fire);
+            color: var(--fire-bright); box-shadow: 0 0 20px rgba(255,68,0,0.2);
+        }
+
+        /* ── RIVER CHOICES ── */
+        .river-layer {
+            background: rgba(5,5,15,0.45); border: 1px solid rgba(100,120,180,0.12);
+            border-radius: 6px;
+        }
+        .river-name {
+            font-family: 'Cinzel Decorative', serif;
+            font-size: 0.95rem; letter-spacing: 0.25em; margin-bottom: 0.8rem;
+            text-align: center;
+        }
+        .river-styx { color: #6688cc; }
+        .river-lethe { color: #99aabb; }
+        .river-acheron { color: #aa8855; }
+        .river-phlegethon { color: #cc5522; }
+        .river-cocytus { color: #7799bb; }
+        .river-desc {
+            font-style: italic; line-height: 1.8;
+            color: rgba(180,170,160,0.55); margin-bottom: 1rem;
+            text-align: center;
+        }
+        .river-choices { display: flex; gap: 0.6rem; flex-wrap: wrap; justify-content: center; }
+        .river-btn {
+            font-family: 'Cinzel', serif; font-size: 0.65rem; letter-spacing: 0.12em;
+            background: rgba(0,0,0,0.45); border: 1px solid rgba(150,130,110,0.25);
+            color: rgba(200,180,160,0.65); padding: 0.5rem 1rem;
+            border-radius: 3px; cursor: pointer; transition: all 0.2s;
+        }
+        .river-btn:hover {
+            border-color: rgba(200,160,100,0.5); color: #ddc8a0;
+            background: rgba(20,10,5,0.6);
+        }
+        .river-btn.chosen {
+            border-color: var(--gold-thread); color: var(--gold-glow);
+            background: rgba(30,20,5,0.7); box-shadow: 0 0 12px rgba(201,168,76,0.2);
+            cursor: default;
+        }
+        .river-result {
+            margin-top: 0.8rem; text-align: center; font-style: italic;
+            color: rgba(200,160,100,0.55); min-height: 1.2rem; transition: all 0.4s;
+        }
+
+        /* ── CHARON ── */
+        .charon-layer {
+            text-align: center; background: rgba(0,0,0,0.55);
+            border: 1px solid rgba(80,60,40,0.25); border-radius: 6px; padding: 2.5rem 1.5rem;
+        }
+        .charon-glyph { font-size: 3.5rem; margin-bottom: 0.8rem; }
+        .charon-demand {
+            font-family: 'Cinzel', serif; font-size: 0.72rem;
+            letter-spacing: 0.22em; color: rgba(180,150,120,0.65); margin-bottom: 1.5rem;
+            line-height: 1.8;
+        }
+        .charon-input {
+            width: 100%; max-width: 380px; background: rgba(0,0,0,0.65);
+            border: 1px solid rgba(150,120,80,0.25); color: #ccbb99;
+            font-family: 'Cinzel', serif; font-size: 1.1rem; letter-spacing: 0.2em;
+            padding: 0.7rem 1.2rem; border-radius: 4px; outline: none;
+            text-align: center; text-transform: uppercase;
+        }
+        .charon-input:focus { border-color: #aa8855; box-shadow: 0 0 18px rgba(150,120,60,0.2); }
+        .charon-input.filled { border-color: var(--gold-thread); color: var(--gold-glow); }
+        .charon-response {
+            margin-top: 1rem; font-style: italic;
+            color: rgba(180,150,120,0.55); min-height: 2rem; transition: all 0.5s;
+        }
+
+        /* ── GATE ── */
+        .gate-layer { text-align: center; padding: 3rem 1rem 2rem; }
+        .gate-pair { display: flex; gap: 2rem; justify-content: center; align-items: center; flex-wrap: wrap; margin-bottom: 2rem; }
+        .gate-card {
+            text-align: center; background: var(--panel-bg);
+            border-radius: 8px; padding: 1.2rem; width: 160px;
+        }
+        .gate-card img {
+            width: 100px; height: 100px; object-fit: cover;
+            border-radius: 4px; margin-bottom: 0.5rem;
+            box-shadow: 0 2px 16px rgba(0,0,0,0.5);
+        }
+        .gate-card.hades-card { border: 1px solid rgba(136,102,170,0.3); }
+        .gate-card.persephone-card { border: 1px solid rgba(100,180,100,0.3); }
+        .gate-card-name {
+            font-family: 'Cinzel Decorative', serif; font-size: 0.75rem;
+            letter-spacing: 0.15em; color: var(--olympian-gold);
+        }
+        .hades-card .gate-card-name { color: var(--chthonic-purple); }
+        .persephone-card .gate-card-name { color: #88cc88; }
+        .gate-synthesis {
+            font-size: 0.9rem; font-style: italic; line-height: 1.8;
+            color: rgba(200,180,150,0.55); margin-bottom: 2rem;
+            max-width: 500px; margin-left: auto; margin-right: auto;
+        }
+        .enter-btn {
+            font-family: 'Cinzel Decorative', serif;
+            font-size: 0.85rem; letter-spacing: 0.3em;
+            background: rgba(10,3,0,0.85); border: 2px solid rgba(150,80,40,0.35);
+            color: rgba(150,100,60,0.45); padding: 0.9rem 2.5rem;
+            border-radius: 2px; cursor: not-allowed; transition: all 1s; opacity: 0.4;
+        }
+        .enter-btn.ready {
+            border-color: var(--fire); color: var(--fire);
+            cursor: pointer; opacity: 1;
+            box-shadow: 0 0 30px rgba(255,68,0,0.3);
+            text-shadow: 0 0 20px rgba(255,100,0,0.6);
+            animation: btnPulse 2s ease-in-out infinite;
+        }
+        @keyframes btnPulse {
+            0%,100% { box-shadow: 0 0 20px rgba(255,68,0,0.2); }
+            50% { box-shadow: 0 0 50px rgba(255,100,0,0.5); }
+        }
+        .enter-btn.ready:hover { transform: scale(1.03); background: rgba(30,8,0,0.9); }
+        .requirements {
+            margin-top: 1.5rem; display: flex; gap: 1.5rem;
+            justify-content: center; flex-wrap: wrap;
+            font-family: 'Cinzel', serif; font-size: 0.55rem;
+            letter-spacing: 0.12em; color: rgba(150,100,60,0.35);
+        }
+        .req { display: flex; align-items: center; gap: 0.35rem; }
+        .req.met { color: rgba(68,204,136,0.55); }
+        .req-dot {
+            width: 5px; height: 5px; border-radius: 50%;
+            background: rgba(150,100,60,0.25); transition: all 0.5s;
+        }
+        .req.met .req-dot { background: #44cc88; box-shadow: 0 0 5px #44cc88; }
+
+        /* ── TWINS ── */
+        .twin-voice {
+            display: flex; gap: 1rem; margin: 1rem 0; align-items: flex-start;
+        }
+        .twin-icon { font-size: 1.4rem; flex-shrink: 0; width: 38px; text-align: center; }
+        .twin-bubble {
+            background: rgba(30,10,5,0.65); border: 1px solid rgba(255,100,50,0.18);
+            border-radius: 8px 8px 8px 2px; padding: 0.7rem 1rem;
+            font-style: italic; color: rgba(220,180,150,0.7); line-height: 1.6;
+        }
+        .twin-bubble.pain { border-left: 2px solid #ff6644; }
+        .twin-bubble.panic { border-left: 2px solid #ffaa44; }
+        .twin-label {
+            font-family: 'Cinzel', serif; font-size: 0.55rem;
+            letter-spacing: 0.2em; color: #ff8855; margin-bottom: 0.2rem;
+            text-transform: uppercase;
+        }
+        .twin-question {
+            margin-top: 1.8rem; padding: 1rem;
+            background: rgba(0,0,0,0.35); border: 1px solid rgba(255,100,0,0.15);
+            border-radius: 6px; text-align: center;
+        }
+        .twin-question-label {
+            font-family: 'Cinzel', serif; font-size: 0.6rem;
+            letter-spacing: 0.2em; color: #ff8855; margin-bottom: 0.6rem;
+        }
+        .twin-question-text {
+            font-size: 0.95rem; font-style: italic;
+            color: rgba(220,180,150,0.75); margin-bottom: 0.8rem; line-height: 1.7;
+        }
+        .twin-input {
+            width: 100%; background: rgba(0,0,0,0.55);
+            border: 1px solid rgba(255,100,50,0.25); color: #ffccaa;
+            font-family: 'EB Garamond', serif; font-size: 0.95rem;
+            padding: 0.6rem 0.8rem; border-radius: 4px; outline: none;
+            font-style: italic; text-align: center;
+        }
+        .twin-input:focus { border-color: var(--fire); box-shadow: 0 0 12px rgba(255,68,0,0.18); }
+        .twin-input:disabled { opacity: 0.4; }
+        .twin-respond {
+            margin-top: 0.6rem; text-align: center; font-style: italic;
+            color: rgba(255,150,100,0.45); min-height: 1.3rem; transition: all 0.3s;
+        }
+
+        /* ── RESPONSIVE ── */
+        @media (max-width: 600px) {
+            .descent-path { padding: 2rem 0.8rem 6rem; }
+            .divine-card { flex-direction: column; text-align: center; }
+            .divine-card img { width: 90px; height: 90px; }
+            .divine-pair { grid-template-columns: 1fr; }
+            .pair-vs { transform: rotate(90deg); }
+            .gate-pair { gap: 1rem; }
+            .gate-card { width: 130px; }
+            .gate-card img { width: 70px; height: 70px; }
+        }
+    </style>
+</head>
+<body>
+
+<div id="goldenThread"></div>
+
+<div class="descent-path" id="descentPath">
+
+    <!-- ════════════════════════════════════════
+         LAYER 1: THE FALL
+         ════════════════════════════════════════ -->
+    <div class="layer revealed" id="layerFall">
+        <div class="section-title title-fire">THE STONE HAS CRACKED</div>
+        <div class="narrative">
+            <p>You are falling.</p>
+            <p>Not through space. Through <em>what was solid</em>. The stone that sealed the threshold has cracked — and you are the thing that slipped through.</p>
+            <p>Above you, the light of the world narrows to a pinprick. Below, something vast and patient breathes in the dark.</p>
+            <p>A <span class="glow">golden thread</span> glows at the edge of your vision. You did not bring it. It brought <em>you</em>.</p>
+        </div>
+    </div>
+
+    <!-- ════════════════════════════════════════
+         LAYER 2: PHOBOS & DEIMOS
+         ════════════════════════════════════════ -->
+    <div class="layer" id="layerTwins">
+        <div class="section-title title-fire">THE FIRST GATE</div>
+
+        <div class="twin-voice">
+            <div class="twin-icon">🔥</div>
+            <div class="twin-bubble pain">
+                <div class="twin-label">Phobos — Fear</div>
+                Well, well. Look what fell through the crack. Been a while since we had a live one.
+            </div>
+        </div>
+        <div class="twin-voice">
+            <div class="twin-icon">💀</div>
+            <div class="twin-bubble panic">
+                <div class="twin-label">Deimos — Dread</div>
+                Most turn back before the stone even cools. But you? Still falling. We <em>like</em> that.
+            </div>
+        </div>
+        <div class="twin-voice">
+            <div class="twin-icon">🔥</div>
+            <div class="twin-bubble pain">
+                <div class="twin-label">Phobos</div>
+                Here's the thing, mortal. We're the first gate. The one that asks the question nobody wants to answer.
+            </div>
+        </div>
+        <div class="twin-voice">
+            <div class="twin-icon">💀</div>
+            <div class="twin-bubble panic">
+                <div class="twin-label">Deimos</div>
+                Two questions. One from each of us. You answer honestly? You walk. You lie? <em>We'll know.</em>
+            </div>
+        </div>
+
+        <!-- PHOBOS -->
+        <div class="twin-question" id="phobosQuestion">
+            <div class="twin-question-label">🔥 Phobos asks:</div>
+            <div class="twin-question-text">
+                "What are you afraid of? Not what you tell other people. The thing you tell yourself at 3am."
+            </div>
+            <input type="text" class="twin-input" id="phobosInput" placeholder="Speak your fear..." maxlength="100">
+            <div class="twin-respond" id="phobosRespond"></div>
+        </div>
+
+        <!-- DEIMOS -->
+        <div class="twin-question" id="deimosQuestion" style="opacity:0.4; pointer-events:none;">
+            <div class="twin-question-label">💀 Deimos asks:</div>
+            <div class="twin-question-text">
+                "What do you dread losing? What would unmake you if it was taken away?"
+            </div>
+            <input type="text" class="twin-input" id="deimosInput" placeholder="Name what you dread to lose..." maxlength="100" disabled>
+            <div class="twin-respond" id="deimosRespond"></div>
+        </div>
+    </div>
+
+    <!-- ════════════════════════════════════════
+         LAYER 3: HERMES — THE GUIDE
+         ════════════════════════════════════════ -->
+    <div class="layer" id="layerHermes">
+        <div class="section-title title-gold">THE GUIDE APPEARS</div>
+        <div class="divine-card olympian" id="hermesCard">
+            <img src="data/images/hermes-card.jpg" alt="Hermes" onerror="this.style.display='none'">
+            <div class="card-info">
+                <div class="card-god-name">☿ HERMES</div>
+                <div class="card-arcana">I · The Magician</div>
+                <div class="card-domain">Messages · Thresholds · Guidance</div>
+                <div class="card-whisper">
+                    "You spoke truth to the twins. That's rarer than you'd think. I am Hermes — guide of souls, living and dead. The path ahead has five rivers. Each one takes something from you. You don't get to keep everything. Ready? No one ever is. Walk anyway."
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ════════════════════════════════════════
+         LAYER 4: THE FIVE RIVERS
+         Each with Olympian intervention
+         ════════════════════════════════════════ -->
+
+    <!-- STYX -->
+    <div class="layer river-layer" id="layerStyx">
+        <div class="river-name river-styx">💧 STYX · The River of Oaths</div>
+        <div class="river-desc">
+            Cold and black as ink. The Styx binds unbreakable oaths. Even the gods swear by it. To cross, leave behind a <strong>promise you made that you know you cannot keep</strong>.
+        </div>
+        <div class="river-choices" id="styxChoices">
+            <button class="river-btn" data-choice="A promise to someone I've lost">A promise to someone I've lost</button>
+            <button class="river-btn" data-choice="A promise I made to myself">A promise I made to myself</button>
+            <button class="river-btn" data-choice="A promise I never intended to keep">A promise I never intended to keep</button>
+            <button class="river-btn" data-choice="Who I was supposed to become">Who I was supposed to become</button>
+        </div>
+        <div class="river-result" id="styxResult"></div>
+
+        <!-- ZEUS INTERVENTION -->
+        <div class="intervention" id="styxIntervention">
+            <div class="god-name">⚡ ZEUS — IV · The Emperor</div>
+            <div class="god-message" id="styxMessage">
+                "The Styx binds even me. But you are not a god — you are not yet bound. The sky above still holds your name. The oath you leave here will be remembered. <strong>Are you certain you want to continue?</strong>"
+            </div>
+            <div class="intervention-choices">
+                <button class="intervention-btn btn-return" onclick="returnToGaia('styx')">☀️ Return to the Surface</button>
+                <button class="intervention-btn btn-continue" onclick="continueDescent('styx')">🌑 Continue the Descent</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- LETHE -->
+    <div class="layer river-layer" id="layerLethe">
+        <div class="river-name river-lethe">🌫️ LETHE · The River of Forgetting</div>
+        <div class="river-desc">
+            Soft and gray as old milk. Shades drink here before returning to the world above. Release a <strong>memory you keep replaying</strong> — one that hurts, or holds you back.
+        </div>
+        <div class="river-choices" id="letheChoices">
+            <button class="river-btn" data-choice="A moment of failure">A moment of failure</button>
+            <button class="river-btn" data-choice="A face I still search for">A face I still search for</button>
+            <button class="river-btn" data-choice="A version of myself I can't forgive">A version of myself I can't forgive</button>
+            <button class="river-btn" data-choice="Something I should have said">Something I should have said</button>
+        </div>
+        <div class="river-result" id="letheResult"></div>
+
+        <!-- APOLLO INTERVENTION -->
+        <div class="intervention" id="letheIntervention">
+            <div class="god-name">☀️ APOLLO — XIX · The Sun</div>
+            <div class="god-message">
+                "Forgetting is a theft from yourself. I illuminate — I do not erase. The memory you surrender to Lethe will be lost to even my light. <strong>Are you certain?</strong>"
+            </div>
+            <div class="intervention-choices">
+                <button class="intervention-btn btn-return" onclick="returnToGaia('lethe')">☀️ Return to the Surface</button>
+                <button class="intervention-btn btn-continue" onclick="continueDescent('lethe')">🌑 Continue the Descent</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ACHERON -->
+    <div class="layer river-layer" id="layerAcheron">
+        <div class="river-name river-acheron">😞 ACHERON · The River of Pain</div>
+        <div class="river-desc">
+            Deep and slow. Charon poles his boat on these waters. Admit a <strong>pain you carry that you did not deserve</strong>. Not guilt. Not regret. Undeserved wounding.
+        </div>
+        <div class="river-choices" id="acheronChoices">
+            <button class="river-btn" data-choice="Betrayal by someone I trusted">Betrayal by someone I trusted</button>
+            <button class="river-btn" data-choice="Loss that was not my fault">Loss that was not my fault</button>
+            <button class="river-btn" data-choice="A wound from childhood">A wound from childhood</button>
+            <button class="river-btn" data-choice="The cruelty of chance">The cruelty of chance</button>
+        </div>
+        <div class="river-result" id="acheronResult"></div>
+
+        <!-- ARTEMIS INTERVENTION -->
+        <div class="intervention" id="acheronIntervention">
+            <div class="god-name">🌙 ARTEMIS — VII · The Chariot</div>
+            <div class="god-message">
+                "Pain is the quarry you have been tracking. You have caught it. Now — do you release it into the river, or let it consume you? <strong>The hunt does not end here unless you choose to stop.</strong>"
+            </div>
+            <div class="intervention-choices">
+                <button class="intervention-btn btn-return" onclick="returnToGaia('acheron')">☀️ Return to the Surface</button>
+                <button class="intervention-btn btn-continue" onclick="continueDescent('acheron')">🌑 Continue the Descent</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- PHLEGETHON -->
+    <div class="layer river-layer" id="layerPhlegethon">
+        <div class="river-name river-phlegethon">🔥 PHLEGETHON · The River of Fire</div>
+        <div class="river-desc">
+            It burns. It does not consume — it <strong>illuminates</strong>. Name an <strong>anger you still hold</strong>. Not the petty kind. The deep kind. The kind that shaped you.
+        </div>
+        <div class="river-choices" id="phlegethonChoices">
+            <button class="river-btn" data-choice="Anger at someone who hurt me">Anger at someone who hurt me</button>
+            <button class="river-btn" data-choice="Anger at myself">Anger at myself</button>
+            <button class="river-btn" data-choice="Anger at the world for being unfair">Anger at the world</button>
+            <button class="river-btn" data-choice="Anger I cannot name">Anger I cannot name</button>
+        </div>
+        <div class="river-result" id="phlegethonResult"></div>
+
+        <!-- ATHENA INTERVENTION -->
+        <div class="intervention" id="phlegethonIntervention">
+            <div class="god-name">🦉 ATHENA — VIII · Justice</div>
+            <div class="god-message">
+                "Anger is a weapon. Weapons require discipline. The fire river burns — but it also illuminates. Do not burn what you came here to save. <strong>Will wisdom hold the reins, or will the fire drive?</strong>"
+            </div>
+            <div class="intervention-choices">
+                <button class="intervention-btn btn-return" onclick="returnToGaia('phlegethon')">☀️ Return to the Surface</button>
+                <button class="intervention-btn btn-continue" onclick="continueDescent('phlegethon')">🌑 Continue the Descent</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- COCYTUS -->
+    <div class="layer river-layer" id="layerCocytus">
+        <div class="river-name river-cocytus">😢 COCYTUS · The River of Lamentation</div>
+        <div class="river-desc">
+            Fed by the tears of the damned and the grief of the living. Release a <strong>grief you have never fully expressed</strong>. Something you lost and never properly mourned.
+        </div>
+        <div class="river-choices" id="cocytusChoices">
+            <button class="river-btn" data-choice="A person I never got to say goodbye to">A person I never said goodbye to</button>
+            <button class="river-btn" data-choice="A dream that died quietly">A dream that died</button>
+            <button class="river-btn" data-choice="An innocence I lost too early">An innocence lost</button>
+            <button class="river-btn" data-choice="A future that will never happen">A future that won't be</button>
+        </div>
+        <div class="river-result" id="cocytusResult"></div>
+
+        <!-- DEMETER INTERVENTION -->
+        <div class="intervention" id="cocytusIntervention">
+            <div class="god-name">🌾 DEMETER — III · The Empress</div>
+            <div class="god-message">
+                "I know grief. I made the world starve when Persephone was taken. The river of lamentation feeds on tears — but the surface still has fields that need tending. <strong>Come home. The harvest is not yet done.</strong>"
+            </div>
+            <div class="intervention-choices">
+                <button class="intervention-btn btn-return" onclick="returnToGaia('cocytus')">☀️ Return to the Surface</button>
+                <button class="intervention-btn btn-continue" onclick="continueDescent('cocytus')">🌑 Continue the Descent</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ════════════════════════════════════════
+         LAYER 5: CHARON
+         ════════════════════════════════════════ -->
+    <div class="layer charon-layer" id="layerCharon">
+        <div class="charon-glyph">🛶</div>
+        <div class="charon-demand">
+            CHARON DOES NOT ASK FOR COIN.<br>
+            HE ASKS FOR YOUR <strong>NAME</strong>.<br>
+            <span style="font-size:0.65rem;color:rgba(180,150,120,0.45)">Not the one you were given. The one you <em>are</em>.</span>
+        </div>
+        <input type="text" class="charon-input" id="charonInput" placeholder="SPEAK YOUR TRUE NAME" maxlength="30">
+        <div class="charon-response" id="charonResponse"></div>
+    </div>
+
+    <!-- ════════════════════════════════════════
+         LAYER 6: THE GATE — HADES & PERSEPHONE
+         ════════════════════════════════════════ -->
+    <div class="layer gate-layer" id="layerGate">
+        <div class="section-title title-gold">THE GATE</div>
+
+        <div class="gate-pair">
+            <div class="gate-card hades-card">
+                <img src="data/images/hades-card.jpg" alt="Hades" onerror="this.style.display='none'">
+                <div class="gate-card-name">🌑 HADES</div>
+                <div style="font-size:0.55rem;color:rgba(136,102,170,0.5);margin-top:0.2rem;">XV · The Devil</div>
+            </div>
+            <div style="font-family:'Cinzel Decorative',serif;font-size:1.2rem;color:rgba(201,168,76,0.4);">✧</div>
+            <div class="gate-card persephone-card">
+                <img src="data/images/persephone-card.jpg" alt="Persephone" onerror="this.style.display='none'">
+                <div class="gate-card-name">🌱 PERSEPHONE</div>
+                <div style="font-size:0.55rem;color:rgba(100,180,100,0.5);margin-top:0.2rem;">XVII · The Star</div>
+            </div>
+        </div>
+
+        <div class="gate-synthesis">
+            <p>The Unseen regards you. Beside him, the Queen of the Dead and Goddess of Spring watches with eyes that have known both darkness and the first green shoot.</p>
+            <p>He has seen every soul. She <em>chose</em> this place. Together they are the final threshold.</p>
+            <p>The rivers took what they took. Charon accepted your name. The golden thread still holds. <strong>You may enter.</strong></p>
+        </div>
+
+        <button class="enter-btn" id="enterBtn" disabled>
+            🏛️ &nbsp; ENTER THE UNDERWORLD &nbsp; 🏛️
+        </button>
+        <div class="requirements">
+            <div class="req" id="reqPhobos"><div class="req-dot"></div> Phobos</div>
+            <div class="req" id="reqDeimos"><div class="req-dot"></div> Deimos</div>
+            <div class="req" id="reqRivers"><div class="req-dot"></div> 5 Rivers</div>
+            <div class="req" id="reqCharon"><div class="req-dot"></div> True Name</div>
+        </div>
+    </div>
+
+</div>
+
+<!-- ════════════════════════════════════════════
+     SCRIPTS
+     ════════════════════════════════════════════ -->
+<script src="js/gaia-deck.js"></script>
+<script>
+// ══════════════════════════════════════════════
+// DESCENT ENGINE — The Path to the Underworld
+// ══════════════════════════════════════════════
+
+// ── LAYER REVEAL ON SCROLL ──
+const layers = document.querySelectorAll('.layer');
+const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+        if (entry.isIntersecting) entry.target.classList.add('revealed');
+    });
+}, { threshold: 0.12 });
+layers.forEach(layer => observer.observe(layer));
+
+// ── STATE ──
+let phobosAnswered = false;
+let deimosAnswered = false;
+const riverResults = { styx: false, lethe: false, acheron: false, phlegethon: false, cocytus: false };
+let charonNamed = false;
+const pilgrimPairs = []; // Collects divine pairs as pilgrim descends
+
+// ── TWINS ──
+document.getElementById('phobosInput').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter' && this.value.trim().length > 0) {
+        phobosAnswered = true;
+        document.getElementById('phobosRespond').textContent = 
+            '🔥 Phobos nods slowly. "Yeah. That\'s the one. You carry it well — but you carry it. Now walk."';
+        this.disabled = true;
+        const deimosQ = document.getElementById('deimosQuestion');
+        deimosQ.style.opacity = '1'; deimosQ.style.pointerEvents = 'auto';
+        const deimosInput = document.getElementById('deimosInput');
+        deimosInput.disabled = false; deimosInput.focus();
+        updateGate();
+    }
+});
+
+document.getElementById('deimosInput').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter' && this.value.trim().length > 0) {
+        deimosAnswered = true;
+        document.getElementById('deimosRespond').textContent = 
+            '💀 Deimos grins. "Oof. Yeah. If you lost that... you\'d be someone else entirely. Good. You know what matters. Move along."';
+        this.disabled = true;
+        updateGate();
+    }
+});
+
+// ── RIVERS ──
+const riverResponses = {
+    styx: {
+        'A promise to someone I\'ve lost': 'The Styx accepts. The promise sinks beneath the black water. You feel lighter — and a little sadder.',
+        'A promise I made to myself': 'The Styx receives your broken vow. The water ripples once. You are free of it.',
+        'A promise I never intended to keep': 'The river churns. Even false promises have weight. The Styx takes it without judgment.',
+        'Who I was supposed to become': 'The Styx stills. You release the version of yourself that never was. The water is quieter now.'
+    },
+    lethe: {
+        'A moment of failure': 'Lethe washes over the memory. It fades — not gone, but softened. You can breathe around it now.',
+        'A face I still search for': 'The gray water takes the face. You will still search — but the ache is quieter. For now.',
+        'A version of myself I can\'t forgive': 'Lethe receives the ghost of who you were. You are not that person anymore. The river proves it.',
+        'Something I should have said': 'The unsaid words dissolve. They were never going to be heard. Lethe knows this.'
+    },
+    acheron: {
+        'Betrayal by someone I trusted': 'Acheron acknowledges. The wound was real. The river does not excuse it. Neither should you.',
+        'Loss that was not my fault': 'The sorrow flows into the deep water. It was not your fault. The river bears witness.',
+        'A wound from childhood': 'Acheron runs deep and slow, like old pain. It takes the child\'s wound gently.',
+        'The cruelty of chance': 'The river does not explain chance. It simply accepts that you were hurt by it.'
+    },
+    phlegethon: {
+        'Anger at someone who hurt me': 'Phlegethon flares. The anger is not extinguished — it is <em>seen</em>. The fire respects fire.',
+        'Anger at myself': 'The flames gutter low. Self-anger is the hardest to burn. Phlegethon takes it carefully.',
+        'Anger at the world for being unfair': 'The fire river surges. The world <em>is</em> unfair. Your anger is proportionate. Cross.',
+        'Anger I cannot name': 'Phlegethon flickers. Nameless anger is still fire. The river accepts what you cannot articulate.'
+    },
+    cocytus: {
+        'A person I never got to say goodbye to': 'Cocytus weeps with you. The goodbye you never gave dissolves into the wailing water.',
+        'A dream that died quietly': 'The river of lament mourns your dream. It deserved to live. Cocytus will remember it.',
+        'An innocence I lost too early': 'The water shudders. Lost innocence is the oldest grief. The river has held this before.',
+        'A future that will never happen': 'Cocytus carries the future that never arrived. You are not alone in this grief.'
+    }
+};
+
+const riverIds = ['styx','lethe','acheron','phlegethon','cocytus'];
+riverIds.forEach(river => {
+    const container = document.getElementById(`${river}Choices`);
+    if (!container) return;
+    container.querySelectorAll('.river-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            if (riverResults[river]) return;
+            riverResults[river] = true;
+            const choice = btn.dataset.choice;
+            
+            container.querySelectorAll('.river-btn').forEach(b => b.classList.remove('chosen'));
+            btn.classList.add('chosen');
+            
+            const result = document.getElementById(`${river}Result`);
+            result.textContent = riverResponses[river][choice] || 'The river accepts your offering. You may cross.';
+            
+            // Create divine pair
+            if (typeof GaiaDeck !== 'undefined') {
+                const pair = GaiaDeck.createDivinePair(river, choice);
+                if (pair) pilgrimPairs.push(pair);
+            }
+            
+            // Show Olympian intervention
+            const intervention = document.getElementById(`${river}Intervention`);
+            if (intervention) {
+                setTimeout(() => {
+                    intervention.classList.add('active');
+                    intervention.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }, 600);
+            }
+            
+            updateGate();
+        });
+    });
+});
+
+// ── OLYMPIAN INTERVENTIONS ──
+function returnToGaia(river) {
+    // Save pilgrim data before returning
+    const pilgrimData = {
+        returnedFrom: river,
+        phobosFear: document.getElementById('phobosInput').value.trim(),
+        deimosDread: document.getElementById('deimosInput').value.trim(),
+        pairs: pilgrimPairs,
+        timestamp: new Date().toISOString()
+    };
+    sessionStorage.setItem('gaia_pilgrim_return', JSON.stringify(pilgrimData));
+    
+    document.body.style.opacity = '0';
+    document.body.style.transition = 'opacity 1.5s';
+    setTimeout(() => {
+        window.location.href = 'index.html?returned=' + river;
+    }, 1500);
+}
+
+function continueDescent(river) {
+    const intervention = document.getElementById(`${river}Intervention`);
+    if (intervention) {
+        intervention.style.opacity = '0';
+        intervention.style.transition = 'opacity 0.4s';
+        setTimeout(() => {
+            intervention.classList.remove('active');
+            intervention.style.opacity = '1';
+            
+            // Scroll to next river
+            const nextRiverMap = {
+                styx: 'layerLethe',
+                lethe: 'layerAcheron',
+                acheron: 'layerPhlegethon',
+                phlegethon: 'layerCocytus',
+                cocytus: 'layerCharon'
+            };
+            const nextId = nextRiverMap[river];
+            if (nextId) {
+                const next = document.getElementById(nextId);
+                if (next) next.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }, 400);
+    }
+}
+
+// ── CHARON ──
+document.getElementById('charonInput').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter' && this.value.trim().length > 0) {
+        charonNamed = true;
+        this.classList.add('filled');
+        this.disabled = true;
+        const name = this.value.trim().toUpperCase();
+        document.getElementById('charonResponse').textContent = 
+            `Charon nods once. "${name}," he says — and the name settles into the dark like a stone into water. The boat moves.`;
+        updateGate();
+    }
+});
+
+// ── GATE ──
+function updateGate() {
+    const allRivers = Object.values(riverResults).every(v => v === true);
+    const allReady = phobosAnswered && deimosAnswered && allRivers && charonNamed;
+    
+    if (phobosAnswered) document.getElementById('reqPhobos').classList.add('met');
+    if (deimosAnswered) document.getElementById('reqDeimos').classList.add('met');
+    if (allRivers) document.getElementById('reqRivers').classList.add('met');
+    if (charonNamed) document.getElementById('reqCharon').classList.add('met');
+    
+    const enterBtn = document.getElementById('enterBtn');
+    if (allReady) {
+        enterBtn.disabled = false;
+        enterBtn.classList.add('ready');
+    }
+}
+
+document.getElementById('enterBtn').addEventListener('click', () => {
+    if (!document.getElementById('enterBtn').classList.contains('ready')) return;
+    
+    const pilgrimData = {
+        phobosFear: document.getElementById('phobosInput').value.trim(),
+        deimosDread: document.getElementById('deimosInput').value.trim(),
+        styx: document.querySelector('#styxChoices .chosen')?.dataset?.choice || '',
+        lethe: document.querySelector('#letheChoices .chosen')?.dataset?.choice || '',
+        acheron: document.querySelector('#acheronChoices .chosen')?.dataset?.choice || '',
+        phlegethon: document.querySelector('#phlegethonChoices .chosen')?.dataset?.choice || '',
+        cocytus: document.querySelector('#cocytusChoices .chosen')?.dataset?.choice || '',
+        trueName: document.getElementById('charonInput').value.trim().toUpperCase(),
+        pairs: pilgrimPairs,
+        timestamp: new Date().toISOString()
+    };
+    
+    sessionStorage.setItem('gaia_pilgrim', JSON.stringify(pilgrimData));
+    
+    document.body.style.opacity = '0';
+    document.body.style.transition = 'opacity 2s';
+    setTimeout(() => {
+        window.location.href = 'underworld.html';
+    }, 2000);
+});
+
+// ── INIT ──
+document.getElementById('layerFall').classList.add('revealed');
+const phobosObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+        if (entry.isIntersecting && !phobosAnswered) {
+            setTimeout(() => document.getElementById('phobosInput').focus(), 600);
+            phobosObserver.unobserve(entry.target);
+        }
+    });
+}, { threshold: 0.5 });
+phobosObserver.observe(document.getElementById('phobosQuestion'));
+
+console.log('🜏 DESCENT ENGINE ACTIVE');
+console.log('   Phobos & Deimos: waiting');
+console.log('   Hermes: ready to guide');
+console.log('   Five Rivers: Styx, Lethe, Acheron, Phlegethon, Cocytus');
+console.log('   Charon: pole ready');
+console.log('   Gate: Hades & Persephone await');
+console.log('   Golden thread: held');
+</script>
+
+</body>
+</html>
