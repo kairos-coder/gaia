@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>UNDERWORLD · Chthonic Engine · Hades' Gaze</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none; /* immersive, no accidental text selects */
+        }
+
+        body {
+            background: radial-gradient(circle at 30% 10%, #0a050f, #020001);
+            min-height: 100vh;
+            color: #cdc6c0;
+            font-family: 'Courier New', 'Fira Code', 'Lucida Console', monospace;
+            padding: 2rem 1.5rem;
+            position: relative;
+            border-top: 3px solid #4a2c2a;
+            box-shadow: inset 0 0 80px rgba(0,0,0,0.6);
+        }
+
+        /* eerie flicker effect */
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            background: repeating-linear-gradient(0deg, rgba(0,0,0,0.2) 0px, rgba(0,0,0,0.1) 2px, transparent 3px, transparent 8px);
+            z-index: 999;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: rgba(10, 5, 8, 0.55);
+            backdrop-filter: blur(2px);
+            border: 1px solid #4a2a2c;
+            padding: 2rem;
+            border-radius: 2rem 0.5rem 2rem 0.5rem;
+            box-shadow: 0 20px 35px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.05);
+        }
+
+        /* headers & titles */
+        .title-grim {
+            font-size: 3.2rem;
+            letter-spacing: 6px;
+            text-transform: uppercase;
+            font-weight: normal;
+            color: #cfaa8f;
+            text-shadow: 0 0 6px #7a2e2a, 0 0 1px #d89c6c;
+            border-left: 5px solid #9e5e4a;
+            padding-left: 1.2rem;
+            margin-bottom: 1rem;
+        }
+
+        .sub {
+            font-size: 0.8rem;
+            color: #8b6b64;
+            border-bottom: 1px dashed #552e28;
+            display: inline-block;
+            margin-bottom: 2rem;
+        }
+
+        .grid-2col {
+            display: grid;
+            grid-template-columns: 1fr 1.2fr;
+            gap: 2rem;
+            margin: 2rem 0;
+        }
+
+        /* cards / styx panels */
+        .chthonic-card {
+            background: #130b0ecc;
+            border: 1px solid #633e38;
+            border-radius: 1.5rem;
+            padding: 1.5rem;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.5);
+            transition: all 0.2s;
+        }
+
+        .card-header {
+            font-size: 1.6rem;
+            font-weight: bold;
+            color: #e2b394;
+            margin-bottom: 1rem;
+            display: flex;
+            gap: 12px;
+            align-items: baseline;
+            border-left: 3px solid #b87a5a;
+            padding-left: 12px;
+        }
+
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            border-bottom: 1px dotted #482a24;
+            padding: 8px 0;
+            font-family: monospace;
+        }
+
+        .titan-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        .titan-tag {
+            background: #1f1215;
+            padding: 4px 12px;
+            border-radius: 30px;
+            font-size: 0.85rem;
+            border: 1px solid #754e44;
+            color: #cbaca0;
+            letter-spacing: 1px;
+        }
+
+        /* matrix underworld edition */
+        .matrix-wrap {
+            overflow-x: auto;
+        }
+        .compat-matrix {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.7rem;
+            text-align: center;
+        }
+        .compat-matrix th, .compat-matrix td {
+            border: 1px solid #442c28;
+            padding: 6px 3px;
+            background-color: #0e070ac9;
+        }
+        .compat-matrix th {
+            background: #2d191e;
+            color: #eccfae;
+            font-weight: 600;
+        }
+        .clickable-cell {
+            cursor: pointer;
+            transition: 0.07s linear;
+        }
+        .clickable-cell:hover {
+            background: #7a4640 !important;
+            color: #f5e6da;
+            transform: scale(1.02);
+        }
+
+        /* oracle / trial section */
+        .trial-area {
+            background: #00000066;
+            border-radius: 2rem;
+            padding: 1.5rem;
+            margin: 2rem 0;
+            border: 1px solid #8a5a4a;
+        }
+
+        .koios-quiz {
+            background: #1d1318;
+            padding: 1.5rem;
+            border-radius: 1rem;
+        }
+
+        .question-text {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: #f4cfb0;
+            margin-bottom: 1rem;
+        }
+
+        .answer-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin: 20px 0;
+        }
+        .ans-btn {
+            background: #2c1b1a;
+            border: 1px solid #a56b58;
+            padding: 8px 20px;
+            border-radius: 60px;
+            color: #edd4c2;
+            font-family: monospace;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.1s linear;
+        }
+        .ans-btn:hover {
+            background: #79503f;
+            box-shadow: 0 0 8px #d99472;
+        }
+        .counter {
+            font-size: 1rem;
+            background: #220e0e;
+            display: inline-block;
+            padding: 6px 16px;
+            border-radius: 60px;
+            letter-spacing: 1px;
+        }
+
+        .gate-status {
+            text-align: center;
+            font-size: 1.5rem;
+            margin-top: 1rem;
+            padding: 0.8rem;
+            background: #030001b3;
+            border-radius: 2rem;
+            border: 1px dashed #ab7b64;
+        }
+
+        .cerberus {
+            font-size: 2rem;
+            filter: drop-shadow(0 0 6px #a5372a);
+        }
+
+        button.image-gen {
+            background: #241a1c;
+            border: 1px solid #bd8570;
+            padding: 12px 24px;
+            font-size: 1rem;
+            font-family: monospace;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 40px;
+            color: #fadbc8;
+            margin: 12px 0;
+        }
+
+        .gallery-preview {
+            background: #0a0306;
+            border-radius: 1rem;
+            padding: 15px;
+            margin-top: 15px;
+            min-height: 180px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid #593e36;
+        }
+
+        img.generated-img {
+            max-width: 140px;
+            max-height: 140px;
+            border-radius: 20px;
+            box-shadow: 0 0 12px #ab5a4a;
+            border: 1px solid #e1ae8a;
+        }
+
+        footer {
+            margin-top: 2rem;
+            text-align: center;
+            font-size: 0.7rem;
+            color: #6f4940;
+        }
+        hr {
+            border-color: #3d2824;
+        }
+        @media (max-width: 800px) {
+            .grid-2col { grid-template-columns: 1fr; }
+            .title-grim { font-size: 2rem; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div style="display: flex; justify-content: space-between; align-items: baseline;">
+        <div>
+            <div class="title-grim">⚰️ H A D E S &nbsp; ⛓️ <span style="font-size: 2rem;">UNDERWORLD</span></div>
+            <div class="sub">Chthonic Engine · Order of Night · Seal of Persephone</div>
+        </div>
+        <div class="cerberus">🐺🐺🐺</div>
+    </div>
+
+    <!-- field status : underworld parameters -->
+    <div class="stat-row"><span>🌒 NETHER FIELD</span><span>ACTIVE · EREBUS LOCKED</span></div>
+    <div class="stat-row"><span>⚰️ STYX FLOW</span><span>torrent · tick: 13 · entropy rising</span></div>
+    <div class="stat-row"><span>⛧ CHTHONIC OLYMPIANS</span><span>6 infernal · SHADE COUNT: 77</span></div>
+
+    <div class="grid-2col">
+        <!-- left: Underworld Titans & Ourea inversion -->
+        <div class="chthonic-card">
+            <div class="card-header">🌑 TARTARUS · THE DEPTHS</div>
+            <div><span>🌀 kronos (bound)</span> · <span>🌊 rhea (echo)</span> · <span>🔆 hyperion (drowned)</span><br>
+            <span>🌀 oceanus (styx tributary)</span> · <span>💧 tethys (salt tears)</span> · <span>👁️ theia (hollow gaze)</span><br>
+            <span>🔮 phoibe (phantom prophecy)</span> · <span>⚖️ themis (silent law)</span> · <span>📜 mnemosyne (ashen record)</span><br>
+            <span>⚗️ koios (interrogator of shades)</span></div>
+            <div class="titan-list">
+                <div class="titan-tag">⚰️ Persephone · KORE QUEEN</div>
+                <div class="titan-tag">🌑 HADES · THE UNSEEN</div>
+                <div class="titan-tag">💀 Thanatos</div>
+                <div class="titan-tag">🐉 Cerberus</div>
+            </div>
+            <div class="stat-row" style="margin-top: 16px;"><span>🌙 NIGHT ASPECT</span><span>waxing abyss · 19.7s</span></div>
+            <div class="stat-row"><span>⛓️ GATE OF HORNS</span><span id="gateSealStatus">SEALED · CERBERUS WATCHES</span></div>
+        </div>
+
+        <!-- right: Compatibility / Eros chthonic edition -->
+        <div class="chthonic-card">
+            <div class="card-header">🖤 EREBOS · BINDING OF SHADOWS</div>
+            <div class="matrix-wrap">
+                <table class="compat-matrix" id="shadowMatrix">
+                    <thead>
+                        <tr><th></th><th>⏳kron</th><th>🌊rhea</th><th>🔆hype</th><th>🌀ocea</th><th>💧teth</th><th>👁️thei</th><th>🔮phoi</th><th>⚖️them</th><th>📜mnem</th><th>⚗️koio</th></tr>
+                    </thead>
+                    <tbody id="matrixBody"></tbody>
+                </table>
+            </div>
+            <div id="bindingMessage" style="font-size:0.8rem; margin-top: 10px; padding: 8px; background:#251a1c; border-radius:20px; text-align:center;">✦ click any cell — unveil the chthonic bond ✦</div>
+        </div>
+    </div>
+
+    <!-- TRIAL OF KOIOS : underworld version → three questions to open the gate -->
+    <div class="trial-area">
+        <div class="card-header" style="margin-bottom: 0;">⚗️ THE TRIAL OF KOIOS · DESCENT OF REASON</div>
+        <div class="koios-quiz">
+            <div class="question-text" id="quizQuestion">Which Titaness holds the memory of everything, even the forgotten dead?</div>
+            <div class="answer-buttons" id="answerOptions"></div>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div class="counter">🏆 STREAK: <span id="streakCount">0</span> / 3</div>
+                <div class="counter">🌑 DRAW OF SHADOWS: <span id="shadowDrawCounter">0</span> / 3</div>
+            </div>
+        </div>
+        <div class="gate-status" id="gateStatusMsg">
+            ⛓️ THE SEAL REMAINS — ANSWER KOIOS TO AWAKEN THE UNDERWORLD GALLERY
+        </div>
+    </div>
+
+    <!-- IMAGE GENERATION : GALLERY (chthonic visions) -->
+    <div class="chthonic-card" style="margin-top: 0.8rem;">
+        <div class="card-header">📸 Nekyomanteion · Visions from the Mist</div>
+        <button class="image-gen" id="genImageBtn">🌑 GENERATE FROM CURRENT FIELD 🌑</button>
+        <div class="gallery-preview" id="galleryContainer">
+            <span style="color:#714e42;">— no visions yet. the field awaits first descent —</span>
+        </div>
+        <div style="font-size: 0.7rem; margin-top: 8px;">* generative echoes based on Titan binding & streak resonance</div>
+    </div>
+    <footer>
+        ORDER OF THE NIGHT · CERBERUS TRIAL · GAIA UNDERWORLD BRANCH — SEAL CAN BE BROKEN THROUGH TRUTH
+    </footer>
+</div>
+
+<script>
+    // ------------------- CHTHONIC MATRIX DATA (Underworld resonance) ------------------
+    const titans = ['kronos','rhea','hyperion','oceanus','tethys','theia','phoibe','themis','mnemosyne','koios'];
+    const titanSymbols = ['⏳','🌊','🔆','🌀','💧','👁️','🔮','⚖️','📜','⚗️'];
+    // custom underworld compatibility: values with some '✦' and shadow dissonance
+    const matrixData = {
+        kronos: { kronos:'—', rhea:'✦✦', hyperion:'✦✦', oceanus:'✦', tethys:'✦', theia:'✦', phoibe:'✦', themis:'✦✦', mnemosyne:'✦', koios:'✦' },
+        rhea: { kronos:'✦✦', rhea:'—', hyperion:'✦', oceanus:'✦✦', tethys:'✦✦✦', theia:'✦', phoibe:'✦', themis:'✦✦', mnemosyne:'✦✦', koios:'✦' },
+        hyperion: { kronos:'✦✦', rhea:'✦', hyperion:'—', oceanus:'✦', tethys:'✦', theia:'✦✦✦', phoibe:'✦✦', themis:'✦', mnemosyne:'✦', koios:'✦' },
+        oceanus: { kronos:'✦', rhea:'✦✦', hyperion:'✦', oceanus:'—', tethys:'✦✦✦', theia:'✦', phoibe:'✦', themis:'✦', mnemosyne:'✦✦', koios:'✦' },
+        tethys: { kronos:'✦', rhea:'✦✦✦', hyperion:'✦', oceanus:'✦✦✦', tethys:'—', theia:'✦', phoibe:'✦', themis:'✦', mnemosyne:'✦✦', koios:'◇' },
+        theia: { kronos:'✦', rhea:'✦', hyperion:'✦✦✦', oceanus:'✦', tethys:'✦', theia:'—', phoibe:'✦✦', themis:'✦', mnemosyne:'✦✦', koios:'✦' },
+        phoibe: { kronos:'✦✦', rhea:'✦', hyperion:'✦✦', oceanus:'✦', tethys:'✦', theia:'✦✦', phoibe:'—', themis:'✦✦', mnemosyne:'✦✦✦', koios:'✦✦✦' },
+        themis: { kronos:'✦✦', rhea:'✦✦', hyperion:'✦', oceanus:'✦', tethys:'✦', theia:'✦', phoibe:'✦✦', themis:'—', mnemosyne:'✦✦', koios:'✦' },
+        mnemosyne: { kronos:'✦', rhea:'✦✦', hyperion:'✦', oceanus:'✦✦', tethys:'✦✦', theia:'✦✦', phoibe:'✦✦✦', themis:'✦✦', mnemosyne:'—', koios:'✦✦' },
+        koios: { kronos:'✦', rhea:'✦', hyperion:'✦', oceanus:'✦', tethys:'◇', theia:'✦', phoibe:'✦✦✦', themis:'✦', mnemosyne:'✦✦', koios:'—' }
+    };
+    
+    function buildMatrix() {
+        const tbody = document.getElementById('matrixBody');
+        tbody.innerHTML = '';
+        for(let i=0; i<titans.length; i++) {
+            const row = document.createElement('tr');
+            const th = document.createElement('th');
+            th.innerText = titanSymbols[i] + titans[i].slice(0,3);
+            th.style.background = '#2d191e';
+            row.appendChild(th);
+            for(let j=0; j<titans.length; j++) {
+                const td = document.createElement('td');
+                const from = titans[i];
+                const to = titans[j];
+                let val = matrixData[from]?.[to] || '✦';
+                td.innerText = val;
+                td.classList.add('clickable-cell');
+                td.setAttribute('data-t1', from);
+                td.setAttribute('data-t2', to);
+                td.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const t1 = td.getAttribute('data-t1');
+                    const t2 = td.getAttribute('data-t2');
+                    const bindVal = matrixData[t1]?.[t2] || 'unknown';
+                    let meaning = '';
+                    if(bindVal === '✦✦✦') meaning = 'Harmonic · deep underworld resonance';
+                    else if(bindVal === '✦✦') meaning = 'Coherent · shadows entwine';
+                    else if(bindVal === '✦') meaning = 'Stable · cold chains';
+                    else if(bindVal === '◇') meaning = 'Dissonant · forgotten feud';
+                    else meaning = 'mystic bond';
+                    document.getElementById('bindingMessage').innerHTML = `🜏 BINDING: ${t1.toUpperCase()} ⛧ ${t2.toUpperCase()} ➜ ${bindVal} — ${meaning} 🜏`;
+                });
+                row.appendChild(td);
+            }
+            tbody.appendChild(row);
+        }
+    }
+
+    // ------------------- KOIOS TRIAL (Underworld themed Q/A - 3 in a row) ------------------
+    const questions = [
+        { text: "Which Titaness holds the memory of everything, even the forgotten dead?", correct: "mnemosyne" },
+        { text: "Who is the god of the underworld that abducted Persephone?", correct: "hades" },
+        { text: "What is the river of oblivion in the underworld?", correct: "lethe" },
+        { text: "Which titan is known as the 'Interrogator' and father of Leto?", correct: "koios" },
+        { text: "The three-headed dog guarding the gates of the underworld is?", correct: "cerberus" },
+        { text: "Which goddess of divine law and order also sits beside Hades' throne?", correct: "themis" },
+        { text: "Who is the queen of the underworld, daughter of Demeter?", correct: "persephone" }
+    ];
+
+    let currentStreak = 0;
+    let shadowDraw = 0;
+    let currentQuestionObj = null;
+    let gateUnlocked = false;
+    const streakSpan = document.getElementById('streakCount');
+    const shadowSpan = document.getElementById('shadowDrawCounter');
+    const gateStatusSpan = document.getElementById('gateStatusMsg');
+    const gateSealSpan = document.getElementById('gateSealStatus');
+
+    function updateUI() {
+        streakSpan.innerText = currentStreak;
+        shadowSpan.innerText = shadowDraw;
+        if(currentStreak >= 3 && !gateUnlocked) {
+            gateUnlocked = true;
+            gateStatusSpan.innerHTML = '🔓 GATE UNSEALED · EREBUS OPENS · CERBERUS BOWS 🔓';
+            if(gateSealSpan) gateSealSpan.innerHTML = 'UNLOCKED · THE LIVING MAY PASS';
+        } else if (currentStreak < 3) {
+            if(gateSealSpan && !gateUnlocked) gateSealSpan.innerHTML = 'SEALED · CERBERUS WATCHES';
+            if(!gateUnlocked) gateStatusSpan.innerHTML = '⛓️ THE SEAL REMAINS — ANSWER KOIOS TO AWAKEN THE UNDERWORLD GALLERY';
+        }
+        if(gateUnlocked) {
+            gateStatusSpan.style.background = '#2b3a2b66';
+            gateStatusSpan.style.border = '1px solid #b8b07c';
+        }
+    }
+
+    function pickRandomQuestion() {
+        const randomIndex = Math.floor(Math.random() * questions.length);
+        return { ...questions[randomIndex] };
+    }
+
+    function loadNewQuestion() {
+        currentQuestionObj = pickRandomQuestion();
+        document.getElementById('quizQuestion').innerText = currentQuestionObj.text;
+        // generate plausible answers: include correct + 3 distractors
+        const allAnswersSet = new Set();
+        allAnswersSet.add(currentQuestionObj.correct);
+        // grab distractor pool
+        const distractorPool = ["mnemosyne","hades","lethe","koios","cerberus","themis","persephone","styx","thanatos","erebus"];
+        while(allAnswersSet.size < 4) {
+            const rand = distractorPool[Math.floor(Math.random() * distractorPool.length)];
+            allAnswersSet.add(rand);
+        }
+        let answers = Array.from(allAnswersSet);
+        answers = answers.sort(() => Math.random() - 0.5);
+        const container = document.getElementById('answerOptions');
+        container.innerHTML = '';
+        answers.forEach(ans => {
+            const btn = document.createElement('button');
+            btn.innerText = ans.charAt(0).toUpperCase() + ans.slice(1);
+            btn.classList.add('ans-btn');
+            btn.addEventListener('click', () => {
+                if(gateUnlocked) {
+                    // still can answer but won't break anything; we keep streak but allow draw
+                    if(ans.toLowerCase() === currentQuestionObj.correct.toLowerCase()) {
+                        // already unlocked -> just no double progression? but we still show wisdom
+                        document.getElementById('bindingMessage').innerHTML = `⚗️ Koios accepts your wisdom, but gate already open. Shadows deepen.`;
+                        increaseShadowDraw();
+                    } else {
+                        handleWrong();
+                    }
+                    loadNewQuestion();
+                    return;
+                }
+                // normal flow
+                if(ans.toLowerCase() === currentQuestionObj.correct.toLowerCase()) {
+                    // correct
+                    currentStreak++;
+                    updateUI();
+                    // if streak reaches 3 -> unlock, also shadowdraw increase on correct?
+                    increaseShadowDraw();  // each correct answer gives a shadow point towards Draw of Shadows
+                    if(currentStreak === 3) {
+                        updateUI();
+                        // additional fanfare
+                        document.getElementById('bindingMessage').innerHTML = '🏛️ KOIOS NODS. THE UNDERWORLD RECOGNIZES YOUR MERIT. GATE SEAL BROKEN.';
+                    } else {
+                        document.getElementById('bindingMessage').innerHTML = `✓ Right. Streak: ${currentStreak}. Koios awaits next truth.`;
+                    }
+                    loadNewQuestion();
+                } else {
+                    handleWrong();
+                }
+                updateUI();
+            });
+            container.appendChild(btn);
+        });
+    }
+
+    function handleWrong() {
+        currentStreak = 0;
+        // but we keep shadowDraw? maybe stays, but mythic setback
+        document.getElementById('bindingMessage').innerHTML = '❌ Koios rejects falsehood. The abyss resets your streak. Begin again.';
+        loadNewQuestion();
+        updateUI();
+    }
+
+    function increaseShadowDraw() {
+        if(shadowDraw < 3) {
+            shadowDraw++;
+            updateUI();
+            if(shadowDraw === 3) {
+                document.getElementById('bindingMessage').innerHTML = '🌑 DRAW OF SHADOWS COMPLETE — The void answers. Cerberus stirs.';
+                // additionally maybe unlock bonus but not mandatory
+            }
+        }
+    }
+
+    // ---------- IMAGE GENERATION : chthonic generative placeholder (canvas/pixel dynamic) ----------
+    const galleryDiv = document.getElementById('galleryContainer');
+    document.getElementById('genImageBtn').addEventListener('click', () => {
+        if(!gateUnlocked && currentStreak < 3) {
+            document.getElementById('bindingMessage').innerHTML = '⛔ Cerberus growls. You must prove yourself first (3 correct answers). The gate is sealed.';
+            return;
+        }
+        // generate symbolic underworld image based on field state (streak, shadowdraw, random chaos)
+        const img = document.createElement('img');
+        img.classList.add('generated-img');
+        // use canvas to create infernal icon
+        const canvas = document.createElement('canvas');
+        canvas.width = 200;
+        canvas.height = 200;
+        const ctx = canvas.getContext('2d');
+        const gradient = ctx.createLinearGradient(0,0,200,200);
+        gradient.addColorStop(0, '#0d0208');
+        gradient.addColorStop(1, '#2e1a1c');
+        ctx.fillStyle = gradient;
+        ctx.fillRect(0,0,200,200);
+        // draw cryptic symbols
+        ctx.strokeStyle = '#d97a5a';
+        ctx.lineWidth = 3;
+        for(let i=0;i<6;i++) {
+            ctx.beginPath();
+            let x = 40 + Math.random() * 120;
+            let y = 40 + Math.random() * 120;
+            ctx.arc(x, y, 10+Math.random()*12, 0, Math.PI*2);
+            ctx.stroke();
+        }
+        ctx.font = "bold 35monospace";
+        ctx.fillStyle = "#ad755b";
+        ctx.fillText("⚰️", 70, 130);
+        ctx.fillStyle = "#c19179";
+        ctx.font = "bold 20monospace";
+        ctx.fillText(`S:${currentStreak}`, 15, 45);
+        ctx.fillText(`D:${shadowDraw}`, 150, 180);
+        ctx.fillStyle = "#a86b54";
+        ctx.fillRect(30, 150, 40, 12);
+        ctx.fillRect(120, 50, 35, 12);
+        // random binding essence
+        const dataURL = canvas.toDataURL();
+        img.src = dataURL;
+        img.alt = "chthonic vision";
+        if(galleryDiv.children.length >= 5) galleryDiv.removeChild(galleryDiv.children[0]);
+        galleryDiv.appendChild(img);
+        document.getElementById('bindingMessage').innerHTML = '🌋 Underworld vision forged from current field & titan resonance 🌋';
+    });
+
+    // reset system with initial load
+    function init() {
+        buildMatrix();
+        currentStreak = 0;
+        shadowDraw = 0;
+        gateUnlocked = false;
+        updateUI();
+        loadNewQuestion();
+        // attach some additional shade mystery
+    }
+    init();
+</script>
+</body>
+</html>
