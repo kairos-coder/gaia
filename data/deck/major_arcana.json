@@ -186,7 +186,7 @@
       "keywords": ["spinning", "measuring", "cutting", "the cycle", "wyrd", "inevitability", "fortune"],
       "upright": "The three are one. Clotho spins the thread, Lachesis measures its length, Atropos cuts at the appointed hour — all in the turning of the wheel. What rises must fall. What falls may rise again. The Moirai do not choose; they turn. The wheel is the only truth. Your fortune is not fixed — it is in motion.",
       "reversed": "The wheel stuck. Fate delayed but not denied. The thread that should have been cut still trailing, the measurement that keeps extending past its season. The cycle refuses to complete because you refuse to release it. The Fates are patient. They will wait. But the wheel will turn.",
-      "image": "data/images/major/wheel_of_fortune.png",
+      "image": "data/images/moirai-card.jpg",
       "prompt": "The Three Fates — Clotho, Lachesis, and Atropos — spinning, measuring, and cutting the thread of destiny as the Wheel of Fortune, as a Major Arcana tarot card"
     },
     {
@@ -242,7 +242,7 @@
       "keywords": ["the hearth", "moderation", "sacred center", "blending", "the eternal flame", "balance"],
       "upright": "The hearth burns steady. Hestia, first and last of the Olympians, tends the sacred center — the flame that does not consume but sustains, the warmth that asks for nothing in return. Moderation is not deprivation; it is the art of keeping the fire at the right temperature. Return to center. The flame does not need to roar to be eternal.",
       "reversed": "Imbalance. The hearth neglected — the flame that gutters from neglect or rages from overfeeding. Too much of one thing becomes poison, even water, even love. Return to center. The hearth has not gone cold. It waits for your attention.",
-      "image": "data/images/major/temperance.png",
+      "image": "data/images/temperance.png",
       "prompt": "Hestia, Greek goddess of the hearth and sacred flame, tending the eternal fire, as the Temperance card of the Major Arcana"
     },
     {
@@ -298,7 +298,7 @@
       "keywords": ["ghosts", "madness", "the in-between", "hauntings", "the veil", "illusion"],
       "upright": "The moonlight deceives. Melinoe walks with ghosts and the half-mad — she brings what the dead need to say. Not all visions are false, but not all are true. The in-between is where the real work happens, where the veil thins and you must discern between prophecy and projection. The madness is the message. Listen carefully.",
       "reversed": "The haunting lifting. Madness recognized and named. The ghost that spoke and was finally heard — and having been heard, can now rest. The veil thickens. Clarity returns, not because the mystery was solved but because you stopped fearing it. The moonlight no longer deceives.",
-      "image": "data/images/major/moon.png",
+      "image": "data/images/melinoe-card.jpg",
       "prompt": "Melinoe, Greek goddess of ghosts and madness, walking the in-between with spirits, as the Moon card of the Major Arcana"
     },
     {
@@ -312,7 +312,7 @@
       "keywords": ["light", "radiance", "art", "broadcast", "ego", "clarity", "illumination"],
       "upright": "Full illumination. Apollo drives the chariot of light and nothing is hidden — joy, clarity, the long night finally over. Create. Broadcast. Shine. The sun does not doubt; it rises. So must you. This is the card of the artist who stops hiding, the truth that steps into the light, the warmth that reaches every corner.",
       "reversed": "The sun behind clouds. Diminished radiance. The ego that eclipsed the light — pride that became a barrier rather than a beacon. The sun still burns behind the veil. Clear what stands between you and your own brightness.",
-      "image": "data/images/major/sun.png",
+      "image": "data/images/apollo-card.jpg",
       "prompt": "Apollo, Greek god of the sun, light, and art, driving the chariot of radiance, as the Sun card of the Major Arcana"
     },
     {
@@ -326,7 +326,7 @@
       "keywords": ["reckoning", "awakening", "final accounting", "calling", "rebirth", "evaluation"],
       "upright": "The Judges sit. Rhadamanthus of the East, Minos of the Center, Aeacus of the West — the three who weigh the soul. A reckoning has come, not as punishment but as clarity. The calling you hear is not a condemnation; it is purpose, it is the voice that says: rise. Answer it. We do not punish. We see. That is enough.",
       "reversed": "The judgment postponed. The calling ignored — the trumpet sounded but you covered your ears. The accounting delayed but not cancelled. The Judges are patient. They have waited for every soul. They will wait for yours. But the longer you delay, the heavier the silence becomes.",
-      "image": "data/images/major/judgment.png",
+      "image": "data/images/judgment.png",
       "prompt": "The Three Judges of the Dead — Rhadamanthus, Minos, and Aeacus — seated in judgment, as the Judgement card of the Major Arcana"
     },
     {
@@ -340,7 +340,7 @@
       "keywords": ["completion", "wholeness", "the primordial earth", "integration", "the all", "cosmos"],
       "upright": "The circle closes. Gaia, first-born of Chaos, holds all things within her — every element, every god, every mortal, every story. A cycle completes. You have arrived not at an end but at a new wholeness, the integration of everything you have been into everything you are becoming. Everything that was, is, and will be — it is all here. It is all you.",
       "reversed": "Incompletion. The final piece missing, the circle that won't close. The journey almost finished but the last step refused. What remains undone? What integration are you resisting? The World card reversed is not failure — it is the pause before the final stitch, the breath before the circle seals.",
-      "image": "data/images/major/world.png",
+      "image": "data/images/gaia-card.jpg",
       "prompt": "Gaia, the primordial Greek goddess of the Earth, first-born of Chaos, holding the completed world, as the World card of the Major Arcana"
     }
   ],
