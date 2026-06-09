@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>APOLLO · The Living Card Engine</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&family=Cinzel:wght@400;600&family=EB+Garamond:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --gold: #c9a84c;
+            --gold-bright: #f0d080;
+            --sun: #ffcc44;
+            --sun-bright: #ffe088;
+            --deep: #0a0c12;
+            --surface: #141820;
+            --text: #bcbcbc;
+        }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body {
+            background: var(--deep);
+            color: var(--text);
+            font-family: 'EB Garamond', Georgia, serif;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-image: 
+                radial-gradient(ellipse at 50% 0%, rgba(255,200,68,0.06), transparent 60%),
+                radial-gradient(ellipse at 50% 100%, rgba(201,168,76,0.03), transparent 40%);
+        }
+        
+        .apollo-gate {
+            text-align: center;
+            max-width: 620px;
+            padding: 3rem 2rem;
+        }
+        
+        .apollo-glyph {
+            font-size: 5rem;
+            margin-bottom: 1.5rem;
+            animation: solarPulse 2.59s ease-in-out infinite;
+            filter: drop-shadow(0 0 40px rgba(255,200,68,0.5));
+        }
+        @keyframes solarPulse {
+            0%,100% { transform: scale(1); filter: drop-shadow(0 0 30px rgba(255,200,68,0.4)); }
+            50% { transform: scale(1.06); filter: drop-shadow(0 0 60px rgba(255,200,68,0.7)); }
+        }
+        
+        .apollo-title {
+            font-family: 'Cinzel Decorative', serif;
+            font-size: clamp(2rem, 5vw, 3rem);
+            letter-spacing: 0.3em;
+            color: var(--sun-bright);
+            text-shadow: 0 0 40px rgba(255,200,68,0.5);
+            margin-bottom: 1rem;
+        }
+        
+        .apollo-subtitle {
+            font-family: 'Cinzel', serif;
+            font-size: 0.65rem;
+            letter-spacing: 0.4em;
+            color: rgba(201,168,76,0.5);
+            text-transform: uppercase;
+            margin-bottom: 2.5rem;
+        }
+        
+        .apollo-description {
+            font-size: 1rem;
+            font-style: italic;
+            line-height: 1.9;
+            color: rgba(200,180,150,0.6);
+            margin-bottom: 3rem;
+        }
+        .apollo-description strong {
+            color: var(--sun);
+            font-style: normal;
+        }
+        .apollo-description .phi {
+            color: #ff9944;
+            font-style: normal;
+        }
+        
+        .apollo-stats {
+            display: flex;
+            gap: 2rem;
+            justify-content: center;
+            margin-bottom: 3rem;
+            flex-wrap: wrap;
+        }
+        .apollo-stat {
+            text-align: center;
+            padding: 1rem 1.5rem;
+            background: rgba(20,24,32,0.8);
+            border: 1px solid rgba(201,168,76,0.15);
+            border-radius: 8px;
+            min-width: 100px;
+        }
+        .apollo-stat-value {
+            font-family: 'Cinzel Decorative', serif;
+            font-size: 1.5rem;
+            color: var(--sun);
+            margin-bottom: 0.3rem;
+        }
+        .apollo-stat-value.phi {
+            color: #ff9944;
+        }
+        .apollo-stat-label {
+            font-size: 0.55rem;
+            letter-spacing: 0.2em;
+            color: rgba(200,180,150,0.4);
+            text-transform: uppercase;
+        }
+        
+        .enter-btn {
+            display: inline-block;
+            font-family: 'Cinzel Decorative', serif;
+            font-size: 0.9rem;
+            letter-spacing: 0.3em;
+            background: rgba(10,8,3,0.9);
+            border: 2px solid rgba(255,200,68,0.4);
+            color: var(--sun);
+            padding: 1rem 2.5rem;
+            border-radius: 3px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.4s;
+            text-shadow: 0 0 20px rgba(255,200,68,0.4);
+            box-shadow: 0 0 30px rgba(255,200,68,0.1);
+        }
+        .enter-btn:hover {
+            border-color: var(--sun-bright);
+            color: var(--sun-bright);
+            box-shadow: 0 0 50px rgba(255,200,68,0.25);
+            transform: scale(1.03);
+            text-shadow: 0 0 30px rgba(255,200,68,0.7);
+        }
+        
+        .footer-note {
+            margin-top: 3rem;
+            font-family: 'Cinzel', serif;
+            font-size: 0.5rem;
+            letter-spacing: 0.3em;
+            color: rgba(201,168,76,0.25);
+            text-transform: uppercase;
+        }
+    </style>
+</head>
+<body>
+
+<div class="apollo-gate">
+    
+    <div class="apollo-glyph">☀️</div>
+    
+    <h1 class="apollo-title">APOLLO</h1>
+    <div class="apollo-subtitle">The Living Card Table · φ Engine</div>
+    
+    <div class="apollo-description">
+        <p>The god of <strong>light, truth, and prophecy</strong> sits at a table.</p>
+        <p>Every <strong>1.6 seconds</strong>, he draws a card from the Genesis Deck.</p>
+        <p>Every <strong class="phi">2.59 seconds</strong> — the golden ratio — he reads what he has written, and the table <strong>transforms</strong>.</p>
+        <p>Creation. Reflection. Recursion. Division. Synthesis. Void.</p>
+        <p>Apollo plays. You <strong>watch</strong>. The living record scrolls in the Monaco Editor — a sacred text written in real time by a god who cannot stop drawing cards.</p>
+    </div>
+    
+    <div class="apollo-stats">
+        <div class="apollo-stat">
+            <div class="apollo-stat-value">1.6s</div>
+            <div class="apollo-stat-label">Draw Interval</div>
+        </div>
+        <div class="apollo-stat">
+            <div class="apollo-stat-value phi">2.59s</div>
+            <div class="apollo-stat-label">φ Golden Tick</div>
+        </div>
+        <div class="apollo-stat">
+            <div class="apollo-stat-value">10</div>
+            <div class="apollo-stat-label">Card Types</div>
+        </div>
+        <div class="apollo-stat">
+            <div class="apollo-stat-value">∞</div>
+            <div class="apollo-stat-label">Recursion Depth</div>
+        </div>
+    </div>
+    
+    <a href="apolloTable.html" class="enter-btn">
+        ☀️ &nbsp; ENTER THE TABLE &nbsp; ☀️
+    </a>
+    
+    <div class="footer-note">
+        GAIA · Apollo Engine · Order of Olympus · The God Plays Cards
+    </div>
+    
+</div>
+
+</body>
+</html>
