@@ -1,0 +1,13 @@
+{
+  "name": "Athena",
+  "rank": 2,
+  "domain": "Wisdom, Strategy, Pattern Recognition",
+  "role": "Interpreter of Apollo's Broadcast",
+  "functions": {
+    "watcher": "Reads Apollo's log stream",
+    "parser": "Extracts symbols, ticks, and state blocks",
+    "patterns": "Detects streaks, cycles, anomalies",
+    "matrices": "Maps symbols into structured domains",
+    "memory": "Stores structured thought"
+  }
+}
