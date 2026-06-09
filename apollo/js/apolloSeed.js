@@ -537,31 +537,40 @@ class ApolloPlayer {
     this.getAllCardsOnTable().forEach(c => { c._triggeredThisTick = false; });
     this._incrementTurnCounters();
     this._updateElementalDominance();
-    
+
     if (this.hand.length === this._lastHandSize && this.hand.length > 0) {
-      this._handStuckTurns++;
+        this._handStuckTurns++;
     } else {
-      this._handStuckTurns = 0;
-      this._lastHandSize = this.hand.length;
+        this._handStuckTurns = 0;
+        this._lastHandSize = this.hand.length;
     }
-    
-    // 🜏 π-FORCE: Dealer after π turns stuck
+
+    // π-FORCE: Dealer after π turns stuck
     if (this._handStuckTurns >= this.STUCK_TURNS) {
-      const dealt = this._dealerDeal(7);
-      if (dealt && dealt.length > 0 && this.onDeal) this.onDeal(dealt);
-      return;
+        const dealt = this._dealerDeal(7);
+        if (dealt && dealt.length > 0 && this.onDeal) this.onDeal(dealt);
+        return;
     }
-    
+
     if (typeof ApolloDB !== 'undefined' && this.turn % 2 === 0) {
-      ApolloDB.syncToVault(this);
+        ApolloDB.syncToVault(this);
     }
-    
+
+    // 🜏 DRAW
     const drawn = this.draw();
-    if (drawn) {
-      const cardToPlay = this.chooseCardToPlay();
-      if (cardToPlay) this.play(cardToPlay);
+    if (!drawn) return;
+
+    // 🜏 MIND: Apollo thinks before he acts
+    // think() returns the chosen card AND writes _mindScript
+    let cardToPlay = null;
+    if (typeof ApolloMind !== 'undefined') {
+        cardToPlay = ApolloMind.think(this);
+    } else {
+        cardToPlay = this.chooseCardToPlay(); // fallback if mind not loaded
     }
-  }
+
+    if (cardToPlay) this.play(cardToPlay);
+}
 
   // ══════════════════════════════════════════
   // MONACO + GOLDEN TICK
