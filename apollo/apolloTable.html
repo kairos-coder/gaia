@@ -245,8 +245,15 @@
 
 <script>
 // ══════════════════════════════════════════════
-// APOLLO TAROT TABLE — Major Arcana Edition
+// APOLLO TAROT TABLE — Cycle 1 Edition
 // ══════════════════════════════════════════════
+
+const PHI = 1.618033988749895;
+const PI = Math.PI;
+const TAU = PI * 2;
+const DRAW_INTERVAL = Math.round(PHI * 1000);
+const GOLDEN_TICK = Math.round(PHI * PHI * 1000);
+const TABLE_CLEAR_THRESHOLD = Math.round(TAU + PHI);
 
 let apollo = null;
 let editor = null;
@@ -262,7 +269,24 @@ const EMOJI_MAP = {
 };
 
 const SPREAD_ROWS = ['Past', 'Present', 'Future'];
-const TABLE_CLEAR_THRESHOLD = 8; // Clear table when 8+ cards
+
+// 🜏 Helper: get god name from card
+function godName(card) {
+  return card.god || card.ruling_god || card.name || 'Unknown';
+}
+
+// 🜏 Helper: get emoji for card
+function godEmoji(card) {
+  return EMOJI_MAP[godName(card)] || '🃏';
+}
+
+// 🜏 Helper: get flavor text
+function cardQuote(card) {
+  return card.flavor || card.description || 
+         (card.keywords && card.keywords[0]) || 
+         (card.upright && card.upright.slice(0, 60)) || 
+         '...';
+}
 
 // ══ Load Sky State ══
 async function loadSkyState() {
@@ -282,10 +306,22 @@ async function loadSkyState() {
 async function loadDeck() {
     try {
         const response = await fetch('json/major_arcana.json');
-        if (response.ok) return response.json();
+        if (response.ok) {
+            const deck = await response.json();
+            // 🜏 Enforce defaults
+            deck.max_hand_size = deck.max_hand_size || 5;
+            deck.max_table_cards = deck.max_table_cards || 12;
+            deck.draw_interval_ms = deck.draw_interval_ms || DRAW_INTERVAL;
+            return deck;
+        }
     } catch(e) {}
-    // Fallback: use MAJOR_ARCANA_DECK if loaded as script
-    if (typeof MAJOR_ARCANA_DECK !== 'undefined') return MAJOR_ARCANA_DECK;
+    if (typeof MAJOR_ARCANA_DECK !== 'undefined') {
+        const deck = MAJOR_ARCANA_DECK;
+        deck.max_hand_size = deck.max_hand_size || 5;
+        deck.max_table_cards = deck.max_table_cards || 12;
+        deck.draw_interval_ms = deck.draw_interval_ms || DRAW_INTERVAL;
+        return deck;
+    }
     throw new Error('No deck found');
 }
 
@@ -327,15 +363,16 @@ function renderGrid() {
         for (let col = 0; col < 4; col++) {
             const card = apollo.table[row][col];
             if (card) {
-                const el = card.element || 'void';
-                const emoji = EMOJI_MAP[card.god] || '🃏';
+                const el = (card.element || 'void').toLowerCase();
+                const emoji = godEmoji(card);
+                const name = godName(card);
                 const tokens = card.tokens || {};
                 const dots = Object.entries(tokens).filter(([,v])=>v>0).map(([el,c])=>`<span class="token-dot ${el}"></span>`.repeat(Math.min(c,3))).join('');
                 html += `<div class="grid-cell occupied ${el}-border">
                     <div class="cell-element-border"></div>
                     <div class="cell-card">
                         <div class="cell-emoji">${emoji}</div>
-                        <div class="cell-god">${card.god||card.name}</div>
+                        <div class="cell-god">${name}</div>
                         <div class="cell-arcana">${card.name}</div>
                         ${dots?`<div class="cell-tokens">${dots}</div>`:''}
                     </div>
@@ -379,10 +416,11 @@ function renderUI() {
         handDiv.innerHTML = '<div style="font-size:0.4rem;color:rgba(200,180,150,0.2);text-align:center;padding:0.5rem;">Hand empty — Dealer will provide</div>';
     } else {
         handDiv.innerHTML = s.hand.map(c => {
-            const emoji = EMOJI_MAP[c.god] || '🃏';
+            const emoji = godEmoji(c);
+            const name = godName(c);
             return `<div class="mini-card ${(c.cost||0)<=s.mana?'playable':''}">
                 <span class="card-emoji">${emoji}</span>
-                <span class="card-god">${c.god||c.name}</span>
+                <span class="card-god">${name}</span>
                 <span class="card-cost">${c.cost||0}</span>
             </div>`;
         }).join('');
@@ -413,7 +451,7 @@ function applyGoldenTransform(mods) {
     if (title) { title.textContent = mods.titleText; title.style.textShadow = mods.titleGlow; }
 }
 
-// ══ Clear Table (when 8+ cards) ══
+// ══ Clear Table ══
 function clearTable() {
     if (!apollo) return;
     const cards = apollo.getAllCardsOnTable();
@@ -428,7 +466,7 @@ function forceDeal() {
     if (!apollo) return;
     const dealt = apollo._dealerDeal(7);
     if (dealt && dealt.length > 0) {
-        const names = dealt.map(c => EMOJI_MAP[c.god]+' '+c.god).join(', ');
+        const names = dealt.map(c => godEmoji(c) + ' ' + godName(c)).join(', ');
         logToEditor('🃏 DEALER: ' + dealt.length + ' fresh cards — ' + names);
         showToast('🃏 Dealt ' + dealt.length + ' cards', 'deal-toast');
         apollo._handStuckTurns = 0;
@@ -450,23 +488,23 @@ async function initGame() {
     }
     
     apollo.onDraw = (card, isReveal) => {
-        const emoji = EMOJI_MAP[card.god] || '🃏';
+        const emoji = godEmoji(card);
+        const name = godName(card);
         if (isReveal) {
-            logToEditor(`🔮 Apollo foresees: ${emoji} ${card.god||card.name}`);
+            logToEditor(`🔮 Apollo foresees: ${emoji} ${name}`);
         } else {
-            logToEditor(`🃏 Apollo draws: ${emoji} ${card.god||card.name} — ${card.name} [${card.element}]`);
+            logToEditor(`🃏 Apollo draws: ${emoji} ${name} — ${card.name} [${card.element}]`);
         }
         renderUI();
     };
     
     apollo.onPlay = (card) => {
-    const godName = card.god || card.ruling_god || card.name;
-    const emoji = EMOJI_MAP[godName] || '🃏';
-    const quote = card.flavor || card.description || card.keywords?.[0] || card.upright?.slice(0, 60) || '...';
-    logToEditor(`☀️ Apollo plays: ${emoji} ${godName} — "${quote}"`);
-    showToast(`${emoji} ${godName}: ${card.name}`);
+        const emoji = godEmoji(card);
+        const name = godName(card);
+        const quote = cardQuote(card);
+        logToEditor(`☀️ Apollo plays: ${emoji} ${name} — "${quote}"`);
+        showToast(`${emoji} ${name}: ${card.name}`);
         
-        // 🜏 Auto-clear table when 8+ cards
         if (apollo.getTableCardCount() >= TABLE_CLEAR_THRESHOLD) {
             setTimeout(clearTable, 500);
         }
@@ -484,10 +522,7 @@ async function initGame() {
     };
     
     apollo.onDeal = (dealtCards) => {
-    const names = dealtCards.map(c => {
-        const godName = c.god || c.ruling_god || c.name;
-        return (EMOJI_MAP[godName]||'🃏') + ' ' + godName;
-    }).join(', ');
+        const names = dealtCards.map(c => godEmoji(c) + ' ' + godName(c)).join(', ');
         logToEditor(`🃏 DEALER: Apollo receives ${dealtCards.length} fresh cards — ${names}`);
         showToast('🃏 Fresh deal! ' + dealtCards.length + ' cards.', 'deal-toast');
         renderUI();
@@ -498,9 +533,9 @@ async function initGame() {
         document.getElementById('statPhi').textContent = phiCount;
         applyGoldenTransform(data.transformations);
         const gods = (data.tableCards||[]).map(c => {
-    const godName = c.god || c.name;
-    return (EMOJI_MAP[godName]||'🃏') + (godName||'?');
-}).join(', ') || 'empty';
+            const name = c.god || c.name || '?';
+            return (EMOJI_MAP[name] || '🃏') + name;
+        }).join(', ') || 'empty';
         logToEditor(`φ GOLDEN TICK #${phiCount}: ${data.transformations.titleText} | Table: [${gods}]`);
         if (data.emergentEvents?.length) showToast('✨ ' + data.emergentEvents[data.emergentEvents.length-1].event, 'emerge-toast');
     };
@@ -519,7 +554,7 @@ async function initGame() {
     
     logToEditor('🌅 APOLLO TAKES HIS SEAT AT THE TAROT TABLE');
     logToEditor(`🃏 Deck: ${deck.card_count} Major Arcana`);
-    logToEditor(`⏱ Draw: ${apollo.drawInterval}ms | φ: ${apollo.goldenInterval}ms | Clear: ${TABLE_CLEAR_THRESHOLD} cards`);
+    logToEditor(`⏱ Draw: ${DRAW_INTERVAL}ms (φ·1000) | φ² Tick: ${GOLDEN_TICK}ms | π Stuck: 3 turns | Clear: ${TABLE_CLEAR_THRESHOLD} cards (τ+φ)`);
     logToEditor(`📜 The Living Record begins...`);
     
     renderUI();
@@ -579,9 +614,9 @@ document.addEventListener('keydown', (e) => {
     if (e.key==='p' && e.ctrlKey) { e.preventDefault(); if(apollo&&apollo.running) document.getElementById('btnPause').click(); else document.getElementById('btnPlay').click(); }
 });
 
-console.log('☀️ APOLLO TAROT TABLE READY');
-console.log('   Deck: 22 Major Arcana from json/major_arcana.json');
-console.log('   Draw: 1.6s | φ: 2.59s | Clear: ' + TABLE_CLEAR_THRESHOLD + ' cards');
+console.log('☀️ APOLLO TAROT TABLE READY — Cycle 1');
+console.log(`   Draw: ${DRAW_INTERVAL}ms (φ·1000) | φ² Tick: ${GOLDEN_TICK}ms`);
+console.log(`   Clear: ${TABLE_CLEAR_THRESHOLD} cards (τ+φ)`);
 console.log('   Space: φ tick | Ctrl+D: Deal | Ctrl+C: Clear | Ctrl+P: Pause');
 </script>
 </body>
