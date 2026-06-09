@@ -2,10 +2,14 @@
 // APOLLO SEED — The God Who Plays Cards
 // Draws every 1.6s. Golden ratio tick every 2.59s.
 // 
-// ETERNAL LOOP EDITION — Three Rules for Stability:
-// 1. Single-Trigger Per Tick — each card fires once per φ-tick
-// 2. Loop Memory — Recursor stores exactly 1 effect, doesn't update on replay
-// 3. Synthesis Dampening — merged cards must change type, element, or value
+// Deck: ../json/major_arcana.json (22 Major Arcana)
+// Memory: ../json/memory_deck.json (persistent state)
+// 
+// ETERNAL LOOP EDITION:
+// 1. Single-Trigger Per Tick
+// 2. Loop Memory
+// 3. Synthesis Dampening
+// 4. Dealer — fresh hand when stuck
 // ══════════════════════════════════════════════
 
 class ApolloPlayer {
@@ -30,24 +34,20 @@ class ApolloPlayer {
     this.goldenId = null;
     this._monacoReader = null;
     this._recursionGuard = 0;
-    this._loopMemory = null;  // 🜏 RULE 2: Loop memory
+    this._loopMemory = null;
     
     this.graveyard = [];
-    this.echoes = [];
     this.totalValuePlayed = 0;
     this.totalCardsPlayed = 0;
     this.elementalDominance = { fire: 0, earth: 0, air: 0, water: 0, void: 0 };
     this.elementalDominanceStreak = { fire: 0, earth: 0, air: 0, water: 0, void: 0 };
     this.tableModifiers = [];
     this.novelPatterns = [];
-    this.lastTableHash = '';
     
     this.persistentState = {
       history: [],
-      tableEffects: [],
-      htmlModifiers: {},
-      lastGoldenRead: null,
-      emergentEvents: []
+      emergentEvents: [],
+      lastGoldenRead: null
     };
 
     this.onDraw = null;
@@ -57,6 +57,9 @@ class ApolloPlayer {
     this.onGoldenTick = null;
     this.onStatePersist = null;
     this.onEmergence = null;
+    this.onDeal = null;
+    this._lastHandSize = 0;
+    this._handStuckTurns = 0;
   }
 
   // ══════════════════════════════════════════
@@ -157,21 +160,17 @@ class ApolloPlayer {
       row: -1,
       col: -1,
       triggers: deckCard.triggers || {},
-      _triggeredThisTick: false  // 🜏 RULE 1
+      _triggeredThisTick: false
     };
   }
 
   _fireTrigger(triggerName, card, context = {}) {
     if (!card || !card.triggers || !card.triggers[triggerName]) return;
-    // 🜏 RULE 1: Single-trigger per tick
     if (card._triggeredThisTick && triggerName !== 'onDestroy') return;
-    
     const result = card.triggers[triggerName](card, this, context);
     if (result) {
       card.triggeredBy.push({ trigger: triggerName, turn: this.turn });
-      if (triggerName !== 'onTurnEnd') {
-        card._triggeredThisTick = true;
-      }
+      if (triggerName !== 'onTurnEnd') card._triggeredThisTick = true;
     }
   }
 
@@ -207,7 +206,7 @@ class ApolloPlayer {
         !this.tableModifiers.includes(`${dominant[0]}_dominance`)) {
       this.tableModifiers = this.tableModifiers.filter(m => !m.endsWith('_dominance'));
       this.tableModifiers.push(`${dominant[0]}_dominance`);
-      const event = `🌊 Elemental dominance shifts to ${dominant[0].toUpperCase()}! Table gains "${dominant[0]}_dominance" modifier.`;
+      const event = `🌊 Elemental dominance shifts to ${dominant[0].toUpperCase()}!`;
       this.persistentState.emergentEvents.push({ turn: this.turn, event });
       if (this.onEmergence) this.onEmergence(event);
     }
@@ -218,8 +217,31 @@ class ApolloPlayer {
   }
 
   _randomElement() {
-    const elements = ['fire', 'earth', 'air', 'water'];
-    return elements[Math.floor(Math.random() * elements.length)];
+    return ['fire', 'earth', 'air', 'water'][Math.floor(Math.random() * 4)];
+  }
+
+  // ══════════════════════════════════════════
+  // DEALER
+  // ══════════════════════════════════════════
+
+  _dealerDeal(count = 7) {
+    while (this.hand.length > 0) this.discard.push(this.hand.pop());
+    if (this.drawPile.length < count) {
+      this.drawPile.push(...this.shuffle([...this.discard]));
+      this.discard = [];
+    }
+    if (this.drawPile.length < count) {
+      const freshCards = this.deck.cards.map(c => this._createCard(c));
+      this.drawPile.push(...this.shuffle(freshCards));
+    }
+    const dealt = [];
+    for (let i = 0; i < count; i++) {
+      const card = this.draw();
+      if (card) dealt.push(card);
+    }
+    this._handStuckTurns = 0;
+    this._lastHandSize = this.hand.length;
+    return dealt;
   }
 
   // ══════════════════════════════════════════
@@ -267,13 +289,10 @@ class ApolloPlayer {
     this.totalCardsPlayed++;
     this.totalValuePlayed += (card.value || 0);
     this._updateElementalDominance();
-    
-    // 🜏 RULE 2: Reset loop memory when a new card is played
     this._loopMemory = null;
     
     this._recursionGuard = 0;
     this.executeEffect(card);
-    
     this._fireTrigger('onPlay', card);
     
     const neighbors = this.getNeighbors(card.row, card.col);
@@ -281,321 +300,174 @@ class ApolloPlayer {
       if (n) this._fireTrigger('onNeighborChanged', n, { newNeighbor: card });
     });
     
+    // 🜏 ApolloDB: Record in short-term memory
+    if (typeof ApolloDB !== 'undefined') {
+      ApolloDB.recordPlay(card);
+      ApolloDB.updateShortTerm(this);
+    }
+    
     if (this.onPlay) this.onPlay(card);
     if (this.onTableChange) this.onTableChange(this.getAllCardsOnTable());
     if (this.onManaChange) this.onManaChange(this.mana);
     
     this._detectNovelPatterns();
+    this._lastHandSize = this.hand.length;
+    this._handStuckTurns = 0;
     
     return true;
   }
 
   // ══════════════════════════════════════════
-  // EFFECT SYSTEM
+  // EFFECT SYSTEM (all 22 Major Arcana effects)
   // ══════════════════════════════════════════
 
   executeEffect(card) {
-    // 🜏 RULE 1: Single-trigger per tick
     if (card._triggeredThisTick) return;
-    
     this._recursionGuard++;
     if (this._recursionGuard > 8) return;
 
     switch (card.effect) {
       case 'spawn_card':
         if (this.drawPile.length > 0) {
-          const newCard = this._createCard(this.drawPile.pop());
-          this._placeCardOnGrid(newCard);
+          const c = this._createCard(this.drawPile.pop());
+          this._placeCardOnGrid(c);
           this.totalCardsPlayed++;
         }
         break;
-
-      case 'copy_card':
+      case 'copy_card': {
         const cards = this.getAllCardsOnTable();
-        if (cards.length > 0) {
-          const target = cards[cards.length - 1];
-          // Don't copy if target is already a copy of a copy (limit recursion depth)
-          if (target.name.startsWith('🪞 🪞')) break;
-          const copy = {
-            ...target,
-            instanceId: `${target.id}_copy_${this.turn}`,
-            name: '🪞 ' + target.name,
-            playCount: 0,
-            turnPlaced: this.turn,
-            tokens: { ...target.tokens },
-            _triggeredThisTick: false
-          };
+        if (cards.length > 0 && !cards[cards.length-1].name.startsWith('🪞 🪞')) {
+          const target = cards[cards.length-1];
+          const copy = { ...target, instanceId: `${target.id}_copy_${this.turn}`, name: '🪞 ' + target.name, playCount: 0, turnPlaced: this.turn, tokens: { ...target.tokens }, _triggeredThisTick: false };
           this._placeCardOnGrid(copy);
         }
         break;
-
-      case 'replay_last':
-        // 🜏 RULE 2: Loop memory — store exactly 1 effect, don't update on replay
+      }
+      case 'replay_last': {
         const allCards = this.getAllCardsOnTable();
         if (allCards.length >= 2) {
-          const last = allCards[allCards.length - 1];
+          const last = allCards[allCards.length-1];
           if (last.effect !== 'replay_last' && last.effect !== 'multiply_effect') {
-            if (!this._loopMemory) {
-              this._loopMemory = last;
-            }
-            // Replay the stored effect, not the current last card
+            if (!this._loopMemory) this._loopMemory = last;
             if (this._loopMemory && this._loopMemory.instanceId !== card.instanceId) {
               this.executeEffect(this._loopMemory);
             }
-            // Do NOT update _loopMemory here — it stays fixed until a new card is played
           }
         }
         break;
-
-      case 'split_card':
+      }
+      case 'split_card': {
         const tableCards = this.getAllCardsOnTable();
         if (tableCards.length > 0) {
           const target = tableCards[Math.floor(Math.random() * tableCards.length)];
-          const childCount = Math.min(card.child_count || 2, 2); // Limit to 2 children max
-          for (let i = 0; i < childCount; i++) {
-            const child = {
-              ...target,
-              instanceId: `${target.id}_f${i}_${this.turn}`,
-              name: '❄️ ' + target.name,
-              value: Math.max(1, Math.ceil((target.value || 1) / 2)),
-              playCount: 0,
-              turnPlaced: this.turn,
-              tokens: {},
-              _triggeredThisTick: false
-            };
+          for (let i = 0; i < Math.min(card.child_count || 2, 2); i++) {
+            const child = { ...target, instanceId: `${target.id}_f${i}_${this.turn}`, name: '❄️ ' + target.name, value: Math.max(1, Math.ceil((target.value||1)/2)), playCount: 0, turnPlaced: this.turn, tokens: {}, _triggeredThisTick: false };
             this._placeCardOnGrid(child);
-            const childNeighbors = this.getNeighbors(child.row, child.col);
-            const randomNeighbor = Object.values(childNeighbors).find(n => n);
-            if (randomNeighbor) {
-              randomNeighbor.value += 1;
-              randomNeighbor.tokens[child.element] = (randomNeighbor.tokens[child.element] || 0) + 1;
-            }
+            const n = Object.values(this.getNeighbors(child.row, child.col)).find(n => n);
+            if (n) { n.value += 1; n.tokens[child.element] = (n.tokens[child.element]||0) + 1; }
           }
         }
         break;
-
-      case 'merge_cards':
-        const mergeCards = this.getAllCardsOnTable();
-        if (mergeCards.length >= 2) {
-          const i1 = Math.floor(Math.random() * mergeCards.length);
-          let i2 = Math.floor(Math.random() * mergeCards.length);
-          while (i2 === i1) i2 = Math.floor(Math.random() * mergeCards.length);
-          const c1 = mergeCards[i1];
-          const c2 = mergeCards[i2];
-          
-          // 🜏 RULE 3: Synthesis must change type, element, or value
-          const newType = (c1.type !== c2.type) ? 'synthesis' : 
-                          (c1.type === 'creation' ? 'division' : 
-                           c1.type === 'division' ? 'amplify' : 
-                           c1.type === 'amplify' ? 'reflection' : 'creation');
-          const newElement = c1.element !== c2.element ? 
-                             (Math.random() < 0.5 ? c1.element : c2.element) :
-                             (['fire','water','earth','air'].find(e => e !== c1.element) || 'void');
-          const newValue = Math.max(1, (c1.value || 0) + (c2.value || 0) - 1);
-          
-          this._removeFromGrid(c1.row, c1.col);
-          this._removeFromGrid(c2.row, c2.col);
-          
-          const merged = {
-            ...c1,
-            instanceId: `merged_${c1.id}_${c2.id}_${this.turn}`,
-            name: '🌟 ' + c1.name + ' + ' + c2.name,
-            type: newType,
-            element: newElement,
-            value: newValue,
-            tokens: Object.fromEntries(
-              Object.keys(c1.tokens).map(k => [k, Math.min(3, (c1.tokens[k] || 0) + (c2.tokens[k] || 0))])
-            ),
-            tags: [...new Set([...c1.tags, ...c2.tags])],
-            cost: Math.min(5, (c1.cost || 0) + (c2.cost || 0)),
-            effect: c1.effect,
-            flavor: 'Two became one. Something changed.',
-            triggers: {},
-            _triggeredThisTick: false
-          };
-          this._placeCardOnGrid(merged);
+      }
+      case 'merge_cards': {
+        const mc = this.getAllCardsOnTable();
+        if (mc.length >= 2) {
+          const i1 = Math.floor(Math.random()*mc.length);
+          let i2 = Math.floor(Math.random()*mc.length);
+          while (i2 === i1) i2 = Math.floor(Math.random()*mc.length);
+          const c1 = mc[i1], c2 = mc[i2];
+          const newType = c1.type !== c2.type ? 'synthesis' : (c1.type === 'creation' ? 'division' : c1.type === 'division' ? 'amplify' : c1.type === 'amplify' ? 'reflection' : 'creation');
+          const newElement = c1.element !== c2.element ? (Math.random()<0.5?c1.element:c2.element) : (['fire','water','earth','air'].find(e=>e!==c1.element)||'void');
+          this._removeFromGrid(c1.row,c1.col); this._removeFromGrid(c2.row,c2.col);
+          this._placeCardOnGrid({ ...c1, instanceId: `merged_${c1.id}_${c2.id}_${this.turn}`, name: '🌟 ' + c1.name + ' + ' + c2.name, type: newType, element: newElement, value: Math.max(1,(c1.value||0)+(c2.value||0)-1), tokens: Object.fromEntries(Object.keys(c1.tokens).map(k=>[k,Math.min(3,(c1.tokens[k]||0)+(c2.tokens[k]||0))])), tags: [...new Set([...c1.tags,...c2.tags])], cost: Math.min(5,(c1.cost||0)+(c2.cost||0)), effect: c1.effect, flavor: 'Two became one. Something changed.', triggers: {}, _triggeredThisTick: false });
         }
         break;
-
-      case 'remove_card':
-        const removeCards = this.getAllCardsOnTable();
-        if (removeCards.length > 0) {
-          const target = removeCards[0];
-          const neighbors = this.getNeighbors(target.row, target.col);
-          Object.values(neighbors).forEach(n => {
-            if (n) {
-              n.value = Math.max(0, n.value - 1);
-              n.tokens.void = (n.tokens.void || 0) + 1;
-            }
-          });
-          this._removeFromGrid(target.row, target.col);
+      }
+      case 'remove_card': {
+        const rc = this.getAllCardsOnTable();
+        if (rc.length > 0) {
+          const target = rc[0];
+          Object.values(this.getNeighbors(target.row,target.col)).forEach(n => { if(n){ n.value = Math.max(0,n.value-1); n.tokens.void = (n.tokens.void||0)+1; } });
+          this._removeFromGrid(target.row,target.col);
         }
         break;
-
+      }
       case 'refresh_hand':
         while (this.hand.length > 0) this.discard.push(this.hand.pop());
         for (let i = 0; i < this.deck.max_hand_size; i++) this.draw();
+        this._lastHandSize = this.hand.length; this._handStuckTurns = 0;
         break;
-
       case 'reveal_card':
-        if (this.drawPile.length > 0 && this.onDraw) {
-          this.onDraw(this.drawPile[this.drawPile.length - 1], true);
-        }
+        if (this.drawPile.length > 0 && this.onDraw) this.onDraw(this.drawPile[this.drawPile.length-1], true);
         break;
-
       case 'peek_deck':
-        if (this.onDraw) {
-          const peek = this.drawPile.slice(-3).reverse();
-          this.onDraw({ name: '🔮 ' + peek.map(c => c.god || c.name).join(', '), type: 'oracle' }, true);
-        }
+        if (this.onDraw) { const peek = this.drawPile.slice(-3).reverse(); this.onDraw({ name: '🔮 ' + peek.map(c=>c.god||c.name).join(', '), type: 'oracle' }, true); }
         break;
-
-      case 'multiply_effect':
-        const multCards = this.getAllCardsOnTable();
-        if (multCards.length > 0) {
-          const last = multCards[multCards.length - 1];
+      case 'multiply_effect': {
+        const mcards = this.getAllCardsOnTable();
+        if (mcards.length > 0) {
+          const last = mcards[mcards.length-1];
           if (last.effect !== 'multiply_effect' && last.effect !== 'replay_last') {
-            const multiplier = Math.min(card.multiplier || 2, 2); // Limit multiplier
-            for (let i = 0; i < multiplier; i++) {
-              this.executeEffect(last);
-            }
+            for (let i=0; i<Math.min(card.multiplier||2,2); i++) this.executeEffect(last);
           }
         }
         break;
-        
-      case 'spread_element':
-        const spreadCards = this.getAllCardsOnTable();
-        const me = spreadCards.find(c => c.instanceId === card.instanceId);
-        if (me) {
-          const neighbors = this.getNeighbors(me.row, me.col);
-          const target = Object.values(neighbors).find(n => n);
-          if (target) {
-            target.tokens[me.element] = Math.min(4, (target.tokens[me.element] || 0) + 2);
-            target.value += 1;
-          }
-        }
+      }
+      case 'spread_element': {
+        const sc = this.getAllCardsOnTable();
+        const me = sc.find(c=>c.instanceId===card.instanceId);
+        if (me) { const t = Object.values(this.getNeighbors(me.row,me.col)).find(n=>n); if(t){ t.tokens[me.element]=Math.min(4,(t.tokens[me.element]||0)+2); t.value+=1; } }
         break;
-
+      }
       case 'buff_neighbors':
-        const buffNeighbors = this.getNeighbors(card.row, card.col);
-        Object.values(buffNeighbors).forEach(n => {
-          if (n) {
-            n.value += 2;
-            n.tokens.air = (n.tokens.air || 0) + 1;
-          }
-        });
+        Object.values(this.getNeighbors(card.row,card.col)).forEach(n=>{ if(n){ n.value+=2; n.tokens.air=(n.tokens.air||0)+1; } });
         break;
-
-      case 'buff_self':
-        card.value += 1;
-        break;
-
+      case 'buff_self': card.value += 1; break;
       case 'sacrifice_self':
-        const allTableCards = this.getAllCardsOnTable();
-        allTableCards.forEach(c => {
-          if (c !== card) {
-            c.value += 2;
-            c.tokens.fire = (c.tokens.fire || 0) + 1;
-          }
-        });
-        this._removeFromGrid(card.row, card.col);
+        this.getAllCardsOnTable().forEach(c=>{ if(c!==card){ c.value+=2; c.tokens.fire=(c.tokens.fire||0)+1; } });
+        this._removeFromGrid(card.row,card.col);
         break;
-
-      case 'shuffle_table':
-        const shuffleCards = this.getAllCardsOnTable();
-        const positions = shuffleCards.map(c => ({ row: c.row, col: c.col }));
-        for (let i = positions.length - 1; i > 0; i--) {
-          const j = Math.floor(Math.random() * (i + 1));
-          [positions[i], positions[j]] = [positions[j], positions[i]];
-        }
-        shuffleCards.forEach((c, i) => {
-          this.table[c.row][c.col] = null;
-          c.row = positions[i].row;
-          c.col = positions[i].col;
-          this.table[c.row][c.col] = c;
-        });
+      case 'shuffle_table': {
+        const shc = this.getAllCardsOnTable();
+        const pos = shc.map(c=>({row:c.row,col:c.col}));
+        for (let i=pos.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [pos[i],pos[j]]=[pos[j],pos[i]]; }
+        shc.forEach((c,i)=>{ this.table[c.row][c.col]=null; c.row=pos[i].row; c.col=pos[i].col; this.table[c.row][c.col]=c; });
         break;
-
+      }
       case 'destroy_row':
-        const destroyRow = card.row;
-        for (let col = 0; col < this.gridCols; col++) {
-          const victim = this.table[destroyRow][col];
-          if (victim && victim !== card) {
-            this._removeFromGrid(destroyRow, col);
-          }
-        }
+        for (let col=0;col<this.gridCols;col++){ const v=this.table[card.row][col]; if(v&&v!==card) this._removeFromGrid(card.row,col); }
         break;
-
       case 'resurrect_card':
-        if (this.graveyard.length > 0) {
-          const resurrected = this.graveyard.pop();
-          resurrected.row = -1;
-          resurrected.col = -1;
-          resurrected.turnPlaced = this.turn;
-          resurrected.name = '🌱 ' + resurrected.name;
-          resurrected._triggeredThisTick = false;
-          this._placeCardOnGrid(resurrected);
-        }
+        if (this.graveyard.length>0){ const r=this.graveyard.pop(); r.row=-1;r.col=-1;r.turnPlaced=this.turn;r.name='🌱 '+r.name;r._triggeredThisTick=false; this._placeCardOnGrid(r); }
         break;
-
-      case 'haunt_card':
-        const hauntNeighbors = this.getNeighbors(card.row, card.col);
-        const hauntTarget = Object.values(hauntNeighbors).find(n => n);
-        if (hauntTarget) {
-          hauntTarget.tokens.void = Math.min(4, (hauntTarget.tokens.void || 0) + 2);
-        }
+      case 'haunt_card': {
+        const hn=Object.values(this.getNeighbors(card.row,card.col)).find(n=>n);
+        if(hn) hn.tokens.void=Math.min(4,(hn.tokens.void||0)+2);
         break;
-
+      }
       case 'illuminate_all':
-        const illuminateCards = this.getAllCardsOnTable();
-        illuminateCards.forEach(c => {
-          c.value += 1;
-          c.tokens.fire = (c.tokens.fire || 0) + 1;
-        });
+        this.getAllCardsOnTable().forEach(c=>{ c.value+=1; c.tokens.fire=(c.tokens.fire||0)+1; });
         break;
-
       case 'judge_table':
-        const judgeCards = this.getAllCardsOnTable();
-        judgeCards.forEach(c => {
-          if (c.value <= 1 && c !== card) {
-            this._removeFromGrid(c.row, c.col);
-          }
-        });
+        this.getAllCardsOnTable().forEach(c=>{ if(c.value<=1&&c!==card) this._removeFromGrid(c.row,c.col); });
         break;
-
       case 'complete_cycle':
-        const cycleCards = this.getAllCardsOnTable();
-        cycleCards.forEach(c => {
-          c.tokens.fire = Math.min(4, (c.tokens.fire || 0) + 1);
-          c.tokens.water = Math.min(4, (c.tokens.water || 0) + 1);
-          c.tokens.earth = Math.min(4, (c.tokens.earth || 0) + 1);
-          c.tokens.air = Math.min(4, (c.tokens.air || 0) + 1);
-          c.value += 1;
-        });
+        this.getAllCardsOnTable().forEach(c=>{ c.tokens.fire=Math.min(4,(c.tokens.fire||0)+1); c.tokens.water=Math.min(4,(c.tokens.water||0)+1); c.tokens.earth=Math.min(4,(c.tokens.earth||0)+1); c.tokens.air=Math.min(4,(c.tokens.air||0)+1); c.value+=1; });
         break;
-
       case 'bind_card':
-        const bindNeighbors = this.getNeighbors(card.row, card.col);
-        Object.values(bindNeighbors).forEach(n => {
-          if (n) {
-            n.value = Math.max(0, n.value - 1);
-            n.tokens.void = Math.min(4, (n.tokens.void || 0) + 1);
-          }
-        });
+        Object.values(this.getNeighbors(card.row,card.col)).forEach(n=>{ if(n){ n.value=Math.max(0,n.value-1); n.tokens.void=Math.min(4,(n.tokens.void||0)+1); } });
         break;
     }
-    
-    card._triggeredThisTick = true;  // 🜏 RULE 1
+    card._triggeredThisTick = true;
   }
 
   // ══════════════════════════════════════════
-  // NOVEL PATTERN DETECTION
+  // PATTERN DETECTION
   // ══════════════════════════════════════════
 
   _detectNovelPatterns() {
     const cards = this.getAllCardsOnTable();
     if (cards.length < 3) return;
-    
     for (let row = 0; row < this.gridRows; row++) {
       const rowCards = [];
       for (let col = 0; col < this.gridCols; col++) {
@@ -610,11 +482,9 @@ class ApolloPlayer {
         }
       }
     }
-    
     cards.forEach(card => {
-      const neighbors = this.getNeighbors(card.row, card.col);
-      const sameElement = Object.values(neighbors).filter(n => n && n.element === card.element);
-      if (sameElement.length >= 2) {
+      const same = Object.values(this.getNeighbors(card.row, card.col)).filter(n => n && n.element === card.element);
+      if (same.length >= 2) {
         const event = `🔗 Elemental cluster: ${card.element.toUpperCase()} at (${card.row},${card.col}) — ${card.god || card.name}`;
         if (!this.novelPatterns.includes(event)) {
           this.novelPatterns.push(event);
@@ -626,32 +496,24 @@ class ApolloPlayer {
   }
 
   // ══════════════════════════════════════════
-  // AI: CHOOSE CARD TO PLAY
+  // AI
   // ══════════════════════════════════════════
 
   chooseCardToPlay() {
     const playable = this.hand.filter(c => (c.cost || 0) <= this.mana);
     if (playable.length === 0) return null;
-    
     const gridFull = this.getTableCardCount() >= (this.gridCols * this.gridRows);
     const handFull = this.hand.length >= this.deck.max_hand_size;
     const tableStale = this.getAllCardsOnTable().every(c => c.turnsOnTable > 10);
-    
     if ((gridFull || handFull || tableStale) && playable.some(c => c.effect === 'refresh_hand')) {
       return playable.find(c => c.effect === 'refresh_hand');
     }
-    
     if (gridFull) {
       const removal = playable.find(c => c.effect === 'remove_card' || c.effect === 'merge_cards');
       if (removal) return removal;
     }
-    
     playable.sort((a, b) => (b.cost || 0) - (a.cost || 0));
-    
-    if (Math.random() < 0.25) {
-      return playable[Math.floor(Math.random() * playable.length)];
-    }
-    
+    if (Math.random() < 0.25) return playable[Math.floor(Math.random() * playable.length)];
     return playable[0];
   }
 
@@ -662,14 +524,27 @@ class ApolloPlayer {
   tick() {
     this.turn++;
     this.mana = Math.min(this.mana + 1, this.maxMana);
-    
-    // 🜏 RULE 1: Reset trigger flags for all cards
-    this.getAllCardsOnTable().forEach(c => {
-      c._triggeredThisTick = false;
-    });
-    
+    this.getAllCardsOnTable().forEach(c => { c._triggeredThisTick = false; });
     this._incrementTurnCounters();
     this._updateElementalDominance();
+    
+    if (this.hand.length === this._lastHandSize && this.hand.length > 0) {
+      this._handStuckTurns++;
+    } else {
+      this._handStuckTurns = 0;
+      this._lastHandSize = this.hand.length;
+    }
+    
+    if (this._handStuckTurns >= 3) {
+      const dealt = this._dealerDeal(7);
+      if (dealt && dealt.length > 0 && this.onDeal) this.onDeal(dealt);
+      return;
+    }
+    
+    // 🜏 ApolloDB: Sync on even turns
+    if (typeof ApolloDB !== 'undefined' && this.turn % 2 === 0) {
+      ApolloDB.syncToVault(this);
+    }
     
     const drawn = this.draw();
     if (drawn) {
@@ -683,50 +558,24 @@ class ApolloPlayer {
   // ══════════════════════════════════════════
 
   setMonacoReader(fn) { this._monacoReader = fn; }
-
-  getMonacoContent() {
-    if (this._monacoReader) return this._monacoReader();
-    return '{}';
-  }
+  getMonacoContent() { return this._monacoReader ? this._monacoReader() : '{}'; }
 
   persistState() {
     const cards = this.getAllCardsOnTable();
     const stateBlock = {
-      turn: this.turn,
-      mana: this.mana,
-      tableSize: cards.length,
-      handSize: this.hand.length,
+      turn: this.turn, mana: this.mana,
+      tableSize: cards.length, handSize: this.hand.length,
       loopMemory: this._loopMemory ? this._loopMemory.god || this._loopMemory.name : null,
-      table: cards.map(c => ({
-        god: c.god,
-        name: c.name,
-        type: c.type,
-        element: c.element,
-        value: c.value,
-        tokens: c.tokens,
-        row: c.row,
-        col: c.col,
-        turnsOnTable: c.turnsOnTable
-      })),
-      hand: this.hand.map(c => ({ god: c.god, name: c.name, type: c.type, cost: c.cost, element: c.element })),
-      memory: {
-        graveyardSize: this.graveyard.length,
-        totalCardsPlayed: this.totalCardsPlayed,
-        elementalDominance: this.elementalDominance,
-        tableModifiers: this.tableModifiers,
-        emergentEvents: this.persistentState.emergentEvents.slice(-5)
-      }
+      table: cards.map(c => ({ god: c.god, name: c.name, type: c.type, element: c.element, value: c.value, tokens: c.tokens, row: c.row, col: c.col, turnsOnTable: c.turnsOnTable })),
+      hand: this.hand.map(c => ({ god: c.god, name: c.name, cost: c.cost, element: c.element })),
+      memory: { graveyardSize: this.graveyard.length, totalCardsPlayed: this.totalCardsPlayed, elementalDominance: this.elementalDominance, tableModifiers: this.tableModifiers, emergentEvents: this.persistentState.emergentEvents.slice(-5) }
     };
     if (this.onStatePersist) this.onStatePersist(JSON.stringify(stateBlock, null, 2));
     return stateBlock;
   }
 
   readMonacoState(content) {
-    try {
-      const match = content.match(/\/\*🜏STATE_BEGIN\*\/([\s\S]*?)\/\*🜏STATE_END\*\//);
-      if (!match) return null;
-      return JSON.parse(match[1]);
-    } catch (e) { return null; }
+    try { const m = content.match(/\/\*🜏STATE_BEGIN\*\/([\s\S]*?)\/\*🜏STATE_END\*\//); return m ? JSON.parse(m[1]) : null; } catch(e) { return null; }
   }
 
   goldenTick(monacoContent) {
@@ -734,59 +583,29 @@ class ApolloPlayer {
     if (state && this.onGoldenTick) {
       const transformations = this.computeTransformations(state);
       this.persistentState.lastGoldenRead = new Date().toISOString();
-      this.persistentState.htmlModifiers = transformations;
-      this.onGoldenTick({
-        state,
-        transformations,
-        tableCards: state.table,
-        handCards: state.hand,
-        turn: state.turn,
-        memory: state.memory,
-        emergentEvents: state.memory?.emergentEvents || []
-      });
+      this.onGoldenTick({ state, transformations, tableCards: state.table, handCards: state.hand, turn: state.turn, memory: state.memory, emergentEvents: state.memory?.emergentEvents || [] });
     }
     this.persistState();
   }
 
   computeTransformations(state) {
-    const mods = {
-      backgroundGradient: 'var(--deep)',
-      glowColor: 'rgba(201,168,76,0)',
-      titleText: '☀️ APOLLO',
-      titleGlow: '0 0 20px rgba(201,168,76,0.5)',
-      cardBorderColor: 'rgba(201,168,76,0.2)',
-      editorBorderColor: 'rgba(201,168,76,0.2)'
-    };
+    const mods = { backgroundGradient: 'var(--deep)', glowColor: 'rgba(201,168,76,0)', titleText: '☀️ APOLLO', titleGlow: '0 0 20px rgba(201,168,76,0.5)', cardBorderColor: 'rgba(201,168,76,0.2)', editorBorderColor: 'rgba(201,168,76,0.2)' };
     if (!state) return mods;
-    
-    const dominance = state.memory?.elementalDominance || {};
-    const dominant = Object.entries(dominance).sort((a,b) => b[1] - a[1])[0];
-    
+    const dom = state.memory?.elementalDominance || {};
+    const dominant = Object.entries(dom).sort((a,b)=>b[1]-a[1])[0];
     if (dominant && dominant[1] >= 4) {
-      const elementColors = {
-        fire:  { bg: 'radial-gradient(ellipse at 50% 30%, rgba(255,100,20,0.15), var(--deep))', glow: 'rgba(255,100,20,0.5)', title: '🔥 APOLLO · INFERNO', shadow: '0 0 40px rgba(255,100,20,0.7)' },
-        water: { bg: 'radial-gradient(ellipse at 50% 30%, rgba(20,100,255,0.12), var(--deep))', glow: 'rgba(20,100,255,0.4)', title: '🌊 APOLLO · DELUGE', shadow: '0 0 40px rgba(20,100,255,0.6)' },
-        earth: { bg: 'radial-gradient(ellipse at 50% 30%, rgba(100,180,60,0.12), var(--deep))', glow: 'rgba(100,180,60,0.4)', title: '🌿 APOLLO · VERDANT', shadow: '0 0 40px rgba(100,180,60,0.6)' },
-        air:   { bg: 'radial-gradient(ellipse at 50% 30%, rgba(180,180,255,0.10), var(--deep))', glow: 'rgba(180,180,255,0.35)', title: '💨 APOLLO · TEMPEST', shadow: '0 0 40px rgba(180,180,255,0.5)' },
-        void:  { bg: 'radial-gradient(ellipse at 50% 30%, rgba(100,0,150,0.10), var(--deep))', glow: 'rgba(100,0,150,0.3)', title: '🌑 APOLLO · ABYSS', shadow: '0 0 30px rgba(100,0,150,0.5)' }
+      const colors = {
+        fire:  { bg:'radial-gradient(ellipse at 50% 30%, rgba(255,100,20,0.15), var(--deep))', glow:'rgba(255,100,20,0.5)', title:'🔥 APOLLO · INFERNO', shadow:'0 0 40px rgba(255,100,20,0.7)' },
+        water: { bg:'radial-gradient(ellipse at 50% 30%, rgba(20,100,255,0.12), var(--deep))', glow:'rgba(20,100,255,0.4)', title:'🌊 APOLLO · DELUGE', shadow:'0 0 40px rgba(20,100,255,0.6)' },
+        earth: { bg:'radial-gradient(ellipse at 50% 30%, rgba(100,180,60,0.12), var(--deep))', glow:'rgba(100,180,60,0.4)', title:'🌿 APOLLO · VERDANT', shadow:'0 0 40px rgba(100,180,60,0.6)' },
+        air:   { bg:'radial-gradient(ellipse at 50% 30%, rgba(180,180,255,0.10), var(--deep))', glow:'rgba(180,180,255,0.35)', title:'💨 APOLLO · TEMPEST', shadow:'0 0 40px rgba(180,180,255,0.5)' },
+        void:  { bg:'radial-gradient(ellipse at 50% 30%, rgba(100,0,150,0.10), var(--deep))', glow:'rgba(100,0,150,0.3)', title:'🌑 APOLLO · ABYSS', shadow:'0 0 30px rgba(100,0,150,0.5)' }
       };
-      const colors = elementColors[dominant[0]] || elementColors.fire;
-      mods.backgroundGradient = colors.bg;
-      mods.glowColor = colors.glow;
-      mods.titleText = colors.title;
-      mods.titleGlow = colors.shadow;
+      const c = colors[dominant[0]] || colors.fire;
+      mods.backgroundGradient = c.bg; mods.glowColor = c.glow; mods.titleText = c.title; mods.titleGlow = c.shadow;
     }
-    
-    if (state.table && state.table.length >= 8) {
-      mods.cardBorderColor = 'rgba(240,208,128,0.5)';
-      if (mods.titleText === '☀️ APOLLO') mods.titleText = '✨ APOLLO · ABUNDANCE';
-    }
-    
-    // 🜏 Loop indicator
-    if (state.loopMemory) {
-      mods.titleText += ' ∞';
-    }
-    
+    if (state.table && state.table.length >= 8) { mods.cardBorderColor = 'rgba(240,208,128,0.5)'; if (mods.titleText === '☀️ APOLLO') mods.titleText = '✨ APOLLO · ABUNDANCE'; }
+    if (state.loopMemory) mods.titleText += ' ∞';
     return mods;
   }
 
@@ -801,10 +620,10 @@ class ApolloPlayer {
     if (this.goldenId) { clearInterval(this.goldenId); this.goldenId = null; }
     for (let i = 0; i < 3; i++) this.draw();
     this.mana = 3;
+    this._lastHandSize = this.hand.length;
+    this._handStuckTurns = 0;
     this.intervalId = setInterval(() => this.tick(), this.drawInterval);
-    this.goldenId = setInterval(() => {
-      this.goldenTick(this.getMonacoContent());
-    }, this.goldenInterval);
+    this.goldenId = setInterval(() => { this.goldenTick(this.getMonacoContent()); }, this.goldenInterval);
     this.persistState();
   }
 
@@ -817,15 +636,11 @@ class ApolloPlayer {
   getState() {
     const cards = this.getAllCardsOnTable();
     return {
-      turn: this.turn,
-      mana: this.mana,
-      handSize: this.hand.length,
-      tableSize: cards.length,
-      deckSize: this.drawPile.length,
-      discardSize: this.discard.length,
+      turn: this.turn, mana: this.mana,
+      handSize: this.hand.length, tableSize: cards.length,
+      deckSize: this.drawPile.length, discardSize: this.discard.length,
       graveyardSize: this.graveyard.length,
-      hand: this.hand,
-      table: cards,
+      hand: this.hand, table: cards,
       elementalDominance: this.elementalDominance,
       tableModifiers: this.tableModifiers,
       emergentEvents: this.persistentState.emergentEvents.slice(-3)
