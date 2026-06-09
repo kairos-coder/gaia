@@ -339,18 +339,6 @@ async function loadDeck() {
     
     return deck;
 }
-        }
-    } catch(e) {}
-    if (typeof MAJOR_ARCANA_DECK !== 'undefined') {
-        const deck = MAJOR_ARCANA_DECK;
-        deck.max_hand_size = deck.max_hand_size || 5;
-        deck.max_table_cards = deck.max_table_cards || 12;
-        deck.draw_interval_ms = deck.draw_interval_ms || DRAW_INTERVAL;
-        return deck;
-    }
-    throw new Error('No deck found');
-}
-
 // ══ Monaco Init ══
 require.config({ paths: { vs: 'https://cdn.jsdelivr.net/npm/monaco-editor@0.44.0/min/vs' } });
 require(['vs/editor/editor.main'], async function() {
