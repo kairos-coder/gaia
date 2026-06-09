@@ -484,7 +484,10 @@ async function initGame() {
     };
     
     apollo.onDeal = (dealtCards) => {
-        const names = dealtCards.map(c => EMOJI_MAP[c.god]+' '+c.god).join(', ');
+    const names = dealtCards.map(c => {
+        const godName = c.god || c.ruling_god || c.name;
+        return (EMOJI_MAP[godName]||'🃏') + ' ' + godName;
+    }).join(', ');
         logToEditor(`🃏 DEALER: Apollo receives ${dealtCards.length} fresh cards — ${names}`);
         showToast('🃏 Fresh deal! ' + dealtCards.length + ' cards.', 'deal-toast');
         renderUI();
