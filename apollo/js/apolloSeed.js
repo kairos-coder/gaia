@@ -13,7 +13,6 @@ const PI = Math.PI;
 const TAU = PI * 2;
 
 class ApolloPlayer {
-  constructor(deck) {
     constructor(deck) {
     this.deck = deck;
     
