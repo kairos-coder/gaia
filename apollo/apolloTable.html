@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>APOLLO · The Living Card Table</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&family=Cinzel:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --gold: #c9a84c;
+            --gold-bright: #f0d080;
+            --sun: #ffcc44;
+            --deep: #0a0c12;
+            --surface: #1a1f2e;
+            --card-bg: #141820;
+        }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body {
+            background: var(--deep);
+            color: #bcbcbc;
+            font-family: 'Cinzel', serif;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+        
+        .apollo-layout {
+            display: grid;
+            grid-template-columns: 320px 1fr;
+            height: 100vh;
+        }
+        
+        /* Left panel — Card display */
+        .card-panel {
+            background: var(--surface);
+            border-right: 2px solid rgba(201,168,76,0.3);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        .panel-header {
+            padding: 1rem;
+            border-bottom: 1px solid rgba(201,168,76,0.2);
+            text-align: center;
+        }
+        .panel-title {
+            font-family: 'Cinzel Decorative', serif;
+            font-size: 1.2rem;
+            color: var(--gold-bright);
+            letter-spacing: 0.2em;
+        }
+        .panel-subtitle {
+            font-size: 0.55rem;
+            letter-spacing: 0.3em;
+            color: rgba(201,168,76,0.5);
+            margin-top: 0.3rem;
+        }
+        
+        /* Stats bar */
+        .stats-bar {
+            display: flex;
+            gap: 0.8rem;
+            padding: 0.6rem 1rem;
+            border-bottom: 1px solid rgba(201,168,76,0.1);
+            font-size: 0.6rem;
+            letter-spacing: 0.15em;
+            color: rgba(200,180,150,0.6);
+        }
+        .stat {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.2rem;
+        }
+        .stat-value {
+            font-family: 'Cinzel Decorative', serif;
+            font-size: 1rem;
+            color: var(--gold-bright);
+        }
+        
+        /* Hand area */
+        .hand-area {
+            padding: 0.8rem;
+            border-bottom: 1px solid rgba(201,168,76,0.1);
+        }
+        .section-label {
+            font-size: 0.5rem;
+            letter-spacing: 0.3em;
+            color: rgba(201,168,76,0.4);
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+        }
+        .hand-cards {
+            display: flex;
+            flex-direction: column;
+            gap: 0.3rem;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .mini-card {
+            background: var(--card-bg);
+            border: 1px solid rgba(201,168,76,0.15);
+            border-radius: 4px;
+            padding: 0.4rem 0.6rem;
+            font-size: 0.6rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.2s;
+        }
+        .mini-card.playable {
+            border-color: rgba(240,208,128,0.3);
+        }
+        .mini-card .card-cost {
+            font-family: 'Cinzel Decorative', serif;
+            font-size: 0.7rem;
+            color: var(--sun);
+            width: 20px;
+            text-align: center;
+        }
+        
+        /* Table area */
+        .table-area {
+            flex: 1;
+            padding: 0.8rem;
+            overflow-y: auto;
+        }
+        .table-cards {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.4rem;
+        }
+        .table-card {
+            background: linear-gradient(145deg, #1a1f2e, #0f111a);
+            border: 1px solid rgba(201,168,76,0.2);
+            border-radius: 6px;
+            padding: 0.6rem;
+            font-size: 0.55rem;
+            animation: cardAppear 0.4s ease-out;
+        }
+        @keyframes cardAppear {
+            from { opacity: 0; transform: scale(0.8); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        .table-card .card-name {
+            color: var(--gold-bright);
+            font-family: 'Cinzel Decorative', serif;
+            font-size: 0.65rem;
+            margin-bottom: 0.2rem;
+        }
+        .table-card .card-type {
+            font-size: 0.45rem;
+            letter-spacing: 0.15em;
+            color: rgba(200,180,150,0.4);
+        }
+        
+        /* Right panel — Monaco Editor */
+        .editor-panel {
+            display: flex;
+            flex-direction: column;
+        }
+        .editor-header {
+            padding: 0.6rem 1rem;
+            border-bottom: 1px solid rgba(201,168,76,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .editor-title {
+            font-size: 0.6rem;
+            letter-spacing: 0.2em;
+            color: rgba(201,168,76,0.5);
+        }
+        .editor-controls {
+            display: flex;
+            gap: 0.5rem;
+        }
+        .ctrl-btn {
+            background: rgba(201,168,76,0.1);
+            border: 1px solid rgba(201,168,76,0.2);
+            color: rgba(201,168,76,0.7);
+            font-family: 'Cinzel', serif;
+            font-size: 0.5rem;
+            letter-spacing: 0.1em;
+            padding: 0.3rem 0.7rem;
+            border-radius: 3px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .ctrl-btn:hover {
+            background: rgba(201,168,76,0.2);
+            border-color: var(--gold);
+            color: var(--gold);
+        }
+        .ctrl-btn.active {
+            background: rgba(201,168,76,0.25);
+            border-color: var(--gold-bright);
+            color: var(--gold-bright);
+            box-shadow: 0 0 10px rgba(201,168,76,0.2);
+        }
+        #monacoContainer {
+            flex: 1;
+        }
+        
+        /* Toast */
+        #toast {
+            position: fixed;
+            bottom: 1rem;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(10,12,18,0.95);
+            border: 1px solid var(--gold);
+            color: var(--gold-bright);
+            padding: 0.6rem 1.5rem;
+            border-radius: 4px;
+            font-family: 'Cinzel', serif;
+            font-size: 0.65rem;
+            letter-spacing: 0.15em;
+            z-index: 100;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        #toast.show { opacity: 1; }
+    </style>
+</head>
+<body>
+<div class="apollo-layout">
+    
+    <!-- LEFT: Card Panel -->
+    <div class="card-panel">
+        <div class="panel-header">
+            <div class="panel-title">☀️ APOLLO</div>
+            <div class="panel-subtitle">The Living Card Table</div>
+        </div>
+        
+        <div class="stats-bar">
+            <div class="stat">
+                <span>Turn</span>
+                <span class="stat-value" id="statTurn">0</span>
+            </div>
+            <div class="stat">
+                <span>Mana</span>
+                <span class="stat-value" id="statMana">0</span>
+            </div>
+            <div class="stat">
+                <span>Deck</span>
+                <span class="stat-value" id="statDeck">0</span>
+            </div>
+            <div class="stat">
+                <span>Table</span>
+                <span class="stat-value" id="statTable">0</span>
+            </div>
+        </div>
+        
+        <div class="hand-area">
+            <div class="section-label">☀ Apollo's Hand</div>
+            <div class="hand-cards" id="handCards"></div>
+        </div>
+        
+        <div class="table-area">
+            <div class="section-label">🌌 The Table</div>
+            <div class="table-cards" id="tableCards"></div>
+        </div>
+    </div>
+    
+    <!-- RIGHT: Monaco Editor -->
+    <div class="editor-panel">
+        <div class="editor-header">
+            <div class="editor-title">📜 THE LIVING RECORD</div>
+            <div class="editor-controls">
+                <button class="ctrl-btn active" id="btnPlay">▶ PLAY</button>
+                <button class="ctrl-btn" id="btnPause">⏸ PAUSE</button>
+                <button class="ctrl-btn" id="btnReset">⟳ RESET</button>
+            </div>
+        </div>
+        <div id="monacoContainer"></div>
+    </div>
+    
+</div>
+<div id="toast"></div>
+
+<!-- Monaco Editor -->
+<script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.44.0/min/vs/loader.js"></script>
+<script src="js/apolloSeed.js"></script>
+<script>
+// ══════════════════════════════════════════════
+// APOLLO TABLE — Monaco Card Player
+// ══════════════════════════════════════════════
+
+let apollo = null;
+let editor = null;
+let gameLog = [];
+
+// Load genesis deck
+async function loadDeck() {
+    const response = await fetch('apollo/genesis.json');
+    return response.json();
+}
+
+// Initialize Monaco
+require.config({ paths: { vs: 'https://cdn.jsdelivr.net/npm/monaco-editor@0.44.0/min/vs' } });
+require(['vs/editor/editor.main'], function() {
+    editor = monaco.editor.create(document.getElementById('monacoContainer'), {
+        value: '// APOLLO CARD TABLE\n// Every 1.6 seconds, Apollo draws and plays a card.\n// The living record scrolls here.\n\n',
+        language: 'javascript',
+        theme: 'vs-dark',
+        fontSize: 12,
+        fontFamily: "'Fira Code', 'Courier New', monospace",
+        readOnly: true,
+        minimap: { enabled: false },
+        lineNumbers: 'off',
+        scrollBeyondLastLine: false,
+        wordWrap: 'on'
+    });
+    
+    initGame();
+});
+
+// Append to Monaco editor
+function logToEditor(message) {
+    if (!editor) return;
+    const timestamp = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    const line = `[${timestamp}] ${message}\n`;
+    gameLog.push(line);
+    
+    const model = editor.getModel();
+    const currentValue = model.getValue();
+    const newValue = currentValue + line;
+    
+    // Keep only last 200 lines
+    const lines = newValue.split('\n');
+    const trimmed = lines.slice(-200).join('\n');
+    
+    model.setValue(trimmed);
+    
+    // Scroll to bottom
+    const lineCount = model.getLineCount();
+    editor.revealLine(lineCount);
+}
+
+// Toast
+function showToast(msg) {
+    const toast = document.getElementById('toast');
+    toast.textContent = msg;
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 2000);
+}
+
+// Render UI
+function renderUI() {
+    if (!apollo) return;
+    const state = apollo.getState();
+    
+    document.getElementById('statTurn').textContent = state.turn;
+    document.getElementById('statMana').textContent = state.mana;
+    document.getElementById('statDeck').textContent = state.deckSize;
+    document.getElementById('statTable').textContent = state.tableSize;
+    
+    // Hand
+    const handDiv = document.getElementById('handCards');
+    handDiv.innerHTML = state.hand.map(c => `
+        <div class="mini-card ${(c.cost || 0) <= state.mana ? 'playable' : ''}">
+            <span>${c.name}</span>
+            <span class="card-cost">${c.cost || 0}</span>
+        </div>
+    `).join('');
+    
+    // Table
+    const tableDiv = document.getElementById('tableCards');
+    tableDiv.innerHTML = state.table.slice(-12).map(c => `
+        <div class="table-card">
+            <div class="card-name">${c.name}</div>
+            <div class="card-type">${c.type || 'card'} · ${c.flavor || ''}</div>
+        </div>
+    `).join('');
+}
+
+// Initialize game
+async function initGame() {
+    const deck = await loadDeck();
+    apollo = new ApolloPlayer(deck);
+    
+    apollo.onDraw = (card, isReveal) => {
+        if (isReveal) {
+            logToEditor(`🔮 Apollo foresees: ${card.name}`);
+        } else {
+            logToEditor(`🃏 Apollo draws: ${card.name} (${card.type})`);
+        }
+        renderUI();
+    };
+    
+    apollo.onPlay = (card) => {
+        logToEditor(`☀️ Apollo plays: ${card.name} [${card.effect}] — "${card.flavor}"`);
+        showToast(`☀️ ${card.name}`);
+        renderUI();
+    };
+    
+    apollo.onTableChange = () => renderUI();
+    apollo.onManaChange = () => renderUI();
+    
+    apollo.start();
+    logToEditor('🌅 Apollo takes his seat at the table.');
+    logToEditor(`⏱ Draw interval: ${apollo.drawInterval}ms (${(apollo.drawInterval/1000).toFixed(1)}s)`);
+    renderUI();
+}
+
+// Controls
+document.getElementById('btnPlay').onclick = () => {
+    if (!apollo) return;
+    apollo.start();
+    document.getElementById('btnPlay').classList.add('active');
+    document.getElementById('btnPause').classList.remove('active');
+    logToEditor('▶ Apollo resumes play.');
+};
+
+document.getElementById('btnPause').onclick = () => {
+    if (!apollo) return;
+    apollo.stop();
+    document.getElementById('btnPause').classList.add('active');
+    document.getElementById('btnPlay').classList.remove('active');
+    logToEditor('⏸ Apollo pauses. The table waits.');
+};
+
+document.getElementById('btnReset').onclick = () => {
+    if (apollo) apollo.stop();
+    gameLog = [];
+    if (editor) editor.getModel().setValue('');
+    initGame();
+    document.getElementById('btnPlay').classList.add('active');
+    document.getElementById('btnPause').classList.remove('active');
+};
+</script>
+</body>
+</html>
