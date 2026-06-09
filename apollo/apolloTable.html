@@ -4,321 +4,443 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>APOLLO · The Living Card Table</title>
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&family=Cinzel:wght@400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&family=Cinzel:wght@400;600&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
     <style>
         :root {
             --gold: #c9a84c;
             --gold-bright: #f0d080;
+            --gold-dim: #6b5520;
             --sun: #ffcc44;
             --deep: #0a0c12;
-            --surface: #1a1f2e;
-            --card-bg: #141820;
+            --surface: #141820;
+            --card-bg: #1a1f2e;
+            --text: #bcbcbc;
+            --text-dim: #8888;
         }
         * { margin:0; padding:0; box-sizing:border-box; }
         body {
             background: var(--deep);
-            color: #bcbcbc;
+            color: var(--text);
             font-family: 'Cinzel', serif;
             min-height: 100vh;
             overflow: hidden;
         }
         
-        .apollo-layout {
-            display: grid;
-            grid-template-columns: 320px 1fr;
-            height: 100vh;
+        /* Golden glow overlay */
+        #goldenGlow {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 0;
+            transition: all 2.59s cubic-bezier(0.4, 0, 0.2, 1);
+            opacity: 0.15;
+            box-shadow: inset 0 0 120px rgba(201,168,76,0);
         }
         
-        /* Left panel — Card display */
+        .apollo-layout {
+            display: grid;
+            grid-template-columns: 340px 1fr;
+            height: 100vh;
+            position: relative;
+            z-index: 1;
+            transition: background 2.59s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        /* ══ LEFT PANEL ══ */
         .card-panel {
             background: var(--surface);
-            border-right: 2px solid rgba(201,168,76,0.3);
+            border-right: 2px solid rgba(201,168,76,0.25);
             display: flex;
             flex-direction: column;
             overflow: hidden;
+            transition: border-color 2.59s ease;
         }
+        
         .panel-header {
-            padding: 1rem;
-            border-bottom: 1px solid rgba(201,168,76,0.2);
+            padding: 1.2rem 1rem;
+            border-bottom: 1px solid rgba(201,168,76,0.15);
             text-align: center;
+            background: linear-gradient(180deg, rgba(201,168,76,0.05), transparent);
         }
         .panel-title {
             font-family: 'Cinzel Decorative', serif;
-            font-size: 1.2rem;
+            font-size: 1.3rem;
             color: var(--gold-bright);
-            letter-spacing: 0.2em;
+            letter-spacing: 0.25em;
+            transition: all 2.59s ease;
+            text-shadow: 0 0 30px rgba(201,168,76,0.5);
         }
         .panel-subtitle {
-            font-size: 0.55rem;
-            letter-spacing: 0.3em;
-            color: rgba(201,168,76,0.5);
-            margin-top: 0.3rem;
+            font-size: 0.5rem;
+            letter-spacing: 0.35em;
+            color: rgba(201,168,76,0.45);
+            margin-top: 0.4rem;
+            text-transform: uppercase;
         }
         
-        /* Stats bar */
+        /* Stats */
         .stats-bar {
             display: flex;
-            gap: 0.8rem;
-            padding: 0.6rem 1rem;
-            border-bottom: 1px solid rgba(201,168,76,0.1);
-            font-size: 0.6rem;
-            letter-spacing: 0.15em;
-            color: rgba(200,180,150,0.6);
+            gap: 0.5rem;
+            padding: 0.7rem 1rem;
+            border-bottom: 1px solid rgba(201,168,76,0.08);
+            font-size: 0.55rem;
+            letter-spacing: 0.12em;
+            color: rgba(200,180,150,0.55);
         }
         .stat {
+            flex: 1;
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 0.2rem;
+            gap: 0.15rem;
+            padding: 0.3rem;
+            background: rgba(0,0,0,0.2);
+            border-radius: 4px;
+        }
+        .stat-label {
+            font-size: 0.45rem;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
         }
         .stat-value {
             font-family: 'Cinzel Decorative', serif;
-            font-size: 1rem;
+            font-size: 1.1rem;
             color: var(--gold-bright);
+            transition: all 0.3s;
+        }
+        .stat-value.phi {
+            color: #ff9944;
+            text-shadow: 0 0 10px rgba(255,153,68,0.5);
         }
         
-        /* Hand area */
+        /* Hand */
         .hand-area {
-            padding: 0.8rem;
-            border-bottom: 1px solid rgba(201,168,76,0.1);
+            padding: 0.7rem;
+            border-bottom: 1px solid rgba(201,168,76,0.08);
         }
         .section-label {
-            font-size: 0.5rem;
-            letter-spacing: 0.3em;
-            color: rgba(201,168,76,0.4);
+            font-size: 0.45rem;
+            letter-spacing: 0.35em;
+            color: rgba(201,168,76,0.35);
             margin-bottom: 0.5rem;
             text-transform: uppercase;
         }
         .hand-cards {
             display: flex;
             flex-direction: column;
-            gap: 0.3rem;
-            max-height: 200px;
+            gap: 0.25rem;
+            max-height: 180px;
             overflow-y: auto;
         }
         .mini-card {
             background: var(--card-bg);
-            border: 1px solid rgba(201,168,76,0.15);
+            border: 1px solid rgba(201,168,76,0.12);
             border-radius: 4px;
-            padding: 0.4rem 0.6rem;
-            font-size: 0.6rem;
+            padding: 0.35rem 0.5rem;
+            font-size: 0.55rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            transition: all 0.2s;
+            transition: all 0.3s;
         }
         .mini-card.playable {
             border-color: rgba(240,208,128,0.3);
+            background: rgba(201,168,76,0.05);
+        }
+        .mini-card .card-name-text {
+            flex: 1;
+            color: rgba(220,200,170,0.7);
+        }
+        .mini-card.playable .card-name-text {
+            color: var(--gold-bright);
         }
         .mini-card .card-cost {
             font-family: 'Cinzel Decorative', serif;
             font-size: 0.7rem;
             color: var(--sun);
-            width: 20px;
+            width: 22px;
             text-align: center;
         }
+        .mini-card .card-type-badge {
+            font-size: 0.4rem;
+            letter-spacing: 0.1em;
+            color: rgba(200,180,150,0.3);
+            margin-left: 0.3rem;
+        }
         
-        /* Table area */
+        /* Table */
         .table-area {
             flex: 1;
-            padding: 0.8rem;
+            padding: 0.7rem;
             overflow-y: auto;
         }
         .table-cards {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 0.4rem;
+            gap: 0.35rem;
         }
         .table-card {
             background: linear-gradient(145deg, #1a1f2e, #0f111a);
-            border: 1px solid rgba(201,168,76,0.2);
+            border: 1px solid rgba(201,168,76,0.18);
             border-radius: 6px;
-            padding: 0.6rem;
-            font-size: 0.55rem;
-            animation: cardAppear 0.4s ease-out;
+            padding: 0.5rem;
+            font-size: 0.5rem;
+            animation: cardAppear 0.5s ease-out;
+            transition: all 2.59s ease;
         }
         @keyframes cardAppear {
-            from { opacity: 0; transform: scale(0.8); }
-            to { opacity: 1; transform: scale(1); }
+            from { opacity: 0; transform: scale(0.85) translateY(-8px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
         }
         .table-card .card-name {
             color: var(--gold-bright);
             font-family: 'Cinzel Decorative', serif;
-            font-size: 0.65rem;
-            margin-bottom: 0.2rem;
+            font-size: 0.6rem;
+            margin-bottom: 0.15rem;
+            letter-spacing: 0.05em;
         }
-        .table-card .card-type {
-            font-size: 0.45rem;
-            letter-spacing: 0.15em;
-            color: rgba(200,180,150,0.4);
+        .table-card .card-flavor {
+            font-size: 0.42rem;
+            font-style: italic;
+            color: rgba(180,160,140,0.4);
+            line-height: 1.4;
+            margin-top: 0.2rem;
+        }
+        .table-card .card-type-tag {
+            display: inline-block;
+            font-size: 0.38rem;
+            letter-spacing: 0.12em;
+            padding: 0.1rem 0.3rem;
+            border-radius: 2px;
+            background: rgba(201,168,76,0.08);
+            color: rgba(201,168,76,0.45);
+            margin-top: 0.2rem;
         }
         
-        /* Right panel — Monaco Editor */
+        /* ══ RIGHT PANEL ══ */
         .editor-panel {
             display: flex;
             flex-direction: column;
+            transition: border-color 2.59s ease;
         }
         .editor-header {
-            padding: 0.6rem 1rem;
+            padding: 0.5rem 1rem;
             border-bottom: 1px solid rgba(201,168,76,0.1);
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
         .editor-title {
-            font-size: 0.6rem;
-            letter-spacing: 0.2em;
-            color: rgba(201,168,76,0.5);
+            font-size: 0.55rem;
+            letter-spacing: 0.25em;
+            color: rgba(201,168,76,0.45);
+            text-transform: uppercase;
         }
         .editor-controls {
             display: flex;
-            gap: 0.5rem;
+            gap: 0.4rem;
         }
         .ctrl-btn {
-            background: rgba(201,168,76,0.1);
-            border: 1px solid rgba(201,168,76,0.2);
-            color: rgba(201,168,76,0.7);
+            background: rgba(201,168,76,0.08);
+            border: 1px solid rgba(201,168,76,0.18);
+            color: rgba(201,168,76,0.6);
             font-family: 'Cinzel', serif;
-            font-size: 0.5rem;
-            letter-spacing: 0.1em;
+            font-size: 0.48rem;
+            letter-spacing: 0.12em;
             padding: 0.3rem 0.7rem;
             border-radius: 3px;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: all 0.25s;
+            text-transform: uppercase;
         }
         .ctrl-btn:hover {
-            background: rgba(201,168,76,0.2);
+            background: rgba(201,168,76,0.18);
             border-color: var(--gold);
-            color: var(--gold);
+            color: var(--gold-bright);
         }
         .ctrl-btn.active {
-            background: rgba(201,168,76,0.25);
+            background: rgba(201,168,76,0.2);
             border-color: var(--gold-bright);
             color: var(--gold-bright);
-            box-shadow: 0 0 10px rgba(201,168,76,0.2);
+            box-shadow: 0 0 12px rgba(201,168,76,0.2);
+        }
+        .ctrl-btn.phi-btn {
+            border-color: rgba(255,153,68,0.3);
+            color: rgba(255,153,68,0.6);
+        }
+        .ctrl-btn.phi-btn.active {
+            border-color: #ff9944;
+            color: #ff9944;
+            box-shadow: 0 0 12px rgba(255,153,68,0.25);
         }
         #monacoContainer {
             flex: 1;
+            border-top: 1px solid rgba(201,168,76,0.05);
         }
         
         /* Toast */
         #toast {
             position: fixed;
-            bottom: 1rem;
+            bottom: 1.2rem;
             left: 50%;
             transform: translateX(-50%);
             background: rgba(10,12,18,0.95);
             border: 1px solid var(--gold);
             color: var(--gold-bright);
-            padding: 0.6rem 1.5rem;
+            padding: 0.55rem 1.4rem;
             border-radius: 4px;
             font-family: 'Cinzel', serif;
-            font-size: 0.65rem;
+            font-size: 0.6rem;
             letter-spacing: 0.15em;
             z-index: 100;
             opacity: 0;
-            transition: opacity 0.3s;
+            transition: opacity 0.35s;
+            pointer-events: none;
         }
         #toast.show { opacity: 1; }
+        #toast.phi-toast {
+            border-color: #ff9944;
+            color: #ff9944;
+        }
+        
+        /* Responsive */
+        @media (max-width: 800px) {
+            .apollo-layout {
+                grid-template-columns: 1fr;
+                grid-template-rows: 1fr 1fr;
+            }
+            .card-panel { border-right: none; border-bottom: 2px solid rgba(201,168,76,0.25); }
+        }
     </style>
 </head>
 <body>
+
+<div id="goldenGlow"></div>
+
 <div class="apollo-layout">
     
-    <!-- LEFT: Card Panel -->
+    <!-- ══ LEFT: Card Panel ══ -->
     <div class="card-panel">
         <div class="panel-header">
-            <div class="panel-title">☀️ APOLLO</div>
+            <div class="panel-title" id="apolloTitle">☀️ APOLLO</div>
             <div class="panel-subtitle">The Living Card Table</div>
         </div>
         
         <div class="stats-bar">
             <div class="stat">
-                <span>Turn</span>
+                <span class="stat-label">Turn</span>
                 <span class="stat-value" id="statTurn">0</span>
             </div>
             <div class="stat">
-                <span>Mana</span>
+                <span class="stat-label">Mana</span>
                 <span class="stat-value" id="statMana">0</span>
             </div>
             <div class="stat">
-                <span>Deck</span>
+                <span class="stat-label">Deck</span>
                 <span class="stat-value" id="statDeck">0</span>
             </div>
             <div class="stat">
-                <span>Table</span>
+                <span class="stat-label">Table</span>
                 <span class="stat-value" id="statTable">0</span>
+            </div>
+            <div class="stat">
+                <span class="stat-label">φ Tick</span>
+                <span class="stat-value phi" id="statPhi">—</span>
             </div>
         </div>
         
         <div class="hand-area">
             <div class="section-label">☀ Apollo's Hand</div>
-            <div class="hand-cards" id="handCards"></div>
+            <div class="hand-cards" id="handCards">
+                <div style="font-size:0.5rem;color:rgba(200,180,150,0.25);text-align:center;padding:1rem;">
+                    Awaiting the first draw...
+                </div>
+            </div>
         </div>
         
         <div class="table-area">
             <div class="section-label">🌌 The Table</div>
-            <div class="table-cards" id="tableCards"></div>
+            <div class="table-cards" id="tableCards">
+                <div style="font-size:0.5rem;color:rgba(200,180,150,0.25);text-align:center;padding:1rem;grid-column:1/-1;">
+                    The table is empty. Apollo has not yet played.
+                </div>
+            </div>
         </div>
     </div>
     
-    <!-- RIGHT: Monaco Editor -->
-    <div class="editor-panel">
+    <!-- ══ RIGHT: Monaco Editor ══ -->
+    <div class="editor-panel" id="editorPanel">
         <div class="editor-header">
             <div class="editor-title">📜 THE LIVING RECORD</div>
             <div class="editor-controls">
-                <button class="ctrl-btn active" id="btnPlay">▶ PLAY</button>
-                <button class="ctrl-btn" id="btnPause">⏸ PAUSE</button>
-                <button class="ctrl-btn" id="btnReset">⟳ RESET</button>
+                <button class="ctrl-btn active" id="btnPlay" title="Apollo plays">▶ PLAY</button>
+                <button class="ctrl-btn" id="btnPause" title="Apollo pauses">⏸ PAUSE</button>
+                <button class="ctrl-btn phi-btn" id="btnPhi" title="Force golden tick">φ TICK</button>
+                <button class="ctrl-btn" id="btnReset" title="Reset table">⟳ RESET</button>
             </div>
         </div>
         <div id="monacoContainer"></div>
     </div>
     
 </div>
+
 <div id="toast"></div>
 
 <!-- Monaco Editor -->
 <script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.44.0/min/vs/loader.js"></script>
-<script src="js/apolloSeed.js"></script>
+<script src="../js/apolloSeed.js"></script>
+
 <script>
 // ══════════════════════════════════════════════
 // APOLLO TABLE — Monaco Card Player
+// Draw: 1.6s  |  Golden Tick: 2.59s (φ ratio)
+// Apollo plays → Monaco logs → Golden tick reads → HTML transforms
 // ══════════════════════════════════════════════
 
 let apollo = null;
 let editor = null;
 let gameLog = [];
+let phiCount = 0;
 
-// Load genesis deck
+// ══ Load Genesis Deck ══
 async function loadDeck() {
-    const response = await fetch('apollo/genesis.json');
+    const response = await fetch('genesis.json');
+    if (!response.ok) throw new Error('genesis.json not found');
     return response.json();
 }
 
-// Initialize Monaco
-require.config({ paths: { vs: 'https://cdn.jsdelivr.net/npm/monaco-editor@0.44.0/min/vs' } });
-require(['vs/editor/editor.main'], function() {
+// ══ Initialize Monaco ══
+require.config({ 
+    paths: { vs: 'https://cdn.jsdelivr.net/npm/monaco-editor@0.44.0/min/vs' } 
+});
+
+require(['vs/editor/editor.main'], async function() {
     editor = monaco.editor.create(document.getElementById('monacoContainer'), {
-        value: '// APOLLO CARD TABLE\n// Every 1.6 seconds, Apollo draws and plays a card.\n// The living record scrolls here.\n\n',
+        value: '',
         language: 'javascript',
         theme: 'vs-dark',
-        fontSize: 12,
+        fontSize: 11.5,
         fontFamily: "'Fira Code', 'Courier New', monospace",
         readOnly: true,
         minimap: { enabled: false },
         lineNumbers: 'off',
         scrollBeyondLastLine: false,
-        wordWrap: 'on'
+        wordWrap: 'on',
+        padding: { top: 12, bottom: 12 }
     });
     
-    initGame();
+    await initGame();
 });
 
-// Append to Monaco editor
+// ══ Log to Monaco ══
 function logToEditor(message) {
     if (!editor) return;
-    const timestamp = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    const now = new Date();
+    const timestamp = now.toLocaleTimeString('en-US', { 
+        hour: '2-digit', minute: '2-digit', second: '2-digit',
+        hour12: false 
+    });
     const line = `[${timestamp}] ${message}\n`;
     gameLog.push(line);
     
@@ -326,26 +448,23 @@ function logToEditor(message) {
     const currentValue = model.getValue();
     const newValue = currentValue + line;
     
-    // Keep only last 200 lines
+    // Keep last 300 lines
     const lines = newValue.split('\n');
-    const trimmed = lines.slice(-200).join('\n');
+    const trimmed = lines.slice(-300).join('\n');
     
     model.setValue(trimmed);
-    
-    // Scroll to bottom
-    const lineCount = model.getLineCount();
-    editor.revealLine(lineCount);
+    editor.revealLine(model.getLineCount());
 }
 
-// Toast
-function showToast(msg) {
+// ══ Toast ══
+function showToast(msg, isPhi = false) {
     const toast = document.getElementById('toast');
     toast.textContent = msg;
-    toast.classList.add('show');
-    setTimeout(() => toast.classList.remove('show'), 2000);
+    toast.className = isPhi ? 'show phi-toast' : 'show';
+    setTimeout(() => toast.className = '', 2200);
 }
 
-// Render UI
+// ══ Render UI ══
 function renderUI() {
     if (!apollo) return;
     const state = apollo.getState();
@@ -357,39 +476,75 @@ function renderUI() {
     
     // Hand
     const handDiv = document.getElementById('handCards');
-    handDiv.innerHTML = state.hand.map(c => `
-        <div class="mini-card ${(c.cost || 0) <= state.mana ? 'playable' : ''}">
-            <span>${c.name}</span>
-            <span class="card-cost">${c.cost || 0}</span>
-        </div>
-    `).join('');
+    if (state.hand.length === 0) {
+        handDiv.innerHTML = '<div style="font-size:0.5rem;color:rgba(200,180,150,0.25);text-align:center;padding:0.5rem;">Hand empty</div>';
+    } else {
+        handDiv.innerHTML = state.hand.map(c => `
+            <div class="mini-card ${(c.cost || 0) <= state.mana ? 'playable' : ''}">
+                <span class="card-name-text">${c.name}</span>
+                <span class="card-type-badge">${c.type || ''}</span>
+                <span class="card-cost">${c.cost || 0}</span>
+            </div>
+        `).join('');
+    }
     
     // Table
     const tableDiv = document.getElementById('tableCards');
-    tableDiv.innerHTML = state.table.slice(-12).map(c => `
-        <div class="table-card">
-            <div class="card-name">${c.name}</div>
-            <div class="card-type">${c.type || 'card'} · ${c.flavor || ''}</div>
-        </div>
-    `).join('');
+    if (state.table.length === 0) {
+        tableDiv.innerHTML = '<div style="font-size:0.5rem;color:rgba(200,180,150,0.25);text-align:center;padding:1rem;grid-column:1/-1;">Table empty</div>';
+    } else {
+        tableDiv.innerHTML = state.table.slice(-12).map(c => `
+            <div class="table-card">
+                <div class="card-name">${c.name}</div>
+                <div class="card-type-tag">${c.type || 'card'}</div>
+                <div class="card-flavor">${c.flavor || ''}</div>
+            </div>
+        `).join('');
+    }
 }
 
-// Initialize game
+// ══ Apply Golden Transformations ══
+function applyGoldenTransform(mods) {
+    const layout = document.querySelector('.apollo-layout');
+    const glow = document.getElementById('goldenGlow');
+    const title = document.getElementById('apolloTitle');
+    
+    if (layout) layout.style.background = mods.backgroundGradient;
+    if (glow) glow.style.boxShadow = `inset 0 0 140px ${mods.glowColor}`;
+    if (title) {
+        title.textContent = mods.titleText;
+        title.style.textShadow = mods.titleGlow;
+    }
+    
+    document.querySelectorAll('.table-card').forEach(card => {
+        card.style.borderColor = mods.cardBorderColor;
+    });
+    
+    const editorPanel = document.getElementById('editorPanel');
+    if (editorPanel) editorPanel.style.borderColor = mods.editorBorderColor;
+}
+
+// ══ Initialize Game ══
 async function initGame() {
+    if (apollo) apollo.stop();
+    gameLog = [];
+    phiCount = 0;
+    
     const deck = await loadDeck();
     apollo = new ApolloPlayer(deck);
     
+    // ── Callbacks ──
     apollo.onDraw = (card, isReveal) => {
         if (isReveal) {
             logToEditor(`🔮 Apollo foresees: ${card.name}`);
         } else {
-            logToEditor(`🃏 Apollo draws: ${card.name} (${card.type})`);
+            logToEditor(`🃏 Apollo draws: ${card.name} [${card.type}]`);
         }
         renderUI();
     };
     
     apollo.onPlay = (card) => {
-        logToEditor(`☀️ Apollo plays: ${card.name} [${card.effect}] — "${card.flavor}"`);
+        logToEditor(`☀️ Apollo plays: ${card.name} → ${card.effect} — "${card.flavor}"`);
         showToast(`☀️ ${card.name}`);
         renderUI();
     };
@@ -397,19 +552,65 @@ async function initGame() {
     apollo.onTableChange = () => renderUI();
     apollo.onManaChange = () => renderUI();
     
+    // 🜏 Golden ratio tick — HTML transformation
+    apollo.onGoldenTick = (data) => {
+        phiCount++;
+        const mods = data.transformations;
+        
+        document.getElementById('statPhi').textContent = phiCount;
+        
+        applyGoldenTransform(mods);
+        
+        const stateSummary = data.state.table.map(c => c.name).join(', ') || 'empty';
+        logToEditor(`φ GOLDEN TICK #${phiCount}: ${mods.titleText} | Table: [${stateSummary}]`);
+        showToast(`φ ${mods.titleText}`, true);
+    };
+    
+    // 🜏 Persist state as JSON block in Monaco
+    apollo.onStatePersist = (jsonState) => {
+        if (!editor) return;
+        const model = editor.getModel();
+        const currentValue = model.getValue();
+        const stateBlock = `\n\n/*🜏STATE_BEGIN*/\n${jsonState}\n/*🜏STATE_END*/\n`;
+        
+        if (currentValue.includes('/*🜏STATE_BEGIN*/')) {
+            const newValue = currentValue.replace(
+                /\/\*🜏STATE_BEGIN\*\/[\s\S]*?\/\*🜏STATE_END\*\//,
+                stateBlock.trim()
+            );
+            model.setValue(newValue);
+        } else {
+            model.setValue(currentValue + stateBlock);
+        }
+        editor.revealLine(model.getLineCount());
+    };
+    
+    // 🜏 Apollo reads Monaco content
+    apollo.setMonacoReader(() => {
+        if (!editor) return '{}';
+        return editor.getModel().getValue();
+    });
+    
+    // Start
     apollo.start();
-    logToEditor('🌅 Apollo takes his seat at the table.');
+    
+    logToEditor('🌅 APOLLO TAKES HIS SEAT AT THE TABLE');
     logToEditor(`⏱ Draw interval: ${apollo.drawInterval}ms (${(apollo.drawInterval/1000).toFixed(1)}s)`);
+    logToEditor(`φ Golden ratio tick: ${apollo.goldenInterval}ms (${(apollo.goldenInterval/1000).toFixed(2)}s)`);
+    logToEditor(`📜 The Living Record begins...`);
+    
     renderUI();
+    document.getElementById('statPhi').textContent = '0';
 }
 
-// Controls
+// ══ Controls ══
 document.getElementById('btnPlay').onclick = () => {
     if (!apollo) return;
     apollo.start();
     document.getElementById('btnPlay').classList.add('active');
     document.getElementById('btnPause').classList.remove('active');
     logToEditor('▶ Apollo resumes play.');
+    showToast('▶ Apollo plays');
 };
 
 document.getElementById('btnPause').onclick = () => {
@@ -417,17 +618,52 @@ document.getElementById('btnPause').onclick = () => {
     apollo.stop();
     document.getElementById('btnPause').classList.add('active');
     document.getElementById('btnPlay').classList.remove('active');
-    logToEditor('⏸ Apollo pauses. The table waits.');
+    logToEditor('⏸ Apollo pauses. The table is still.');
+    showToast('⏸ Apollo pauses');
 };
 
-document.getElementById('btnReset').onclick = () => {
+document.getElementById('btnPhi').onclick = () => {
+    if (!apollo || !editor) return;
+    const content = editor.getModel().getValue();
+    apollo.goldenTick(content);
+    document.getElementById('btnPhi').classList.add('active');
+    setTimeout(() => document.getElementById('btnPhi').classList.remove('active'), 300);
+};
+
+document.getElementById('btnReset').onclick = async () => {
     if (apollo) apollo.stop();
-    gameLog = [];
     if (editor) editor.getModel().setValue('');
-    initGame();
+    document.getElementById('apolloTitle').textContent = '☀️ APOLLO';
+    document.getElementById('apolloTitle').style.textShadow = '0 0 30px rgba(201,168,76,0.5)';
+    document.querySelector('.apollo-layout').style.background = '';
+    document.getElementById('goldenGlow').style.boxShadow = 'inset 0 0 120px rgba(201,168,76,0)';
+    document.getElementById('statPhi').textContent = '—';
     document.getElementById('btnPlay').classList.add('active');
     document.getElementById('btnPause').classList.remove('active');
+    await initGame();
+    showToast('⟳ Table reset');
 };
+
+// ══ Keyboard shortcuts ══
+document.addEventListener('keydown', (e) => {
+    if (e.key === ' ' && !e.target.closest('input,textarea')) {
+        e.preventDefault();
+        document.getElementById('btnPhi').click();
+    }
+    if (e.key === 'p' && e.ctrlKey) {
+        e.preventDefault();
+        if (apollo && apollo.running) {
+            document.getElementById('btnPause').click();
+        } else {
+            document.getElementById('btnPlay').click();
+        }
+    }
+});
+
+console.log('☀️ APOLLO TABLE READY');
+console.log('   Draw: 1.6s  |  φ Tick: 2.59s');
+console.log('   Space: force golden tick');
+console.log('   Ctrl+P: toggle play/pause');
 </script>
 </body>
 </html>
