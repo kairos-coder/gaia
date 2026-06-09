@@ -1,0 +1,102 @@
+{
+  "deck_name": "Apollo's Recursion Deck",
+  "description": "The god of light plays cards that generate reality. Every 1.6 seconds, a new card is drawn and played on the table.",
+  "draw_interval_ms": 1600,
+  "max_hand_size": 5,
+  "max_table_cards": 12,
+  "cards": [
+    {
+      "id": "genesis",
+      "name": "🌱 Genesis",
+      "type": "creation",
+      "cost": 0,
+      "effect": "spawn_card",
+      "target": "random_common",
+      "flavor": "Let there be light — and there was a card."
+    },
+    {
+      "id": "mirror",
+      "name": "🪞 Mirror",
+      "type": "reflection",
+      "cost": 1,
+      "effect": "copy_card",
+      "target": "last_played",
+      "flavor": "Apollo sees himself in every card."
+    },
+    {
+      "id": "recursor",
+      "name": "🔄 Recursor",
+      "type": "loop",
+      "cost": 2,
+      "effect": "replay_last",
+      "target": "self",
+      "max_depth": 4,
+      "flavor": "The loop that sings itself into being."
+    },
+    {
+      "id": "fractal",
+      "name": "❄️ Fractal",
+      "type": "division",
+      "cost": 1,
+      "effect": "split_card",
+      "target": "random_table",
+      "child_count": 2,
+      "flavor": "Every truth contains two smaller truths."
+    },
+    {
+      "id": "weaver",
+      "name": "🧬 Weaver",
+      "type": "synthesis",
+      "cost": 2,
+      "effect": "merge_cards",
+      "target": "two_random_table",
+      "flavor": "Two become one. The one is more than the sum."
+    },
+    {
+      "id": "illuminate",
+      "name": "☀️ Illuminate",
+      "type": "revelation",
+      "cost": 1,
+      "effect": "reveal_card",
+      "target": "top_deck",
+      "flavor": "Apollo sees what is coming."
+    },
+    {
+      "id": "prophecy",
+      "name": "🔮 Prophecy",
+      "type": "oracle",
+      "cost": 2,
+      "effect": "peek_deck",
+      "target": "next_3",
+      "flavor": "The next three cards are already written."
+    },
+    {
+      "id": "chorus",
+      "name": "🎵 Chorus",
+      "type": "amplify",
+      "cost": 1,
+      "effect": "multiply_effect",
+      "target": "last_effect",
+      "multiplier": 2,
+      "flavor": "What was sung once is now sung by many."
+    },
+    {
+      "id": "eclipse",
+      "name": "🌑 Eclipse",
+      "type": "void",
+      "cost": 3,
+      "effect": "remove_card",
+      "target": "oldest_table",
+      "flavor": "Even Apollo must sometimes close his eyes."
+    },
+    {
+      "id": "dawn",
+      "name": "🌅 Dawn",
+      "type": "reset",
+      "cost": 3,
+      "effect": "refresh_hand",
+      "target": "self",
+      "flavor": "A new day. A new hand. The cards begin again."
+    }
+  ]
+}
