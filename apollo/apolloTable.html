@@ -538,13 +538,30 @@ async function initGame() {
     };
     
     apollo.onStatePersist = (jsonState) => {
-        if (!editor) return;
-        const model = editor.getModel();
-        const cv = model.getValue();
-        const block = `\n\n/*🜏STATE_BEGIN*/\n${jsonState}\n/*🜏STATE_END*/\n`;
-        model.setValue(cv.includes('/*🜏STATE_BEGIN*/') ? cv.replace(/\/\*🜏STATE_BEGIN\*\/[\s\S]*?\/\*🜏STATE_END\*\//, block.trim()) : cv + block);
-        editor.revealLine(model.getLineCount());
-    };
+    if (!editor) return;
+    const model  = editor.getModel();
+    const cv     = model.getValue();
+
+    // 🜏 Mind script — Apollo's reasoning (top of the window)
+    const mindScript = apollo._mindScript || '// Apollo is thinking...';
+
+    // 🜏 State block — the persistent record (bottom of the window)
+    const stateBlock = `\n\n/*🜏STATE_BEGIN*/\n${jsonState}\n/*🜏STATE_END*/\n`;
+
+    // If Monaco is empty or only has old content, write fresh
+    if (!cv.includes('/*🜏STATE_BEGIN*/')) {
+        model.setValue(model.getValue() + stateBlock);
+    } else {
+        // Replace state block in-place
+        const updated = cv.replace(
+            /\/\*🜏STATE_BEGIN\*\/[\s\S]*?\/\*🜏STATE_END\*\//,
+            stateBlock.trim()
+        );
+        model.setValue(updated);
+    }
+
+    editor.revealLine(model.getLineCount());
+};
     
     apollo.setMonacoReader(() => editor ? editor.getModel().getValue() : '{}');
     apollo.start();
