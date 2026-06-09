@@ -1,0 +1,15 @@
+{
+  "materials": [
+    { "id": "iron_ore",    "name": "Iron Ore",    "element": "earth", "value": 1, "emoji": "🪨", "tier": 1 },
+    { "id": "copper_ore",  "name": "Copper Ore",  "element": "earth", "value": 1, "emoji": "💎", "tier": 1 },
+    { "id": "coal",        "name": "Coal",        "element": "fire",  "value": 1, "emoji": "🪵", "tier": 1 },
+    { "id": "flame_essence","name": "Flame Essence","element": "fire", "value": 2, "emoji": "🔥", "tier": 2 },
+    { "id": "water_essence","name": "Water Essence","element": "water","value": 2, "emoji": "💧", "tier": 2 },
+    { "id": "air_essence", "name": "Air Essence",  "element": "air",   "value": 2, "emoji": "💨", "tier": 2 },
+    { "id": "earth_essence","name": "Earth Essence","element": "earth","value": 2, "emoji": "🌍", "tier": 2 },
+    { "id": "divine_ember", "name": "Divine Ember", "element": "fire",  "value": 3, "emoji": "✨", "tier": 3 },
+    { "id": "stygian_ice", "name": "Stygian Ice",  "element": "water", "value": 3, "emoji": "❄️", "tier": 3 },
+    { "id": "aether_wind", "name": "Aether Wind",  "element": "air",   "value": 3, "emoji": "🌬️", "tier": 3 },
+    { "id": "titan_bone",  "name": "Titan Bone",   "element": "earth", "value": 3, "emoji": "🦴", "tier": 3 }
+  ]
+}
