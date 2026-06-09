@@ -25,11 +25,49 @@ const ApolloDB = (() => {
     timestamp: null
   };
 
-  function updateShortTerm(apollo) { /* unchanged */ }
-  function recordPlay(card) { /* unchanged */ }
-  function recordProphecy(cards) { /* unchanged */ }
-  function getShortTermMemory() { /* unchanged */ }
-  function getShortTermJSON() { /* unchanged */ }
+    function updateShortTerm(apollo) {
+    const cards = apollo.getAllCardsOnTable();
+    shortTermMemory.currentTable = cards.map(c => ({
+      god: c.god, name: c.name, element: c.element,
+      value: c.value, tokens: c.tokens, row: c.row, col: c.col
+    }));
+    shortTermMemory.currentHand = apollo.hand.map(c => ({
+      god: c.god, name: c.name, cost: c.cost, element: c.element
+    }));
+    shortTermMemory.elementalState = { ...apollo.elementalDominance };
+    shortTermMemory.loopMemory = apollo._loopMemory;
+    shortTermMemory.timestamp = new Date().toISOString();
+    shortTermMemory.emergentEvents = apollo.persistentState.emergentEvents.slice(-3);
+  }
+
+  function recordPlay(card) {
+    shortTermMemory.lastPlays.push({
+      timestamp: new Date().toISOString(),
+      god: card.god || card.name,
+      name: card.name,
+      effect: card.effect,
+      element: card.element,
+      cost: card.cost
+    });
+    if (shortTermMemory.lastPlays.length > 5) {
+      shortTermMemory.lastPlays.shift();
+    }
+  }
+
+  function recordProphecy(cards) {
+    shortTermMemory.lastProphecy = {
+      timestamp: new Date().toISOString(),
+      cards: cards.map(c => c.god || c.name)
+    };
+  }
+
+  function getShortTermMemory() {
+    return { ...shortTermMemory, lastPlays: [...shortTermMemory.lastPlays] };
+  }
+
+  function getShortTermJSON() {
+    return JSON.stringify(shortTermMemory, null, 2);
+  }
 
   // ══════════════════════════════════════════
   // LONG-TERM MEMORY (IndexedDB)
