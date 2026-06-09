@@ -1,0 +1,58 @@
+{
+  "recipes": [
+    {
+      "id": "bronze_ingot",
+      "name": "Bronze Ingot",
+      "emoji": "🪙",
+      "tier": 2,
+      "materials": ["copper_ore", "copper_ore", "coal"],
+      "pattern": [[0,0], [1,0], [2,0]],
+      "description": "Two copper ores smelted with coal. The first alloy."
+    },
+    {
+      "id": "steel_ingot",
+      "name": "Steel Ingot",
+      "emoji": "⚙️",
+      "tier": 2,
+      "materials": ["iron_ore", "iron_ore", "coal", "coal"],
+      "pattern": [[0,0], [1,0], [0,1], [1,1]],
+      "description": "Iron and coal in equal measure. Stronger than bronze."
+    },
+    {
+      "id": "flame_blade",
+      "name": "Flame Blade",
+      "emoji": "🗡️",
+      "tier": 3,
+      "materials": ["steel_ingot", "flame_essence", "divine_ember"],
+      "pattern": [[0,0], [1,0], [2,0]],
+      "description": "A blade that burns with divine fire. Hephaestus forged the first one for Ares."
+    },
+    {
+      "id": "aegis_shield",
+      "name": "Aegis Shield",
+      "emoji": "🛡️",
+      "tier": 3,
+      "materials": ["steel_ingot", "earth_essence", "divine_ember"],
+      "pattern": [[0,0], [1,1], [2,0]],
+      "description": "A shield that turns away mortal blows. Athena carries one."
+    },
+    {
+      "id": "hermes_sandals",
+      "name": "Winged Sandals",
+      "emoji": "👟",
+      "tier": 3,
+      "materials": ["air_essence", "air_essence", "aether_wind"],
+      "pattern": [[0,0], [1,1]],
+      "description": "Sandals that carry the wearer between worlds. Hermes wears them still."
+    },
+    {
+      "id": "thunderbolt_head",
+      "name": "Thunderbolt Head",
+      "emoji": "⚡",
+      "tier": 4,
+      "materials": ["steel_ingot", "divine_ember", "aether_wind", "titan_bone"],
+      "pattern": [[0,0], [1,1], [2,0], [1,0]],
+      "description": "The head of a thunderbolt. Hephaestus forges these for Zeus alone."
+    }
+  ]
+}
