@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HEPHAESTUS · The Divine Forge</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&family=Cinzel:wght@400;600&family=EB+Garamond:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --iron: #888888; --iron-bright: #bbbbbb; --iron-dim: #555555;
+            --ember: #ff6622; --ember-bright: #ff9944; --ember-dim: #883311;
+            --slag: #443322; --deep: #0a0806; --surface: #1a1410;
+            --bronze: #cc8844; --steel: #8899aa; --text: #bcb0a0;
+        }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body {
+            background: var(--deep);
+            color: var(--text);
+            font-family: 'EB Garamond', Georgia, serif;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-image: 
+                radial-gradient(ellipse at 50% 0%, rgba(255,100,34,0.06), transparent 60%),
+                radial-gradient(ellipse at 50% 100%, rgba(136,136,136,0.03), transparent 40%),
+                repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255,100,34,0.01) 2px, rgba(255,100,34,0.01) 4px);
+        }
+        
+        .forge-gate {
+            text-align: center;
+            max-width: 640px;
+            padding: 3rem 2rem;
+        }
+        
+        .forge-glyph {
+            font-size: 5rem;
+            margin-bottom: 1.5rem;
+            animation: hammerPulse 2.618s ease-in-out infinite;
+            filter: drop-shadow(0 0 40px rgba(255,100,34,0.5));
+        }
+        @keyframes hammerPulse {
+            0%,100% { transform: scale(1) rotate(-2deg); filter: drop-shadow(0 0 30px rgba(255,100,34,0.4)); }
+            50% { transform: scale(1.06) rotate(2deg); filter: drop-shadow(0 0 60px rgba(255,100,34,0.7)); }
+        }
+        
+        .forge-title {
+            font-family: 'Cinzel Decorative', serif;
+            font-size: clamp(2rem, 5vw, 3rem);
+            letter-spacing: 0.3em;
+            color: var(--ember-bright);
+            text-shadow: 0 0 40px rgba(255,100,34,0.5), 0 2px 0 rgba(0,0,0,0.5);
+            margin-bottom: 0.5rem;
+        }
+        .forge-subtitle {
+            font-family: 'Cinzel', serif;
+            font-size: 0.65rem;
+            letter-spacing: 0.4em;
+            color: rgba(255,153,68,0.5);
+            text-transform: uppercase;
+            margin-bottom: 2.5rem;
+        }
+        
+        .forge-description {
+            font-size: 1rem;
+            font-style: italic;
+            line-height: 1.9;
+            color: rgba(200,180,150,0.6);
+            margin-bottom: 3rem;
+        }
+        .forge-description strong { color: var(--ember); font-style: normal; }
+        .forge-description .highlight { color: var(--iron-bright); font-style: normal; }
+        .forge-description .phi { color: #ff9944; font-style: normal; }
+        
+        .forge-stats {
+            display: flex;
+            gap: 2rem;
+            justify-content: center;
+            margin-bottom: 3rem;
+            flex-wrap: wrap;
+        }
+        .forge-stat {
+            text-align: center;
+            padding: 1rem 1.5rem;
+            background: rgba(26,20,16,0.8);
+            border: 1px solid rgba(255,100,34,0.15);
+            border-radius: 8px;
+            min-width: 100px;
+        }
+        .forge-stat-value {
+            font-family: 'Cinzel Decorative', serif;
+            font-size: 1.5rem;
+            color: var(--ember);
+            margin-bottom: 0.3rem;
+        }
+        .forge-stat-value.phi { color: #ff9944; }
+        .forge-stat-value.steel { color: var(--steel); }
+        .forge-stat-label {
+            font-size: 0.55rem;
+            letter-spacing: 0.2em;
+            color: rgba(200,180,150,0.4);
+            text-transform: uppercase;
+        }
+        
+        .enter-btn {
+            display: inline-block;
+            font-family: 'Cinzel Decorative', serif;
+            font-size: 0.9rem;
+            letter-spacing: 0.3em;
+            background: rgba(10,8,6,0.9);
+            border: 2px solid rgba(255,100,34,0.4);
+            color: var(--ember);
+            padding: 1rem 2.5rem;
+            border-radius: 3px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.4s;
+            text-shadow: 0 0 20px rgba(255,100,34,0.4);
+            box-shadow: 0 0 30px rgba(255,100,34,0.1), inset 0 0 20px rgba(255,100,34,0.03);
+        }
+        .enter-btn:hover {
+            border-color: var(--ember-bright);
+            color: var(--ember-bright);
+            box-shadow: 0 0 50px rgba(255,100,34,0.25), inset 0 0 30px rgba(255,100,34,0.06);
+            transform: scale(1.03);
+            text-shadow: 0 0 30px rgba(255,153,68,0.7);
+        }
+        
+        .footer-note {
+            margin-top: 3rem;
+            font-family: 'Cinzel', serif;
+            font-size: 0.5rem;
+            letter-spacing: 0.3em;
+            color: rgba(200,180,150,0.25);
+            text-transform: uppercase;
+        }
+    </style>
+</head>
+<body>
+
+<div class="forge-gate">
+    
+    <div class="forge-glyph">🔨</div>
+    
+    <h1 class="forge-title">HEPHAESTUS</h1>
+    <div class="forge-subtitle">The Divine Forge · Zero-Sum Oracle</div>
+    
+    <div class="forge-description">
+        <p>The <strong>lame god</strong> who built thrones for those who exiled him.</p>
+        <p>Every <strong class="phi">1.618 seconds</strong>, raw materials arrive at the forge — <span class="highlight">iron ore, flame essence, aether wind, titan bone.</span></p>
+        <p>The <strong>3×3 crafting grid</strong> receives them. When materials align with an ancient recipe, <strong>the anvil rings.</strong></p>
+        <p>Every <strong class="phi">2.618 seconds</strong> — the golden ratio — the forge <strong>glows</strong> and the HTML <strong>transforms.</strong></p>
+        <p>Bronze ingots. Steel blades. Thunderbolt heads. <strong>Hephaestus does not command the forge. He tends it.</strong></p>
+        <p>You <strong>watch.</strong> The god builds. The zero-sum oracle speaks through <strong>what is made.</strong></p>
+    </div>
+    
+    <div class="forge-stats">
+        <div class="forge-stat">
+            <div class="forge-stat-value phi">1.618s</div>
+            <div class="forge-stat-label">Material Arrival</div>
+        </div>
+        <div class="forge-stat">
+            <div class="forge-stat-value phi">2.618s</div>
+            <div class="forge-stat-label">φ² Golden Anvil</div>
+        </div>
+        <div class="forge-stat">
+            <div class="forge-stat-value">3×3</div>
+            <div class="forge-stat-label">Crafting Grid</div>
+        </div>
+        <div class="forge-stat">
+            <div class="forge-stat-value steel">11</div>
+            <div class="forge-stat-label">Materials</div>
+        </div>
+        <div class="forge-stat">
+            <div class="forge-stat-value">6</div>
+            <div class="forge-stat-label">Ancient Recipes</div>
+        </div>
+    </div>
+    
+    <a href="forge.html" class="enter-btn">
+        🔨 &nbsp; ENTER THE FORGE &nbsp; 🔨
+    </a>
+    
+    <div class="footer-note">
+        GAIA · Hephaestus Engine · Order of Olympus · The God Builds What Others Rule From
+    </div>
+    
+</div>
+
+</body>
+</html>
