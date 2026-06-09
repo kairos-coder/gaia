@@ -18,7 +18,7 @@ class ApolloPlayer {
     this.drawInterval = deck.draw_interval_ms || 1600;
     this.goldenInterval = Math.round(this.drawInterval * 1.618);
     
-    // 🜏 PRIMITIVE 2: Grid table (4 columns × 3 rows = 12 slots)
+    // Grid table (4 columns × 3 rows = 12 slots)
     this.gridCols = 4;
     this.gridRows = 3;
     this.table = this._createEmptyGrid();
@@ -36,17 +36,18 @@ class ApolloPlayer {
     this._monacoReader = null;
     this._recursionGuard = 0;
     
-    // 🜏 PRIMITIVE 7: Memory
+    // Memory
     this.graveyard = [];
     this.echoes = [];
     this.totalValuePlayed = 0;
     this.totalCardsPlayed = 0;
     this.elementalDominance = { fire: 0, earth: 0, air: 0, water: 0, void: 0 };
+    this.elementalDominanceStreak = { fire: 0, earth: 0, air: 0, water: 0, void: 0 };
     this.tableModifiers = [];
     this.novelPatterns = [];
     this.lastTableHash = '';
     
-    // 🜏 Golden state
+    // Golden state
     this.persistentState = {
       history: [],
       tableEffects: [],
@@ -62,11 +63,11 @@ class ApolloPlayer {
     this.onManaChange = null;
     this.onGoldenTick = null;
     this.onStatePersist = null;
-    this.onEmergence = null;  // 🜏 Fires when novel pattern detected
+    this.onEmergence = null;
   }
 
   // ══════════════════════════════════════════
-  // PRIMITIVE 2: GRID SYSTEM
+  // GRID SYSTEM
   // ══════════════════════════════════════════
 
   _createEmptyGrid() {
@@ -99,26 +100,13 @@ class ApolloPlayer {
       this.table[slot.row][slot.col] = card;
       return true;
     }
-    // Grid full — remove oldest card
-    return this._forcePlaceCard(card);
-  }
-
-  _forcePlaceCard(card) {
-    let oldest = null;
-    let oldestTurn = Infinity;
-    for (let row = 0; row < this.gridRows; row++) {
-      for (let col = 0; col < this.gridCols; col++) {
-        const c = this.table[row][col];
-        if (c && c.turnPlaced < oldestTurn) {
-          oldest = c;
-          oldestTurn = c.turnPlaced;
-        }
-      }
-    }
-    if (oldest) {
-      this._removeFromGrid(oldest.row, oldest.col);
-      card.row = oldest.row;
-      card.col = oldest.col;
+    // Grid full — remove a random card to make space
+    const allCards = this.getAllCardsOnTable();
+    if (allCards.length > 0) {
+      const victim = allCards[Math.floor(Math.random() * allCards.length)];
+      this._removeFromGrid(victim.row, victim.col);
+      card.row = victim.row;
+      card.col = victim.col;
       this.table[card.row][card.col] = card;
       return true;
     }
@@ -129,7 +117,6 @@ class ApolloPlayer {
     const card = this.table[row][col];
     if (card) {
       this.graveyard.push(card);
-      // 🜏 PRIMITIVE 5: onDestroy trigger
       this._fireTrigger('onDestroy', card);
     }
     this.table[row][col] = null;
@@ -159,7 +146,7 @@ class ApolloPlayer {
   }
 
   // ══════════════════════════════════════════
-  // PRIMITIVE 3 & 5: STATE + TRIGGERS
+  // STATE + TRIGGERS
   // ══════════════════════════════════════════
 
   _createCard(deckCard) {
@@ -167,7 +154,6 @@ class ApolloPlayer {
     return {
       ...deckCard,
       instanceId: `${deckCard.id}_${Date.now()}_${Math.random().toString(36).slice(2,6)}`,
-      // 🜏 State
       value: deckCard.value || 1,
       tokens: { fire: 0, water: 0, earth: 0, air: 0, void: 0 },
       element: element,
@@ -178,7 +164,6 @@ class ApolloPlayer {
       triggeredBy: [],
       row: -1,
       col: -1,
-      // 🜏 Triggers
       triggers: deckCard.triggers || {}
     };
   }
@@ -194,7 +179,6 @@ class ApolloPlayer {
   _incrementTurnCounters() {
     this.getAllCardsOnTable().forEach(card => {
       card.turnsOnTable++;
-      // 🜏 Fire onTurnEnd for every card
       this._fireTrigger('onTurnEnd', card);
     });
   }
@@ -208,15 +192,32 @@ class ApolloPlayer {
       }
     });
     
-    // 🜏 Memory: check for elemental shift
-    const dominant = Object.entries(this.elementalDominance)
-      .sort((a, b) => b[1] - a[1])[0];
+    const sorted = Object.entries(this.elementalDominance).sort((a, b) => b[1] - a[1]);
+    const dominant = sorted[0];
     
-    if (dominant[1] >= 4 && !this.tableModifiers.includes(`${dominant[0]}_dominance`)) {
+    // Hysteresis: require 3 consecutive turns of dominance
+    Object.keys(this.elementalDominanceStreak).forEach(el => {
+      if (el === dominant[0] && dominant[1] >= 3) {
+        this.elementalDominanceStreak[el]++;
+      } else {
+        this.elementalDominanceStreak[el] = 0;
+      }
+    });
+    
+    if (dominant[1] >= 3 && 
+        this.elementalDominanceStreak[dominant[0]] >= 3 &&
+        !this.tableModifiers.includes(`${dominant[0]}_dominance`)) {
+      // Remove previous dominance modifiers
+      this.tableModifiers = this.tableModifiers.filter(m => !m.endsWith('_dominance'));
       this.tableModifiers.push(`${dominant[0]}_dominance`);
       const event = `🌊 Elemental dominance shifts to ${dominant[0].toUpperCase()}! Table gains "${dominant[0]}_dominance" modifier.`;
       this.persistentState.emergentEvents.push({ turn: this.turn, event });
       if (this.onEmergence) this.onEmergence(event);
+    }
+    
+    // Lose dominance if element drops below 3
+    if (dominant[1] < 3) {
+      this.tableModifiers = this.tableModifiers.filter(m => !m.endsWith('_dominance'));
     }
   }
 
@@ -263,24 +264,19 @@ class ApolloPlayer {
     const index = this.hand.indexOf(card);
     if (index > -1) this.hand.splice(index, 1);
     
-    // 🜏 Place on grid
     card.playCount++;
     card.turnPlaced = this.turn;
     this._placeCardOnGrid(card);
     
-    // 🜏 Track memory
     this.totalCardsPlayed++;
     this.totalValuePlayed += (card.value || 0);
     this._updateElementalDominance();
     
-    // 🜏 Execute effect
     this._recursionGuard = 0;
     this.executeEffect(card);
     
-    // 🜏 Fire onPlay trigger
     this._fireTrigger('onPlay', card);
     
-    // 🜏 Fire onNeighborChanged for adjacent cards
     const neighbors = this.getNeighbors(card.row, card.col);
     Object.values(neighbors).forEach(n => {
       if (n) this._fireTrigger('onNeighborChanged', n, { newNeighbor: card });
@@ -290,14 +286,13 @@ class ApolloPlayer {
     if (this.onTableChange) this.onTableChange(this.getAllCardsOnTable());
     if (this.onManaChange) this.onManaChange(this.mana);
     
-    // 🜏 Check for novel patterns
     this._detectNovelPatterns();
     
     return true;
   }
 
   // ══════════════════════════════════════════
-  // EFFECT SYSTEM WITH ADJACENCY
+  // EFFECT SYSTEM
   // ══════════════════════════════════════════
 
   executeEffect(card) {
@@ -354,7 +349,6 @@ class ApolloPlayer {
               tokens: {}
             };
             this._placeCardOnGrid(child);
-            // 🜏 ADJACENCY: child buffs a neighbor
             const childNeighbors = this.getNeighbors(child.row, child.col);
             const randomNeighbor = Object.values(childNeighbors).find(n => n);
             if (randomNeighbor) {
@@ -400,8 +394,7 @@ class ApolloPlayer {
       case 'remove_card':
         const removeCards = this.getAllCardsOnTable();
         if (removeCards.length > 0) {
-          const target = removeCards[0]; // Remove oldest
-          // 🜏 ADJACENCY: debuff neighbors before removing
+          const target = removeCards[0];
           const neighbors = this.getNeighbors(target.row, target.col);
           Object.values(neighbors).forEach(n => {
             if (n) {
@@ -444,7 +437,6 @@ class ApolloPlayer {
         break;
         
       case 'spread_element':
-        // 🜏 NEW: Spread the card's element to a random neighbor
         const spreadCards = this.getAllCardsOnTable();
         const me = spreadCards.find(c => c.instanceId === card.instanceId);
         if (me) {
@@ -460,14 +452,12 @@ class ApolloPlayer {
   }
 
   // ══════════════════════════════════════════
-  // PRIMITIVE 7: NOVEL PATTERN DETECTION
+  // NOVEL PATTERN DETECTION
   // ══════════════════════════════════════════
 
   _detectNovelPatterns() {
     const cards = this.getAllCardsOnTable();
     if (cards.length < 3) return;
-    
-    const hash = cards.map(c => `${c.element}:${c.row},${c.col}`).sort().join('|');
     
     // Detect full row
     for (let row = 0; row < this.gridRows; row++) {
@@ -498,8 +488,6 @@ class ApolloPlayer {
         }
       }
     });
-    
-    this.lastTableHash = hash;
   }
 
   // ══════════════════════════════════════════
@@ -510,22 +498,29 @@ class ApolloPlayer {
     const playable = this.hand.filter(c => (c.cost || 0) <= this.mana);
     if (playable.length === 0) return null;
     
-    // Prioritize cards that interact with current table state
-    const cardsOnTable = this.getTableCardCount();
+    const gridFull = this.getTableCardCount() >= (this.gridCols * this.gridRows);
+    const handFull = this.hand.length >= this.deck.max_hand_size;
+    const tableStale = this.getAllCardsOnTable().every(c => c.turnsOnTable > 10);
     
-    if (cardsOnTable >= 4) {
-      const mergeCard = playable.find(c => c.effect === 'merge_cards');
-      if (mergeCard) return mergeCard;
+    // 🜏 SATURATION FIX: If grid is full or hand is stuck or table is stale, play Dawn
+    if ((gridFull || handFull || tableStale) && playable.some(c => c.effect === 'refresh_hand')) {
+      return playable.find(c => c.effect === 'refresh_hand');
     }
     
-    if (cardsOnTable >= 2) {
-      const splitCard = playable.find(c => c.effect === 'split_card');
-      if (splitCard && Math.random() < 0.4) return splitCard;
+    // If grid is nearly full, prioritize removal or merge
+    if (gridFull) {
+      const removal = playable.find(c => c.effect === 'remove_card' || c.effect === 'merge_cards');
+      if (removal) return removal;
     }
     
-    // Play most expensive affordable card
+    // Prioritize expensive cards
     playable.sort((a, b) => (b.cost || 0) - (a.cost || 0));
-    if (Math.random() < 0.25) return playable[Math.floor(Math.random() * playable.length)];
+    
+    // 25% chance to play randomly
+    if (Math.random() < 0.25) {
+      return playable[Math.floor(Math.random() * playable.length)];
+    }
+    
     return playable[0];
   }
 
@@ -630,7 +625,7 @@ class ApolloPlayer {
     
     if (dominant && dominant[1] >= 4) {
       const elementColors = {
-        fire: { bg: 'radial-gradient(ellipse at 50% 30%, rgba(255,100,20,0.15), var(--deep))', glow: 'rgba(255,100,20,0.5)', title: '🔥 APOLLO · INFERNO', shadow: '0 0 40px rgba(255,100,20,0.7)' },
+        fire:  { bg: 'radial-gradient(ellipse at 50% 30%, rgba(255,100,20,0.15), var(--deep))', glow: 'rgba(255,100,20,0.5)', title: '🔥 APOLLO · INFERNO', shadow: '0 0 40px rgba(255,100,20,0.7)' },
         water: { bg: 'radial-gradient(ellipse at 50% 30%, rgba(20,100,255,0.12), var(--deep))', glow: 'rgba(20,100,255,0.4)', title: '🌊 APOLLO · DELUGE', shadow: '0 0 40px rgba(20,100,255,0.6)' },
         earth: { bg: 'radial-gradient(ellipse at 50% 30%, rgba(100,180,60,0.12), var(--deep))', glow: 'rgba(100,180,60,0.4)', title: '🌿 APOLLO · VERDANT', shadow: '0 0 40px rgba(100,180,60,0.6)' },
         air:   { bg: 'radial-gradient(ellipse at 50% 30%, rgba(180,180,255,0.10), var(--deep))', glow: 'rgba(180,180,255,0.35)', title: '💨 APOLLO · TEMPEST', shadow: '0 0 40px rgba(180,180,255,0.5)' },
