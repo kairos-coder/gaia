@@ -525,17 +525,27 @@ async function initGame() {
         renderUI();
     };
     
-    apollo.onGoldenTick = (data) => {
-        phiCount++;
-        document.getElementById('statPhi').textContent = phiCount;
-        applyGoldenTransform(data.transformations);
-        const gods = (data.tableCards||[]).map(c => {
-            const name = c.god || c.name || '?';
-            return (EMOJI_MAP[name] || '🃏') + name;
-        }).join(', ') || 'empty';
-        logToEditor(`φ GOLDEN TICK #${phiCount}: ${data.transformations.titleText} | Table: [${gods}]`);
-        if (data.emergentEvents?.length) showToast('✨ ' + data.emergentEvents[data.emergentEvents.length-1].event, 'emerge-toast');
-    };
+apollo.onGoldenTick = (data) => {
+    phiCount++;
+    document.getElementById('statPhi').textContent = phiCount;
+    applyGoldenTransform(data.transformations);
+
+    const gods = (data.tableCards || []).map(c => {
+        const name = c.god || c.name || '?';
+        return (EMOJI_MAP[name] || '🃏') + name;
+    }).join(', ') || 'empty';
+
+    logToEditor(`φ GOLDEN TICK #${phiCount}: ${data.transformations.titleText} | Table: [${gods}]`);
+
+    // 🜏 Emit the mind script so the soul window shows reasoning
+    if (apollo._mindScript) {
+        logToEditor('\n' + apollo._mindScript + '\n');
+    }
+
+    if (data.emergentEvents?.length) {
+        showToast('✨ ' + data.emergentEvents[data.emergentEvents.length - 1].event, 'emerge-toast');
+    }
+};
     
     apollo.onStatePersist = (jsonState) => {
     if (!editor) return;
