@@ -497,7 +497,10 @@ async function initGame() {
         phiCount++;
         document.getElementById('statPhi').textContent = phiCount;
         applyGoldenTransform(data.transformations);
-        const gods = (data.tableCards||[]).map(c => EMOJI_MAP[c.god]+c.god).join(', ')||'empty';
+        const gods = (data.tableCards||[]).map(c => {
+    const godName = c.god || c.name;
+    return (EMOJI_MAP[godName]||'🃏') + (godName||'?');
+}).join(', ') || 'empty';
         logToEditor(`φ GOLDEN TICK #${phiCount}: ${data.transformations.titleText} | Table: [${gods}]`);
         if (data.emergentEvents?.length) showToast('✨ ' + data.emergentEvents[data.emergentEvents.length-1].event, 'emerge-toast');
     };
