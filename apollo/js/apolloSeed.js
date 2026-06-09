@@ -14,11 +14,17 @@ const TAU = PI * 2;
 
 class ApolloPlayer {
   constructor(deck) {
+    constructor(deck) {
     this.deck = deck;
     
+    // 🜏 Hard defaults — the deck JSON may not provide these
+    this.deck.max_hand_size = this.deck.max_hand_size || 5;
+    this.deck.max_table_cards = this.deck.max_table_cards || 12;
+    this.deck.draw_interval_ms = this.deck.draw_interval_ms || Math.round(PHI * 1000);
+    
     // 🜏 Sacred timing
-    this.drawInterval = Math.round(PHI * 1000);         // 1618ms
-    this.goldenInterval = Math.round(PHI * PHI * 1000); // 2618ms
+    this.drawInterval = Math.round(PHI * 1000);
+    this.goldenInterval = Math.round(PHI * PHI * 1000);
     
     // 🜏 Sacred thresholds
     this.STUCK_TURNS = Math.round(PI);                   // 3
