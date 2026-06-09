@@ -226,7 +226,7 @@ const ApolloDB = (() => {
   /**
    * Get comprehensive stats for ApolloMind.
    */
-  async function getLibraryStats() {
+   async function getLibraryStats() {
     const [mostPlayed, elements, patterns, memoryDeck, sessions] = await Promise.all([
       getMostPlayedGod(),
       getElementalHistory(100),
@@ -264,7 +264,14 @@ const ApolloDB = (() => {
     URL.revokeObjectURL(url);
     return stats;
   }
-
+  async function getStats() {
+    return {
+        sessions: await count('sessions'),
+        prophecies: await count('prophecies'),
+        plays: await count('play_history'),
+        emergence: await count('emergence')
+    };
+}
   // ══════════════════════════════════════════
   // PUBLIC API
   // ══════════════════════════════════════════
