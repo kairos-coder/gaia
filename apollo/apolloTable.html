@@ -460,9 +460,11 @@ async function initGame() {
     };
     
     apollo.onPlay = (card) => {
-        const emoji = EMOJI_MAP[card.god] || '🃏';
-        logToEditor(`☀️ Apollo plays: ${emoji} ${card.god||card.name} — "${card.flavor}"`);
-        showToast(`${emoji} ${card.god||card.name}: ${card.name}`);
+    const godName = card.god || card.ruling_god || card.name;
+    const emoji = EMOJI_MAP[godName] || '🃏';
+    const quote = card.flavor || card.description || card.keywords?.[0] || card.upright?.slice(0, 60) || '...';
+    logToEditor(`☀️ Apollo plays: ${emoji} ${godName} — "${quote}"`);
+    showToast(`${emoji} ${godName}: ${card.name}`);
         
         // 🜏 Auto-clear table when 8+ cards
         if (apollo.getTableCardCount() >= TABLE_CLEAR_THRESHOLD) {
