@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HEPHAESTUS · The Divine Forge</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&family=Cinzel:wght@400;600&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --iron: #888888; --iron-bright: #bbbbbb;
+            --ember: #ff6622; --ember-bright: #ff9944; --ember-dim: #883311;
+            --slag: #443322; --deep: #0a0806; --surface: #1a1410;
+            --bronze: #cc8844; --steel: #8899aa; --text: #bcb0a0;
+            --fire: #ff6644; --water: #4488cc; --earth: #66aa44; --air: #9988cc;
+        }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body {
+            background: var(--deep); color: var(--text);
+            font-family: 'Cinzel', serif; min-height: 100vh; overflow: hidden;
+        }
+        #forgeGlow {
+            position: fixed; inset: 0; pointer-events: none; z-index: 0;
+            transition: all 2.618s cubic-bezier(0.4, 0, 0.2, 1); opacity: 0.2;
+            box-shadow: inset 0 0 120px rgba(255,100,34,0);
+        }
+        .forge-layout {
+            display: grid; grid-template-columns: 380px 1fr; height: 100vh;
+            position: relative; z-index: 1;
+            transition: background 2.618s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        /* LEFT PANEL */
+        .forge-panel {
+            background: var(--surface); border-right: 2px solid rgba(255,100,34,0.25);
+            display: flex; flex-direction: column; overflow: hidden;
+        }
+        .panel-header {
+            padding: 1rem; border-bottom: 1px solid rgba(255,100,34,0.15);
+            text-align: center; background: linear-gradient(180deg, rgba(255,100,34,0.05), transparent);
+        }
+        .panel-title {
+            font-family: 'Cinzel Decorative', serif; font-size: 1.2rem;
+            color: var(--ember-bright); letter-spacing: 0.25em;
+            transition: all 2.618s ease; text-shadow: 0 0 30px rgba(255,100,34,0.5);
+        }
+        .panel-subtitle {
+            font-size: 0.45rem; letter-spacing: 0.35em;
+            color: rgba(255,153,68,0.4); margin-top: 0.3rem; text-transform: uppercase;
+        }
+        
+        /* STATS */
+        .stats-bar {
+            display: flex; gap: 0.3rem; padding: 0.5rem 0.6rem;
+            border-bottom: 1px solid rgba(255,100,34,0.08);
+            font-size: 0.5rem; letter-spacing: 0.1em; color: rgba(200,180,150,0.5);
+        }
+        .stat {
+            flex: 1; display: flex; flex-direction: column; align-items: center;
+            gap: 0.1rem; padding: 0.25rem; background: rgba(0,0,0,0.2); border-radius: 4px;
+        }
+        .stat-label { font-size: 0.38rem; letter-spacing: 0.2em; text-transform: uppercase; }
+        .stat-value { font-family: 'Cinzel Decorative', serif; font-size: 0.9rem; color: var(--ember-bright); }
+        .stat-value.phi { color: #ff9944; }
+        .stat-value.steel { color: var(--steel); }
+        
+        /* CRAFTING GRID */
+        .grid-section { padding: 0.6rem; border-bottom: 1px solid rgba(255,100,34,0.08); }
+        .section-label { font-size: 0.4rem; letter-spacing: 0.35em; color: rgba(255,153,68,0.35); margin-bottom: 0.4rem; text-transform: uppercase; }
+        .crafting-grid {
+            display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.25rem;
+            aspect-ratio: 1; max-width: 200px; margin: 0 auto;
+        }
+        .grid-cell {
+            background: rgba(0,0,0,0.4); border: 1px solid rgba(255,100,34,0.1);
+            border-radius: 4px; aspect-ratio: 1; display: flex;
+            align-items: center; justify-content: center;
+            font-size: 1.5rem; transition: all 0.3s;
+            position: relative;
+        }
+        .grid-cell.occupied {
+            border-color: rgba(255,100,34,0.3); background: rgba(255,100,34,0.05);
+            animation: materialArrive 0.5s ease-out;
+        }
+        @keyframes materialArrive {
+            from { opacity: 0; transform: scale(0.7); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        .grid-cell .material-tier {
+            position: absolute; top: 2px; right: 3px;
+            font-size: 0.4rem; color: rgba(255,153,68,0.5);
+        }
+        
+        /* INVENTORY */
+        .inventory-section { flex: 1; padding: 0.6rem; overflow-y: auto; }
+        .inventory-list { display: flex; flex-direction: column; gap: 0.2rem; }
+        .inv-item {
+            background: rgba(0,0,0,0.3); border: 1px solid rgba(255,100,34,0.1);
+            border-radius: 4px; padding: 0.3rem 0.5rem; font-size: 0.5rem;
+            display: flex; align-items: center; gap: 0.3rem;
+            animation: itemAppear 0.6s ease-out;
+        }
+        @keyframes itemAppear {
+            from { opacity: 0; transform: translateX(-10px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        .inv-item .item-emoji { font-size: 0.9rem; }
+        .inv-item .item-name { color: var(--iron-bright); flex: 1; }
+        .inv-item .item-tier {
+            font-size: 0.38rem; padding: 0.1rem 0.3rem; border-radius: 2px;
+            background: rgba(255,100,34,0.1); color: rgba(255,153,68,0.5);
+        }
+        .inv-item.tier-3 { border-color: rgba(204,136,68,0.3); }
+        .inv-item.tier-4 { border-color: rgba(255,153,68,0.4); background: rgba(255,100,34,0.05); }
+        
+        /* RIGHT PANEL */
+        .editor-panel { display: flex; flex-direction: column; }
+        .editor-header { padding: 0.4rem 0.8rem; border-bottom: 1px solid rgba(255,100,34,0.1); display: flex; justify-content: space-between; align-items: center; }
+        .editor-title { font-size: 0.5rem; letter-spacing: 0.25em; color: rgba(255,153,68,0.45); text-transform: uppercase; }
+        .editor-controls { display: flex; gap: 0.3rem; }
+        .ctrl-btn {
+            background: rgba(255,100,34,0.08); border: 1px solid rgba(255,100,34,0.18);
+            color: rgba(255,153,68,0.6); font-family: 'Cinzel', serif;
+            font-size: 0.42rem; letter-spacing: 0.12em; padding: 0.25rem 0.5rem;
+            border-radius: 3px; cursor: pointer; transition: all 0.25s; text-transform: uppercase;
+        }
+        .ctrl-btn:hover { background: rgba(255,100,34,0.18); border-color: var(--ember); color: var(--ember-bright); }
+        .ctrl-btn.active { background: rgba(255,100,34,0.2); border-color: var(--ember-bright); color: var(--ember-bright); box-shadow: 0 0 12px rgba(255,100,34,0.2); }
+        .ctrl-btn.phi-btn { border-color: rgba(255,153,68,0.3); color: rgba(255,153,68,0.6); }
+        #monacoContainer { flex: 1; border-top: 1px solid rgba(255,100,34,0.05); }
+        
+        #toast {
+            position: fixed; bottom: 1rem; left: 50%; transform: translateX(-50%);
+            background: rgba(10,8,6,0.95); border: 1px solid var(--ember);
+            color: var(--ember-bright); padding: 0.5rem 1.2rem; border-radius: 4px;
+            font-family: 'Cinzel', serif; font-size: 0.55rem; letter-spacing: 0.15em;
+            z-index: 100; opacity: 0; transition: opacity 0.35s; pointer-events: none;
+        }
+        #toast.show { opacity: 1; }
+        #toast.forge-toast { border-color: #ff9944; color: #ff9944; }
+        
+        @media (max-width: 800px) {
+            .forge-layout { grid-template-columns: 1fr; grid-template-rows: 1fr 1fr; }
+            .forge-panel { border-right: none; border-bottom: 2px solid rgba(255,100,34,0.25); }
+        }
+    </style>
+</head>
+<body>
+
+<div id="forgeGlow"></div>
+
+<div class="forge-layout">
+    
+    <!-- LEFT: Forge Panel -->
+    <div class="forge-panel">
+        <div class="panel-header">
+            <div class="panel-title" id="forgeTitle">🔨 HEPHAESTUS</div>
+            <div class="panel-subtitle">The Divine Forge · Zero-Sum Oracle</div>
+        </div>
+        
+        <div class="stats-bar">
+            <div class="stat"><span class="stat-label">Turn</span><span class="stat-value" id="statTurn">0</span></div>
+            <div class="stat"><span class="stat-label">Mana</span><span class="stat-value" id="statMana">0</span></div>
+            <div class="stat"><span class="stat-label">Forged</span><span class="stat-value steel" id="statForged">0</span></div>
+            <div class="stat"><span class="stat-label">φ</span><span class="stat-value phi" id="statPhi">—</span></div>
+        </div>
+        
+        <div class="grid-section">
+            <div class="section-label">🔨 Crafting Grid (3×3)</div>
+            <div class="crafting-grid" id="craftingGrid"></div>
+        </div>
+        
+        <div class="inventory-section">
+            <div class="section-label">📦 Forged Items</div>
+            <div class="inventory-list" id="inventoryList">
+                <div style="font-size:0.45rem;color:rgba(200,180,150,0.2);text-align:center;padding:1rem;">No items forged yet...</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- RIGHT: Monaco -->
+    <div class="editor-panel">
+        <div class="editor-header">
+            <div class="editor-title">📜 THE FORGE LOG</div>
+            <div class="editor-controls">
+                <button class="ctrl-btn active" id="btnPlay">▶ RUN</button>
+                <button class="ctrl-btn" id="btnPause">⏸ PAUSE</button>
+                <button class="ctrl-btn phi-btn" id="btnPhi">φ RING</button>
+                <button class="ctrl-btn" id="btnReset">⟳ RESET</button>
+            </div>
+        </div>
+        <div id="monacoContainer"></div>
+    </div>
+    
+</div>
+
+<div id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.44.0/min/vs/loader.js"></script>
+<script src="js/hephaestusSeed.js"></script>
+
+<script>
+const PHI = 1.618033988749895;
+const PI = Math.PI;
+const TAU = PI * 2;
+const ARRIVAL_INTERVAL = Math.round(PHI * 1000);
+const GOLDEN_TICK = Math.round(PHI * PHI * 1000);
+
+let forge = null;
+let editor = null;
+let phiCount = 0;
+
+const ELEMENT_COLORS = { fire: 'var(--fire)', water: 'var(--water)', earth: 'var(--earth)', air: 'var(--air)' };
+
+async function loadData(file) {
+    const res = await fetch('json/' + file);
+    return res.json();
+}
+
+require.config({ paths: { vs: 'https://cdn.jsdelivr.net/npm/monaco-editor@0.44.0/min/vs' } });
+require(['vs/editor/editor.main'], async function() {
+    editor = monaco.editor.create(document.getElementById('monacoContainer'), {
+        value: '', language: 'javascript', theme: 'vs-dark',
+        fontSize: 11, fontFamily: "'Fira Code', monospace",
+        readOnly: true, minimap: { enabled: false },
+        lineNumbers: 'off', scrollBeyondLastLine: false,
+        wordWrap: 'on', padding: { top: 12, bottom: 12 }
+    });
+    await initForge();
+});
+
+function logToEditor(msg) {
+    if (!editor) return;
+    const ts = new Date().toLocaleTimeString('en-US', { hour:'2-digit', minute:'2-digit', second:'2-digit', hour12:false });
+    const model = editor.getModel();
+    model.setValue(model.getValue() + `[${ts}] ${msg}\n`);
+    editor.revealLine(model.getLineCount());
+}
+
+function showToast(msg, type='') {
+    const t = document.getElementById('toast');
+    t.textContent = msg; t.className = 'show ' + type;
+    setTimeout(() => t.className = '', 2200);
+}
+
+function renderGrid() {
+    if (!forge) return;
+    const grid = document.getElementById('craftingGrid');
+    let html = '';
+    for (let row = 0; row < 3; row++) {
+        for (let col = 0; col < 3; col++) {
+            const cell = forge.grid[row][col];
+            if (cell) {
+                html += `<div class="grid-cell occupied">
+                    ${cell.emoji || '🪨'}
+                    <span class="material-tier">${cell.tier||1}</span>
+                </div>`;
+            } else {
+                html += '<div class="grid-cell"></div>';
+            }
+        }
+    }
+    grid.innerHTML = html;
+}
+
+function renderInventory() {
+    if (!forge) return;
+    const list = document.getElementById('inventoryList');
+    if (forge.inventory.length === 0) {
+        list.innerHTML = '<div style="font-size:0.45rem;color:rgba(200,180,150,0.2);text-align:center;padding:1rem;">No items forged yet...</div>';
+        return;
+    }
+    list.innerHTML = forge.inventory.slice().reverse().map(item => `
+        <div class="inv-item tier-${item.tier}">
+            <span class="item-emoji">${item.emoji}</span>
+            <span class="item-name">${item.name}</span>
+            <span class="item-tier">T${item.tier}</span>
+        </div>
+    `).join('');
+}
+
+function renderUI() {
+    if (!forge) return;
+    const s = forge.getState();
+    document.getElementById('statTurn').textContent = s.turn;
+    document.getElementById('statMana').textContent = s.mana;
+    document.getElementById('statForged').textContent = s.forgeCount;
+    renderGrid();
+    renderInventory();
+}
+
+function applyGoldenTransform(state) {
+    const title = document.getElementById('forgeTitle');
+    const glow = document.getElementById('forgeGlow');
+    const layout = document.querySelector('.forge-layout');
+    
+    if (state.forgeCount > 10) {
+        if (title) { title.textContent = '⚡ HEPHAESTUS · MASTERWORK'; title.style.textShadow = '0 0 50px rgba(255,153,68,0.8)'; }
+        if (glow) glow.style.boxShadow = 'inset 0 0 160px rgba(255,100,34,0.4)';
+        if (layout) layout.style.background = 'radial-gradient(ellipse at 50% 30%, rgba(255,100,34,0.12), var(--deep))';
+    } else if (state.forgeCount > 3) {
+        if (title) { title.textContent = '🔥 HEPHAESTUS · KINDLED'; title.style.textShadow = '0 0 40px rgba(255,153,68,0.6)'; }
+        if (glow) glow.style.boxShadow = 'inset 0 0 120px rgba(255,100,34,0.2)';
+    }
+}
+
+async function initForge() {
+    if (forge) forge.stop();
+    phiCount = 0;
+    
+    const materialsData = await loadData('materials.json');
+    const recipesData = await loadData('recipes.json');
+    
+    forge = new HephaestusForge(materialsData.materials, recipesData.recipes);
+    
+    forge.onMaterialArrive = (material) => {
+        logToEditor(`🪨 Material arrives: ${material.emoji} ${material.name} [${material.element}] T${material.tier}`);
+        renderUI();
+    };
+    
+    forge.onForge = (item) => {
+        logToEditor(`🔨 FORGED: ${item.emoji} ${item.name} (T${item.tier}) — "${item.description}"`);
+        showToast(`🔨 ${item.emoji} ${item.name} forged!`, 'forge-toast');
+        renderUI();
+    };
+    
+    forge.onGridChange = () => renderUI();
+    
+    forge.onGoldenTick = (state) => {
+        phiCount++;
+        document.getElementById('statPhi').textContent = phiCount;
+        applyGoldenTransform(state);
+        const items = state.inventory.map(i => i.name).join(', ') || 'none';
+        logToEditor(`φ ANVIL RINGS #${phiCount} | Forged: ${state.forgeCount} | Items: [${items}]`);
+    };
+    
+    forge.start();
+    
+    logToEditor('🔨 HEPHAESTUS KINDLES THE FORGE');
+    logToEditor(`⏱ Materials arrive every ${ARRIVAL_INTERVAL}ms (φ·1000)`);
+    logToEditor(`φ Anvil rings every ${GOLDEN_TICK}ms (φ²·1000)`);
+    logToEditor(`📜 The Forge Log begins...`);
+    
+    renderUI();
+    document.getElementById('statPhi').textContent = '0';
+}
+
+document.getElementById('btnPlay').onclick = () => {
+    if (!forge) return;
+    forge.start();
+    document.getElementById('btnPlay').classList.add('active');
+    document.getElementById('btnPause').classList.remove('active');
+    logToEditor('▶ Forge resumes.');
+};
+document.getElementById('btnPause').onclick = () => {
+    if (!forge) return;
+    forge.stop();
+    document.getElementById('btnPause').classList.add('active');
+    document.getElementById('btnPlay').classList.remove('active');
+    logToEditor('⏸ Forge pauses. The anvil is silent.');
+};
+document.getElementById('btnPhi').onclick = () => {
+    if (!forge) return;
+    forge.onGoldenTick(forge.getState());
+    document.getElementById('btnPhi').classList.add('active');
+    setTimeout(() => document.getElementById('btnPhi').classList.remove('active'), 300);
+};
+document.getElementById('btnReset').onclick = async () => {
+    if (forge) forge.stop();
+    if (editor) editor.getModel().setValue('');
+    document.getElementById('forgeTitle').textContent = '🔨 HEPHAESTUS';
+    document.getElementById('forgeTitle').style.textShadow = '0 0 30px rgba(255,100,34,0.5)';
+    document.querySelector('.forge-layout').style.background = '';
+    document.getElementById('forgeGlow').style.boxShadow = 'inset 0 0 120px rgba(255,100,34,0)';
+    document.getElementById('statPhi').textContent = '—';
+    document.getElementById('btnPlay').classList.add('active');
+    document.getElementById('btnPause').classList.remove('active');
+    await initForge();
+};
+
+document.addEventListener('keydown', (e) => {
+    if (e.key===' ' && !e.target.closest('input,textarea')) { e.preventDefault(); document.getElementById('btnPhi').click(); }
+    if (e.key==='p' && e.ctrlKey) { e.preventDefault(); if(forge&&forge.running) document.getElementById('btnPause').click(); else document.getElementById('btnPlay').click(); }
+});
+
+console.log('🔨 HEPHAESTUS FORGE READY');
+console.log(`   Materials: ${ARRIVAL_INTERVAL}ms (φ·1000) | Anvil: ${GOLDEN_TICK}ms (φ²·1000)`);
+console.log('   Space: ring anvil | Ctrl+P: toggle');
+</script>
+</body>
+</html>
