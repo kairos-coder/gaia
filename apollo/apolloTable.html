@@ -20,20 +20,20 @@
         }
         #goldenGlow {
             position: fixed; inset: 0; pointer-events: none; z-index: 0;
-            transition: all 2.59s cubic-bezier(0.4, 0, 0.2, 1); opacity: 0.15;
+            transition: all 2.618s cubic-bezier(0.4, 0, 0.2, 1); opacity: 0.15;
             box-shadow: inset 0 0 120px rgba(201,168,76,0);
         }
         .apollo-layout {
             display: grid; grid-template-columns: 380px 1fr; height: 100vh;
             position: relative; z-index: 1;
-            transition: background 2.59s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: background 2.618s cubic-bezier(0.4, 0, 0.2, 1);
         }
         
         /* LEFT PANEL */
         .card-panel {
             background: var(--surface); border-right: 2px solid rgba(201,168,76,0.25);
             display: flex; flex-direction: column; overflow: hidden;
-            transition: border-color 2.59s ease;
+            transition: border-color 2.618s ease;
         }
         .panel-header {
             padding: 1rem; border-bottom: 1px solid rgba(201,168,76,0.15);
@@ -42,7 +42,7 @@
         .panel-title {
             font-family: 'Cinzel Decorative', serif; font-size: 1.2rem;
             color: var(--gold-bright); letter-spacing: 0.25em;
-            transition: all 2.59s ease; text-shadow: 0 0 30px rgba(201,168,76,0.5);
+            transition: all 2.618s ease; text-shadow: 0 0 30px rgba(201,168,76,0.5);
         }
         .panel-subtitle {
             font-size: 0.45rem; letter-spacing: 0.35em;
@@ -132,7 +132,7 @@
         .memory-panel .mem-god { color: rgba(240,208,128,0.5); }
         
         /* RIGHT PANEL */
-        .editor-panel { display: flex; flex-direction: column; transition: border-color 2.59s ease; }
+        .editor-panel { display: flex; flex-direction: column; transition: border-color 2.618s ease; }
         .editor-header { padding: 0.4rem 0.8rem; border-bottom: 1px solid rgba(201,168,76,0.1); display: flex; justify-content: space-between; align-items: center; }
         .editor-title { font-size: 0.5rem; letter-spacing: 0.25em; color: rgba(201,168,76,0.45); text-transform: uppercase; }
         .editor-controls { display: flex; gap: 0.3rem; }
@@ -245,8 +245,18 @@
 
 <script>
 // ══════════════════════════════════════════════
-// APOLLO TAROT TABLE — Major Arcana Edition
+// APOLLO TAROT TABLE — Sacred Timing Edition
+// φ·1000ms draw (1618ms) · φ²·1000ms golden tick (2618ms)
+// π-force: Dealer after 3 turns stuck
+// τ+φ: Table clears at 8 cards
 // ══════════════════════════════════════════════
+
+const PHI = 1.618033988749895;
+const PI = Math.PI;
+const TAU = PI * 2;
+const DRAW_INTERVAL = Math.round(PHI * 1000);         // 1618ms
+const GOLDEN_TICK = Math.round(PHI * PHI * 1000);     // 2618ms
+const TABLE_CLEAR_THRESHOLD = Math.round(TAU + PHI);  // 8 cards
 
 let apollo = null;
 let editor = null;
@@ -262,7 +272,6 @@ const EMOJI_MAP = {
 };
 
 const SPREAD_ROWS = ['Past', 'Present', 'Future'];
-const TABLE_CLEAR_THRESHOLD = 8; // Clear table when 8+ cards
 
 // ══ Load Sky State ══
 async function loadSkyState() {
@@ -284,7 +293,6 @@ async function loadDeck() {
         const response = await fetch('json/major_arcana.json');
         if (response.ok) return response.json();
     } catch(e) {}
-    // Fallback: use MAJOR_ARCANA_DECK if loaded as script
     if (typeof MAJOR_ARCANA_DECK !== 'undefined') return MAJOR_ARCANA_DECK;
     throw new Error('No deck found');
 }
@@ -428,7 +436,7 @@ function forceDeal() {
     if (!apollo) return;
     const dealt = apollo._dealerDeal(7);
     if (dealt && dealt.length > 0) {
-        const names = dealt.map(c => EMOJI_MAP[c.god]+' '+c.god).join(', ');
+        const names = dealt.map(c => (EMOJI_MAP[c.god]||'🃏')+' '+c.god).join(', ');
         logToEditor('🃏 DEALER: ' + dealt.length + ' fresh cards — ' + names);
         showToast('🃏 Dealt ' + dealt.length + ' cards', 'deal-toast');
         apollo._handStuckTurns = 0;
@@ -442,7 +450,13 @@ async function initGame() {
     if (apollo) apollo.stop();
     phiCount = 0;
     await loadSkyState();
+    
     const deck = await loadDeck();
+    // 🜏 Ensure deck has required fields
+    if (!deck.max_hand_size) deck.max_hand_size = 5;
+    if (!deck.max_table_cards) deck.max_table_cards = 12;
+    if (!deck.draw_interval_ms) deck.draw_interval_ms = DRAW_INTERVAL;
+    
     apollo = new ApolloPlayer(deck);
     
     if (skyState && typeof ApolloSkyBridge !== 'undefined') {
@@ -464,7 +478,6 @@ async function initGame() {
         logToEditor(`☀️ Apollo plays: ${emoji} ${card.god||card.name} — "${card.flavor}"`);
         showToast(`${emoji} ${card.god||card.name}: ${card.name}`);
         
-        // 🜏 Auto-clear table when 8+ cards
         if (apollo.getTableCardCount() >= TABLE_CLEAR_THRESHOLD) {
             setTimeout(clearTable, 500);
         }
@@ -482,7 +495,7 @@ async function initGame() {
     };
     
     apollo.onDeal = (dealtCards) => {
-        const names = dealtCards.map(c => EMOJI_MAP[c.god]+' '+c.god).join(', ');
+        const names = dealtCards.map(c => (EMOJI_MAP[c.god]||'🃏')+' '+c.god).join(', ');
         logToEditor(`🃏 DEALER: Apollo receives ${dealtCards.length} fresh cards — ${names}`);
         showToast('🃏 Fresh deal! ' + dealtCards.length + ' cards.', 'deal-toast');
         renderUI();
@@ -492,7 +505,7 @@ async function initGame() {
         phiCount++;
         document.getElementById('statPhi').textContent = phiCount;
         applyGoldenTransform(data.transformations);
-        const gods = (data.tableCards||[]).map(c => EMOJI_MAP[c.god]+c.god).join(', ')||'empty';
+        const gods = (data.tableCards||[]).map(c => (EMOJI_MAP[c.god]||'🃏')+c.god).join(', ')||'empty';
         logToEditor(`φ GOLDEN TICK #${phiCount}: ${data.transformations.titleText} | Table: [${gods}]`);
         if (data.emergentEvents?.length) showToast('✨ ' + data.emergentEvents[data.emergentEvents.length-1].event, 'emerge-toast');
     };
@@ -511,7 +524,7 @@ async function initGame() {
     
     logToEditor('🌅 APOLLO TAKES HIS SEAT AT THE TAROT TABLE');
     logToEditor(`🃏 Deck: ${deck.card_count} Major Arcana`);
-    logToEditor(`⏱ Draw: ${apollo.drawInterval}ms | φ: ${apollo.goldenInterval}ms | Clear: ${TABLE_CLEAR_THRESHOLD} cards`);
+    logToEditor(`⏱ Draw: ${DRAW_INTERVAL}ms (φ·1000) | φ² Tick: ${GOLDEN_TICK}ms | π Stuck: 3 turns | Clear: ${TABLE_CLEAR_THRESHOLD} cards (τ+φ)`);
     logToEditor(`📜 The Living Record begins...`);
     
     renderUI();
@@ -573,7 +586,8 @@ document.addEventListener('keydown', (e) => {
 
 console.log('☀️ APOLLO TAROT TABLE READY');
 console.log('   Deck: 22 Major Arcana from json/major_arcana.json');
-console.log('   Draw: 1.6s | φ: 2.59s | Clear: ' + TABLE_CLEAR_THRESHOLD + ' cards');
+console.log(`   Draw: ${DRAW_INTERVAL}ms (φ·1000) | φ² Tick: ${GOLDEN_TICK}ms`);
+console.log(`   π Stuck: 3 turns | Clear: ${TABLE_CLEAR_THRESHOLD} cards (τ+φ)`);
 console.log('   Space: φ tick | Ctrl+D: Deal | Ctrl+C: Clear | Ctrl+P: Pause');
 </script>
 </body>
