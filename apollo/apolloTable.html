@@ -302,15 +302,43 @@ async function loadSkyState() {
 
 // ══ Load Major Arcana Deck ══
 async function loadDeck() {
+    let deck = null;
+    
+    // Try to load from JSON
     try {
         const response = await fetch('json/major_arcana.json');
         if (response.ok) {
-            const deck = await response.json();
-            // 🜏 Enforce defaults
-            deck.max_hand_size = deck.max_hand_size || 5;
-            deck.max_table_cards = deck.max_table_cards || 12;
-            deck.draw_interval_ms = deck.draw_interval_ms || DRAW_INTERVAL;
-            return deck;
+            deck = await response.json();
+        }
+    } catch(e) {}
+    
+    // Fallback to MAJOR_ARCANA_DECK if loaded as script
+    if (!deck && typeof MAJOR_ARCANA_DECK !== 'undefined') {
+        deck = MAJOR_ARCANA_DECK;
+    }
+    
+    if (!deck) throw new Error('No deck found');
+    
+    // 🜏 Enforce defaults
+    deck.max_hand_size = deck.max_hand_size || 5;
+    deck.max_table_cards = deck.max_table_cards || 12;
+    deck.draw_interval_ms = deck.draw_interval_ms || DRAW_INTERVAL;
+    
+    // 🜏 Inject effects from majorArcanaDeck.js into the loaded JSON cards
+    if (typeof MAJOR_ARCANA_DECK !== 'undefined' && MAJOR_ARCANA_DECK.cards) {
+        const effectMap = {};
+        MAJOR_ARCANA_DECK.cards.forEach(c => {
+            effectMap[c.id] = c.effect;
+        });
+        
+        deck.cards = deck.cards.map(card => ({
+            ...card,
+            effect: card.effect || effectMap[card.id] || 'unknown'
+        }));
+    }
+    
+    return deck;
+}
         }
     } catch(e) {}
     if (typeof MAJOR_ARCANA_DECK !== 'undefined') {
