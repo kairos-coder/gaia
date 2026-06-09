@@ -1,22 +1,28 @@
 // ══════════════════════════════════════════════
 // APOLLO SEED — The God Who Plays Cards
-// Draws every 1.6s. Golden ratio tick every 2.59s.
+// Sacred timing: φ·1000ms draw, φ²·1000ms golden tick
+// π-force: Dealer after π turns stuck
+// τ+φ: Table clears at 8 cards
 // 
-// Deck: ../json/major_arcana.json (22 Major Arcana)
-// Memory: ../json/memory_deck.json (persistent state)
-// 
-// ETERNAL LOOP EDITION:
-// 1. Single-Trigger Per Tick
-// 2. Loop Memory
-// 3. Synthesis Dampening
-// 4. Dealer — fresh hand when stuck
+// Deck: ../json/major_arcana.json
+// Memory: js/apolloDB.js
 // ══════════════════════════════════════════════
+
+const PHI = 1.618033988749895;
+const PI = Math.PI;
+const TAU = PI * 2;
 
 class ApolloPlayer {
   constructor(deck) {
     this.deck = deck;
-    this.drawInterval = deck.draw_interval_ms || 1600;
-    this.goldenInterval = Math.round(this.drawInterval * 1.618);
+    
+    // 🜏 Sacred timing
+    this.drawInterval = Math.round(PHI * 1000);         // 1618ms
+    this.goldenInterval = Math.round(PHI * PHI * 1000); // 2618ms
+    
+    // 🜏 Sacred thresholds
+    this.STUCK_TURNS = Math.round(PI);                   // 3
+    this.TABLE_CLEAR = Math.round(TAU + PHI);            // 8
     
     this.gridCols = 4;
     this.gridRows = 3;
@@ -221,7 +227,7 @@ class ApolloPlayer {
   }
 
   // ══════════════════════════════════════════
-  // DEALER
+  // π-DEALER — Sacred intervention
   // ══════════════════════════════════════════
 
   _dealerDeal(count = 7) {
@@ -300,7 +306,6 @@ class ApolloPlayer {
       if (n) this._fireTrigger('onNeighborChanged', n, { newNeighbor: card });
     });
     
-    // 🜏 ApolloDB: Record in short-term memory
     if (typeof ApolloDB !== 'undefined') {
       ApolloDB.recordPlay(card);
       ApolloDB.updateShortTerm(this);
@@ -318,7 +323,7 @@ class ApolloPlayer {
   }
 
   // ══════════════════════════════════════════
-  // EFFECT SYSTEM (all 22 Major Arcana effects)
+  // EFFECT SYSTEM
   // ══════════════════════════════════════════
 
   executeEffect(card) {
@@ -338,8 +343,7 @@ class ApolloPlayer {
         const cards = this.getAllCardsOnTable();
         if (cards.length > 0 && !cards[cards.length-1].name.startsWith('🪞 🪞')) {
           const target = cards[cards.length-1];
-          const copy = { ...target, instanceId: `${target.id}_copy_${this.turn}`, name: '🪞 ' + target.name, playCount: 0, turnPlaced: this.turn, tokens: { ...target.tokens }, _triggeredThisTick: false };
-          this._placeCardOnGrid(copy);
+          this._placeCardOnGrid({ ...target, instanceId: `${target.id}_copy_${this.turn}`, name: '🪞 ' + target.name, playCount: 0, turnPlaced: this.turn, tokens: { ...target.tokens }, _triggeredThisTick: false });
         }
         break;
       }
@@ -376,7 +380,7 @@ class ApolloPlayer {
           let i2 = Math.floor(Math.random()*mc.length);
           while (i2 === i1) i2 = Math.floor(Math.random()*mc.length);
           const c1 = mc[i1], c2 = mc[i2];
-          const newType = c1.type !== c2.type ? 'synthesis' : (c1.type === 'creation' ? 'division' : c1.type === 'division' ? 'amplify' : c1.type === 'amplify' ? 'reflection' : 'creation');
+          const newType = c1.type !== c2.type ? 'synthesis' : (c1.type==='creation'?'division':c1.type==='division'?'amplify':c1.type==='amplify'?'reflection':'creation');
           const newElement = c1.element !== c2.element ? (Math.random()<0.5?c1.element:c2.element) : (['fire','water','earth','air'].find(e=>e!==c1.element)||'void');
           this._removeFromGrid(c1.row,c1.col); this._removeFromGrid(c2.row,c2.col);
           this._placeCardOnGrid({ ...c1, instanceId: `merged_${c1.id}_${c2.id}_${this.turn}`, name: '🌟 ' + c1.name + ' + ' + c2.name, type: newType, element: newElement, value: Math.max(1,(c1.value||0)+(c2.value||0)-1), tokens: Object.fromEntries(Object.keys(c1.tokens).map(k=>[k,Math.min(3,(c1.tokens[k]||0)+(c2.tokens[k]||0))])), tags: [...new Set([...c1.tags,...c2.tags])], cost: Math.min(5,(c1.cost||0)+(c2.cost||0)), effect: c1.effect, flavor: 'Two became one. Something changed.', triggers: {}, _triggeredThisTick: false });
@@ -518,7 +522,7 @@ class ApolloPlayer {
   }
 
   // ══════════════════════════════════════════
-  // TICK SYSTEM
+  // SACRED TICK
   // ══════════════════════════════════════════
 
   tick() {
@@ -535,13 +539,13 @@ class ApolloPlayer {
       this._lastHandSize = this.hand.length;
     }
     
-    if (this._handStuckTurns >= 3) {
+    // 🜏 π-FORCE: Dealer after π turns stuck
+    if (this._handStuckTurns >= this.STUCK_TURNS) {
       const dealt = this._dealerDeal(7);
       if (dealt && dealt.length > 0 && this.onDeal) this.onDeal(dealt);
       return;
     }
     
-    // 🜏 ApolloDB: Sync on even turns
     if (typeof ApolloDB !== 'undefined' && this.turn % 2 === 0) {
       ApolloDB.syncToVault(this);
     }
