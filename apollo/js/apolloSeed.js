@@ -156,24 +156,15 @@ class ApolloPlayer {
   // ══════════════════════════════════════════
 
   _createCard(deckCard) {
-    const element = deckCard.element || this._randomElement();
+    const element = (deckCard.element || this._randomElement()).toLowerCase();
     return {
       ...deckCard,
+      god: deckCard.ruling_god || deckCard.god || deckCard.name,
       instanceId: `${deckCard.id}_${Date.now()}_${Math.random().toString(36).slice(2,6)}`,
       value: deckCard.value || 1,
       tokens: { fire: 0, water: 0, earth: 0, air: 0, void: 0 },
       element: element,
       tags: [...(deckCard.tags || [])],
-      playCount: 0,
-      turnPlaced: this.turn,
-      turnsOnTable: 0,
-      triggeredBy: [],
-      row: -1,
-      col: -1,
-      triggers: deckCard.triggers || {},
-      _triggeredThisTick: false
-    };
-  }
 
   _fireTrigger(triggerName, card, context = {}) {
     if (!card || !card.triggers || !card.triggers[triggerName]) return;
