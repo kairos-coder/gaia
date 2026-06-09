@@ -165,6 +165,16 @@ class ApolloPlayer {
       tokens: { fire: 0, water: 0, earth: 0, air: 0, void: 0 },
       element: element,
       tags: [...(deckCard.tags || [])],
+      playCount: 0,
+      turnPlaced: this.turn,
+      turnsOnTable: 0,
+      triggeredBy: [],
+      row: -1,
+      col: -1,
+      triggers: deckCard.triggers || {},
+      _triggeredThisTick: false
+    };
+}
 
   _fireTrigger(triggerName, card, context = {}) {
     if (!card || !card.triggers || !card.triggers[triggerName]) return;
