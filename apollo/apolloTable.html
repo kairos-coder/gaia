@@ -1049,8 +1049,7 @@ async function initGame() {
     const editorHeight = editor.getDomNode()?.clientHeight || 600;
     const nearBottom   = scrollHeight - scrollTop - editorHeight < 60;
     model.setValue(source);
-   if (nearBottom) editor.revealLine(model.getLineCount());
-  });
+    if (nearBottom) editor.revealLine(model.getLineCount());
     apollo.start();
 
     logToEditor('🌅 APOLLO TAKES HIS SEAT AT THE TAROT TABLE');
