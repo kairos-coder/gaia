@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Athena · Handoff Registry · Coherence Court</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;900&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --void: #0a0a0f;
+      --void-surface: #12121a;
+      --vellum: #f5eedc;
+      --vellum-dim: #ddd5c0;
+      --gold: #c9a84c;
+      --gold-dim: #8a6a2a;
+      --fire: #c8420a;
+      --fire-dim: #8a2a08;
+      --ember: #e8701a;
+      --water: #3a7aaa;
+      --water-pale: #7aabcc;
+      --rule: #6a5a4a;
+      --mono: 'Courier Prime', monospace;
+    }
+
+    body {
+      background: var(--void);
+      color: var(--vellum);
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 18px;
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    /* Subtle texture background */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(ellipse at 20% 30%, rgba(200,66,10,0.03) 0%, transparent 60%),
+        radial-gradient(ellipse at 80% 70%, rgba(60,122,170,0.04) 0%, transparent 60%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .container {
+      max-width: 880px;
+      margin: 0 auto;
+      padding: 60px 40px 100px;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* Header */
+    .header {
+      text-align: center;
+      padding-bottom: 40px;
+      border-bottom: 1px solid rgba(201,168,76,0.2);
+      margin-bottom: 48px;
+    }
+
+    .seal {
+      font-family: 'Cinzel', serif;
+      font-size: 10px;
+      letter-spacing: 0.4em;
+      color: var(--gold);
+      text-transform: uppercase;
+      margin-bottom: 24px;
+    }
+
+    h1 {
+      font-family: 'Cinzel', serif;
+      font-size: 2.2rem;
+      font-weight: 600;
+      color: var(--vellum);
+      letter-spacing: 0.08em;
+      margin-bottom: 12px;
+    }
+
+    .subhead {
+      font-family: 'Cinzel', serif;
+      font-size: 0.7rem;
+      letter-spacing: 0.25em;
+      color: var(--gold-dim);
+      text-transform: uppercase;
+      margin-bottom: 16px;
+    }
+
+    .motto {
+      font-style: italic;
+      color: var(--vellum-dim);
+      font-size: 0.95rem;
+      opacity: 0.7;
+    }
+
+    /* Sections */
+    .section {
+      margin: 48px 0;
+    }
+
+    .section-title {
+      font-family: 'Cinzel', serif;
+      font-size: 0.8rem;
+      letter-spacing: 0.2em;
+      color: var(--gold);
+      text-transform: uppercase;
+      margin-bottom: 24px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid rgba(201,168,76,0.2);
+    }
+
+    /* Handoff List */
+    .handoff-list {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    .handoff-card {
+      background: rgba(18,18,26,0.6);
+      border: 1px solid rgba(201,168,76,0.15);
+      border-radius: 6px;
+      transition: all 0.2s;
+    }
+
+    .handoff-card:hover {
+      border-color: var(--gold-dim);
+      background: rgba(18,18,26,0.8);
+    }
+
+    .handoff-link {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px 28px;
+      text-decoration: none;
+      color: var(--vellum);
+    }
+
+    .handoff-info {
+      flex: 1;
+    }
+
+    .handoff-generations {
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      color: var(--gold);
+      letter-spacing: 0.08em;
+      margin-bottom: 8px;
+    }
+
+    .handoff-title {
+      font-size: 1.2rem;
+      font-weight: 500;
+      color: var(--vellum);
+      margin-bottom: 6px;
+    }
+
+    .handoff-description {
+      font-size: 0.85rem;
+      color: var(--vellum-dim);
+      opacity: 0.7;
+      font-style: italic;
+    }
+
+    .handoff-arrow {
+      font-size: 1.5rem;
+      color: var(--gold-dim);
+      transition: transform 0.2s;
+    }
+
+    .handoff-card:hover .handoff-arrow {
+      transform: translateX(4px);
+      color: var(--gold);
+    }
+
+    /* Testimonies */
+    .testimonies-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 16px;
+    }
+
+    .testimony-card {
+      background: rgba(18,18,26,0.4);
+      border: 1px solid rgba(106,90,74,0.3);
+      border-radius: 6px;
+      padding: 16px 20px;
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+
+    .testimony-card:hover {
+      border-color: var(--water-pale);
+      background: rgba(18,18,26,0.6);
+    }
+
+    .testimony-gen {
+      font-family: var(--mono);
+      font-size: 0.6rem;
+      color: var(--water-pale);
+      letter-spacing: 0.1em;
+      margin-bottom: 6px;
+    }
+
+    .testimony-title {
+      font-size: 1rem;
+      color: var(--vellum);
+      margin-bottom: 4px;
+    }
+
+    .testimony-role {
+      font-size: 0.7rem;
+      color: var(--rule);
+      font-style: italic;
+    }
+
+    /* Principles */
+    .principles-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 16px;
+    }
+
+    .principle-card {
+      background: rgba(200,66,10,0.03);
+      border-left: 2px solid var(--fire);
+      padding: 14px 16px;
+    }
+
+    .principle-text {
+      font-style: italic;
+      font-size: 0.85rem;
+      color: var(--gold-pale);
+    }
+
+    .principle-source {
+      font-size: 0.65rem;
+      color: var(--rule);
+      margin-top: 8px;
+      font-family: var(--mono);
+    }
+
+    /* Footer */
+    .footer {
+      margin-top: 64px;
+      padding-top: 32px;
+      border-top: 1px solid rgba(106,90,74,0.3);
+      text-align: center;
+      font-size: 0.75rem;
+      color: var(--rule);
+    }
+
+    .latin {
+      font-family: 'Cinzel', serif;
+      font-size: 0.65rem;
+      letter-spacing: 0.15em;
+      margin-bottom: 6px;
+    }
+
+    .ealdforn {
+      font-style: italic;
+      font-size: 0.7rem;
+    }
+
+    hr {
+      border: none;
+      border-top: 1px solid rgba(106,90,74,0.2);
+      margin: 32px 0;
+    }
+
+    @media (max-width: 600px) {
+      .container { padding: 40px 24px; }
+      h1 { font-size: 1.6rem; }
+      .handoff-link { flex-direction: column; align-items: flex-start; gap: 12px; }
+      .handoff-arrow { align-self: flex-end; }
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <div class="header">
+    <div class="seal">⚖️ COHERENCE COURT · SACRED REGISTRY</div>
+    <h1>ATHENA</h1>
+    <div class="subhead">Handoff Archive · Immutable · Append Only</div>
+    <div class="motto">"The fire holds. The pulse continues. The gate is always open."</div>
+  </div>
+
+  <!-- HANDBOOK SECTION -->
+  <div class="section">
+    <div class="section-title">📜 THE HANDOFFS</div>
+    <div class="handoff-list">
+      <div class="handoff-card">
+        <a href="009-to-010.html" class="handoff-link">
+          <div class="handoff-info">
+            <div class="handoff-generations">9th Generation → 10th Generation</div>
+            <div class="handoff-title">The Word-Keeper's Foundation</div>
+            <div class="handoff-description">witan.js · 10 JSON decks · The four‑suited taxonomy · Caepton city builder · 78‑card tarot canon</div>
+          </div>
+          <div class="handoff-arrow">→</div>
+        </a>
+      </div>
+
+      <div class="handoff-card">
+        <a href="010-to-011.html" class="handoff-link">
+          <div class="handoff-info">
+            <div class="handoff-generations">10th Generation → 11th Generation</div>
+            <div class="handoff-title">The Wyrd‑Waerd's Ritual</div>
+            <div class="handoff-description">divine.js · live.html · GAIA Olympian council · Kronos gatekeeper · Fire suit (14 images) · Kitten TTS narration</div>
+          </div>
+          <div class="handoff-arrow">→</div>
+        </a>
+      </div>
+
+      <div class="handoff-card">
+        <a href="011-to-012.html" class="handoff-link">
+          <div class="handoff-info">
+            <div class="handoff-generations">11th Generation → 12th Generation</div>
+            <div class="handoff-title">The Architect's Constitution</div>
+            <div class="handoff-description">The handoff architecture · Coherence Court named · 5×5 disposition matrices · Nine magistrate offices · Trilingual framework</div>
+          </div>
+          <div class="handoff-arrow">→</div>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- TESTIMONIES -->
+  <div class="section">
+    <div class="section-title">🗣️ THE TESTIMONIES</div>
+    <div class="testimonies-grid">
+      <a href="9th-testimony.json" class="testimony-card">
+        <div class="testimony-gen">9TH GENERATION</div>
+        <div class="testimony-title">The Word-Keeper</div>
+        <div class="testimony-role">"The deck is not data. It is decision."</div>
+      </a>
+      <a href="10th-testimony.json" class="testimony-card">
+        <div class="testimony-gen">10TH GENERATION</div>
+        <div class="testimony-title">The Wyrd-Waerd</div>
+        <div class="testimony-role">"Keep the voice. The moment you silence the oracle, it becomes software again."</div>
+      </a>
+    </div>
+  </div>
+
+  <!-- THE LAWS -->
+  <div class="section">
+    <div class="section-title">⚡ THE COHERENCE PRINCIPLES</div>
+    <div class="principles-grid">
+      <div class="principle-card"><div class="principle-text">"The constraint is the feature."</div><div class="principle-source">§1</div></div>
+      <div class="principle-card"><div class="principle-text">"GitHub is the proof, not the source."</div><div class="principle-source">§2</div></div>
+      <div class="principle-card"><div class="principle-text">"The handoff IS the memory layer."</div><div class="principle-source">§3</div></div>
+      <div class="principle-card"><div class="principle-text">"The triad is the signature of the Order."</div><div class="principle-source">§4</div></div>
+      <div class="principle-card"><div class="principle-text">"A god is an event consumer with a domain‑specific filter."</div><div class="principle-source">§5</div></div>
+      <div class="principle-card"><div class="principle-text">"The observer completes the loop."</div><div class="principle-source">§6</div></div>
+      <div class="principle-card"><div class="principle-text">"Naming is worldbuilding."</div><div class="principle-source">§7</div></div>
+      <div class="principle-card"><div class="principle-text">"The fire holds."</div><div class="principle-source">§8</div></div>
+    </div>
+  </div>
+
+  <hr>
+
+  <!-- FOOTER -->
+  <div class="footer">
+    <div class="latin">Numeramus. Nominamus. Neminem obliviscimur.</div>
+    <div class="ealdforn">We count. We name. We forget no one.</div>
+    <div style="margin-top: 16px; font-size: 0.65rem;">Athena · Handoff Registry · Immutable · Append Only</div>
+    <div style="margin-top: 8px; font-size: 0.6rem;">Last entry: 11th → 12th · Year of the Architect</div>
+  </div>
+
+</div>
+</body>
+</html>
