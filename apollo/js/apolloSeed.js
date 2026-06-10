@@ -38,7 +38,7 @@ class ApolloPlayer {
     this.drawPile = this.shuffle([...deck.cards]);
     
     this.mana = 0;
-    this.maxMana = 10.0;
+    this.maxMana = 10;
     this.turn = 0;
     this.running = false;
     this.intervalId = null;
@@ -533,7 +533,7 @@ class ApolloPlayer {
 
   tick() {
     this.turn++;
-    this.mana = Math.min(this.mana + 1.6, this.maxMana);
+    this.mana = Math.min(this.mana + 2, this.maxMana);
     this.getAllCardsOnTable().forEach(c => { c._triggeredThisTick = false; });
     this._incrementTurnCounters();
     this._updateElementalDominance();
