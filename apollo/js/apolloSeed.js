@@ -17,7 +17,7 @@ class ApolloPlayer {
     this.deck = deck;
     
     // 🜏 Hard defaults — the deck JSON may not provide these
-    this.deck.max_hand_size = this.deck.max_hand_size || 5;
+    this.deck.max_hand_size = this.deck.max_hand_size || 7;
     this.deck.max_table_cards = this.deck.max_table_cards || 12;
     this.deck.draw_interval_ms = this.deck.draw_interval_ms || Math.round(PHI * 1000);
     
@@ -38,7 +38,7 @@ class ApolloPlayer {
     this.drawPile = this.shuffle([...deck.cards]);
     
     this.mana = 0;
-    this.maxMana = 100;
+    this.maxMana = 10.00;
     this.turn = 0;
     this.running = false;
     this.intervalId = null;
