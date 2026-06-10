@@ -6,9 +6,6 @@
     <title>APOLLO · The Living Tarot Table</title>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&family=Cinzel:wght@400;600&family=Fira+Code:wght@300;400;500&family=EB+Garamond:ital,wght@0,400;1,400;1,500&display=swap" rel="stylesheet">
     <style>
-        /* ══════════════════════════════════════════
-           TOKENS
-        ══════════════════════════════════════════ */
         :root {
             --black:      #07080f;
             --deep:       #0d0f18;
@@ -17,28 +14,23 @@
             --surface-3:  #1f2538;
             --border:     rgba(201,168,76,0.14);
             --border-hi:  rgba(201,168,76,0.35);
-
             --gold:       #c9a84c;
             --gold-hi:    #f0d080;
             --gold-dim:   rgba(201,168,76,0.35);
             --sun:        #ffcc44;
-
             --text:       #c8c8c8;
             --text-dim:   rgba(200,190,170,0.45);
             --text-faint: rgba(200,190,170,0.2);
-
             --fire:   #ff5533;
             --water:  #3399dd;
             --earth:  #779944;
             --air:    #aa88ee;
             --void:   #7755aa;
-
             --fire-dim:  rgba(255,85,51,0.18);
             --water-dim: rgba(51,153,221,0.18);
             --earth-dim: rgba(119,153,68,0.18);
             --air-dim:   rgba(170,136,238,0.18);
             --void-dim:  rgba(119,85,170,0.18);
-
             --phi: 1.618;
             --radius: 5px;
             --radius-lg: 8px;
@@ -54,11 +46,6 @@
             overflow: hidden;
         }
 
-        /* ══════════════════════════════════════════
-           PULSE RING — The signature element.
-           An SVG ring around the left panel that
-           throbs with the dominant element's color.
-        ══════════════════════════════════════════ */
         #pulseRing {
             position: fixed;
             top: 0; left: 0;
@@ -74,9 +61,7 @@
             opacity: 0.18;
             rx: 0;
         }
-        #pulseRing.pulsing rect {
-            animation: ringPulse 1.8s ease-in-out;
-        }
+        #pulseRing.pulsing rect { animation: ringPulse 1.8s ease-in-out; }
         @keyframes ringPulse {
             0%   { opacity: 0.18; stroke-width: 1.5; }
             30%  { opacity: 0.7;  stroke-width: 2.5; }
@@ -88,9 +73,18 @@
         #pulseRing.air    rect { stroke: var(--air); }
         #pulseRing.void   rect { stroke: var(--void); }
 
-        /* ══════════════════════════════════════════
-           LAYOUT
-        ══════════════════════════════════════════ */
+        /* ── MUTATION FLASH — pulses void when Apollo self-modifies ── */
+        #pulseRing.mutate rect {
+            stroke: var(--void);
+            animation: mutatePulse 2.4s ease-in-out;
+        }
+        @keyframes mutatePulse {
+            0%   { opacity: 0.18; stroke-width: 1.5; }
+            15%  { opacity: 1.0;  stroke-width: 4.0; }
+            50%  { opacity: 0.5;  stroke-width: 2.5; }
+            100% { opacity: 0.18; stroke-width: 1.5; }
+        }
+
         .apollo-layout {
             display: grid;
             grid-template-columns: 380px 1fr;
@@ -99,9 +93,6 @@
             z-index: 1;
         }
 
-        /* ══════════════════════════════════════════
-           LEFT PANEL
-        ══════════════════════════════════════════ */
         .card-panel {
             background: var(--surface);
             border-right: 1px solid var(--border);
@@ -111,7 +102,6 @@
             position: relative;
         }
 
-        /* Header */
         .panel-header {
             padding: 0.9rem 1rem 0.7rem;
             border-bottom: 1px solid var(--border);
@@ -126,6 +116,12 @@
             letter-spacing: 0.2em;
             text-shadow: 0 0 24px rgba(201,168,76,0.4);
             flex-shrink: 0;
+            transition: color 1s ease, text-shadow 1s ease;
+        }
+        /* Apollo title shifts to void color during mutation */
+        .apollo-name.mutating {
+            color: var(--void);
+            text-shadow: 0 0 24px rgba(119,85,170,0.7);
         }
         .sky-whisper {
             font-family: 'EB Garamond', serif;
@@ -140,10 +136,9 @@
             transition: color 2s ease;
         }
 
-        /* Stats */
         .stats-bar {
             display: grid;
-            grid-template-columns: repeat(6, 1fr);
+            grid-template-columns: repeat(7, 1fr);
             border-bottom: 1px solid var(--border);
         }
         .stat {
@@ -167,11 +162,12 @@
             color: var(--gold-hi);
             line-height: 1;
         }
-        .stat-value.phi-color { color: #ff9944; text-shadow: 0 0 8px rgba(255,153,68,0.4); }
+        .stat-value.phi-color   { color: #ff9944; text-shadow: 0 0 8px rgba(255,153,68,0.4); }
         .stat-value.notes-color { color: var(--air); }
-        .stat-value.mana-full  { color: var(--sun); }
+        .stat-value.mana-full   { color: var(--sun); }
+        /* Generation counter glows void */
+        .stat-value.gen-color   { color: var(--void); text-shadow: 0 0 8px rgba(119,85,170,0.5); }
 
-        /* Dominance bar — taller, labeled */
         .dominance-section {
             border-bottom: 1px solid var(--border);
             padding: 0.35rem 0.7rem;
@@ -211,7 +207,6 @@
         .dom-label.active.air   { color: var(--air); }
         .dom-label.active.void  { color: var(--void); }
 
-        /* Hand */
         .hand-section {
             border-bottom: 1px solid var(--border);
             padding: 0.4rem 0.7rem;
@@ -252,17 +247,12 @@
             color: var(--gold-hi);
             flex: 1;
         }
-        .mini-card .card-el {
-            font-size: 0.38rem;
-            letter-spacing: 0.1em;
-            opacity: 0.5;
-        }
+        .mini-card .card-el { font-size: 0.38rem; letter-spacing: 0.1em; opacity: 0.5; }
         .mini-card .card-el.fire  { color: var(--fire); }
         .mini-card .card-el.water { color: var(--water); }
         .mini-card .card-el.earth { color: var(--earth); }
         .mini-card .card-el.air   { color: var(--air); }
 
-        /* Table grid */
         .table-section {
             flex: 1;
             overflow: hidden;
@@ -312,11 +302,7 @@
             transition: border-color 0.5s, background 0.5s;
             overflow: hidden;
         }
-        .grid-cell.occupied {
-            border-color: rgba(201,168,76,0.2);
-            background: rgba(20,24,36,0.85);
-        }
-        /* elemental tint on occupied cells */
+        .grid-cell.occupied { border-color: rgba(201,168,76,0.2); background: rgba(20,24,36,0.85); }
         .grid-cell.occupied.fire  { background: linear-gradient(160deg, rgba(255,85,51,0.06), var(--surface-2)); border-color: rgba(255,85,51,0.25); }
         .grid-cell.occupied.water { background: linear-gradient(160deg, rgba(51,153,221,0.06), var(--surface-2)); border-color: rgba(51,153,221,0.25); }
         .grid-cell.occupied.earth { background: linear-gradient(160deg, rgba(119,153,68,0.06), var(--surface-2)); border-color: rgba(119,153,68,0.25); }
@@ -344,19 +330,18 @@
         .token-dot.void  { background: var(--void); }
         .cell-value  { position: absolute; top: 2px; right: 4px; font-size: 0.36rem; color: var(--gold-dim); }
         .cell-turns  { position: absolute; bottom: 2px; right: 4px; font-size: 0.3rem; color: var(--text-faint); }
-        /* intent badge on newest card */
         .cell-intent {
             position: absolute; top: 2px; left: 3px;
             font-size: 0.28rem; letter-spacing: 0.08em; padding: 0.1rem 0.25rem;
             border-radius: 2px; text-transform: uppercase; opacity: 0.85;
         }
-        .cell-intent.offensive { background: rgba(255,85,51,0.2); color: var(--fire); }
+        .cell-intent.offensive { background: rgba(255,85,51,0.2);   color: var(--fire); }
         .cell-intent.harmonic  { background: rgba(170,136,238,0.2); color: var(--air); }
-        .cell-intent.defensive { background: rgba(51,153,221,0.2); color: var(--water); }
-        .cell-intent.clearing  { background: rgba(119,153,68,0.2); color: var(--earth); }
-        .cell-intent.synthesis { background: rgba(119,85,170,0.2); color: var(--void); }
+        .cell-intent.defensive { background: rgba(51,153,221,0.2);  color: var(--water); }
+        .cell-intent.clearing  { background: rgba(119,153,68,0.2);  color: var(--earth); }
+        .cell-intent.synthesis { background: rgba(119,85,170,0.2);  color: var(--void); }
+        .cell-intent.mutate    { background: rgba(119,85,170,0.35); color: #cc99ff; letter-spacing: 0.15em; }
 
-        /* Notes panel */
         .notes-section {
             border-top: 1px solid var(--border);
             padding: 0.4rem 0.7rem;
@@ -376,7 +361,6 @@
         .note-value { color: var(--text-dim); flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         .note-turn  { color: var(--text-faint); flex-shrink: 0; }
 
-        /* Memory panel */
         .memory-section {
             border-top: 1px solid var(--border);
             padding: 0.35rem 0.7rem;
@@ -387,9 +371,6 @@
         .mem-line { font-size: 0.38rem; padding: 0.08rem 0; color: var(--text-faint); }
         .mem-god  { color: rgba(240,208,128,0.5); }
 
-        /* ══════════════════════════════════════════
-           RIGHT PANEL
-        ══════════════════════════════════════════ */
         .editor-panel {
             display: flex;
             flex-direction: column;
@@ -409,12 +390,7 @@
             text-transform: uppercase;
             flex: 1;
         }
-
-        /* Controls — primary vs utility */
-        .controls-primary {
-            display: flex;
-            gap: 0.2rem;
-        }
+        .controls-primary { display: flex; gap: 0.2rem; }
         .controls-util {
             display: flex;
             gap: 0.2rem;
@@ -436,30 +412,21 @@
         }
         .ctrl-btn:hover { background: rgba(201,168,76,0.08); border-color: var(--gold); color: var(--gold-hi); }
         .ctrl-btn:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
-
-        /* Primary: play/pause are larger */
-        .ctrl-btn.primary {
-            font-size: 0.5rem;
-            padding: 0.3rem 0.7rem;
-            border-color: rgba(201,168,76,0.25);
-        }
+        .ctrl-btn.primary { font-size: 0.5rem; padding: 0.3rem 0.7rem; border-color: rgba(201,168,76,0.25); }
         .ctrl-btn.primary.active {
             background: rgba(201,168,76,0.15);
             border-color: var(--gold);
             color: var(--gold-hi);
             box-shadow: 0 0 12px rgba(201,168,76,0.15);
         }
-        .ctrl-btn.phi-btn { border-color: rgba(255,153,68,0.2); color: rgba(255,153,68,0.5); }
-        .ctrl-btn.phi-btn:hover { border-color: #ff9944; color: #ff9944; }
+        .ctrl-btn.phi-btn  { border-color: rgba(255,153,68,0.2); color: rgba(255,153,68,0.5); }
+        .ctrl-btn.phi-btn:hover  { border-color: #ff9944; color: #ff9944; }
         .ctrl-btn.phi-btn.active { border-color: #ff9944; color: #ff9944; }
         .ctrl-btn.deal-btn { border-color: rgba(68,204,136,0.2); color: rgba(68,204,136,0.5); }
         .ctrl-btn.deal-btn:hover { border-color: #44cc88; color: #44cc88; }
 
         #monacoContainer { flex: 1; }
 
-        /* ══════════════════════════════════════════
-           TOAST
-        ══════════════════════════════════════════ */
         #toast {
             position: fixed;
             bottom: 1.2rem;
@@ -479,26 +446,20 @@
             pointer-events: none;
             max-width: 340px;
         }
-        #toast.show        { opacity: 1; }
-        #toast.phi-toast   { border-color: #ff9944; color: #ff9944; }
-        #toast.emerge-toast{ border-color: #44cc88; color: #44cc88; }
-        #toast.deal-toast  { border-color: #44cc88; color: #88ffaa; }
-        #toast.note-toast  { border-color: var(--air); color: var(--air); }
+        #toast.show         { opacity: 1; }
+        #toast.phi-toast    { border-color: #ff9944; color: #ff9944; }
+        #toast.emerge-toast { border-color: #44cc88; color: #44cc88; }
+        #toast.deal-toast   { border-color: #44cc88; color: #88ffaa; }
+        #toast.note-toast   { border-color: var(--air); color: var(--air); }
+        #toast.mutate-toast { border-color: var(--void); color: #cc99ff; }
 
-        /* ══════════════════════════════════════════
-           SCROLLBAR
-        ══════════════════════════════════════════ */
         ::-webkit-scrollbar { width: 3px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: rgba(201,168,76,0.2); border-radius: 2px; }
 
-        /* ══════════════════════════════════════════
-           REDUCED MOTION
-        ══════════════════════════════════════════ */
         @media (prefers-reduced-motion: reduce) {
             *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
         }
-
         @media (max-width: 820px) {
             .apollo-layout { grid-template-columns: 1fr; grid-template-rows: 50vh 50vh; }
             #pulseRing { width: 100vw; height: 50vh; }
@@ -507,14 +468,12 @@
 </head>
 <body>
 
-<!-- Pulse ring SVG — the signature element -->
 <svg id="pulseRing" viewBox="0 0 380 800" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
     <rect x="1" y="1" width="378" height="798"/>
 </svg>
 
 <div class="apollo-layout">
 
-    <!-- ══ LEFT: Oracle Panel ══ -->
     <div class="card-panel">
 
         <div class="panel-header">
@@ -529,6 +488,7 @@
             <div class="stat"><span class="stat-label">Table</span><span class="stat-value" id="statTable">0</span></div>
             <div class="stat"><span class="stat-label">φ</span><span class="stat-value phi-color" id="statPhi">—</span></div>
             <div class="stat"><span class="stat-label">Notes</span><span class="stat-value notes-color" id="statNotes">0</span></div>
+            <div class="stat"><span class="stat-label">Gen</span><span class="stat-value gen-color" id="statGen">0</span></div>
         </div>
 
         <div class="dominance-section">
@@ -564,13 +524,11 @@
             <div class="tarot-grid" id="tarotGrid"></div>
         </div>
 
-        <!-- Apollo's written notes (localStorage) -->
         <div class="notes-section" id="notesSection">
             <div class="section-eyebrow" style="margin-bottom:0.25rem;">📜 Apollo's Notes</div>
             <div id="notesContent"><span style="color:var(--text-faint);font-size:0.38rem;">No notes written yet.</span></div>
         </div>
 
-        <!-- Short-term memory (last plays) -->
         <div class="memory-section">
             <div class="section-eyebrow" style="margin-bottom:0.2rem;">⚙ Recent Plays</div>
             <div id="memoryContent">Awaiting first play…</div>
@@ -578,7 +536,6 @@
 
     </div>
 
-    <!-- ══ RIGHT: Living Record ══ -->
     <div class="editor-panel">
         <div class="editor-header">
             <div class="editor-title">📜 The Living Record</div>
@@ -611,18 +568,18 @@
 
 <script>
 // ══════════════════════════════════════════════
-// APOLLO TAROT TABLE
+// APOLLO TAROT TABLE — v2.0 Self-Modifying Edition
 // ══════════════════════════════════════════════
 
-const DRAW_INTERVAL          = Math.round(PHI * 1000);
-const GOLDEN_TICK            = Math.round(PHI * PHI * 1000);
-const TABLE_CLEAR_THRESHOLD  = Math.round(TAU + PHI);
+const DRAW_INTERVAL         = Math.round(PHI * 1000);
+const GOLDEN_TICK           = Math.round(PHI * PHI * 1000);
+const TABLE_CLEAR_THRESHOLD = Math.round(TAU + PHI);
 
-let apollo    = null;
-let editor    = null;
-let phiCount  = 0;
-let skyState  = null;
-let lastIntent = null;   // track last played card's intent for badge
+let apollo     = null;
+let editor     = null;
+let phiCount   = 0;
+let skyState   = null;
+let lastIntent = null;
 
 const EMOJI_MAP = {
     'Zeus':'⚡','Hera':'🦚','Poseidon':'🌊','Demeter':'🌾','Athena':'🦉',
@@ -633,28 +590,39 @@ const EMOJI_MAP = {
 };
 const SPREAD_ROWS = ['Past', 'Present', 'Future'];
 
-// ── Helpers ─────────────────────────────────
+// ── Helpers ──────────────────────────────────
 function godName(card)  { return card.god || card.ruling_god || card.name || 'Unknown'; }
 function godEmoji(card) { return EMOJI_MAP[godName(card)] || '🃏'; }
-function cardQuote(card){
+function cardQuote(card) {
     return card.flavor || card.description ||
            (card.keywords && card.keywords[0]) ||
            (card.upright && card.upright.slice(0, 60)) || '…';
 }
 
-// ── Pulse ring ──────────────────────────────
+// ── Pulse ring ───────────────────────────────
 function pulseRing(element) {
     const ring = document.getElementById('pulseRing');
     ring.className = '';
-    void ring.offsetWidth; // reflow to restart animation
+    void ring.offsetWidth;
     ring.className = element + ' pulsing';
-    // Settle to just the color after animation
-    setTimeout(() => {
-        ring.classList.remove('pulsing');
-    }, 1900);
+    setTimeout(() => ring.classList.remove('pulsing'), 1900);
 }
 
-// ── Sky State ───────────────────────────────
+// Mutation flash — longer, void-colored, distinct from emergence
+function pulseMutation() {
+    const ring  = document.getElementById('pulseRing');
+    const title = document.getElementById('apolloTitle');
+    ring.className = '';
+    void ring.offsetWidth;
+    ring.className = 'mutate';
+    title.classList.add('mutating');
+    setTimeout(() => {
+        ring.classList.remove('mutate');
+        title.classList.remove('mutating');
+    }, 2500);
+}
+
+// ── Sky State ────────────────────────────────
 async function loadSkyState() {
     if (typeof Observe !== 'undefined') {
         try {
@@ -669,7 +637,7 @@ async function loadSkyState() {
     }
 }
 
-// ── Deck load ───────────────────────────────
+// ── Deck load ────────────────────────────────
 async function loadDeck() {
     let deck = null;
     try {
@@ -694,7 +662,7 @@ async function loadDeck() {
     return deck;
 }
 
-// ── Monaco ──────────────────────────────────
+// ── Monaco ───────────────────────────────────
 require.config({ paths: { vs: 'https://cdn.jsdelivr.net/npm/monaco-editor@0.44.0/min/vs' } });
 require(['vs/editor/editor.main'], async function() {
     editor = monaco.editor.create(document.getElementById('monacoContainer'), {
@@ -703,7 +671,7 @@ require(['vs/editor/editor.main'], async function() {
         theme: 'vs-dark',
         fontSize: 11,
         fontFamily: "'Fira Code', 'Courier New', monospace",
-        readOnly: false,
+        readOnly: false,           // Apollo needs write access for MUTATE
         minimap: { enabled: false },
         lineNumbers: 'off',
         scrollBeyondLastLine: false,
@@ -714,11 +682,13 @@ require(['vs/editor/editor.main'], async function() {
     await initGame();
 });
 
-// ── Log ─────────────────────────────────────
+// ── Log ──────────────────────────────────────
 function logToEditor(msg) {
     if (!editor) return;
-    const ts = new Date().toLocaleTimeString('en-US', { hour:'2-digit', minute:'2-digit', second:'2-digit', hour12:false });
-    const model = editor.getModel();
+    const ts = new Date().toLocaleTimeString('en-US', {
+        hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false
+    });
+    const model    = editor.getModel();
     const atBottom = (() => {
         const scrollTop    = editor.getScrollTop();
         const scrollHeight = editor.getScrollHeight();
@@ -737,7 +707,7 @@ function showToast(msg, type = '') {
     t._timer = setTimeout(() => { t.className = ''; }, 2400);
 }
 
-// ── Render notes panel ──────────────────────
+// ── Render notes ─────────────────────────────
 function renderNotes() {
     if (!apollo || !apollo.listNotes) return;
     const notes = apollo.listNotes();
@@ -759,13 +729,12 @@ function renderNotes() {
     }).join('');
 }
 
-// ── Render grid ─────────────────────────────
+// ── Render grid ──────────────────────────────
 function renderGrid() {
     if (!apollo) return;
-    const grid = document.getElementById('tarotGrid');
+    const grid     = document.getElementById('tarotGrid');
     const allCards = apollo.getAllCardsOnTable();
-    // Find the most recently placed card for intent badge
-    const newest = allCards.length
+    const newest   = allCards.length
         ? allCards.reduce((a, b) => (a.turnsOnTable <= b.turnsOnTable ? a : b), allCards[0])
         : null;
 
@@ -775,15 +744,15 @@ function renderGrid() {
         for (let col = 0; col < 4; col++) {
             const card = apollo.table[row][col];
             if (card) {
-                const el    = (card.element || 'void').toLowerCase();
-                const emoji = godEmoji(card);
-                const name  = godName(card);
+                const el     = (card.element || 'void').toLowerCase();
+                const emoji  = godEmoji(card);
+                const name   = godName(card);
                 const tokens = card.tokens || {};
-                const dots = Object.entries(tokens)
-                    .filter(([,v]) => v > 0)
+                const dots   = Object.entries(tokens)
+                    .filter(([, v]) => v > 0)
                     .map(([el, c]) => `<span class="token-dot ${el}"></span>`.repeat(Math.min(c, 3)))
                     .join('');
-                const isNewest = newest && card.row === newest.row && card.col === newest.col;
+                const isNewest    = newest && card.row === newest.row && card.col === newest.col;
                 const intentBadge = (isNewest && lastIntent && lastIntent !== 'baseline')
                     ? `<div class="cell-intent ${lastIntent}">${lastIntent}</div>`
                     : '';
@@ -806,10 +775,10 @@ function renderGrid() {
     grid.innerHTML = html;
 }
 
-// ── Render memory ────────────────────────────
+// ── Render memory ─────────────────────────────
 function renderMemory() {
     if (typeof ApolloDB === 'undefined') return;
-    const mem = ApolloDB.getShortTermMemory();
+    const mem   = ApolloDB.getShortTermMemory();
     const panel = document.getElementById('memoryContent');
     if (!mem.lastPlays || mem.lastPlays.length === 0) {
         panel.innerHTML = 'Awaiting first play…';
@@ -821,12 +790,12 @@ function renderMemory() {
     }).join('');
 }
 
-// ── Render dominance ─────────────────────────
+// ── Render dominance ──────────────────────────
 function renderDominance(dom) {
-    const total = Math.max(1, Object.values(dom).reduce((a, b) => a + b, 0));
+    const total    = Math.max(1, Object.values(dom).reduce((a, b) => a + b, 0));
     const elements = ['fire','water','earth','air','void'];
-    let dominant = elements[0];
-    let domMax = 0;
+    let dominant   = elements[0];
+    let domMax     = 0;
 
     elements.forEach(el => {
         const count = dom[el] || 0;
@@ -834,7 +803,7 @@ function renderDominance(dom) {
         const lbl   = document.getElementById('lbl' + el.charAt(0).toUpperCase() + el.slice(1));
         if (seg) {
             seg.style.flex = Math.max(count / total * 100, 0.5);
-            seg.className = 'dom-segment' + (count >= 2 ? ' ' + el : '');
+            seg.className  = 'dom-segment' + (count >= 2 ? ' ' + el : '');
         }
         if (lbl) {
             lbl.className = 'dom-label' + (count >= 3 ? ' active ' + el : '');
@@ -844,7 +813,14 @@ function renderDominance(dom) {
     return dominant;
 }
 
-// ── Render UI ────────────────────────────────
+// ── Render generation counter ─────────────────
+function renderGeneration() {
+    if (typeof ApolloMind !== 'undefined' && ApolloMind.GENOME) {
+        document.getElementById('statGen').textContent = ApolloMind.GENOME._generation;
+    }
+}
+
+// ── Render UI ─────────────────────────────────
 function renderUI() {
     if (!apollo) return;
     const s = apollo.getState();
@@ -857,12 +833,11 @@ function renderUI() {
     const manaEl = document.getElementById('statMana');
     manaEl.className = 'stat-value' + (s.mana >= (apollo.maxMana || 10) ? ' mana-full' : '');
 
-    const dom = s.elementalDominance || {};
+    const dom      = s.elementalDominance || {};
     const dominant = renderDominance(dom);
 
-    // Update pulse ring element tint (no animation unless emergence)
     const ring = document.getElementById('pulseRing');
-    if (!ring.classList.contains('pulsing')) {
+    if (!ring.classList.contains('pulsing') && !ring.classList.contains('mutate')) {
         ring.className = dominant;
     }
 
@@ -883,18 +858,19 @@ function renderUI() {
     renderGrid();
     renderMemory();
     renderNotes();
+    renderGeneration();
 }
 
-// ── Golden transforms ────────────────────────
+// ── Golden transforms ─────────────────────────
 function applyGoldenTransform(mods) {
     const title = document.getElementById('apolloTitle');
-    if (title) {
-        title.textContent  = mods.titleText;
+    if (title && !title.classList.contains('mutating')) {
+        title.textContent      = mods.titleText;
         title.style.textShadow = mods.titleGlow;
     }
 }
 
-// ── Clear table ──────────────────────────────
+// ── Clear table ───────────────────────────────
 function clearTable() {
     if (!apollo) return;
     const cards = apollo.getAllCardsOnTable();
@@ -904,7 +880,7 @@ function clearTable() {
     renderUI();
 }
 
-// ── Force deal ───────────────────────────────
+// ── Force deal ────────────────────────────────
 function forceDeal() {
     if (!apollo) return;
     const dealt = apollo._dealerDeal(7);
@@ -913,22 +889,21 @@ function forceDeal() {
         logToEditor('🃏 DEALER: ' + dealt.length + ' fresh cards — ' + names);
         showToast('🃏 Dealt ' + dealt.length + ' cards.', 'deal-toast');
         apollo._handStuckTurns = 0;
-        apollo._lastHandSize = apollo.hand.length;
+        apollo._lastHandSize   = apollo.hand.length;
         renderUI();
     }
 }
 
-// ── Init ─────────────────────────────────────
+// ── Init ──────────────────────────────────────
 async function initGame() {
     if (apollo) apollo.stop();
-    phiCount  = 0;
+    phiCount   = 0;
     lastIntent = null;
 
     await loadSkyState();
     const deck = await loadDeck();
     apollo = new ApolloPlayer(deck);
 
-    // ══ ATTACH SENSES + TOOLS — must happen before start() ══
     ApolloSenses.attach(apollo);
     ApolloTools.attach(apollo);
 
@@ -936,7 +911,8 @@ async function initGame() {
         ApolloSkyBridge.applySkyModifiers(apollo, skyState);
     }
 
-    // Callbacks
+    // ── Callbacks ──────────────────────────────
+
     apollo.onDraw = (card, isReveal) => {
         const emoji = godEmoji(card);
         const name  = godName(card);
@@ -955,7 +931,6 @@ async function initGame() {
         logToEditor(`☀️ Apollo plays: ${emoji} ${name} — "${quote}"`);
         showToast(`${emoji} ${name}: ${card.name}`);
 
-        // Extract intent from mind script for badge
         if (apollo._mindScript) {
             const match = apollo._mindScript.match(/\/\/ (\w+)$/m);
             if (match) lastIntent = match[1].toLowerCase();
@@ -971,12 +946,21 @@ async function initGame() {
     apollo.onManaChange  = () => renderUI();
 
     apollo.onEmergence = (event) => {
-        logToEditor(`✨ EMERGENCE: ${event}`);
-        showToast(`✨ ${event}`, 'emerge-toast');
-        if (typeof ApolloDB !== 'undefined') ApolloDB.saveEmergentEvent(event, 'emergence');
-        // Pulse the ring with the emergent element
-        const elMatch = event.match(/FIRE|WATER|EARTH|AIR|VOID/i);
-        if (elMatch) pulseRing(elMatch[0].toLowerCase());
+        // Detect mutation events vs elemental emergence
+        const isMutation = event.includes('MUTATION') || event.includes('🧬');
+
+        logToEditor(isMutation ? `🧬 ${event}` : `✨ EMERGENCE: ${event}`);
+
+        if (isMutation) {
+            showToast(`🧬 ${event}`, 'mutate-toast');
+            pulseMutation();
+            renderGeneration();
+        } else {
+            showToast(`✨ ${event}`, 'emerge-toast');
+            if (typeof ApolloDB !== 'undefined') ApolloDB.saveEmergentEvent(event, 'emergence');
+            const elMatch = event.match(/FIRE|WATER|EARTH|AIR|VOID/i);
+            if (elMatch) pulseRing(elMatch[0].toLowerCase());
+        }
     };
 
     apollo.onDeal = (dealtCards) => {
@@ -1001,7 +985,6 @@ async function initGame() {
             logToEditor('\n' + apollo._mindScript + '\n');
         }
 
-        // Notes toast when count changes
         if (apollo.listNotes) {
             const noteCount = apollo.listNotes().length;
             const prev = parseInt(document.getElementById('statNotes').textContent) || 0;
@@ -1015,6 +998,7 @@ async function initGame() {
         }
 
         renderNotes();
+        renderGeneration();
     };
 
     // onStatePersist — append state block without clobbering scroll
@@ -1031,7 +1015,6 @@ async function initGame() {
                 cv.replace(/\/\*🜏STATE_BEGIN\*\/[\s\S]*?\/\*🜏STATE_END\*\//, stateBlock.trim())
             );
         }
-        // Only scroll if user is near bottom
         const scrollTop    = editor.getScrollTop();
         const scrollHeight = editor.getScrollHeight();
         const editorHeight = editor.getDomNode()?.clientHeight || 600;
@@ -1040,29 +1023,38 @@ async function initGame() {
         }
     };
 
+    // ── Monaco reader / writer ─────────────────
+    // Reader: existing — Apollo reads his own Living Record
     apollo.setMonacoReader(() => editor ? editor.getModel().getValue() : '{}');
-    apollo.setMonacoWriter((source) =>      if (!editor) return;
-    const model = editor.getModel();    // 
-    Preserve scroll position — only jump if user is near bottom
-    const scrollTop    = editor.getScrollTop();
-    const scrollHeight = editor.getScrollHeight();
-    const editorHeight = editor.getDomNode()?.clientHeight || 600;
-    const nearBottom   = scrollHeight - scrollTop - editorHeight < 60;
-    model.setValue(source);
-    if (nearBottom) editor.revealLine(model.getLineCount());
+
+    // Writer: new in v2.0 — Apollo can write back to Monaco
+    // This is the unlock that makes MUTATE possible.
+    apollo.setMonacoWriter((source) => {
+        if (!editor) return;
+        const model      = editor.getModel();
+        const scrollTop    = editor.getScrollTop();
+        const scrollHeight = editor.getScrollHeight();
+        const editorHeight = editor.getDomNode()?.clientHeight || 600;
+        const nearBottom   = scrollHeight - scrollTop - editorHeight < 60;
+        model.setValue(source);
+        if (nearBottom) editor.revealLine(model.getLineCount());
+    });
+
     apollo.start();
 
     logToEditor('🌅 APOLLO TAKES HIS SEAT AT THE TAROT TABLE');
     logToEditor(`🃏 Deck: ${deck.card_count} Major Arcana`);
-    logToEditor(`⏱ Draw: ${DRAW_INTERVAL}ms (φ·1000) | φ² Tick: ${GOLDEN_TICK}ms | π Stuck: 3 turns | Clear: ${TABLE_CLEAR_THRESHOLD} cards (τ+φ)`);
+    logToEditor(`⏱ Draw: ${DRAW_INTERVAL}ms (φ·1000) | φ² Tick: ${GOLDEN_TICK}ms | Clear: ${TABLE_CLEAR_THRESHOLD} cards (τ+φ)`);
+    logToEditor('🧬 GENOME active — Apollo will self-modify under sustained pressure');
     logToEditor('📜 The Living Record begins…');
 
     renderUI();
     document.getElementById('statPhi').textContent = '0';
     document.getElementById('statDeck').textContent = deck.card_count;
+    document.getElementById('statGen').textContent = '0';
 }
 
-// ── Controls ─────────────────────────────────
+// ── Controls ──────────────────────────────────
 document.getElementById('btnPlay').onclick = () => {
     if (!apollo) return;
     apollo.start();
@@ -1096,21 +1088,22 @@ document.getElementById('btnClear').onclick = () => {
 document.getElementById('btnReset').onclick = async () => {
     if (apollo) {
         apollo.stop();
-        // Clear Apollo's memory before new session
         if (apollo.clearNotes) apollo.clearNotes();
     }
     if (editor) editor.getModel().setValue('');
     document.getElementById('apolloTitle').textContent = '☀ APOLLO';
     document.getElementById('apolloTitle').style.textShadow = '';
+    document.getElementById('apolloTitle').classList.remove('mutating');
     document.getElementById('statPhi').textContent = '—';
     document.getElementById('statNotes').textContent = '0';
+    document.getElementById('statGen').textContent = '0';
     document.getElementById('pulseRing').className = '';
     document.getElementById('btnPlay').classList.add('active');
     document.getElementById('btnPause').classList.remove('active');
     await initGame();
 };
 
-// ── Keyboard ─────────────────────────────────
+// ── Keyboard ──────────────────────────────────
 document.addEventListener('keydown', (e) => {
     if (e.key === ' ' && !e.target.closest('input,textarea,button')) {
         e.preventDefault();
@@ -1125,9 +1118,10 @@ document.addEventListener('keydown', (e) => {
     }
 });
 
-console.log('☀️ APOLLO TAROT TABLE READY');
+console.log('☀️ APOLLO TAROT TABLE v2.0 — Self-Modifying Edition');
 console.log(`   Draw: ${DRAW_INTERVAL}ms · φ² Tick: ${GOLDEN_TICK}ms · Clear: ${TABLE_CLEAR_THRESHOLD} cards`);
 console.log('   Space: φ tick | Ctrl+D: Deal | Ctrl+C: Clear | Ctrl+P: Pause');
+console.log('   🧬 GENOME: Apollo will mutate under sustained pressure');
 </script>
 </body>
 </html>
