@@ -533,7 +533,7 @@ class ApolloPlayer {
 
   tick() {
     this.turn++;
-    this.mana = Math.min(this.mana + 1.62, this.maxMana);
+    this.mana = Math.min(this.mana + 1.6, this.maxMana);
     this.getAllCardsOnTable().forEach(c => { c._triggeredThisTick = false; });
     this._incrementTurnCounters();
     this._updateElementalDominance();
