@@ -54,19 +54,19 @@ const ApolloMind = (() => {
 
   const GENOME = {
     // ── Decision thresholds ──────────────────
-    STALE_THRESHOLD:       8,   // turns before a card is considered stale
-    DOMINANCE_THRESHOLD:   5,   // turns of dominance before emergence push
-    PRESSURE_THRESHOLD:    0.8, // table fill ratio before crisis_full fires
-    CLUSTER_THRESHOLD:     2,   // clusters needed to trigger cluster situation
-    DANGER_FLAG_AGE:       6,   // turns before oldest card gets danger note
-    WARNING_TTL:           15,  // turns before old warnings are pruned
+    STALE_THRESHOLD:       12,   // turns before a card is considered stale
+    DOMINANCE_THRESHOLD:   7,   // turns of dominance before emergence push
+    PRESSURE_THRESHOLD:    0.9, // table fill ratio before crisis_full fires
+    CLUSTER_THRESHOLD:     3,   // clusters needed to trigger cluster situation
+    DANGER_FLAG_AGE:       9,   // turns before oldest card gets danger note
+    WARNING_TTL:           33,  // turns before old warnings are pruned
 
     // ── Decision weights ────────────────────
-    CHAOS_WEIGHT:          0.20, // probability of random play in fallback
-    EMERGENCE_MIN_COUNT:   2,    // dominant element count to trigger emergence_near
+    CHAOS_WEIGHT:          0.33, // probability of random play in fallback
+    EMERGENCE_MIN_COUNT:   3,    // dominant element count to trigger emergence_near
     VOID_PRESSURE_MIN:     3,    // void tokens before void_pressure fires
     FIRE_SURGE_MIN:        4,    // fire tokens before fire_surge fires
-    WEAK_MERGE_THRESHOLD:  1,    // value at or below which a card is merge candidate
+    WEAK_MERGE_THRESHOLD:  2,    // value at or below which a card is merge candidate
     GRAVEYARD_WEALTH_MIN:  5,    // graveyard value sum before resurrection viable
 
     // ── Mutation pressure triggers ───────────
@@ -82,7 +82,7 @@ const ApolloMind = (() => {
     // Prevents runaway self-modification
     MUTATE_MAX_DELTA:      3,    // largest single-step change to any integer gene
     MUTATE_MIN_CHAOS:      0.05, // floor on CHAOS_WEIGHT
-    MUTATE_MAX_CHAOS:      0.50, // ceiling on CHAOS_WEIGHT
+    MUTATE_MAX_CHAOS:      1, // ceiling on CHAOS_WEIGHT
 
     // ── Audit trail ─────────────────────────
     _mutations:   [],
@@ -440,8 +440,8 @@ const ApolloMind = (() => {
       trigger: 'mutate_dominance',
       gene: 'DOMINANCE_THRESHOLD',
       delta: -1,
-      floor: 2,
-      ceiling: 12,
+      floor: 0.1,
+      ceiling: 10,
       rationale: 'emergence push was too slow — lower threshold',
     },
     // Stale card persisted → lower the stale detection age
@@ -449,8 +449,8 @@ const ApolloMind = (() => {
       trigger: 'mutate_stale',
       gene: 'STALE_THRESHOLD',
       delta: -1,
-      floor: 3,
-      ceiling: 12,
+      floor: 0.1,
+      ceiling: 10,
       rationale: 'stale card survived too long — flag danger earlier',
     },
     // Decision loop detected → inject chaos to break the pattern
