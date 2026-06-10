@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Athena · Context Generator</title>
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Cinzel:wght@400;600;900&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --steel: #8a9bb0; --steel-dim: #4a5a6a; --steel-bright: #c8d8e8;
+      --void: #07090c; --void-surface: #141b22; --void-raised: #1a2330;
+      --accent: #e8c87a; --accent-dim: #9a8040;
+      --text: #c0ccd8; --text-dim: #6a7a8a;
+      --border: rgba(138,155,176,0.15); --border-bright: rgba(138,155,176,0.35);
+      --green: #6abf8a; --red: #c85050;
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      background:var(--void); color:var(--text);
+      font-family:'DM Sans',sans-serif; font-weight:300;
+      min-height:100vh; display:grid;
+      grid-template-rows: auto 1fr auto;
+    }
+    body::before {
+      content:''; position:fixed; inset:0;
+      background-image:
+        linear-gradient(rgba(138,155,176,0.03) 1px,transparent 1px),
+        linear-gradient(90deg,rgba(138,155,176,0.03) 1px,transparent 1px);
+      background-size:40px 40px; pointer-events:none; z-index:0;
+    }
+
+    header {
+      position:relative; z-index:10;
+      border-bottom:1px solid var(--border);
+      padding:0 2rem; display:flex;
+      align-items:center; justify-content:space-between; height:56px;
+    }
+    .breadcrumb {
+      font-family:'Share Tech Mono',monospace;
+      font-size:0.62rem; color:var(--text-dim);
+      letter-spacing:0.12em; text-transform:uppercase;
+    }
+    .breadcrumb a { color:var(--steel); text-decoration:none; }
+    .breadcrumb a:hover { color:var(--steel-bright); }
+    .header-tag {
+      font-family:'Share Tech Mono',monospace;
+      font-size:0.6rem; color:var(--accent-dim);
+      letter-spacing:0.1em; border:1px solid var(--accent-dim); padding:3px 8px;
+    }
+
+    .layout {
+      position:relative; z-index:5;
+      display:grid; grid-template-columns:300px 1fr;
+      min-height:0;
+    }
+
+    /* LEFT */
+    .controls {
+      border-right:1px solid var(--border);
+      padding:1.5rem; display:flex;
+      flex-direction:column; gap:1.25rem; overflow-y:auto;
+    }
+    .panel-title {
+      font-family:'Cinzel',serif; font-size:1.3rem;
+      font-weight:900; color:var(--steel-bright); letter-spacing:0.05em;
+    }
+    .panel-title span { color:var(--accent); }
+    .panel-desc {
+      font-family:'Share Tech Mono',monospace;
+      font-size:0.62rem; color:var(--text-dim);
+      letter-spacing:0.08em; line-height:1.7;
+    }
+    .section-label {
+      font-family:'Share Tech Mono',monospace;
+      font-size:0.6rem; color:var(--text-dim);
+      letter-spacing:0.2em; text-transform:uppercase;
+      padding-bottom:0.5rem; border-bottom:1px solid var(--border);
+      margin-bottom:0.5rem;
+    }
+    .info-row {
+      font-family:'Share Tech Mono',monospace;
+      font-size:0.65rem; color:var(--text-dim);
+      letter-spacing:0.08em; line-height:1.8;
+    }
+    .info-row span { color:var(--accent); }
+
+    .run-btn {
+      width:100%; background:rgba(232,200,122,0.08);
+      border:1px solid var(--accent-dim); color:var(--accent);
+      font-family:'Share Tech Mono',monospace;
+      font-size:0.75rem; letter-spacing:0.2em; text-transform:uppercase;
+      padding:0.75rem; cursor:pointer; transition:all 0.2s;
+    }
+    .run-btn:hover { background:rgba(232,200,122,0.15); border-color:var(--accent); }
+    .run-btn:disabled { opacity:0.4; cursor:not-allowed; }
+
+    .action-row { display:flex; gap:0.5rem; }
+    .action-btn {
+      flex:1; background:none; border:1px solid var(--border);
+      color:var(--text-dim); font-family:'Share Tech Mono',monospace;
+      font-size:0.62rem; letter-spacing:0.1em;
+      padding:0.5rem; cursor:pointer; transition:all 0.15s; text-align:center;
+    }
+    .action-btn:hover { color:var(--steel-bright); border-color:var(--border-bright); }
+    .action-btn.copied { color:var(--green); border-color:rgba(106,191,138,0.4); }
+    .action-btn:disabled { opacity:0.3; cursor:not-allowed; }
+
+    .status-line {
+      font-family:'Share Tech Mono',monospace;
+      font-size:0.62rem; letter-spacing:0.1em;
+      padding:0.5rem 0.75rem; border:1px solid var(--border);
+    }
+    .status-line.ok   { color:var(--green); border-color:rgba(106,191,138,0.3); background:rgba(106,191,138,0.05); }
+    .status-line.err  { color:var(--red);   border-color:rgba(200,80,80,0.3);   background:rgba(200,80,80,0.05); }
+    .status-line.info { color:var(--text-dim); }
+
+    .section-list {
+      display:flex; flex-direction:column; gap:0.3rem;
+    }
+    .section-item {
+      font-family:'Share Tech Mono',monospace;
+      font-size:0.62rem; color:var(--text-dim);
+      letter-spacing:0.06em; padding:0.35rem 0.6rem;
+      border:1px solid var(--border); background:var(--void-surface);
+      display:flex; align-items:center; gap:0.5rem;
+    }
+    .section-item.ready { color:var(--green); border-color:rgba(106,191,138,0.2); }
+    .section-dot { width:6px; height:6px; border-radius:50%; background:var(--border-bright); flex-shrink:0; }
+    .section-item.ready .section-dot { background:var(--green); }
+
+    /* RIGHT */
+    .output-panel { display:flex; flex-direction:column; overflow:hidden; }
+    .output-header {
+      display:flex; align-items:center; justify-content:space-between;
+      padding:0.75rem 1.5rem; border-bottom:1px solid var(--border); flex-shrink:0;
+    }
+    .output-meta {
+      font-family:'Share Tech Mono',monospace;
+      font-size:0.62rem; color:var(--text-dim); letter-spacing:0.1em;
+    }
+    .output-meta span { color:var(--accent); }
+    .output-body { flex:1; overflow-y:auto; padding:1.5rem; }
+
+    pre {
+      font-family:'Share Tech Mono',monospace;
+      font-size:0.72rem; line-height:1.75;
+      color:var(--text); white-space:pre-wrap; word-break:break-word;
+    }
+    /* markdown-ish highlights */
+    pre .md-h1   { color:var(--accent); font-weight:bold; }
+    pre .md-h2   { color:var(--steel-bright); }
+    pre .md-h3   { color:var(--steel); }
+    pre .md-bold { color:var(--steel-bright); }
+    pre .md-code { color:var(--green); }
+    pre .md-comment { color:var(--text-dim); font-style:italic; }
+    pre .md-hr   { color:var(--border-bright); }
+
+    .idle-block {
+      display:flex; flex-direction:column;
+      align-items:center; justify-content:center;
+      padding:5rem; gap:0.75rem; text-align:center;
+    }
+    .idle-glyph { font-size:2.5rem; color:var(--steel-dim); }
+    .idle-text {
+      font-family:'Share Tech Mono',monospace;
+      font-size:0.62rem; color:var(--text-dim);
+      letter-spacing:0.15em; line-height:1.8;
+    }
+
+    footer {
+      position:relative; z-index:5;
+      border-top:1px solid var(--border); padding:1rem 2rem;
+      display:flex; align-items:center; justify-content:space-between;
+    }
+    .footer-text {
+      font-family:'Share Tech Mono',monospace;
+      font-size:0.58rem; color:var(--text-dim); letter-spacing:0.1em;
+    }
+    @media(max-width:768px){
+      .layout { grid-template-columns:1fr; }
+      .controls { border-right:none; border-bottom:1px solid var(--border); }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="breadcrumb">
+    <a href="https://kairos-coder.github.io/athena">Athena</a>
+    &nbsp;/&nbsp;
+    <a href="https://kairos-coder.github.io/athena/archive/">Archive</a>
+    &nbsp;/&nbsp; Context
+  </div>
+  <div class="header-tag">ATHENA · CONTEXT · AI-NATIVE</div>
+</header>
+
+<div class="layout">
+
+  <aside class="controls">
+
+    <div>
+      <div class="panel-title">Context <span>Generator</span></div>
+      <div style="margin-top:0.5rem" class="panel-desc">
+        Generates a single AI-native document distilling the entire archive. Load it as context before any agent session.
+      </div>
+    </div>
+
+    <div class="status-line info" id="statusLine">// archive not yet loaded</div>
+
+    <div>
+      <div class="section-label">Archive Stats</div>
+      <div class="info-row">
+        Sessions: <span id="statSessions">—</span><br>
+        Ideas: <span id="statIdeas">—</span><br>
+        Carry Forward: <span id="statCarry">—</span><br>
+        Agents: <span id="statAgents">—</span>
+      </div>
+    </div>
+
+    <div>
+      <div class="section-label">Sections</div>
+      <div class="section-list" id="sectionList">
+        <div class="section-item" id="sec-identity"><span class="section-dot"></span>Identity</div>
+        <div class="section-item" id="sec-projects"><span class="section-dot"></span>Active Projects</div>
+        <div class="section-item" id="sec-vocabulary"><span class="section-dot"></span>Domain Vocabulary</div>
+        <div class="section-item" id="sec-themes"><span class="section-dot"></span>Recurring Themes</div>
+        <div class="section-item" id="sec-ideas"><span class="section-dot"></span>Top Ideas by Domain</div>
+        <div class="section-item" id="sec-questions"><span class="section-dot"></span>Open Questions</div>
+        <div class="section-item" id="sec-instructions"><span class="section-dot"></span>Agent Instructions</div>
+      </div>
+    </div>
+
+    <div>
+      <div class="section-label">Output</div>
+      <div class="info-row">
+        Format: <span>Markdown (.md)</span><br>
+        Target: <span>archive/context.md</span><br>
+        Usage: <span>Paste into ACC or load as context URL</span>
+      </div>
+    </div>
+
+    <button class="run-btn" id="runBtn" onclick="generate()" disabled>
+      ▶ &nbsp; Generate context.md
+    </button>
+
+    <div class="action-row">
+      <button class="action-btn" id="copyBtn" onclick="copyOutput()" disabled>Copy</button>
+      <button class="action-btn" id="dlBtn" onclick="downloadOutput()" disabled>Download .md</button>
+    </div>
+
+  </aside>
+
+  <section class="output-panel">
+
+    <div class="output-header">
+      <div class="output-meta">
+        context.md &nbsp;·&nbsp; <span id="charCount">—</span> chars &nbsp;·&nbsp;
+        ~<span id="tokenCount">—</span> tokens
+      </div>
+      <div class="output-meta">
+        URL: <span>athena/archive/context.md</span>
+      </div>
+    </div>
+
+    <div class="output-body" id="outputBody">
+      <div class="idle-block">
+        <div class="idle-glyph">🦉</div>
+        <div class="idle-text">
+          Load the archive then generate.<br>
+          The output is a single markdown document<br>
+          designed for AI ingestion.
+        </div>
+      </div>
+    </div>
+
+  </section>
+
+</div>
+
+<footer>
+  <div class="footer-text">ATHENA · CONTEXT GENERATOR · AI-NATIVE INTERFACE</div>
+  <div class="footer-text">generate-context.js · curator.js · kairos-coder.github.io</div>
+</footer>
+
+<script type="module">
+  import { buildIndex } from './curator.js';
+  import { generateContext } from './generate-context.js';
+
+  let INDEX      = null;
+  let lastOutput = null;
+
+  const SECTIONS = ['identity','projects','vocabulary','themes','ideas','questions','instructions'];
+
+  // ─── Boot ─────────────────────────────────────────────────────────────────
+  async function boot() {
+    setStatus('info', '// loading archive...');
+    try {
+      INDEX = await buildIndex();
+      const ideas   = extractIdeas(INDEX);
+      const carry   = ideas.filter(i => i.carry_forward).length;
+      const agents  = [...new Set(ideas.map(i => i.agent))];
+
+      document.getElementById('statSessions').textContent = INDEX.sessions.length;
+      document.getElementById('statIdeas').textContent    = ideas.length;
+      document.getElementById('statCarry').textContent    = carry;
+      document.getElementById('statAgents').textContent   = agents.join(', ');
+
+      setStatus('ok', `// archive ready · ${INDEX.sessions.length} sessions · ${ideas.length} ideas`);
+      document.getElementById('runBtn').disabled = false;
+    } catch(err) {
+      setStatus('err', `// load failed: ${err.message}`);
+    }
+  }
+
+  function extractIdeas(index) {
+    const out = [];
+    for (const f of (index._raw_files || [])) {
+      for (const i of (f.ideas || [])) {
+        out.push({ agent: f.session.agent, ...i });
+      }
+    }
+    return out;
+  }
+
+  // ─── Generate ─────────────────────────────────────────────────────────────
+  window.generate = function() {
+    if (!INDEX) return;
+
+    // light up sections progressively
+    SECTIONS.forEach((s, idx) => {
+      setTimeout(() => {
+        document.getElementById(`sec-${s}`).classList.add('ready');
+      }, idx * 120);
+    });
+
+    setTimeout(() => {
+      lastOutput = generateContext(INDEX);
+      renderOutput(lastOutput);
+      document.getElementById('copyBtn').disabled = false;
+      document.getElementById('dlBtn').disabled   = false;
+
+      const chars  = lastOutput.length;
+      const tokens = Math.round(chars / 4);
+      document.getElementById('charCount').textContent  = chars.toLocaleString();
+      document.getElementById('tokenCount').textContent = tokens.toLocaleString();
+      setStatus('ok', `// context.md generated · ${chars.toLocaleString()} chars · ~${tokens.toLocaleString()} tokens`);
+    }, SECTIONS.length * 120 + 100);
+  };
+
+  // ─── Render with markdown highlights ──────────────────────────────────────
+  function renderOutput(md) {
+    const highlighted = md
+      .split('\n')
+      .map(line => {
+        const e = escHtml(line);
+        if (/^# /.test(line))   return `<span class="md-comment">${e}</span>`;
+        if (/^## /.test(line))  return `<span class="md-h2">${e}</span>`;
+        if (/^### /.test(line)) return `<span class="md-h3">${e}</span>`;
+        if (/^---$/.test(line)) return `<span class="md-hr">${e}</span>`;
+        if (/`[^`]+`/.test(line)) {
+          return e.replace(/`([^`]+)`/g, '<span class="md-code">`$1`</span>');
+        }
+        if (/\*\*[^*]+\*\*/.test(line)) {
+          return e.replace(/\*\*([^*]+)\*\*/g, '<span class="md-bold">**$1**</span>');
+        }
+        return e;
+      })
+      .join('\n');
+
+    document.getElementById('outputBody').innerHTML = `<pre>${highlighted}</pre>`;
+  }
+
+  function escHtml(t) {
+    return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  // ─── Copy / Download ──────────────────────────────────────────────────────
+  window.copyOutput = function() {
+    if (!lastOutput) return;
+    navigator.clipboard.writeText(lastOutput).then(() => {
+      const btn = document.getElementById('copyBtn');
+      btn.textContent = 'Copied ✓';
+      btn.classList.add('copied');
+      setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 2000);
+    });
+  };
+
+  window.downloadOutput = function() {
+    if (!lastOutput) return;
+    const blob = new Blob([lastOutput], { type:'text/markdown' });
+    const a    = document.createElement('a');
+    a.href     = URL.createObjectURL(blob);
+    a.download = 'context.md';
+    a.click();
+  };
+
+  function setStatus(type, msg) {
+    const el = document.getElementById('statusLine');
+    el.className = `status-line ${type}`;
+    el.textContent = msg;
+  }
+
+  boot();
+</script>
+</body>
+</html>

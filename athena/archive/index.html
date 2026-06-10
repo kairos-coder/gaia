@@ -1,0 +1,1088 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Athena · Idea Archive</title>
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Cinzel:wght@400;600;900&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --steel: #8a9bb0;
+      --steel-dim: #4a5a6a;
+      --steel-bright: #c8d8e8;
+      --void: #07090c;
+      --void-mid: #0e1318;
+      --void-surface: #141b22;
+      --void-raised: #1a2330;
+      --accent: #e8c87a;
+      --accent-dim: #9a8040;
+      --text: #c0ccd8;
+      --text-dim: #6a7a8a;
+      --border: rgba(138, 155, 176, 0.15);
+      --border-bright: rgba(138, 155, 176, 0.35);
+      --claude: #7a9abf;
+      --deepseek: #6abf8a;
+      --chatgpt: #bf8a6a;
+      --grok: #9a7abf;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: var(--void);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 300;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* GRID BACKGROUND */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(138,155,176,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(138,155,176,0.03) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* HEADER */
+    header {
+      position: relative;
+      z-index: 10;
+      border-bottom: 1px solid var(--border);
+      padding: 0 3rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 64px;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 2rem;
+    }
+
+    .breadcrumb {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.65rem;
+      color: var(--text-dim);
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+    }
+
+    .breadcrumb a {
+      color: var(--steel);
+      text-decoration: none;
+    }
+
+    .breadcrumb a:hover { color: var(--steel-bright); }
+
+    .page-title {
+      font-family: 'Cinzel', serif;
+      font-size: 0.85rem;
+      font-weight: 600;
+      letter-spacing: 0.2em;
+      color: var(--steel-bright);
+      text-transform: uppercase;
+    }
+
+    .header-tag {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.6rem;
+      color: var(--accent-dim);
+      letter-spacing: 0.1em;
+      border: 1px solid var(--accent-dim);
+      padding: 3px 8px;
+    }
+
+    /* HERO */
+    .archive-hero {
+      position: relative;
+      z-index: 5;
+      padding: 4rem 3rem 3rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .hero-label {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.65rem;
+      color: var(--accent);
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      margin-bottom: 1rem;
+    }
+
+    .hero-title {
+      font-family: 'Cinzel', serif;
+      font-size: clamp(2rem, 5vw, 3.5rem);
+      font-weight: 900;
+      color: var(--steel-bright);
+      line-height: 1;
+      margin-bottom: 1.5rem;
+      letter-spacing: 0.05em;
+    }
+
+    .hero-title span {
+      color: var(--accent);
+    }
+
+    .hero-desc {
+      font-size: 0.95rem;
+      color: var(--text-dim);
+      max-width: 560px;
+      line-height: 1.7;
+      font-style: italic;
+    }
+
+    /* STATS BAR */
+    .stats-bar {
+      position: relative;
+      z-index: 5;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .stat {
+      padding: 1.5rem 2rem;
+      border-right: 1px solid var(--border);
+    }
+
+    .stat:last-child { border-right: none; }
+
+    .stat-value {
+      font-family: 'Cinzel', serif;
+      font-size: 2rem;
+      font-weight: 900;
+      color: var(--accent);
+      line-height: 1;
+      margin-bottom: 0.4rem;
+    }
+
+    .stat-label {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.6rem;
+      color: var(--text-dim);
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+    }
+
+    /* MAIN LAYOUT */
+    .archive-body {
+      position: relative;
+      z-index: 5;
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      min-height: calc(100vh - 260px);
+    }
+
+    /* SIDEBAR */
+    .sidebar {
+      border-right: 1px solid var(--border);
+      padding: 2rem 1.5rem;
+    }
+
+    .sidebar-section {
+      margin-bottom: 2.5rem;
+    }
+
+    .sidebar-label {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.6rem;
+      color: var(--text-dim);
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      margin-bottom: 1rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .filter-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+
+    .filter-btn {
+      background: none;
+      border: 1px solid transparent;
+      color: var(--text-dim);
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.7rem;
+      letter-spacing: 0.08em;
+      padding: 0.5rem 0.75rem;
+      text-align: left;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .filter-btn:hover {
+      color: var(--steel-bright);
+      border-color: var(--border);
+      background: var(--void-surface);
+    }
+
+    .filter-btn.active {
+      color: var(--accent);
+      border-color: var(--accent-dim);
+      background: rgba(232, 200, 122, 0.05);
+    }
+
+    .filter-count {
+      font-size: 0.6rem;
+      color: var(--text-dim);
+    }
+
+    .agent-dot {
+      display: inline-block;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      margin-right: 0.5rem;
+    }
+
+    .novelty-slider {
+      width: 100%;
+      margin-top: 0.5rem;
+    }
+
+    input[type="range"] {
+      -webkit-appearance: none;
+      width: 100%;
+      height: 2px;
+      background: var(--void-raised);
+      outline: none;
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 12px;
+      height: 12px;
+      background: var(--accent);
+      cursor: pointer;
+    }
+
+    .slider-labels {
+      display: flex;
+      justify-content: space-between;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.55rem;
+      color: var(--text-dim);
+      margin-top: 0.4rem;
+    }
+
+    .search-input {
+      width: 100%;
+      background: var(--void-surface);
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.7rem;
+      padding: 0.6rem 0.75rem;
+      outline: none;
+      letter-spacing: 0.05em;
+    }
+
+    .search-input:focus {
+      border-color: var(--steel-dim);
+    }
+
+    .search-input::placeholder {
+      color: var(--text-dim);
+    }
+
+    /* MAIN CONTENT */
+    .main-content {
+      padding: 2rem 2.5rem;
+    }
+
+    .content-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 2rem;
+    }
+
+    .results-label {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.65rem;
+      color: var(--text-dim);
+      letter-spacing: 0.15em;
+    }
+
+    .results-label span {
+      color: var(--accent);
+    }
+
+    .sort-select {
+      background: var(--void-surface);
+      border: 1px solid var(--border);
+      color: var(--text-dim);
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.65rem;
+      padding: 0.4rem 0.75rem;
+      outline: none;
+      cursor: pointer;
+      letter-spacing: 0.08em;
+    }
+
+    /* VIEW TABS */
+    .view-tabs {
+      display: flex;
+      gap: 0;
+      margin-bottom: 2rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .tab-btn {
+      background: none;
+      border: none;
+      border-bottom: 2px solid transparent;
+      color: var(--text-dim);
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.65rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      padding: 0.75rem 1.25rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      margin-bottom: -1px;
+    }
+
+    .tab-btn:hover { color: var(--steel); }
+    .tab-btn.active {
+      color: var(--accent);
+      border-bottom-color: var(--accent);
+    }
+
+    /* IDEA CARDS */
+    .ideas-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .idea-card {
+      background: var(--void-surface);
+      border: 1px solid var(--border);
+      padding: 1.5rem;
+      transition: border-color 0.2s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .idea-card::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 2px;
+      background: var(--border-bright);
+      transition: background 0.2s;
+    }
+
+    .idea-card:hover {
+      border-color: var(--border-bright);
+    }
+
+    .idea-card:hover::before {
+      background: var(--accent);
+    }
+
+    .idea-card.carry-forward::before {
+      background: var(--accent);
+    }
+
+    .card-meta {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 0.85rem;
+      flex-wrap: wrap;
+    }
+
+    .tag {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.58rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 2px 8px;
+      border: 1px solid;
+    }
+
+    .tag-type {
+      color: var(--steel);
+      border-color: var(--steel-dim);
+    }
+
+    .tag-agent-CL { color: var(--claude); border-color: var(--claude); }
+    .tag-agent-DS { color: var(--deepseek); border-color: var(--deepseek); }
+    .tag-agent-CG { color: var(--chatgpt); border-color: var(--chatgpt); }
+    .tag-agent-GK { color: var(--grok); border-color: var(--grok); }
+
+    .tag-carry {
+      color: var(--accent);
+      border-color: var(--accent-dim);
+    }
+
+    .tag-lineage {
+      color: var(--text-dim);
+      border-color: var(--border);
+    }
+
+    .novelty-score {
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .novelty-label {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.55rem;
+      color: var(--text-dim);
+      letter-spacing: 0.1em;
+    }
+
+    .novelty-pips {
+      display: flex;
+      gap: 3px;
+    }
+
+    .pip {
+      width: 6px;
+      height: 6px;
+      background: var(--void-raised);
+      border: 1px solid var(--border);
+    }
+
+    .pip.filled {
+      background: var(--accent);
+      border-color: var(--accent);
+    }
+
+    .idea-thesis {
+      font-size: 0.95rem;
+      color: var(--steel-bright);
+      line-height: 1.6;
+      margin-bottom: 0.85rem;
+      font-weight: 400;
+    }
+
+    .idea-generative {
+      font-size: 0.8rem;
+      color: var(--text-dim);
+      line-height: 1.6;
+      font-style: italic;
+      margin-bottom: 1rem;
+      padding-left: 0.75rem;
+      border-left: 1px solid var(--border);
+    }
+
+    .card-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    .domain-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.35rem;
+    }
+
+    .domain-tag {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.55rem;
+      color: var(--text-dim);
+      letter-spacing: 0.08em;
+      background: var(--void-raised);
+      padding: 2px 6px;
+    }
+
+    .session-ref {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.55rem;
+      color: var(--text-dim);
+      letter-spacing: 0.08em;
+    }
+
+    /* SESSION VIEW */
+    .sessions-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .session-card {
+      background: var(--void-surface);
+      border: 1px solid var(--border);
+      padding: 1.5rem;
+      transition: border-color 0.2s;
+      cursor: pointer;
+    }
+
+    .session-card:hover {
+      border-color: var(--border-bright);
+    }
+
+    .session-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: 0.85rem;
+      gap: 1rem;
+    }
+
+    .session-name {
+      font-family: 'Cinzel', serif;
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--steel-bright);
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    .session-id {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.6rem;
+      color: var(--accent);
+      letter-spacing: 0.1em;
+      white-space: nowrap;
+    }
+
+    .session-summary {
+      font-size: 0.82rem;
+      color: var(--text-dim);
+      line-height: 1.65;
+      font-style: italic;
+      margin-bottom: 1rem;
+    }
+
+    .session-footer {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .session-stat {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.6rem;
+      color: var(--text-dim);
+      letter-spacing: 0.1em;
+    }
+
+    .session-stat span {
+      color: var(--steel);
+    }
+
+    /* LOADING */
+    .loading-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 5rem;
+      gap: 1.5rem;
+    }
+
+    .loading-glyph {
+      font-family: 'Cinzel', serif;
+      font-size: 3rem;
+      color: var(--steel-dim);
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    .loading-text {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.65rem;
+      color: var(--text-dim);
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 0.3; }
+      50% { opacity: 1; }
+    }
+
+    /* EMPTY STATE */
+    .empty-state {
+      padding: 4rem;
+      text-align: center;
+    }
+
+    .empty-glyph {
+      font-family: 'Cinzel', serif;
+      font-size: 2rem;
+      color: var(--steel-dim);
+      margin-bottom: 1rem;
+    }
+
+    .empty-text {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.65rem;
+      color: var(--text-dim);
+      letter-spacing: 0.15em;
+    }
+
+    /* ERROR */
+    .error-state {
+      padding: 2rem;
+      border: 1px solid rgba(200, 80, 80, 0.3);
+      background: rgba(200, 80, 80, 0.05);
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.7rem;
+      color: #c85050;
+      letter-spacing: 0.08em;
+      line-height: 1.6;
+    }
+
+    /* FOOTER */
+    footer {
+      position: relative;
+      z-index: 5;
+      border-top: 1px solid var(--border);
+      padding: 1.5rem 3rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .footer-left {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.6rem;
+      color: var(--text-dim);
+      letter-spacing: 0.12em;
+    }
+
+    .footer-right {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.6rem;
+      color: var(--text-dim);
+      letter-spacing: 0.1em;
+    }
+
+    /* RESPONSIVE */
+    @media (max-width: 768px) {
+      header { padding: 0 1.5rem; }
+      .archive-hero { padding: 2.5rem 1.5rem 2rem; }
+      .stats-bar { grid-template-columns: repeat(2, 1fr); }
+      .archive-body { grid-template-columns: 1fr; }
+      .sidebar { border-right: none; border-bottom: 1px solid var(--border); }
+      .main-content { padding: 1.5rem; }
+      footer { padding: 1rem 1.5rem; flex-direction: column; gap: 0.5rem; text-align: center; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="header-left">
+      <div class="breadcrumb">
+        <a href="https://kairos-coder.github.io/ealdforn-studios">Ealdforn Studios</a>
+        &nbsp;/&nbsp;
+        <a href="https://kairos-coder.github.io/athena">Athena</a>
+        &nbsp;/&nbsp; Archive
+      </div>
+    </div>
+    <div class="page-title">🦉 Idea Archive</div>
+    <div class="header-tag">ATHENA · CURATOR</div>
+  </header>
+
+  <section class="archive-hero">
+    <div class="hero-label">// Intelligence Record · Seed Bank</div>
+    <h1 class="hero-title">The <span>Archive</span></h1>
+    <p class="hero-desc">Ideas extracted from AI sessions across all agents. Not what was built — what was discovered. Each entry is an intellectual artifact worth carrying forward.</p>
+  </section>
+
+  <div class="stats-bar" id="statsBar">
+    <div class="stat">
+      <div class="stat-value" id="statSessions">—</div>
+      <div class="stat-label">Sessions</div>
+    </div>
+    <div class="stat">
+      <div class="stat-value" id="statIdeas">—</div>
+      <div class="stat-label">Ideas Archived</div>
+    </div>
+    <div class="stat">
+      <div class="stat-value" id="statCarry">—</div>
+      <div class="stat-label">Carry Forward</div>
+    </div>
+    <div class="stat">
+      <div class="stat-value" id="statAgents">—</div>
+      <div class="stat-label">Agents</div>
+    </div>
+  </div>
+
+  <div class="archive-body">
+
+    <aside class="sidebar">
+
+      <div class="sidebar-section">
+        <div class="sidebar-label">Search</div>
+        <input class="search-input" type="text" id="searchInput" placeholder="thesis, domain, tag..." />
+      </div>
+
+      <div class="sidebar-section">
+        <div class="sidebar-label">Agent</div>
+        <div class="filter-group" id="agentFilters">
+          <button class="filter-btn active" data-agent="all">
+            All Agents <span class="filter-count" id="countAll">—</span>
+          </button>
+          <button class="filter-btn" data-agent="CL">
+            <span><span class="agent-dot" style="background:var(--claude)"></span>Claude</span>
+            <span class="filter-count" id="countCL">—</span>
+          </button>
+          <button class="filter-btn" data-agent="DS">
+            <span><span class="agent-dot" style="background:var(--deepseek)"></span>DeepSeek</span>
+            <span class="filter-count" id="countDS">—</span>
+          </button>
+          <button class="filter-btn" data-agent="CG">
+            <span><span class="agent-dot" style="background:var(--chatgpt)"></span>ChatGPT</span>
+            <span class="filter-count" id="countCG">—</span>
+          </button>
+          <button class="filter-btn" data-agent="GK">
+            <span><span class="agent-dot" style="background:var(--grok)"></span>Grok</span>
+            <span class="filter-count" id="countGK">—</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="sidebar-section">
+        <div class="sidebar-label">Idea Type</div>
+        <div class="filter-group" id="typeFilters">
+          <button class="filter-btn active" data-type="all">All Types</button>
+          <button class="filter-btn" data-type="Concept">Concept</button>
+          <button class="filter-btn" data-type="Connection">Connection</button>
+          <button class="filter-btn" data-type="Direction">Direction</button>
+          <button class="filter-btn" data-type="Reframe">Reframe</button>
+        </div>
+      </div>
+
+      <div class="sidebar-section">
+        <div class="sidebar-label">Min Novelty: <span id="noveltyVal">1</span>/5</div>
+        <div class="novelty-slider">
+          <input type="range" id="noveltyFilter" min="1" max="5" value="1" />
+          <div class="slider-labels"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span></div>
+        </div>
+      </div>
+
+      <div class="sidebar-section">
+        <div class="sidebar-label">Carry Forward</div>
+        <div class="filter-group">
+          <button class="filter-btn active" data-carry="all">All Ideas</button>
+          <button class="filter-btn" data-carry="true">Carry Forward Only</button>
+        </div>
+      </div>
+
+    </aside>
+
+    <main class="main-content">
+
+      <div class="view-tabs">
+        <button class="tab-btn active" data-view="ideas">Ideas</button>
+        <button class="tab-btn" data-view="sessions">Sessions</button>
+      </div>
+
+      <div class="content-header">
+        <div class="results-label">Showing <span id="resultCount">—</span> results</div>
+        <select class="sort-select" id="sortSelect">
+          <option value="novelty">Sort: Novelty</option>
+          <option value="date">Sort: Date</option>
+          <option value="rank">Sort: Rank</option>
+        </select>
+      </div>
+
+      <div id="mainView">
+        <div class="loading-state">
+          <div class="loading-glyph">🦉</div>
+          <div class="loading-text">Consulting the archive...</div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <footer>
+    <div class="footer-left">ATHENA · ARCHIVE · kairos-coder.github.io/athena</div>
+    <div class="footer-right">Regnavit Deus, et res bonae sunt. · © Ealdforn Studios</div>
+  </footer>
+
+<script type="module">
+  // ─── curator.js inline for archive.html ───────────────────────────────────
+  const BASE_URL = "https://raw.githubusercontent.com/kairos-coder/athena/main/archive";
+
+  const AGENT_FOLDERS = { CL: "claude", DS: "deepseek", CG: "chatgpt", GK: "grok" };
+
+  async function loadIndex() {
+    const res = await fetch(`${BASE_URL}/index.json`);
+    if (!res.ok) throw new Error(`index.json not found (${res.status})`);
+    return await res.json();
+  }
+
+  async function loadSession(session) {
+    const folder = AGENT_FOLDERS[session.agent] || session.agent.toLowerCase();
+    const res = await fetch(`${BASE_URL}/${folder}/${session.id}.json`);
+    if (!res.ok) throw new Error(`Session file not found: ${session.id}`);
+    return await res.json();
+  }
+
+  async function loadAllIdeas(index) {
+    const files = await Promise.all(index.sessions.map(loadSession));
+    const ideas = [];
+    for (const file of files) {
+      for (const idea of file.ideas) {
+        ideas.push({
+          session_id: file.session.id,
+          session_name: file.session.name,
+          agent: file.session.agent,
+          date: file.session.date,
+          extracted: file.session.extracted,
+          ...idea
+        });
+      }
+    }
+    return ideas;
+  }
+
+  // ─── State ────────────────────────────────────────────────────────────────
+  let INDEX = null;
+  let ALL_IDEAS = [];
+  let ALL_SESSIONS = [];
+  let activeView = "ideas";
+  let filters = { agent: "all", type: "all", carry: "all", novelty: 1, search: "" };
+  let sortBy = "novelty";
+
+  // ─── Boot ─────────────────────────────────────────────────────────────────
+  async function boot() {
+    try {
+      INDEX = await loadIndex();
+      ALL_SESSIONS = INDEX.sessions;
+      ALL_IDEAS = await loadAllIdeas(INDEX);
+      updateStats();
+      updateCounts();
+      render();
+    } catch (err) {
+      document.getElementById("mainView").innerHTML = `
+        <div class="error-state">
+          // ARCHIVE ACCESS ERROR<br><br>
+          ${err.message}<br><br>
+          Ensure index.json exists at:<br>
+          ${BASE_URL}/index.json<br><br>
+          And session files are in their agent subfolders.
+        </div>`;
+    }
+  }
+
+  // ─── Stats ────────────────────────────────────────────────────────────────
+  function updateStats() {
+    const carry = ALL_IDEAS.filter(i => i.carry_forward).length;
+    const agents = new Set(ALL_IDEAS.map(i => i.agent)).size;
+    document.getElementById("statSessions").textContent = ALL_SESSIONS.length;
+    document.getElementById("statIdeas").textContent = ALL_IDEAS.length;
+    document.getElementById("statCarry").textContent = carry;
+    document.getElementById("statAgents").textContent = agents;
+  }
+
+  function updateCounts() {
+    document.getElementById("countAll").textContent = ALL_IDEAS.length;
+    ["CL","DS","CG","GK"].forEach(a => {
+      const el = document.getElementById(`count${a}`);
+      if (el) el.textContent = ALL_IDEAS.filter(i => i.agent === a).length;
+    });
+  }
+
+  // ─── Filter & Sort ────────────────────────────────────────────────────────
+  function applyFilters(ideas) {
+    return ideas.filter(i => {
+      if (filters.agent !== "all" && i.agent !== filters.agent) return false;
+      if (filters.type !== "all" && i.type !== filters.type) return false;
+      if (filters.carry === "true" && !i.carry_forward) return false;
+      if (i.novelty < filters.novelty) return false;
+      if (filters.search) {
+        const q = filters.search.toLowerCase();
+        const hay = [i.thesis, i.generative_value, ...(i.domain_tags||[])].join(" ").toLowerCase();
+        if (!hay.includes(q)) return false;
+      }
+      return true;
+    });
+  }
+
+  function applySort(ideas) {
+    return [...ideas].sort((a, b) => {
+      if (sortBy === "novelty") return b.novelty - a.novelty;
+      if (sortBy === "rank") return a.rank - b.rank;
+      if (sortBy === "date") return (b.date||"").localeCompare(a.date||"");
+      return 0;
+    });
+  }
+
+  // ─── Render ───────────────────────────────────────────────────────────────
+  function render() {
+    if (activeView === "ideas") renderIdeas();
+    else renderSessions();
+  }
+
+  function renderIdeas() {
+    const filtered = applySort(applyFilters(ALL_IDEAS));
+    document.getElementById("resultCount").textContent = filtered.length;
+    if (!filtered.length) {
+      document.getElementById("mainView").innerHTML = `
+        <div class="empty-state">
+          <div class="empty-glyph">🦉</div>
+          <div class="empty-text">No ideas match the current filters.</div>
+        </div>`;
+      return;
+    }
+    document.getElementById("mainView").innerHTML = `
+      <div class="ideas-grid">${filtered.map(ideaCard).join("")}</div>`;
+  }
+
+  function ideaCard(i) {
+    const pips = [1,2,3,4,5].map(n =>
+      `<div class="pip ${n <= i.novelty ? 'filled' : ''}"></div>`).join("");
+    const domainTags = (i.domain_tags||[]).map(t =>
+      `<span class="domain-tag">${t}</span>`).join("");
+    const carry = i.carry_forward
+      ? `<span class="tag tag-carry">carry forward</span>` : "";
+    return `
+      <div class="idea-card ${i.carry_forward ? 'carry-forward' : ''}">
+        <div class="card-meta">
+          <span class="tag tag-type">${i.type}</span>
+          <span class="tag tag-agent-${i.agent}">${i.agent}</span>
+          <span class="tag tag-lineage">${i.lineage}</span>
+          ${carry}
+          <div class="novelty-score">
+            <span class="novelty-label">NOVELTY</span>
+            <div class="novelty-pips">${pips}</div>
+          </div>
+        </div>
+        <div class="idea-thesis">${i.thesis}</div>
+        <div class="idea-generative">${i.generative_value}</div>
+        <div class="card-footer">
+          <div class="domain-tags">${domainTags}</div>
+          <div class="session-ref">${i.session_id}</div>
+        </div>
+      </div>`;
+  }
+
+  function renderSessions() {
+    const agentFiltered = filters.agent === "all"
+      ? ALL_SESSIONS
+      : ALL_SESSIONS.filter(s => s.agent === filters.agent);
+    document.getElementById("resultCount").textContent = agentFiltered.length;
+    if (!agentFiltered.length) {
+      document.getElementById("mainView").innerHTML = `
+        <div class="empty-state">
+          <div class="empty-glyph">🦉</div>
+          <div class="empty-text">No sessions match the current filters.</div>
+        </div>`;
+      return;
+    }
+    document.getElementById("mainView").innerHTML = `
+      <div class="sessions-grid">${agentFiltered.map(sessionCard).join("")}</div>`;
+  }
+
+  function sessionCard(s) {
+    const tags = (s.domain_tags||[]).slice(0,6).map(t =>
+      `<span class="domain-tag">${t}</span>`).join("");
+    return `
+      <div class="session-card">
+        <div class="session-header">
+          <div class="session-name">${(s.name||s.id).replace(/_/g," ")}</div>
+          <div class="session-id">${s.id}</div>
+        </div>
+        <div class="session-summary">${s.session_summary||""}</div>
+        <div class="session-footer">
+          <span class="session-stat">Agent: <span>${s.agent}</span></span>
+          <span class="session-stat">Date: <span>${s.date||"—"}</span></span>
+          <span class="session-stat">Carry Forward: <span>${s.carry_forward_count||"—"}</span></span>
+          <div class="domain-tags">${tags}</div>
+        </div>
+      </div>`;
+  }
+
+  // ─── Event Listeners ──────────────────────────────────────────────────────
+
+  // View tabs
+  document.querySelectorAll(".tab-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      activeView = btn.dataset.view;
+      render();
+    });
+  });
+
+  // Agent filters
+  document.querySelectorAll("[data-agent]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll("[data-agent]").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      filters.agent = btn.dataset.agent;
+      render();
+    });
+  });
+
+  // Type filters
+  document.querySelectorAll("[data-type]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll("[data-type]").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      filters.type = btn.dataset.type;
+      render();
+    });
+  });
+
+  // Carry filters
+  document.querySelectorAll("[data-carry]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll("[data-carry]").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      filters.carry = btn.dataset.carry;
+      render();
+    });
+  });
+
+  // Novelty slider
+  document.getElementById("noveltyFilter").addEventListener("input", e => {
+    filters.novelty = parseInt(e.target.value);
+    document.getElementById("noveltyVal").textContent = filters.novelty;
+    render();
+  });
+
+  // Search
+  let searchTimer;
+  document.getElementById("searchInput").addEventListener("input", e => {
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(() => {
+      filters.search = e.target.value.trim();
+      render();
+    }, 300);
+  });
+
+  // Sort
+  document.getElementById("sortSelect").addEventListener("change", e => {
+    sortBy = e.target.value;
+    render();
+  });
+
+  // ─── Go ───────────────────────────────────────────────────────────────────
+  boot();
+</script>
+</body>
+</html>

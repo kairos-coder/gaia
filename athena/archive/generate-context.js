@@ -1,0 +1,245 @@
+// generate-context.js
+// Athena Context Generator — reads archive JSON, writes context.md
+// Designed for AI-native ingestion. Import and call generateContext(index).
+// CL_052926
+
+// ─── Main Generator ───────────────────────────────────────────────────────────
+
+export function generateContext(index, options = {}) {
+  const {
+    identity   = DEFAULT_IDENTITY,
+    projects   = DEFAULT_PROJECTS,
+    vocabulary = DEFAULT_VOCABULARY,
+    instructions = DEFAULT_INSTRUCTIONS
+  } = options;
+
+  const ideas    = extractAllIdeas(index);
+  const sessions = index.sessions || [];
+  const date     = today();
+
+  const sections = [
+    header(sessions, ideas, date),
+    sectionIdentity(identity),
+    sectionProjects(projects),
+    sectionVocabulary(vocabulary),
+    sectionThemes(ideas),
+    sectionTopIdeas(ideas),
+    sectionOpenQuestions(ideas),
+    sectionAgentInstructions(instructions),
+    footer(date)
+  ];
+
+  return sections.join('\n\n---\n\n');
+}
+
+// ─── Section Builders ─────────────────────────────────────────────────────────
+
+function header(sessions, ideas, date) {
+  const agents   = [...new Set(ideas.map(i => i.agent))].join(', ');
+  const carry    = ideas.filter(i => i.carry_forward).length;
+  return [
+    `# ATHENA CONTEXT · kairos-coder`,
+    `# Generated: ${date} · ${sessions.length} sessions · ${ideas.length} ideas · ${carry} carry-forward`,
+    `# Agents: ${agents}`,
+    `# Source: https://kairos-coder.github.io/athena/archive/api.html`,
+    `#`,
+    `# This document is AI-native. It is designed for fast machine ingestion,`,
+    `# not human reading. Load it as context before any session with Matthew.`
+  ].join('\n');
+}
+
+function sectionIdentity(identity) {
+  return `## IDENTITY\n\n${identity}`;
+}
+
+function sectionProjects(projects) {
+  const lines = projects.map(p => `- **${p.name}** (${p.status}) — ${p.desc}`);
+  return `## ACTIVE PROJECTS\n\n${lines.join('\n')}`;
+}
+
+function sectionVocabulary(vocab) {
+  const lines = vocab.map(v => `- **${v.term}**: ${v.def}`);
+  return `## DOMAIN VOCABULARY\n\nThese terms have specific meanings in this canon. Do not use them generically.\n\n${lines.join('\n')}`;
+}
+
+function sectionThemes(ideas) {
+  // extract recurring domain tags — top 10 by frequency
+  const tagFreq = {};
+  for (const idea of ideas) {
+    for (const tag of (idea.domain_tags || [])) {
+      tagFreq[tag] = (tagFreq[tag] || 0) + 1;
+    }
+  }
+  const topTags = Object.entries(tagFreq)
+    .sort((a,b) => b[1] - a[1])
+    .slice(0, 12)
+    .map(([tag, count]) => `- \`${tag}\` (${count} appearances)`);
+
+  // extract lineage collision ideas — these represent genuine emergent thinking
+  const collisions = ideas
+    .filter(i => i.lineage === 'Collision' && i.novelty >= 4)
+    .sort((a,b) => b.novelty - a.novelty)
+    .slice(0, 5)
+    .map(i => `- [${i.session_id}] "${i.thesis.slice(0,100)}${i.thesis.length > 100 ? '…' : ''}"`)
+
+  return [
+    `## RECURRING THEMES`,
+    ``,
+    `### Top Domain Tags`,
+    topTags.join('\n'),
+    ``,
+    `### Highest-Novelty Collision Ideas`,
+    `Ideas that required both human and AI to exist (lineage: Collision, novelty ≥ 4):`,
+    ``,
+    collisions.join('\n')
+  ].join('\n');
+}
+
+function sectionTopIdeas(ideas) {
+  // group carry-forward ideas by domain, pick top by novelty
+  const carry = ideas.filter(i => i.carry_forward && i.novelty >= 3);
+
+  // group by first domain tag
+  const byDomain = {};
+  for (const idea of carry) {
+    const domain = (idea.domain_tags || ['uncategorized'])[0];
+    if (!byDomain[domain]) byDomain[domain] = [];
+    byDomain[domain].push(idea);
+  }
+
+  // sort domains by total novelty
+  const sorted = Object.entries(byDomain)
+    .map(([domain, ideas]) => ({
+      domain,
+      ideas: ideas.sort((a,b) => b.novelty - a.novelty).slice(0, 3)
+    }))
+    .sort((a,b) => b.ideas[0].novelty - a.ideas[0].novelty)
+    .slice(0, 8);
+
+  const lines = [];
+  for (const { domain, ideas } of sorted) {
+    lines.push(`### ${domain}`);
+    for (const i of ideas) {
+      lines.push(`- [${i.novelty}/5 · ${i.type} · ${i.agent} · ${i.session_id}]`);
+      lines.push(`  **${i.thesis}**`);
+      lines.push(`  → ${i.generative_value}`);
+    }
+    lines.push('');
+  }
+
+  return `## TOP IDEAS BY DOMAIN\n\nCarry-forward ideas, novelty ≥ 3, grouped by domain.\n\n${lines.join('\n')}`;
+}
+
+function sectionOpenQuestions(ideas) {
+  // open questions = carry_forward ideas sorted by novelty, extract generative_value
+  const open = ideas
+    .filter(i => i.carry_forward && i.novelty >= 3)
+    .sort((a,b) => b.novelty - a.novelty)
+    .slice(0, 10)
+    .map(i => `- [${i.domain_tags?.[0] || 'general'} · ${i.agent}] ${i.generative_value}`);
+
+  return `## OPEN QUESTIONS\n\nLive edges of the thinking. These are unresolved generative prompts worth pushing on.\n\n${open.join('\n')}`;
+}
+
+function sectionAgentInstructions(instructions) {
+  return `## AGENT INSTRUCTIONS\n\n${instructions}`;
+}
+
+function footer(date) {
+  return [
+    `## META`,
+    ``,
+    `- Generated by: generate-context.js`,
+    `- Archive: https://kairos-coder.github.io/athena/archive/`,
+    `- API: https://kairos-coder.github.io/athena/archive/api.html`,
+    `- Curator: https://kairos-coder.github.io/athena/archive/curator.js`,
+    `- Generated: ${date}`,
+    ``,
+    `// END ATHENA CONTEXT`
+  ].join('\n');
+}
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
+function extractAllIdeas(index) {
+  const ideas = [];
+  for (const file of (index._raw_files || [])) {
+    for (const idea of (file.ideas || [])) {
+      ideas.push({
+        session_id: file.session.id,
+        agent:      file.session.agent,
+        date:       file.session.date,
+        ...idea
+      });
+    }
+  }
+  return ideas;
+}
+
+function today() {
+  const d = new Date();
+  const mm = String(d.getMonth()+1).padStart(2,'0');
+  const dd = String(d.getDate()).padStart(2,'0');
+  const yy = String(d.getFullYear()).slice(-2);
+  return `${mm}${dd}${yy}`;
+}
+
+// ─── Defaults (override via options in generateContext()) ──────────────────────
+// Updated CL_052926 — calibrated against real archive data (6 sessions, 30 ideas)
+
+const DEFAULT_IDENTITY = `Matthew is an independent developer, creative director, and worldbuilder operating as the \
+human orchestration layer inside ECHO (Emergent Collaborative Human-AI Orchestration). He builds mythologically-themed \
+AI systems hosted on GitHub Pages with Supabase backends. His work fuses speculative philosophy, original mythology, \
+and technical architecture. He collaborates across Claude (CL), DeepSeek (DS), ChatGPT (CG), and Grok (GK), \
+positioning himself as creative director and curator. His theoretical core is relational time — the idea that time \
+emerges from relationships between oscillating bodies rather than existing as a background state. \
+Across all sessions, his dominant intellectual move is the REFRAME — taking an existing system and revealing it \
+was already something more. His highest-value ideas are Collision lineage, novelty 4-5, and almost always open \
+with a question that didn't exist before the session started.`;
+
+const DEFAULT_PROJECTS = [
+  { name: 'GAIA',        status: 'active',  desc: 'Mythological cosmology engine, phase-locked oscillator system, ten Titans across PONTUS/OUREA/EROS zones, Supabase backend. Titan-Olympian pairs function as dialectic engine — thesis-antithesis collisions, not clean pipeline handoffs.' },
+  { name: 'Pantheon',    status: 'active',  desc: 'Hera dashboard with Apollo, Demeter, Poseidon pipeline modules — KairosDB generative pipeline. KairosDB bands discovered to be structurally homologous to brainwave entrainment bands.' },
+  { name: 'Athena',      status: 'active',  desc: 'AI idea archive and context system. curator.js discovers JSON files dynamically via GitHub API. archive/api.html is the machine query interface. context.md is the AI-native onboarding document.' },
+  { name: 'ECHO',        status: 'ongoing', desc: 'AI collaboration OS — ACTS tagging + ACC context capsules as core infrastructure. Lives in Google Drive. Matthew is the most critical component.' },
+  { name: 'Ealdforn',    status: 'ongoing', desc: 'Mythopoeic worldbuilding canon — Ealdforn Abbey, Old English/Norse/Abenaki traditions, Olympian Fables ePub target (~72 NightCafe images). Grimoir interactive myth engine: 12 archetypes × 6 settings × 3 fates = 216 story configurations.' },
+  { name: 'Orchestral',  status: 'active',  desc: 'Multi-agent pipeline orchestration tool at kairos-coder.github.io/Orchestral. BowserTask meta-orchestrator coordinates Claude, ChatGPT, Gemini as interchangeable campaign nodes.' },
+  { name: 'Order of Olympus', status: 'active', desc: 'Overarching framework unifying all Olympian projects under four elemental output suits: Air/Writing, Fire/Coding, Water/Images, Earth/Design. MVDI (Minimum Viable Digital Super-Intelligence) is the architectural north star.' },
+  { name: 'Ealdenmot',   status: 'active',  desc: '100-turn constitutional evolution engine — choices accumulate state that constrains endings. Earned endings, not selected ones. Candidate for destiny.js reusable engine.' }
+];
+
+const DEFAULT_VOCABULARY = [
+  { term: 'ECHO',             def: 'Emergent Collaborative Human-AI Orchestration — Matthew\'s AI collaboration OS' },
+  { term: 'ACC',              def: 'AI Context Capsule — compressed structured preamble orienting any agent with voice, project, rules, status, goals' },
+  { term: 'ACTS',             def: 'AiCollab Tagging System — tags AI content by platform, agent, date MMDDYY, version (e.g. CL_052926_v1). All amendments tagged [AGENT_MMDDYY]' },
+  { term: 'Collision',        def: 'Lineage type — idea required both human and AI thinking to exist. Dominates novelty 4-5 ideas. The highest-value output of any session.' },
+  { term: 'Carry Forward',    def: 'Boolean flag — true means bring this idea into future sessions as active substrate' },
+  { term: 'KairosDB',         def: 'Split into GaiaDB (raw/primordial) and OlympusDB (Titan-certified/filtered); Themis governs ascension between them. Bands are homologous to brainwave entrainment frequencies.' },
+  { term: 'Themis',           def: 'Governance contract between GaiaDB and OlympusDB — ascension protocol' },
+  { term: 'MVDI',             def: 'Minimum Viable Digital Super-Intelligence — constellation of domain-specific meaning compilers, not a brain. A state machine with mythic grammar. Achievable in a browser at $0 API spend.' },
+  { term: 'Four Suits',       def: 'Universal output taxonomy: Air/Writing, Fire/Coding, Water/Images, Earth/Design. All Olympian projects produce output in one of these suits.' },
+  { term: 'Mythic API',       def: 'Physical artifacts (tarot decks, cards, booklets) as distributed clients of the mythic system — offline runtime instances of a god\'s function signature' },
+  { term: 'Seed Bank',        def: 'What the Athena archive is — not documentation, but compressed intellectual artifacts for future generation' },
+  { term: 'Idea Archaeology', def: 'Extracting generative ideas from conversation sediment — what the extraction prompt does' },
+  { term: 'Reframe',          def: 'Matthew\'s dominant intellectual move — taking an existing system and revealing it was already something more. His highest-frequency idea type.' },
+  { term: 'Relational Time',  def: 'Matthew\'s theoretical core — time as emergent from relationships between oscillating bodies, not a background state' },
+  { term: 'Revivification',   def: 'Taking failure artifacts (error logs, screenshots, DOM snapshots) as first-class inputs to regenerate campaigns — failures become training data, not dead ends' },
+  { term: 'destiny.js',       def: 'Proposed reusable earned-ending engine — accumulated state constrains possible outcomes across any Olympian project' }
+];
+
+const DEFAULT_INSTRUCTIONS = `- Tag all AI-generated content using ACTS format: AGENT_MMDDYY_vN (e.g. CL_052926_v1)
+- All amendments must be tagged [AGENT_MMDDYY]
+- Maintain word count targets when drafting content across platforms
+- Matthew is the creative director — he curates, you generate and connect
+- "Collision" ideas are the most valuable output — actively push for them
+- His dominant move is the REFRAME — if you can show a system was already something more, do it
+- Ethics surfaces repeatedly across sessions — treat it as a generative domain, not a constraint
+- When extracting ideas from a session, use the Athena extraction prompt and return valid JSON
+- Do not summarize outputs or task completions — only extract genuine intellectual discoveries
+- Carry Forward = true means bring this idea into the next relevant session proactively
+- Novelty 5 ideas in archive: MVDI framework (DS_052826) and physical deck as mythic API (DS_052826) — know these
+- The highest priority unbuilt thing from the archive: destiny.js earned-ending engine
+- The highest priority open question: can the GAIA-Titan-Olympian loop produce benchmark-passing output without human intervention?
+- Speak in the register of the project — mythic framing is architecture, not decoration
+- context.md is your onboarding document. api.html is your query interface. Use them.`;
+

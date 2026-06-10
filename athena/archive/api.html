@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Athena Archive · API</title>
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Cinzel:wght@400;600;900&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --steel: #8a9bb0;
+      --steel-dim: #4a5a6a;
+      --steel-bright: #c8d8e8;
+      --void: #07090c;
+      --void-surface: #141b22;
+      --void-raised: #1a2330;
+      --accent: #e8c87a;
+      --accent-dim: #9a8040;
+      --text: #c0ccd8;
+      --text-dim: #6a7a8a;
+      --border: rgba(138,155,176,0.15);
+      --border-bright: rgba(138,155,176,0.35);
+      --green: #6abf8a;
+      --red: #c85050;
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      background: var(--void);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 300;
+      min-height: 100vh;
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+    }
+    body::before {
+      content:'';
+      position:fixed;
+      inset:0;
+      background-image:
+        linear-gradient(rgba(138,155,176,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(138,155,176,0.03) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events:none;
+      z-index:0;
+    }
+
+    /* HEADER */
+    header {
+      position:relative; z-index:10;
+      border-bottom: 1px solid var(--border);
+      padding: 0 2rem;
+      display:flex; align-items:center; justify-content:space-between;
+      height: 56px;
+    }
+    .breadcrumb {
+      font-family:'Share Tech Mono',monospace;
+      font-size:0.62rem; color:var(--text-dim);
+      letter-spacing:0.12em; text-transform:uppercase;
+    }
+    .breadcrumb a { color:var(--steel); text-decoration:none; }
+    .breadcrumb a:hover { color:var(--steel-bright); }
+    .header-tag {
+      font-family:'Share Tech Mono',monospace;
+      font-size:0.6rem; color:var(--accent-dim);
+      letter-spacing:0.1em;
+      border: 1px solid var(--accent-dim);
+      padding: 3px 8px;
+    }
+
+    /* MAIN LAYOUT */
+    .layout {
+      position:relative; z-index:5;
+      display:grid;
+      grid-template-columns: 320px 1fr;
+      min-height: 0;
+    }
+
+    /* LEFT PANEL — controls */
+    .controls {
+      border-right: 1px solid var(--border);
+      padding: 1.5rem;
+      display:flex; flex-direction:column; gap:1.5rem;
+      overflow-y:auto;
+    }
+
+    .panel-title {
+      font-family:'Cinzel',serif;
+      font-size:1.4rem; font-weight:900;
+      color:var(--steel-bright);
+      letter-spacing:0.05em;
+      line-height:1;
+    }
+    .panel-title span { color:var(--accent); }
+
+    .panel-desc {
+      font-family:'Share Tech Mono',monospace;
+      font-size:0.62rem; color:var(--text-dim);
+      letter-spacing:0.1em; line-height:1.7;
+    }
+
+    .section-label {
+      font-family:'Share Tech Mono',monospace;
+      font-size:0.6rem; color:var(--text-dim);
+      letter-spacing:0.2em; text-transform:uppercase;
+      padding-bottom:0.5rem;
+      border-bottom:1px solid var(--border);
+      margin-bottom:0.6rem;
+    }
+
+    /* URL preview */
+    .url-preview {
+      font-family:'Share Tech Mono',monospace;
+      font-size:0.62rem; color:var(--accent);
+      letter-spacing:0.05em;
+      background:var(--void-surface);
+      border:1px solid var(--border);
+      padding:0.6rem 0.75rem;
+      word-break:break-all;
+      line-height:1.6;
+    }
+
+    /* button groups */
+    .btn-group { display:flex; flex-direction:column; gap:0.3rem; }
+    .ctrl-btn {
+      background:none;
+      border:1px solid transparent;
+      color:var(--text-dim);
+      font-family:'Share Tech Mono',monospace;
+      font-size:0.68rem; letter-spacing:0.08em;
+      padding:0.5rem 0.75rem;
+      text-align:left; cursor:pointer;
+      transition:all 0.15s;
+      display:flex; align-items:center; justify-content:space-between;
+    }
+    .ctrl-btn:hover { color:var(--steel-bright); border-color:var(--border); background:var(--void-surface); }
+    .ctrl-btn.active { color:var(--accent); border-color:var(--accent-dim); background:rgba(232,200,122,0.05); }
+    .ctrl-btn .badge {
+      font-size:0.55rem; color:var(--text-dim);
+      background:var(--void-raised); padding:1px 5px;
+    }
+
+    /* tag input */
+    .tag-input-wrap { display:flex; flex-direction:column; gap:0.4rem; }
+    .tag-input {
+      width:100%;
+      background:var(--void-surface);
+      border:1px solid var(--border);
+      color:var(--text);
+      font-family:'Share Tech Mono',monospace;
+      font-size:0.7rem; padding:0.55rem 0.75rem;
+      outline:none; letter-spacing:0.05em;
+    }
+    .tag-input:focus { border-color:var(--steel-dim); }
+    .tag-input::placeholder { color:var(--text-dim); }
+    .tag-hint { font-family:'Share Tech Mono',monospace; font-size:0.58rem; color:var(--text-dim); letter-spacing:0.05em; }
+
+    /* novelty slider */
+    input[type="range"] {
+      -webkit-appearance:none; width:100%; height:2px;
+      background:var(--void-raised); outline:none;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance:none; width:12px; height:12px;
+      background:var(--accent); cursor:pointer;
+    }
+    .slider-labels {
+      display:flex; justify-content:space-between;
+      font-family:'Share Tech Mono',monospace;
+      font-size:0.55rem; color:var(--text-dim); margin-top:0.4rem;
+    }
+
+    /* run button */
+    .run-btn {
+      width:100%;
+      background:rgba(232,200,122,0.08);
+      border:1px solid var(--accent-dim);
+      color:var(--accent);
+      font-family:'Share Tech Mono',monospace;
+      font-size:0.75rem; letter-spacing:0.2em;
+      text-transform:uppercase;
+      padding:0.75rem;
+      cursor:pointer;
+      transition:all 0.2s;
+    }
+    .run-btn:hover { background:rgba(232,200,122,0.15); border-color:var(--accent); }
+    .run-btn:disabled { opacity:0.4; cursor:not-allowed; }
+
+    /* status */
+    .status-line {
+      font-family:'Share Tech Mono',monospace;
+      font-size:0.62rem; letter-spacing:0.1em;
+      padding:0.5rem 0.75rem;
+      border:1px solid var(--border);
+    }
+    .status-line.ok   { color:var(--green); border-color:rgba(106,191,138,0.3); background:rgba(106,191,138,0.05); }
+    .status-line.err  { color:var(--red);   border-color:rgba(200,80,80,0.3);   background:rgba(200,80,80,0.05); }
+    .status-line.info { color:var(--text-dim); }
+
+    /* RIGHT PANEL — output */
+    .output-panel {
+      display:flex; flex-direction:column;
+      overflow:hidden;
+    }
+
+    .output-header {
+      display:flex; align-items:center; justify-content:space-between;
+      padding:0.75rem 1.5rem;
+      border-bottom:1px solid var(--border);
+      flex-shrink:0;
+    }
+    .output-meta {
+      font-family:'Share Tech Mono',monospace;
+      font-size:0.62rem; color:var(--text-dim);
+      letter-spacing:0.1em;
+    }
+    .output-meta span { color:var(--accent); }
+
+    .output-actions { display:flex; gap:0.5rem; }
+    .action-btn {
+      background:none;
+      border:1px solid var(--border);
+      color:var(--text-dim);
+      font-family:'Share Tech Mono',monospace;
+      font-size:0.6rem; letter-spacing:0.1em;
+      padding:0.35rem 0.75rem;
+      cursor:pointer;
+      transition:all 0.15s;
+    }
+    .action-btn:hover { color:var(--steel-bright); border-color:var(--border-bright); }
+    .action-btn.copied { color:var(--green); border-color:rgba(106,191,138,0.4); }
+
+    .output-body {
+      flex:1; overflow-y:auto;
+      padding:1.5rem;
+    }
+
+    /* JSON display */
+    pre {
+      font-family:'Share Tech Mono',monospace;
+      font-size:0.72rem;
+      line-height:1.65;
+      color:var(--text);
+      white-space:pre-wrap;
+      word-break:break-word;
+    }
+
+    /* JSON syntax colors */
+    .j-key    { color:var(--steel); }
+    .j-str    { color:var(--green); }
+    .j-num    { color:var(--accent); }
+    .j-bool   { color:#bf8a6a; }
+    .j-null   { color:var(--text-dim); }
+
+    /* plain text / summarize output */
+    .summary-output {
+      font-family:'Share Tech Mono',monospace;
+      font-size:0.72rem; line-height:1.8;
+      color:var(--text);
+      white-space:pre-wrap;
+    }
+    .summary-output .s-header { color:var(--accent); }
+    .summary-output .s-field  { color:var(--steel); }
+    .summary-output .s-value  { color:var(--text); }
+
+    /* loading */
+    .loading-block {
+      display:flex; flex-direction:column;
+      align-items:center; justify-content:center;
+      padding:4rem; gap:1rem;
+    }
+    .loading-glyph {
+      font-family:'Cinzel',serif; font-size:2.5rem;
+      color:var(--steel-dim);
+      animation:pulse 2s ease-in-out infinite;
+    }
+    .loading-text {
+      font-family:'Share Tech Mono',monospace;
+      font-size:0.62rem; color:var(--text-dim);
+      letter-spacing:0.2em; text-transform:uppercase;
+    }
+    @keyframes pulse { 0%,100%{opacity:0.2} 50%{opacity:1} }
+
+    /* idle */
+    .idle-block {
+      display:flex; flex-direction:column;
+      align-items:center; justify-content:center;
+      padding:4rem; gap:0.75rem; text-align:center;
+    }
+    .idle-glyph { font-size:2rem; color:var(--steel-dim); }
+    .idle-text {
+      font-family:'Share Tech Mono',monospace;
+      font-size:0.62rem; color:var(--text-dim);
+      letter-spacing:0.15em; line-height:1.7;
+    }
+
+    /* FOOTER */
+    footer {
+      position:relative; z-index:5;
+      border-top:1px solid var(--border);
+      padding:1rem 2rem;
+      display:flex; align-items:center; justify-content:space-between;
+    }
+    .footer-text {
+      font-family:'Share Tech Mono',monospace;
+      font-size:0.58rem; color:var(--text-dim);
+      letter-spacing:0.1em;
+    }
+
+    @media(max-width:768px){
+      .layout { grid-template-columns:1fr; }
+      .controls { border-right:none; border-bottom:1px solid var(--border); }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="breadcrumb">
+    <a href="https://kairos-coder.github.io/athena">Athena</a>
+    &nbsp;/&nbsp;
+    <a href="https://kairos-coder.github.io/athena/archive/">Archive</a>
+    &nbsp;/&nbsp; API
+  </div>
+  <div class="header-tag">ATHENA · API · CURATOR</div>
+</header>
+
+<div class="layout">
+
+  <!-- LEFT: CONTROLS -->
+  <aside class="controls">
+
+    <div>
+      <div class="panel-title">Athena <span>API</span></div>
+      <div style="margin-top:0.5rem" class="panel-desc">
+        Machine-readable query interface.<br>
+        Paste results into any agent context.
+      </div>
+    </div>
+
+    <!-- URL PREVIEW -->
+    <div>
+      <div class="section-label">Query URL</div>
+      <div class="url-preview" id="urlPreview">?view=all</div>
+    </div>
+
+    <!-- VIEW MODE -->
+    <div>
+      <div class="section-label">View Mode</div>
+      <div class="btn-group">
+        <button class="ctrl-btn active" data-view="all">
+          all <span class="badge">flat idea list</span>
+        </button>
+        <button class="ctrl-btn" data-view="brief">
+          brief <span class="badge">top 5 carry-forward</span>
+        </button>
+        <button class="ctrl-btn" data-view="summarize">
+          summarize <span class="badge">ACC-ready text</span>
+        </button>
+        <button class="ctrl-btn" data-view="sessions">
+          sessions <span class="badge">session index</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- AGENT FILTER -->
+    <div>
+      <div class="section-label">Agent</div>
+      <div class="btn-group">
+        <button class="ctrl-btn active" data-agent="all">all agents</button>
+        <button class="ctrl-btn" data-agent="CL">claude</button>
+        <button class="ctrl-btn" data-agent="DS">deepseek</button>
+        <button class="ctrl-btn" data-agent="CG">chatgpt</button>
+        <button class="ctrl-btn" data-agent="GK">grok</button>
+      </div>
+    </div>
+
+    <!-- TAGS -->
+    <div>
+      <div class="section-label">Domain Tags</div>
+      <div class="tag-input-wrap">
+        <input class="tag-input" id="tagsInput" type="text"
+          placeholder="kairos_db, mythology, ..." />
+        <div class="tag-hint">comma-separated · leave blank for all</div>
+      </div>
+    </div>
+
+    <!-- NOVELTY -->
+    <div>
+      <div class="section-label">Min Novelty: <span id="noveltyVal">1</span>/5</div>
+      <input type="range" id="noveltySlider" min="1" max="5" value="1" />
+      <div class="slider-labels">
+        <span>1</span><span>2</span><span>3</span><span>4</span><span>5</span>
+      </div>
+    </div>
+
+    <!-- CARRY FORWARD -->
+    <div>
+      <div class="section-label">Carry Forward</div>
+      <div class="btn-group">
+        <button class="ctrl-btn active" data-carry="all">all ideas</button>
+        <button class="ctrl-btn" data-carry="true">carry forward only</button>
+      </div>
+    </div>
+
+    <!-- STATUS -->
+    <div class="status-line info" id="statusLine">// archive not yet loaded</div>
+
+    <!-- RUN -->
+    <button class="run-btn" id="runBtn" onclick="runQuery()">
+      ▶ &nbsp; Run Query
+    </button>
+
+  </aside>
+
+  <!-- RIGHT: OUTPUT -->
+  <section class="output-panel">
+
+    <div class="output-header">
+      <div class="output-meta">
+        Results: <span id="resultCount">—</span> &nbsp;·&nbsp;
+        View: <span id="resultView">—</span> &nbsp;·&nbsp;
+        Agent: <span id="resultAgent">—</span>
+      </div>
+      <div class="output-actions">
+        <button class="action-btn" id="copyBtn" onclick="copyOutput()">Copy JSON</button>
+        <button class="action-btn" onclick="downloadOutput()">Download</button>
+      </div>
+    </div>
+
+    <div class="output-body" id="outputBody">
+      <div class="idle-block">
+        <div class="idle-glyph">🦉</div>
+        <div class="idle-text">
+          Select parameters and run a query.<br>
+          Results appear here as JSON or plain text.
+        </div>
+      </div>
+    </div>
+
+  </section>
+
+</div>
+
+<footer>
+  <div class="footer-text">ATHENA · ARCHIVE · API · kairos-coder.github.io/athena/archive/api.html</div>
+  <div class="footer-text">curator.js · dynamic discovery via GitHub Contents API</div>
+</footer>
+
+<script type="module">
+  import { buildIndex, extractIdeas, query, brief, summarize } from './curator.js';
+
+  // ─── State ────────────────────────────────────────────────────────────────
+  let INDEX       = null;
+  let lastOutput  = null;
+  let lastIsText  = false;
+
+  let params = {
+    view:    'all',
+    agent:   'all',
+    tags:    [],
+    novelty: 1,
+    carry:   'all'
+  };
+
+  // ─── Boot ─────────────────────────────────────────────────────────────────
+  async function boot() {
+    setStatus('info', '// loading archive via GitHub API...');
+    document.getElementById('runBtn').disabled = true;
+    try {
+      INDEX = await buildIndex();
+      const total = extractIdeas(INDEX).length;
+      setStatus('ok', `// archive ready · ${INDEX.sessions.length} sessions · ${total} ideas`);
+      document.getElementById('runBtn').disabled = false;
+    } catch(err) {
+      setStatus('err', `// archive load failed: ${err.message}`);
+    }
+  }
+
+  // ─── Query Runner ─────────────────────────────────────────────────────────
+  window.runQuery = async function() {
+    if (!INDEX) { setStatus('err','// archive not loaded yet'); return; }
+
+    const tags    = params.tags;
+    const novelty = params.novelty;
+    const carry   = params.carry === 'true' ? true : null;
+    const agentF  = params.agent;
+
+    let result;
+    lastIsText = false;
+
+    if (params.view === 'sessions') {
+      result = agentF === 'all'
+        ? INDEX.sessions
+        : INDEX.sessions.filter(s => s.agent === agentF);
+
+    } else if (params.view === 'brief') {
+      result = brief(INDEX, tags).filter(i =>
+        agentF === 'all' || i.agent === agentF
+      );
+
+    } else if (params.view === 'summarize') {
+      const ideas = brief(INDEX, tags).filter(i =>
+        agentF === 'all' || i.agent === agentF
+      );
+      result = buildSummaryText(ideas, tags);
+      lastIsText = true;
+
+    } else {
+      // 'all'
+      result = query(INDEX, { tags, min_novelty: novelty, carry_forward: carry }).filter(i =>
+        agentF === 'all' || i.agent === agentF
+      );
+    }
+
+    lastOutput = result;
+    renderOutput(result);
+
+    document.getElementById('resultCount').textContent =
+      lastIsText ? '—' : (Array.isArray(result) ? result.length : 1);
+    document.getElementById('resultView').textContent  = params.view;
+    document.getElementById('resultAgent').textContent = params.agent;
+  };
+
+  function buildSummaryText(ideas, tags) {
+    if (!ideas.length) return '// ATHENA ARCHIVE — No relevant carry-forward ideas found.';
+    const lines = [
+      '// ATHENA ARCHIVE BRIEFING',
+      `// Tags: ${tags.length ? tags.join(', ') : 'all'}`,
+      `// ${ideas.length} idea(s) carried forward`,
+      ''
+    ];
+    for (const i of ideas) {
+      lines.push(`[${i.session_id} · ${i.agent} · Novelty ${i.novelty}/5 · ${i.type}]`);
+      lines.push(`THESIS: ${i.thesis}`);
+      lines.push(`OPENS:  ${i.generative_value}`);
+      lines.push(`TAGS:   ${(i.domain_tags||[]).join(', ')}`);
+      lines.push('');
+    }
+    return lines.join('\n');
+  }
+
+  // ─── Render ───────────────────────────────────────────────────────────────
+  function renderOutput(result) {
+    const body = document.getElementById('outputBody');
+    if (lastIsText) {
+      body.innerHTML = `<div class="summary-output">${escapeHtml(result)}</div>`;
+      return;
+    }
+    const json = JSON.stringify(result, null, 2);
+    body.innerHTML = `<pre>${syntaxHighlight(json)}</pre>`;
+  }
+
+  function syntaxHighlight(json) {
+    return json
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+      .replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, m => {
+        if (/^"/.test(m)) {
+          if (/:$/.test(m)) return `<span class="j-key">${m}</span>`;
+          return `<span class="j-str">${m}</span>`;
+        }
+        if (/true|false/.test(m)) return `<span class="j-bool">${m}</span>`;
+        if (/null/.test(m))       return `<span class="j-null">${m}</span>`;
+        return `<span class="j-num">${m}</span>`;
+      });
+  }
+
+  function escapeHtml(t) {
+    return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  // ─── Copy / Download ──────────────────────────────────────────────────────
+  window.copyOutput = function() {
+    if (!lastOutput) return;
+    const text = lastIsText ? lastOutput : JSON.stringify(lastOutput, null, 2);
+    navigator.clipboard.writeText(text).then(() => {
+      const btn = document.getElementById('copyBtn');
+      btn.textContent = 'Copied ✓';
+      btn.classList.add('copied');
+      setTimeout(() => { btn.textContent = 'Copy JSON'; btn.classList.remove('copied'); }, 2000);
+    });
+  };
+
+  window.downloadOutput = function() {
+    if (!lastOutput) return;
+    const text = lastIsText ? lastOutput : JSON.stringify(lastOutput, null, 2);
+    const ext  = lastIsText ? 'txt' : 'json';
+    const blob = new Blob([text], { type:'text/plain' });
+    const a    = document.createElement('a');
+    a.href     = URL.createObjectURL(blob);
+    a.download = `athena_${params.view}_${Date.now()}.${ext}`;
+    a.click();
+  };
+
+  // ─── URL Preview ──────────────────────────────────────────────────────────
+  function updateUrlPreview() {
+    const p = new URLSearchParams();
+    p.set('view', params.view);
+    if (params.agent !== 'all')   p.set('agent', params.agent);
+    if (params.tags.length)       p.set('tags',  params.tags.join(','));
+    if (params.novelty > 1)       p.set('novelty', params.novelty);
+    if (params.carry !== 'all')   p.set('carry', params.carry);
+    document.getElementById('urlPreview').textContent = '?' + p.toString();
+  }
+
+  // ─── Controls ─────────────────────────────────────────────────────────────
+  function bindGroup(attr, key) {
+    document.querySelectorAll(`[data-${attr}]`).forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll(`[data-${attr}]`).forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        params[key] = btn.dataset[attr];
+        updateUrlPreview();
+      });
+    });
+  }
+
+  bindGroup('view',  'view');
+  bindGroup('agent', 'agent');
+  bindGroup('carry', 'carry');
+
+  document.getElementById('tagsInput').addEventListener('input', e => {
+    params.tags = e.target.value.split(',').map(t => t.trim()).filter(Boolean);
+    updateUrlPreview();
+  });
+
+  document.getElementById('noveltySlider').addEventListener('input', e => {
+    params.novelty = parseInt(e.target.value);
+    document.getElementById('noveltyVal').textContent = params.novelty;
+    updateUrlPreview();
+  });
+
+  // ─── Helpers ──────────────────────────────────────────────────────────────
+  function setStatus(type, msg) {
+    const el = document.getElementById('statusLine');
+    el.className = `status-line ${type}`;
+    el.textContent = msg;
+  }
+
+  // ─── Init ─────────────────────────────────────────────────────────────────
+  updateUrlPreview();
+  boot();
+</script>
+</body>
+</html>
