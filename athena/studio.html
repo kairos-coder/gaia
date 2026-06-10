@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🦉 Athena · System Manager</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/monaco-editor@0.45.0/min/vs/editor/editor.main.css">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;900&family=Crimson+Pro:ital,wght@0,300;0,400;1,300&family=JetBrains+Mono:wght@300;400;500&display=swap');
+:root {
+  --void: #080a10; --deep: #0e1018; --surface: #1a1c28; --border: #2a2c3a;
+  --gold: #c8943a; --mist: #8a8899; --pale: #d4d0e0;
+  --athena: #6a8898; --athena-bright: #8ab8c8;
+  --hermes: #d4b84a; --aphrodite: #b05870; --apollo: #d4a850;
+  --demeter: #7a6a40; --poseidon: #3a7090; --hera: #5a7aaa;
+  --spawn: #4ade80; --warn: #f0c060; --death: #f87171;
+  --font-display: 'Cinzel', serif; --font-body: 'Crimson Pro', serif; --font-mono: 'JetBrains Mono', monospace;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:var(--void); color:var(--pale); font-family:var(--font-body); overflow:hidden; }
+.workshop { display:grid; grid-template-columns:280px 1fr; grid-template-rows:48px 1fr 36px; height:100vh; }
+
+.header { grid-column:1/-1; background:var(--deep); border-bottom:1px solid var(--border); display:flex; align-items:center; padding:0 1rem; gap:0.8rem; }
+.header h1 { font-family:var(--font-display); font-size:1rem; color:var(--athena-bright); letter-spacing:2px; white-space:nowrap; }
+.header-select { font-family:var(--font-mono); font-size:0.48rem; background:var(--surface); color:var(--pale); border:1px solid var(--border); padding:0.25rem 0.5rem; border-radius:3px; max-width:180px; }
+.header-select option { background:var(--surface); }
+.header-actions { margin-left:auto; display:flex; gap:0.3rem; }
+
+button { font-family:var(--font-mono); font-size:0.45rem; padding:0.28rem 0.5rem; border-radius:3px; cursor:pointer; border:1px solid var(--border); background:var(--surface); color:var(--pale); transition:all 0.15s; white-space:nowrap; letter-spacing:0.5px; }
+button:hover { background:var(--athena); color:var(--void); border-color:var(--athena-bright); }
+button.primary { background:var(--athena); color:var(--void); }
+button.gold { background:var(--gold); color:var(--void); border-color:var(--gold); }
+button.green { border-color:var(--spawn); color:var(--spawn); }
+button.green:hover { background:var(--spawn); color:var(--void); }
+button.red { border-color:var(--death); color:var(--death); }
+button.red:hover { background:var(--death); color:var(--void); }
+
+.sidebar { background:var(--deep); border-right:1px solid var(--border); display:flex; flex-direction:column; overflow-y:auto; }
+.sidebar-section { padding:0.5rem 0.7rem; border-bottom:1px solid rgba(42,44,58,0.4); }
+.sidebar-title { font-family:var(--font-mono); font-size:0.4rem; letter-spacing:2px; color:var(--mist); margin-bottom:0.35rem; text-transform:uppercase; }
+
+.template-item { font-family:var(--font-mono); font-size:0.45rem; padding:0.22rem 0.35rem; cursor:pointer; border-radius:2px; margin-bottom:0.12rem; transition:all 0.12s; display:flex; justify-content:space-between; align-items:center; }
+.template-item:hover { background:var(--surface); }
+.template-item .status-dot { width:5px; height:5px; border-radius:50%; }
+.dot-draft { background:var(--mist); } .dot-deployed { background:var(--spawn); }
+
+.god-btn { display:block; width:100%; margin-bottom:0.15rem; text-align:left; font-size:0.42rem; padding:0.22rem 0.5rem; }
+.god-btn.hermes { border-left:2px solid var(--hermes); }
+.god-btn.aphrodite { border-left:2px solid var(--aphrodite); }
+.god-btn.apollo { border-left:2px solid var(--apollo); }
+.god-btn.demeter { border-left:2px solid var(--demeter); }
+.god-btn.poseidon { border-left:2px solid var(--poseidon); }
+.god-btn.hera { border-left:2px solid var(--hera); }
+
+/* ── PRE-TELOS SLOTS ── */
+.slot-row { display:flex; gap:0.3rem; margin-bottom:0.3rem; align-items:center; }
+.slot-row input { flex:1; background:var(--surface); color:var(--pale); border:1px solid var(--border); padding:0.25rem 0.4rem; font-family:var(--font-mono); font-size:0.45rem; border-radius:3px; outline:none; }
+.slot-row input:focus { border-color:var(--athena-bright); }
+.slot-row .slot-num { font-family:var(--font-mono); font-size:0.45rem; color:var(--athena); width:14px; text-align:center; }
+.slot-actions { display:flex; gap:0.15rem; }
+.slot-actions button { padding:0.15rem 0.3rem; font-size:0.38rem; }
+
+/* ── TASKS ── */
+.task-input-row { display:flex; gap:0.3rem; margin-bottom:0.4rem; }
+.task-input-row input { flex:1; background:var(--surface); color:var(--pale); border:1px solid var(--border); padding:0.25rem 0.4rem; font-family:var(--font-mono); font-size:0.45rem; border-radius:3px; }
+.task-item { display:flex; align-items:center; gap:0.4rem; padding:0.2rem 0; border-bottom:1px solid rgba(42,44,58,0.3); font-family:var(--font-mono); font-size:0.42rem; }
+.task-item .check { width:14px; height:14px; border:1px solid var(--border); border-radius:2px; cursor:pointer; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:0.5rem; }
+.task-item .check.done { background:var(--athena); border-color:var(--athena); }
+.task-item .body { flex:1; }
+.task-item .body.done { text-decoration:line-through; color:var(--mist); }
+
+.editor-container { display:flex; flex-direction:column; }
+.editor-tabs { display:flex; background:var(--deep); border-bottom:1px solid var(--border); padding:0 0.5rem; }
+.editor-tab { font-family:var(--font-mono); font-size:0.45rem; padding:0.3rem 0.6rem; cursor:pointer; border:none; background:transparent; color:var(--mist); border-bottom:2px solid transparent; transition:all 0.12s; }
+.editor-tab.active { color:var(--athena-bright); border-bottom-color:var(--athena-bright); }
+.editor-area { flex:1; min-height:0; }
+#previewPane { display:none; flex:1; }
+#previewPane iframe { width:100%; height:100%; border:none; background:#fff; }
+
+.toolbar { grid-column:1/-1; background:var(--deep); border-top:1px solid var(--border); display:flex; align-items:center; padding:0 0.6rem; gap:0.8rem; }
+.stat { font-family:var(--font-mono); font-size:0.4rem; color:var(--mist); white-space:nowrap; }
+.stat span { color:var(--athena-bright); font-weight:500; }
+.toast { margin-left:auto; font-family:var(--font-mono); font-size:0.4rem; color:var(--mist); }
+
+@media (max-width:900px) { .workshop { grid-template-columns:1fr; } .sidebar { display:none; } }
+</style>
+</head>
+<body>
+<div class="workshop">
+
+<div class="header">
+  <h1>🦉 ATHENA</h1>
+  <select class="header-select" id="godSelect" onchange="loadGodTemplate(this.value)">
+    <option value="">— Select God —</option>
+    <optgroup label="Olympians">
+      <option value="hermes">⚡ Hermes</option>
+      <option value="aphrodite">💗 Aphrodite</option>
+      <option value="apollo">☀️ Apollo</option>
+      <option value="demeter">🌾 Demeter</option>
+      <option value="poseidon">🌊 Poseidon</option>
+      <option value="hera">👑 Hera</option>
+    </optgroup>
+    <optgroup label="Artifacts">
+      <option value="persephone">🦉 Persephone</option>
+      <option value="echo">🔊 Echo</option>
+      <option value="pantheon">🏛️ Pantheon</option>
+      <option value="ealdforn">📜 Ealdforn</option>
+    </optgroup>
+  </select>
+  <span style="font-size:0.4rem;color:var(--mist);" id="fileStatus">No file loaded</span>
+  <div class="header-actions">
+    <button onclick="saveDraft()">💾 Save Draft</button>
+    <button class="green" onclick="previewHTML()">👁 Preview</button>
+    <button class="gold" onclick="deployToGitHub()">🚀 Deploy</button>
+  </div>
+</div>
+
+<!-- ═══ SIDEBAR ═══ -->
+<div class="sidebar" id="sidebar">
+
+  <!-- PRE-TELOS SLOTS (from Hera) -->
+  <div class="sidebar-section">
+    <div class="sidebar-title">🌙 PRE-TELOS · 3 SLOTS</div>
+    <div class="slot-row"><span class="slot-num">1</span><input id="p1" placeholder="Future intention..." /><div class="slot-actions"><button onclick="promoteIdea(1)" title="Set as active telos">👑</button><button onclick="toggleRetire(1)" title="Retire/Restore">✕</button></div></div>
+    <div class="slot-row"><span class="slot-num">2</span><input id="p2" placeholder="Future intention..." /><div class="slot-actions"><button onclick="promoteIdea(2)">👑</button><button onclick="toggleRetire(2)">✕</button></div></div>
+    <div class="slot-row"><span class="slot-num">3</span><input id="p3" placeholder="Future intention..." /><div class="slot-actions"><button onclick="promoteIdea(3)">👑</button><button onclick="toggleRetire(3)">✕</button></div></div>
+  </div>
+
+  <!-- TASKS (from Hera) -->
+  <div class="sidebar-section">
+    <div class="sidebar-title">📋 TASKS</div>
+    <div class="task-input-row">
+      <input id="newTask" placeholder="New task..." />
+      <button onclick="addTask()">+</button>
+    </div>
+    <div id="taskList"><div style="color:var(--mist);font-style:italic;font-size:0.42rem;">No tasks</div></div>
+  </div>
+
+  <!-- EDGE FUNCTION LAUNCHER -->
+  <div class="sidebar-section">
+    <div class="sidebar-title">⚡ EDGE FUNCTIONS</div>
+    <button class="god-btn apollo" onclick="invokeEdge('apollo-synthesize')">☀️ Apollo · Synthesize</button>
+    <button class="god-btn demeter" onclick="invokeEdge('demeter-cultivate')">🌾 Demeter · Cultivate</button>
+    <button class="god-btn poseidon" onclick="invokeEdge('poseidon-extract')">🌊 Poseidon · Extract</button>
+  </div>
+
+  <!-- DRAFTS -->
+  <div class="sidebar-section">
+    <div class="sidebar-title">📁 SAVED DRAFTS</div>
+    <div id="draftList"><div class="template-item" style="color:var(--mist)">No drafts</div></div>
+  </div>
+
+  <!-- GOD TEMPLATES -->
+  <div class="sidebar-section">
+    <div class="sidebar-title">🏛️ GOD TEMPLATES</div>
+    <button class="god-btn hermes" onclick="loadGodTemplate('hermes')">⚡ Hermes</button>
+    <button class="god-btn aphrodite" onclick="loadGodTemplate('aphrodite')">💗 Aphrodite</button>
+    <button class="god-btn apollo" onclick="loadGodTemplate('apollo')">☀️ Apollo</button>
+    <button class="god-btn demeter" onclick="loadGodTemplate('demeter')">🌾 Demeter</button>
+    <button class="god-btn poseidon" onclick="loadGodTemplate('poseidon')">🌊 Poseidon</button>
+    <button class="god-btn hera" onclick="loadGodTemplate('hera')">👑 Hera</button>
+  </div>
+
+  <!-- NEW -->
+  <div class="sidebar-section">
+    <div class="sidebar-title">🆕 NEW</div>
+    <button class="god-btn primary" onclick="newOlympianTemplate()">🏛️ New Olympian</button>
+    <button class="god-btn" onclick="newArtifactTemplate()">📜 New Artifact</button>
+  </div>
+
+  <!-- GITHUB -->
+  <div class="sidebar-section">
+    <div class="sidebar-title">🐙 GITHUB</div>
+    <button class="god-btn" onclick="loadFromGitHub()">📥 Load from Repo</button>
+    <button class="god-btn" onclick="listGitHubFiles()">📋 List Files</button>
+  </div>
+</div>
+
+<!-- ═══ EDITOR ═══ -->
+<div class="editor-container">
+  <div class="editor-tabs">
+    <button class="editor-tab active" onclick="switchTab('edit')">✏️ Monaco Editor</button>
+    <button class="editor-tab" onclick="switchTab('preview')">👁 Live Preview</button>
+  </div>
+  <div class="editor-area" id="editorArea"></div>
+  <div id="previewPane"><iframe id="previewFrame"></iframe></div>
+</div>
+
+<!-- ═══ TOOLBAR ═══ -->
+<div class="toolbar">
+  <div class="stat">Tokens: <span id="statTokens">—</span></div>
+  <div class="stat">Prompts: <span id="statPrompts">—</span></div>
+  <div class="stat">Images: <span id="statImages">—</span></div>
+  <div class="stat">Pairs: <span id="statPairs">—</span></div>
+  <div class="stat">SVO: <span id="statSVO">—</span></div>
+  <div class="toast" id="toast">🦉 Athena ready</div>
+</div>
+
+</div>
+
+<script type="module">
+import * as monaco from 'https://cdn.jsdelivr.net/npm/monaco-editor@0.45.0/+esm';
+
+const sb = window.supabase.createClient(
+  'https://kzcucjcyxybypncbdbws.supabase.co',
+  'sb_publishable_saeUHGocDah-T2_709M6Fg_g26JtLXw'
+);
+
+let currentGod = '';
+let currentFile = '';
+let currentSlots = {1:null,2:null,3:null};
+let monacoEditor = null;
+
+// ═══════════ MONACO ═══════════
+monacoEditor = monaco.editor.create(document.getElementById('editorArea'), {
+  value: '<!-- 🦉 Athena — Select a god or start a new template -->\n<!DOCTYPE html>\n<html lang="en">\n<head>\n  <meta charset="UTF-8">\n  <meta name="viewport" content="width=device-width, initial-scale=1.0">\n  <title>New Page</title>\n</head>\n<body>\n  <h1>Hello Pantheon</h1>\n</body>\n</html>',
+  language: 'html', theme: 'vs-dark', fontSize: 13,
+  fontFamily: "'JetBrains Mono', monospace", minimap: { enabled: false },
+  lineNumbers: 'on', scrollBeyondLastLine: false, automaticLayout: true, tabSize: 2
+});
+
+function getEditorContent() { return monacoEditor ? monacoEditor.getValue() : ''; }
+function setEditorContent(html) { if (monacoEditor) monacoEditor.setValue(html); }
+function toast(msg) { document.getElementById('toast').textContent = msg; }
+
+window.switchTab = function(tab) {
+  document.querySelectorAll('.editor-tab').forEach(t => t.classList.remove('active'));
+  const tabBtn = document.querySelector(`[onclick*="switchTab('${tab}')"]`);
+  if (tabBtn) tabBtn.classList.add('active');
+  document.getElementById('editorArea').style.display = tab === 'edit' ? 'block' : 'none';
+  document.getElementById('previewPane').style.display = tab === 'preview' ? 'block' : 'none';
+  if (tab === 'preview') document.getElementById('previewFrame').srcdoc = getEditorContent();
+  monacoEditor?.layout();
+};
+window.previewHTML = function() { window.switchTab('preview'); };
+
+// ═══════════ PRE-TELOS SLOTS (from Hera) ═══════════
+async function loadSlots() {
+  const {data} = await sb.from('pre_telos').select('*').in('slot',[1,2,3]);
+  currentSlots = {1:null,2:null,3:null};
+  (data||[]).forEach(r => {currentSlots[r.slot] = r;});
+  for (let s=1; s<=3; s++) {
+    document.getElementById(`p${s}`).value = currentSlots[s]?.bullet || '';
+  }
+}
+async function saveSlot(slot, value) {
+  const bullet = value.trim();
+  if (!bullet) { await sb.from('pre_telos').delete().eq('slot',slot); }
+  else { await sb.from('pre_telos').upsert({slot,bullet,status:'active',updated_at:new Date().toISOString()},{onConflict:'slot'}); }
+  loadSlots();
+}
+const saveTimers = {};
+function debounceSave(slot,value) { clearTimeout(saveTimers[slot]); saveTimers[slot] = setTimeout(() => saveSlot(slot,value), 600); }
+document.getElementById('p1').oninput = e => debounceSave(1, e.target.value);
+document.getElementById('p2').oninput = e => debounceSave(2, e.target.value);
+document.getElementById('p3').oninput = e => debounceSave(3, e.target.value);
+
+async function promoteIdea(slot) {
+  const idea = currentSlots[slot];
+  if (!idea?.bullet) return;
+  // Set as active telos in Supabase
+  await sb.from('telos').update({is_active:false}).eq('is_active',true);
+  await sb.from('telos').insert({statement:idea.bullet,is_active:true});
+  toast(`👑 Promoted to active telos: ${idea.bullet.substring(0,40)}`);
+}
+async function toggleRetire(slot) {
+  const idea = currentSlots[slot];
+  if (!idea) return;
+  const newStatus = idea.status === 'retired' ? 'active' : 'retired';
+  await sb.from('pre_telos').update({status:newStatus,updated_at:new Date().toISOString()}).eq('slot',slot);
+  loadSlots();
+}
+window.promoteIdea = promoteIdea;
+window.toggleRetire = toggleRetire;
+
+// ═══════════ TASKS (from Hera) ═══════════
+async function loadTasks() {
+  const {data} = await sb.from('tasks').select('*').order('created_at',{ascending:true});
+  const container = document.getElementById('taskList');
+  if (!data?.length) {
+    container.innerHTML = '<div style="color:var(--mist);font-style:italic;font-size:0.42rem;">No tasks</div>';
+    return;
+  }
+  container.innerHTML = data.map(t => `
+    <div class="task-item">
+      <div class="check ${t.done?'done':''}" onclick="toggleTask('${t.id}',${!t.done})">${t.done?'✓':''}</div>
+      <span class="body ${t.done?'done':''}">${esc(t.body)}</span>
+      <button style="padding:0.1rem 0.25rem;font-size:0.35rem;" onclick="deleteTask('${t.id}')">✕</button>
+    </div>
+  `).join('');
+}
+async function addTask() {
+  const input = document.getElementById('newTask');
+  const body = input.value.trim();
+  if (!body) return;
+  await sb.from('tasks').insert({body,done:false,created_at:new Date().toISOString()});
+  input.value = '';
+  loadTasks();
+}
+async function toggleTask(id, done) {
+  await sb.from('tasks').update({done}).eq('id',id);
+  loadTasks();
+}
+async function deleteTask(id) {
+  await sb.from('tasks').delete().eq('id',id);
+  loadTasks();
+}
+window.addTask = addTask;
+window.toggleTask = toggleTask;
+window.deleteTask = deleteTask;
+
+// ═══════════ EDGE FUNCTION LAUNCHER ═══════════
+async function invokeEdge(functionName) {
+  toast(`⚡ Invoking ${functionName}...`);
+  try {
+    const {data, error} = await sb.functions.invoke(functionName, {
+      body: {source:'athena-manager'}
+    });
+    if (!error && data?.success) {
+      const parts = [];
+      if (data.triplets_formed) parts.push(`${data.triplets_formed} triplets`);
+      if (data.prompts_composed) parts.push(`${data.prompts_composed} prompts`);
+      if (data.images_forged) parts.push(`${data.images_forged} images`);
+      if (data.images_processed) parts.push(`${data.images_processed} images processed`);
+      if (data.extracted_tokens) parts.push(`tokens: ${data.extracted_tokens.join(', ')}`);
+      toast(`✅ ${functionName}: ${parts.join(', ') || 'done'}`);
+      updateStats();
+    } else {
+      toast(`⚠️ ${functionName}: ${error?.message || data?.error || 'no response'}`);
+    }
+  } catch(e) {
+    toast(`❌ ${functionName}: ${e.message}`);
+  }
+}
+window.invokeEdge = invokeEdge;
+
+// ═══════════ GOD TEMPLATES ═══════════
+window.newOlympianTemplate = function() {
+  const name = prompt('God name (e.g. poseidon):', '');
+  if (!name) return;
+  const displayName = name.charAt(0).toUpperCase() + name.slice(1);
+  const template = `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🌊 ${displayName} · Olympian</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"><\/script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;900&family=Crimson+Pro:ital,wght@0,300;0,400;1,300&family=JetBrains+Mono:wght@300;400;500&display=swap');
+:root {
+  --void: #080a0f; --deep: #0b0e16; --surface: #1e2535;
+  --gold: #c8943a; --${name}: #3a7090; --mist: #6a7a8a; --pale: #d4e0ed;
+  --font-display: 'Cinzel', serif; --font-body: 'Crimson Pro', serif; --font-mono: 'JetBrains Mono', monospace;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:var(--void); font-family:var(--font-body); color:var(--pale); min-height:100vh; }
+body::after { content:''; position:fixed; top:0; left:0; right:0; height:3px; background:linear-gradient(90deg, transparent, var(--${name}), var(--gold), var(--${name}), transparent); z-index:100; }
+.topbar { display:flex; align-items:center; gap:1rem; padding:0.5rem 1.5rem; background:var(--deep); border-bottom:1px solid var(--surface); }
+.topbar .logo { font-family:var(--font-display); font-size:1rem; color:var(--${name}); }
+.topbar .telos { flex:1; font-style:italic; font-size:0.8rem; border-left:1px solid var(--surface); padding-left:1rem; }
+.topbar .telos.empty { color:var(--mist); }
+.container { max-width:900px; margin:0 auto; padding:1.5rem; }
+.panel { background:var(--deep); border:1px solid var(--surface); border-radius:6px; padding:1rem; margin-bottom:0.8rem; }
+.panel h2 { font-family:var(--font-display); font-size:0.7rem; color:var(--${name}); margin-bottom:0.5rem; letter-spacing:2px; }
+.log { font-family:var(--font-mono); font-size:0.45rem; color:var(--mist); max-height:120px; overflow-y:auto; }
+</style>
+</head>
+<body>
+<div class="topbar"><span class="logo">🌊 ${displayName.toUpperCase()}</span><span class="telos empty" id="telosText">Loading...</span></div>
+<div class="container">
+  <div class="panel"><h2>🌊 ${displayName} · Function</h2><p style="font-style:italic;color:var(--mist);">Describe what this god does.</p></div>
+  <div class="log" id="log"><div>🌊 ${displayName} ready.</div></div>
+</div>
+<script type="module">
+const sb = window.supabase.createClient('https://kzcucjcyxybypncbdbws.supabase.co','sb_publishable_saeUHGocDah-T2_709M6Fg_g26JtLXw');
+async function loadTelos(){const{data}=await sb.from('telos').select('statement').eq('is_active',true).maybeSingle();const el=document.getElementById('telosText');el.textContent=data?.statement?'🎯 '+data.statement:'No active telos';el.classList.toggle('empty',!data?.statement);}
+loadTelos();
+<\/script>
+</body>
+</html>`;
+  setEditorContent(template);
+  currentGod = name; currentFile = `${name}-draft.html`;
+  document.getElementById('fileStatus').textContent = `🆕 ${currentFile}`;
+  document.getElementById('godSelect').value = name;
+  toast(`🏛️ New Olympian: ${displayName}`);
+};
+
+window.newArtifactTemplate = function() {
+  const name = prompt('Artifact name:', '');
+  if (!name) return;
+  const template = `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>📜 ${name} · Artifact</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;900&family=Crimson+Pro:ital,wght@0,300;0,400;1,300&family=JetBrains+Mono:wght@300;400;500&display=swap');
+:root{--void:#080a0f;--deep:#0b0e16;--surface:#1e2535;--gold:#c8943a;--mist:#6a7a8a;--pale:#d4e0ed;--font-display:'Cinzel',serif;--font-body:'Crimson Pro',serif;--font-mono:'JetBrains Mono',monospace;}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--void);font-family:var(--font-body);color:var(--pale);min-height:100vh;display:flex;justify-content:center;align-items:center;}
+.container{max-width:600px;padding:2rem;text-align:center;}
+h1{font-family:var(--font-display);color:var(--gold);letter-spacing:3px;margin-bottom:1rem;}
+p{font-style:italic;color:var(--mist);}
+</style>
+</head>
+<body><div class="container"><h1>📜 ${name}</h1><p>Artifact page.</p></div></body></html>`;
+  setEditorContent(template);
+  currentGod = name; currentFile = `${name}-draft.html`;
+  document.getElementById('fileStatus').textContent = `🆕 ${currentFile}`;
+  toast(`📜 New artifact: ${name}`);
+};
+
+// ═══════════ GOD LOADING ═══════════
+window.loadGodTemplate = async function(god) {
+  if (!god) return;
+  currentGod = god;
+  const {data} = await sb.from('templates').select('*').eq('god',god).order('updated_at',{ascending:false}).limit(1);
+  if (data?.length) {
+    setEditorContent(data[0].content);
+    currentFile = data[0].filename;
+    document.getElementById('fileStatus').textContent = `💾 ${data[0].filename}`;
+    toast(`📂 Loaded draft of ${god}`);
+    return;
+  }
+  try {
+    const url = `https://raw.githubusercontent.com/kairos-coder/${god}/main/index.html`;
+    const res = await fetch(url);
+    if (res.ok) {
+      setEditorContent(await res.text());
+      currentFile = `${god}/index.html`;
+      document.getElementById('fileStatus').textContent = `🐙 ${god}/index.html`;
+      toast(`📥 Loaded ${god} from GitHub`);
+      return;
+    }
+  } catch {}
+  toast(`⚠️ No file for ${god}. Use New Template.`);
+};
+
+// ═══════════ SAVE / DEPLOY ═══════════
+window.saveDraft = async function() {
+  const html = getEditorContent();
+  const filename = currentFile || prompt('Filename:', `${currentGod||'template'}-draft.html`);
+  if (!filename) return;
+  const {error} = await sb.from('templates').upsert({
+    filename, god:currentGod, content:html, status:'draft', updated_at:new Date().toISOString()
+  }, {onConflict:'filename'});
+  if (!error) {
+    currentFile = filename;
+    document.getElementById('fileStatus').textContent = `💾 ${filename}`;
+    toast(`💾 Saved ${filename}`);
+    loadDraftList();
+  } else { toast(`❌ ${error.message}`); }
+};
+
+window.deployToGitHub = async function() {
+  if (!currentGod) { alert('Select a god first'); return; }
+  const html = getEditorContent();
+  const token = prompt('GitHub token (cancel to save draft):');
+  if (!token) { await window.saveDraft(); return; }
+  try {
+    // Encode as UTF-8 bytes then base64 (more reliable than btoa/unescape)
+    const encoder = new TextEncoder();
+    const bytes = encoder.encode(html);
+    const base64 = btoa(String.fromCharCode(...bytes));
+    
+    const getUrl = `https://api.github.com/repos/kairos-coder/${currentGod}/contents/index.html`;
+    const existing = await fetch(getUrl, {headers:{Authorization:`token ${token}`}});
+    const existingData = existing.ok ? await existing.json() : null;
+    const body = {
+      message: `Athena deploy: ${new Date().toISOString()}`,
+      content: base64,
+      branch: 'main'
+    };
+    if (existingData?.sha) body.sha = existingData.sha;
+    
+    const res = await fetch(getUrl, {
+      method:'PUT',
+      headers:{Authorization:`token ${token}`,'Content-Type':'application/json'},
+      body:JSON.stringify(body)
+    });
+    
+    if (res.ok) {
+      toast(`🚀 Deployed ${currentGod}/index.html`);
+      await sb.from('templates').upsert({
+        filename:`${currentGod}-deployed`, god:currentGod,
+        content:html, status:'deployed', updated_at:new Date().toISOString()
+      }, {onConflict:'filename'});
+      loadDraftList();
+    } else {
+      const err = await res.json();
+      toast(`❌ ${err.message}`);
+    }
+  } catch(err) { toast(`❌ ${err.message}`); }
+};
+
+// ═══════════ GITHUB ═══════════
+window.loadFromGitHub = async function() {
+  const repo = prompt('Repo name:', currentGod||'poseidon');
+  const file = prompt('File path:', 'index.html');
+  if (!repo||!file) return;
+  try {
+    const res = await fetch(`https://raw.githubusercontent.com/kairos-coder/${repo}/main/${file}`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    setEditorContent(await res.text());
+    currentGod = repo; currentFile = `${repo}/${file}`;
+    document.getElementById('fileStatus').textContent = `🐙 ${repo}/${file}`;
+    document.getElementById('godSelect').value = repo;
+    toast(`📥 Loaded ${repo}/${file}`);
+  } catch(err) { toast(`❌ ${err.message}`); }
+};
+
+window.listGitHubFiles = async function() {
+  const repo = prompt('Repo name:', currentGod||'poseidon');
+  if (!repo) return;
+  try {
+    const res = await fetch(`https://api.github.com/repos/kairos-coder/${repo}/contents/`);
+    const files = await res.json();
+    const htmlFiles = files.filter(f => f.name.endsWith('.html')).map(f => f.name);
+    alert(`HTML files in ${repo}:\n${htmlFiles.join('\n')||'(none)'}`);
+  } catch { toast('❌ Could not list files'); }
+};
+
+// ═══════════ DRAFT LIST ═══════════
+window.loadDraft = async function(filename) {
+  const {data} = await sb.from('templates').select('*').eq('filename',filename).single();
+  if (data) {
+    setEditorContent(data.content);
+    currentFile = data.filename; currentGod = data.god||'';
+    document.getElementById('fileStatus').textContent = `📄 ${data.filename}`;
+    document.getElementById('godSelect').value = currentGod;
+    toast(`📂 Loaded ${data.filename}`);
+  }
+};
+
+async function loadDraftList() {
+  const {data} = await sb.from('templates').select('filename,god,status').order('updated_at',{ascending:false}).limit(20);
+  const list = document.getElementById('draftList');
+  if (!data?.length) { list.innerHTML = '<div class="template-item" style="color:var(--mist)">No drafts</div>'; return; }
+  list.innerHTML = data.map(d => `
+    <div class="template-item" onclick="loadDraft('${d.filename.replace(/'/g,"\\'")}')">
+      <span>📄 ${d.filename}</span>
+      <span class="status-dot ${d.status==='deployed'?'dot-deployed':'dot-draft'}"></span>
+    </div>
+  `).join('');
+}
+
+// ═══════════ STATS ═══════════
+async function updateStats() {
+  const tables = ['tokens','prompts','images','pairs','svo_triplets'];
+  const ids = ['statTokens','statPrompts','statImages','statPairs','statSVO'];
+  for (let i=0; i<tables.length; i++) {
+    try {
+      const {count} = await sb.from(tables[i]).select('*',{count:'exact',head:true});
+      document.getElementById(ids[i]).textContent = count??'—';
+    } catch { document.getElementById(ids[i]).textContent = '—'; }
+  }
+}
+
+function esc(s) { return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]); }
+
+// ═══════════ INIT ═══════════
+loadSlots();
+loadTasks();
+loadDraftList();
+updateStats();
+setInterval(updateStats,30000);
+toast('🦉 Athena ready — pre-telos, tasks, edge functions, deploy');
+</script>
+</body>
+</html>

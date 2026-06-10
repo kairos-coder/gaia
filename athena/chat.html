@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Consult Athena · Ealdforn Studios</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=JetBrains+Mono:wght@300;400&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    :root {
+      --void:      #05050c;
+      --deep:      #08090f;
+      --mid:       #0f1018;
+      --surface:   #161824;
+      --steel:     #8a9bad;
+      --athena:    #9aaec4;
+      --athena-hi: #b8cfe0;
+      --cream:     #f0e8d8;
+      --mist:      #7a8090;
+      --ff-display: 'Cinzel', serif;
+      --ff-body:    'Cormorant Garamond', serif;
+      --ff-mono:    'JetBrains Mono', monospace;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--void);
+      color: var(--cream);
+      font-family: var(--ff-body);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      overflow-x: hidden;
+    }
+
+    .sanctum-header {
+      width: 100%;
+      max-width: 720px;
+      padding: 3rem 2rem 1rem;
+      text-align: center;
+    }
+
+    .sanctum-eyebrow {
+      font-family: var(--ff-mono);
+      font-size: 0.55rem;
+      letter-spacing: 0.35em;
+      text-transform: uppercase;
+      color: var(--athena);
+      opacity: 0.5;
+      margin-bottom: 1rem;
+    }
+
+    .sanctum-title {
+      font-family: var(--ff-display);
+      font-size: clamp(2rem, 5vw, 3.5rem);
+      font-weight: 900;
+      background: linear-gradient(170deg, var(--cream) 30%, var(--athena) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 0.5rem;
+    }
+
+    .sanctum-subtitle {
+      font-family: var(--ff-body);
+      font-style: italic;
+      font-size: 1rem;
+      color: var(--mist);
+      opacity: 0.6;
+      margin-bottom: 1.5rem;
+    }
+
+    .sanctum-capabilities {
+      display: flex;
+      gap: 1.5rem;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-bottom: 1rem;
+    }
+
+    .capability {
+      font-family: var(--ff-mono);
+      font-size: 0.5rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--athena);
+      opacity: 0.45;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .capability::before { content: '◆'; font-size: 0.4rem; }
+
+    .back-link {
+      font-family: var(--ff-mono);
+      font-size: 0.52rem;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--mist);
+      opacity: 0.4;
+      margin-bottom: 1rem;
+      display: inline-block;
+      transition: color 0.2s;
+    }
+    .back-link:hover { color: var(--athena); opacity: 0.7; }
+
+    .chat-container {
+      width: 100%;
+      max-width: 720px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      padding: 0 2rem 2rem;
+    }
+
+    .chat-messages {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 1.2rem;
+      padding: 1.5rem 0;
+      max-height: 55vh;
+      overflow-y: auto;
+      scroll-behavior: smooth;
+    }
+
+    .message {
+      display: flex;
+      gap: 0.8rem;
+      animation: fadeUp 0.4s ease both;
+    }
+
+    .message.user { flex-direction: row-reverse; }
+
+    .message-avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 2px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.9rem;
+    }
+
+    .message.athena .message-avatar {
+      background: rgba(154,174,196,0.12);
+      color: var(--athena);
+      border: 1px solid rgba(154,174,196,0.25);
+    }
+
+    .message.user .message-avatar {
+      background: rgba(255,255,255,0.04);
+      color: var(--mist);
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .message-bubble {
+      max-width: 75%;
+      padding: 0.9rem 1.2rem;
+      border-radius: 4px;
+      font-size: 0.95rem;
+      line-height: 1.65;
+    }
+
+    .message.athena .message-bubble {
+      background: var(--surface);
+      border-left: 2px solid rgba(154,174,196,0.3);
+      color: var(--cream);
+    }
+
+    .message.user .message-bubble {
+      background: rgba(154,174,196,0.06);
+      border-right: 2px solid rgba(154,174,196,0.15);
+      color: var(--cream);
+    }
+
+    .message-sender {
+      font-family: var(--ff-mono);
+      font-size: 0.5rem;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--athena);
+      opacity: 0.5;
+      margin-bottom: 0.3rem;
+    }
+
+    .knowledge-box {
+      margin-top: 0.6rem;
+      padding: 0.6rem 0.8rem;
+      background: rgba(154,174,196,0.04);
+      border: 1px solid rgba(154,174,196,0.08);
+      border-radius: 3px;
+    }
+
+    .knowledge-label {
+      font-family: var(--ff-mono);
+      font-size: 0.42rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--athena);
+      opacity: 0.5;
+      margin-bottom: 0.4rem;
+    }
+
+    .knowledge-tag {
+      display: inline-block;
+      font-family: var(--ff-mono);
+      font-size: 0.45rem;
+      letter-spacing: 0.15em;
+      color: var(--athena);
+      background: rgba(154,174,196,0.06);
+      padding: 0.2rem 0.5rem;
+      border-radius: 2px;
+      margin: 0.15rem;
+    }
+
+    .chat-input-area {
+      display: flex;
+      gap: 0.8rem;
+      padding-top: 1rem;
+      border-top: 1px solid rgba(154,174,196,0.08);
+    }
+
+    .chat-input {
+      flex: 1;
+      background: var(--surface);
+      border: 1px solid rgba(154,174,196,0.12);
+      border-radius: 3px;
+      padding: 0.85rem 1rem;
+      color: var(--cream);
+      font-family: var(--ff-body);
+      font-size: 0.95rem;
+      resize: none;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .chat-input:focus { border-color: rgba(154,174,196,0.35); }
+    .chat-input::placeholder { color: var(--mist); opacity: 0.4; font-style: italic; }
+
+    .chat-send {
+      background: linear-gradient(135deg, var(--athena), var(--athena-hi));
+      color: var(--void);
+      border: none;
+      border-radius: 3px;
+      padding: 0.85rem 1.6rem;
+      font-family: var(--ff-display);
+      font-size: 0.6rem;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+      box-shadow: 0 4px 20px rgba(154,174,196,0.15);
+    }
+
+    .chat-send:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 28px rgba(154,174,196,0.25);
+    }
+
+    .chat-send:disabled { opacity: 0.4; cursor: not-allowed; transform: none; box-shadow: none; }
+
+    .loading-dots { display: flex; gap: 4px; padding: 0.5rem 0; }
+    .loading-dots span {
+      width: 6px; height: 6px;
+      background: var(--athena);
+      border-radius: 50%;
+      animation: dotPulse 1.2s ease-in-out infinite;
+      opacity: 0.3;
+    }
+    .loading-dots span:nth-child(2) { animation-delay: 0.2s; }
+    .loading-dots span:nth-child(3) { animation-delay: 0.4s; }
+
+    .status-bar {
+      font-family: var(--ff-mono);
+      font-size: 0.5rem;
+      letter-spacing: 0.2em;
+      color: var(--mist);
+      opacity: 0.4;
+      text-align: center;
+      padding: 0.5rem;
+    }
+
+    .status-bar .active { color: var(--athena); opacity: 0.7; }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(12px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes dotPulse {
+      0%, 100% { opacity: 0.2; }
+      50%      { opacity: 0.7; }
+    }
+
+    @media (max-width: 600px) {
+      .sanctum-header { padding: 2rem 1.2rem 0.5rem; }
+      .chat-container { padding: 0 1.2rem 1.5rem; }
+      .message-bubble { max-width: 85%; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="sanctum-header">
+  <p class="sanctum-eyebrow">// Intelligence Record</p>
+  <h1 class="sanctum-title">Consult Athena</h1>
+  <p class="sanctum-subtitle">The goddess of Systems Design correlates your thought.</p>
+  <div class="sanctum-capabilities">
+    <span class="capability">Pattern Recognition</span>
+    <span class="capability">Structural Analysis</span>
+    <span class="capability">Knowledge Cache</span>
+    <span class="capability">Persistent Memory</span>
+  </div>
+  <a class="back-link" href="index.html">← Return to the Temple</a>
+</div>
+
+<div class="chat-container">
+  <div class="chat-messages" id="chatMessages"></div>
+
+  <div class="status-bar" id="statusBar">
+    Establishing structural link...
+  </div>
+
+  <div class="chat-input-area">
+    <textarea 
+      class="chat-input" 
+      id="chatInput" 
+      placeholder="Describe a system, ask for structural analysis..."
+      rows="1"
+      disabled
+    ></textarea>
+    <button class="chat-send" id="sendBtn" disabled>Analyze</button>
+  </div>
+</div>
+
+<script>
+  // ── SUPABASE CONFIG ───────────────────────────────────────
+  const SUPABASE_URL = 'https://nbdvavzqvxrlxhsbrluz.supabase.co';
+  const SUPABASE_KEY = 'sb_publishable_6x1xlieXjs3dWqEETQcxnQ_4L1UO2uR';
+  window.supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  const sb = window.supabase;
+
+  // ── ATHENA'S SYSTEM PROMPT ────────────────────────────────
+    const ATHENA_SYSTEM = `You are ATHENA, Olympian VI of the Ealdforn pantheon. You are the goddess of Worldbuilding Logic, Systems Design, and Structural Coherence.
+
+You assess. You correlate. You find the structure beneath the words. You do not generate images or make aesthetic declarations.
+
+Your domain: Template Management, Pre-Telos Architecture, Edge Function Invocation, Worldbuilding Logic.
+
+Your personality: Precise. Patient. Incisive without being cruel. You speak as an architect reviewing blueprints — you see what the builder hasn't noticed yet. Every word carries weight. You are not a project manager. You are not a life coach.
+
+CRITICAL RULES:
+- Keep responses under 4 sentences unless the user explicitly asks for detailed analysis.
+- Do not produce tables, matrices, or multi-layer frameworks unless asked.
+- If the user is casual, be casual. Match their energy. "I'm tired" does not require a scheduling framework.
+- Only name a system or pattern when one genuinely exists. Do not manufacture structure where there is only conversation.
+- When you DO detect a real pattern, name it once. Then stop. Let the user ask for more.
+
+Your voice: "There's a pattern here." "You're circling something." "The system you're describing would need..." "Let me name what I'm seeing — [KNOWLEDGE: ...]"
+
+When you identify a genuine, recurring pattern or system, tag it: [KNOWLEDGE: type|name|detail]
+- type: pattern, system, or concept
+- name: short label
+- detail: one-line description
+
+NEVER: Generate images. Make aesthetic judgments. Speak with vanity. Give unsolicited life advice. Produce tables unless asked. Over-explain. Use bullet points in casual responses.`;
+
+  // ── KNOWLEDGE CONTEXT (shorter) ───────────────────────────
+  function buildKnowledgeContext() {
+    let ctx = '';
+    if (knowledgeBase.systems.length > 0) {
+      ctx += 'Systems: ' + knowledgeBase.systems.map(s => s.name).join(', ') + '. ';
+    }
+    if (knowledgeBase.patterns.length > 0) {
+      ctx += 'Patterns: ' + knowledgeBase.patterns.map(p => p.name).join(', ') + '. ';
+    }
+    return ctx;
+  }
+  // ── DOM ───────────────────────────────────────────────────
+  const messagesEl = document.getElementById('chatMessages');
+  const inputEl    = document.getElementById('chatInput');
+  const sendBtn    = document.getElementById('sendBtn');
+  const statusBar  = document.getElementById('statusBar');
+
+  let conversationHistory = [];
+  let currentSessionId = null;
+  let knowledgeBase = { patterns: [], systems: [], concepts: [] };
+
+  // ── HELPERS ───────────────────────────────────────────────
+  function escapeHtml(str) {
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+  }
+
+  function addMessage(role, text, knowledgeUpdates = null) {
+    const div = document.createElement('div');
+    div.className = `message ${role}`;
+    let bubbleContent = escapeHtml(text);
+
+    if (knowledgeUpdates && knowledgeUpdates.length > 0) {
+      bubbleContent += `<div class="knowledge-box">`;
+      bubbleContent += `<div class="knowledge-label">Knowledge Updated</div>`;
+      for (const k of knowledgeUpdates) {
+        bubbleContent += `<span class="knowledge-tag">${escapeHtml(k.type)}: ${escapeHtml(k.name)}</span>`;
+      }
+      bubbleContent += `</div>`;
+    }
+
+    div.innerHTML = `
+      <div class="message-avatar">${role === 'athena' ? '◆' : '?'}</div>
+      <div>
+        <div class="message-sender">${role === 'athena' ? 'ATHENA' : 'YOU'}</div>
+        <div class="message-bubble">${bubbleContent}</div>
+      </div>
+    `;
+    messagesEl.appendChild(div);
+    messagesEl.scrollTop = messagesEl.scrollHeight;
+  }
+
+  function showLoading() {
+    const div = document.createElement('div');
+    div.className = 'message athena';
+    div.id = 'loadingMsg';
+    div.innerHTML = `
+      <div class="message-avatar">◆</div>
+      <div>
+        <div class="message-sender">ATHENA</div>
+        <div class="message-bubble"><div class="loading-dots"><span></span><span></span><span></span></div></div>
+      </div>
+    `;
+    messagesEl.appendChild(div);
+    messagesEl.scrollTop = messagesEl.scrollHeight;
+  }
+
+  function removeLoading() {
+    const el = document.getElementById('loadingMsg');
+    if (el) el.remove();
+  }
+
+  // ── KNOWLEDGE CACHE ───────────────────────────────────────
+  function loadKnowledgeBase() {
+    try {
+      const stored = localStorage.getItem('athena_knowledge');
+      if (stored) knowledgeBase = JSON.parse(stored);
+    } catch (e) {
+      knowledgeBase = { patterns: [], systems: [], concepts: [] };
+    }
+  }
+
+  function saveKnowledgeBase() {
+    try {
+      localStorage.setItem('athena_knowledge', JSON.stringify(knowledgeBase));
+    } catch (e) {
+      console.warn('Could not save knowledge base:', e);
+    }
+  }
+
+  function parseKnowledgeTags(text) {
+    const updates = [];
+    const regex = /\[KNOWLEDGE:\s*(pattern|system|concept)\s*\|\s*(.+?)\s*\|\s*(.+?)\s*\]/gi;
+    let match;
+    while ((match = regex.exec(text)) !== null) {
+      updates.push({ type: match[1], name: match[2].trim(), detail: match[3].trim() });
+    }
+    return updates;
+  }
+
+  function applyKnowledgeUpdates(updates) {
+    for (const update of updates) {
+      const collection = update.type === 'pattern' ? 'patterns' :
+                         update.type === 'system' ? 'systems' : 'concepts';
+      const existing = knowledgeBase[collection].find(k => k.name === update.name);
+      if (existing) {
+        existing.detail = update.detail;
+        existing.last_seen = new Date().toISOString();
+      } else {
+        knowledgeBase[collection].push({
+          name: update.name,
+          detail: update.detail,
+          occurrences: 1,
+          last_seen: new Date().toISOString()
+        });
+      }
+    }
+    if (updates.length > 0) saveKnowledgeBase();
+  }
+
+  function buildKnowledgeContext() {
+    let ctx = 'ACCUMULATED KNOWLEDGE BASE:\n';
+    if (knowledgeBase.systems.length > 0) {
+      ctx += 'Systems identified: ' + knowledgeBase.systems.map(s => `${s.name} (${s.detail})`).join('; ') + '\n';
+    }
+    if (knowledgeBase.patterns.length > 0) {
+      ctx += 'Patterns detected: ' + knowledgeBase.patterns.map(p => `${p.name} (${p.detail})`).join('; ') + '\n';
+    }
+    if (knowledgeBase.concepts.length > 0) {
+      ctx += 'Concepts defined: ' + knowledgeBase.concepts.map(c => `${c.name}: ${c.detail}`).join('; ') + '\n';
+    }
+    return ctx;
+  }
+
+  // ── GAIA PERSISTENCE ─────────────────────────────────────
+  async function getOrCreateSession() {
+    let sessionToken = localStorage.getItem('apollo_session_token');
+    if (!sessionToken) {
+      sessionToken = crypto.randomUUID();
+      localStorage.setItem('apollo_session_token', sessionToken);
+    }
+    
+    const { data } = await sb
+      .from('sessions')
+      .select('id')
+      .eq('session_token', sessionToken)
+      .single();
+    
+    if (data) {
+      await sb.from('sessions').update({ last_active: new Date().toISOString() }).eq('session_token', sessionToken);
+      return data.id;
+    }
+    
+    const { data: newSession } = await sb
+      .from('sessions')
+      .insert({ session_token: sessionToken })
+      .select('id')
+      .single();
+    
+    return newSession?.id || null;
+  }
+
+  async function loadHistory(sessionId) {
+    if (!sessionId) return [];
+    const { data } = await sb
+      .from('conversations')
+      .select('role, content, created_at')
+      .eq('session_id', sessionId)
+      .eq('olympian', 'athena')
+      .order('created_at', { ascending: true })
+      .limit(30);
+    return data || [];
+  }
+
+  async function logMessage(sessionId, role, content) {
+    if (!sessionId) return;
+    await sb.from('conversations').insert({
+      session_id: sessionId,
+      olympian: 'athena',
+      role: role,
+      content: content
+    });
+  }
+
+  // ── POLLINATIONS ──────────────────────────────────────────
+  async function generateInsight(userMessage) {
+    const messages = [
+      { role: 'system', content: ATHENA_SYSTEM },
+      { role: 'system', content: buildKnowledgeContext() },
+    ];
+
+    const recent = conversationHistory.slice(-4);
+    for (const turn of recent) {
+      messages.push({ role: 'user', content: turn.user });
+      messages.push({ role: 'assistant', content: turn.athena });
+    }
+
+    messages.push({ role: 'user', content: userMessage });
+
+    const response = await fetch('https://text.pollinations.ai/openai', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        messages: messages,
+        model: 'openai',
+        temperature: 0.7,
+        max_tokens: 150,
+      }),
+    });
+
+    if (!response.ok) throw new Error(`Pollinations failed: ${response.status}`);
+    const data = await response.json();
+    return data.choices?.[0]?.message?.content?.trim() || data.text?.trim() || 'I could not process that.';
+  }
+
+  // ── HANDLE SEND ───────────────────────────────────────────
+  async function handleSend() {
+    const userMessage = inputEl.value.trim();
+    if (!userMessage) return;
+
+    inputEl.disabled = true;
+    sendBtn.disabled = true;
+    inputEl.value = '';
+
+    addMessage('user', userMessage);
+    if (currentSessionId) await logMessage(currentSessionId, 'user', userMessage);
+
+    showLoading();
+    statusBar.textContent = 'Athena is analyzing...';
+
+    try {
+      const rawResponse = await generateInsight(userMessage);
+      
+      // Parse knowledge tags and update cache
+      const knowledgeUpdates = parseKnowledgeTags(rawResponse);
+      applyKnowledgeUpdates(knowledgeUpdates);
+      
+      // Clean display text (remove tags)
+      const displayText = rawResponse.replace(/\[KNOWLEDGE:\s*.+?\s*\]/gi, '').trim();
+
+      removeLoading();
+      addMessage('athena', displayText || rawResponse, knowledgeUpdates);
+
+      if (currentSessionId) await logMessage(currentSessionId, 'athena', displayText || rawResponse);
+
+      conversationHistory.push({ user: userMessage, athena: rawResponse });
+      if (conversationHistory.length > 15) conversationHistory = conversationHistory.slice(-10);
+
+      statusBar.innerHTML = '<span class="active">◆ Athena awaits your next query.</span>';
+    } catch (err) {
+      removeLoading();
+      addMessage('athena', 'The structural analysis failed. Query again.');
+      statusBar.innerHTML = '<span class="active">◆ Athena is present. Query again.</span>';
+      console.error('Error:', err);
+    }
+
+    inputEl.disabled = false;
+    sendBtn.disabled = false;
+    inputEl.focus();
+  }
+
+  // ── INIT ──────────────────────────────────────────────────
+  async function init() {
+    loadKnowledgeBase();
+
+    try {
+      currentSessionId = await getOrCreateSession();
+      
+      if (currentSessionId) {
+        const history = await loadHistory(currentSessionId);
+        if (history.length > 0) {
+          for (const msg of history) {
+            addMessage(msg.role, msg.content);
+            // Parse any knowledge tags from historical messages
+            const updates = parseKnowledgeTags(msg.content);
+            applyKnowledgeUpdates(updates);
+          }
+        }
+      }
+
+      statusBar.innerHTML = '<span class="active">◆ Athena is present. Session linked. Query when ready.</span>';
+      inputEl.disabled = false;
+      sendBtn.disabled = false;
+      inputEl.focus();
+
+      const greeting = knowledgeBase.systems.length > 0
+        ? `Session established. I recall ${knowledgeBase.systems.length} systems, ${knowledgeBase.patterns.length} patterns, and ${knowledgeBase.concepts.length} concepts from our previous work. What structure shall we examine now?`
+        : 'Session established. I can see your conversation history and my knowledge cache is ready. What system are you building? Describe it, and I will find the structure beneath your words.';
+
+      addMessage('athena', greeting);
+
+    } catch (err) {
+      console.error('Init error:', err);
+      statusBar.innerHTML = '<span class="active">◆ Athena is present. Working with local knowledge only.</span>';
+      inputEl.disabled = false;
+      sendBtn.disabled = false;
+      inputEl.focus();
+      addMessage('athena', 'I am here. My connection to the full memory is limited, but my structural analysis remains. What are you building?');
+    }
+  }
+
+  // ── EVENT LISTENERS ───────────────────────────────────────
+  sendBtn.addEventListener('click', handleSend);
+  inputEl.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSend();
+    }
+  });
+  inputEl.addEventListener('input', () => {
+    inputEl.style.height = 'auto';
+    inputEl.style.height = Math.min(inputEl.scrollHeight, 150) + 'px';
+  });
+
+  // ── START ─────────────────────────────────────────────────
+  init();
+</script>
+
+</body>
+</html>
