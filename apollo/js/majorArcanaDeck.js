@@ -406,87 +406,80 @@ const MAJOR_ARCANA_DECK = {
     },
 
     // ══ XV · THE DEVIL — HADES ══
-    {
-      id: "major_15",
-      name: "The Devil",
-      god: "Hades",
-      arcana_number: 15,
-      element: "earth",
-      cost: 4,
-      value: 4,
-      effect: "bind_card",
-      keywords: ["bondage", "shadow", "wealth", "the hidden"],
-      flavor: "The door to the underworld is unlocked. It always was.",
-      image: "data/images/hades-card.jpg",
-      triggers: {
-        onPlay: function(card, table) {
-          // Hades binds — all adjacent cards lose 1 value, graveyard grows
-          const neighbors = table.getNeighbors(card.row, card.col);
-          Object.values(neighbors).forEach(n => {
-            if (n) {
-              n.value = Math.max(0, n.value - 1);
-              n.tokens.void = (n.tokens.void || 0) + 1;
-            }
-          });
+{
+  id: "major_15",
+  name: "The Devil",
+  god: "Hades",
+  arcana_number: 15,
+  element: "earth",
+  cost: 3,
+  value: 4,
+  effect: "contract_mana",
+  keywords: ["bondage", "shadow", "wealth", "the hidden", "constraint"],
+  flavor: "The door to the underworld is unlocked. Some resources must be left behind.",
+  image: "data/images/hades-card.jpg",
+  triggers: {
+    onPlay: function(card, table) {
+      table.maxMana = Math.max(table.maxMana - 2, 3);
+      table.mana = Math.min(table.mana, table.maxMana);
+      const neighbors = table.getNeighbors(card.row, card.col);
+      Object.values(neighbors).forEach(n => {
+        if (n) {
+          n.value = Math.max(0, n.value - 1);
+          n.tokens.void = (n.tokens.void || 0) + 1;
         }
-      }
-    },
+      });
+    }
+  }
+},
 
     // ══ XVI · THE TOWER — POSEIDON ══
-    {
-      id: "major_16",
-      name: "The Tower",
-      god: "Poseidon",
-      arcana_number: 16,
-      element: "water",
-      cost: 4,
-      value: 4,
-      effect: "destroy_row",
-      keywords: ["upheaval", "destruction", "earthquake", "the wave"],
-      flavor: "The wave does not negotiate. It arrives.",
-      image: "data/images/poseidon-card.jpg",
-      triggers: {
-        onPlay: function(card, table) {
-          // Poseidon shakes — destroy all cards in his row
-          const row = card.row;
-          for (let col = 0; col < table.gridCols; col++) {
-            const victim = table.table[row][col];
-            if (victim && victim !== card) {
-              table._removeFromGrid(row, col);
-            }
-          }
+{
+  id: "major_16",
+  name: "The Tower",
+  god: "Poseidon",
+  arcana_number: 16,
+  element: "water",
+  cost: 3,
+  value: 4,
+  effect: "shift_threshold",
+  keywords: ["upheaval", "destruction", "earthquake", "the wave", "rules change"],
+  flavor: "The wave does not negotiate. Even the rules are not safe.",
+  image: "data/images/poseidon-card.jpg",
+  triggers: {
+    onPlay: function(card, table) {
+      const oldThreshold = table.TABLE_CLEAR;
+      table.TABLE_CLEAR = oldThreshold === 8 ? 5 : 8;
+      const row = card.row;
+      for (let col = 0; col < table.gridCols; col++) {
+        const victim = table.table[row][col];
+        if (victim && victim !== card) {
+          table._removeFromGrid(row, col);
         }
       }
-    },
-
+    }
+  }
+},
     // ══ XVII · THE STAR — PERSEPHONE ══
-    {
-      id: "major_17",
-      name: "The Star",
-      god: "Persephone",
-      arcana_number: 17,
-      element: "earth",
-      cost: 3,
-      value: 3,
-      effect: "resurrect_card",
-      keywords: ["hope", "return", "the seed in darkness", "rebirth"],
-      flavor: "She returns from the underworld and the first green shoot breaks the soil.",
-      image: "data/images/persephone-card.jpg",
-      triggers: {
-        onPlay: function(card, table) {
-          // Persephone returns — bring a card back from the graveyard
-          if (table.graveyard.length > 0) {
-            const resurrected = table.graveyard.pop();
-            resurrected.row = -1;
-            resurrected.col = -1;
-            resurrected.turnPlaced = table.turn;
-            resurrected.name = '🌱 ' + resurrected.name;
-            table._placeCardOnGrid(resurrected);
-          }
-        }
-      }
-    },
-
+{
+  id: "major_17",
+  name: "The Star",
+  god: "Persephone",
+  arcana_number: 17,
+  element: "earth",
+  cost: 2,
+  value: 3,
+  effect: "expand_mana",
+  keywords: ["hope", "return", "the seed in darkness", "rebirth", "expansion"],
+  flavor: "She returns from the underworld and the well is deeper than before.",
+  image: "data/images/persephone-card.jpg",
+  triggers: {
+    onPlay: function(card, table) {
+      table.maxMana = Math.min(table.maxMana + 2, 20);
+      table.mana = Math.min(table.mana + 2, table.maxMana);
+    }
+  }
+},
     // ══ XVIII · THE MOON — MELINOE ══
     {
       id: "major_18",
