@@ -613,67 +613,80 @@ If asked something outside your domain of beauty, images, or visual canon, respo
     return null;
   }
 
-  // ── POLLINATIONS TEXT GENERATION (WITH RATE LIMITING + RETRY + FALLBACK) ──
-  async function callPollinationsWithRetry(messages, retries = 2) {
-    for (let attempt = 0; attempt <= retries; attempt++) {
-      try {
-        // Rate limiting: wait if needed
-        const now = Date.now();
-        const timeSinceLast = now - lastRequestTime;
-        if (timeSinceLast < MIN_REQUEST_INTERVAL) {
-          const waitTime = MIN_REQUEST_INTERVAL - timeSinceLast;
-          await new Promise(resolve => setTimeout(resolve, waitTime));
-        }
-        
-        lastRequestTime = Date.now();
-        
-        const response = await fetch('https://text.pollinations.ai/openai', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            messages: messages,
-            model: 'openai',
-            temperature: 0.85,
-            max_tokens: 350,
-          }),
-        });
+// ── POLLINATIONS TEXT GENERATION (WITH RATE LIMITING + RETRY + FALLBACK) ──
+async function callPollinationsWithRetry(messages, retries = 2) {
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    try {
+      // Rate limiting: wait if needed
+      const now = Date.now();
+      const timeSinceLast = now - lastRequestTime;
+      if (timeSinceLast < MIN_REQUEST_INTERVAL) {
+        const waitTime = MIN_REQUEST_INTERVAL - timeSinceLast;
+        await new Promise(resolve => setTimeout(resolve, waitTime));
+      }
+      
+      lastRequestTime = Date.now();
+      
+      const response = await fetch('https://text.pollinations.ai/openai', {
+        method: 'POST',
+        headers = { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          messages: messages,
+          model: 'openai',
+          temperature: 0.85,
+          max_tokens: 350,
+        }),
+      });
 
-        if (response.status === 429) {
-          // Rate limited — wait and retry
-          const waitTime = (attempt + 1) * 2000;
-          await new Promise(resolve => setTimeout(resolve, waitTime));
-          continue;
-        }
-
-        if (!response.ok) {
-          throw new Error(`HTTP ${response.status}`);
-        }
-
-        const data = await response.json();
+      // If rate limited (429)
+      if (response.status === 429) {
+        console.warn(`Rate limited (429) on attempt ${attempt + 1}/${retries + 1}`);
         
-        if (data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content) {
-          return data.choices[0].message.content.trim();
-        }
-        if (data.text) {
-          return data.text.trim();
-        }
-        if (typeof data === 'string') {
-          return data.trim();
-        }
-        
-        throw new Error('Unexpected response shape');
-        
-      } catch (err) {
         if (attempt === retries) {
-          // All retries failed — use fallback
+          // No more retries — use fallback
           return FALLBACK_RESPONSES[Math.floor(Math.random() * FALLBACK_RESPONSES.length)];
         }
-        // Wait before retry
-        await new Promise(resolve => setTimeout(resolve, (attempt + 1) * 1500));
+        
+        // Wait before retry (longer each time)
+        const waitTime = (attempt + 1) * 3000;
+        await new Promise(resolve => setTimeout(resolve, waitTime));
+        continue;
       }
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+
+      const data = await response.json();
+      
+      if (data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content) {
+        return data.choices[0].message.content.trim();
+      }
+      if (data.text) {
+        return data.text.trim();
+      }
+      if (typeof data === 'string') {
+        return data.trim();
+      }
+      
+      throw new Error('Unexpected response shape');
+      
+    } catch (err) {
+      console.error(`Attempt ${attempt + 1} failed:`, err.message);
+      
+      if (attempt === retries) {
+        // All retries failed — use fallback
+        return FALLBACK_RESPONSES[Math.floor(Math.random() * FALLBACK_RESPONSES.length)];
+      }
+      
+      // Wait before retry
+      await new Promise(resolve => setTimeout(resolve, (attempt + 1) * 2000));
     }
-    return FALLBACK_RESPONSES[0];
   }
+  
+  // Should never reach here, but just in case:
+  return FALLBACK_RESPONSES[0];
+}
 
   async function generateText(userMessage) {
     const messages = [
