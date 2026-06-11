@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🪶 Hermes v3 · Card-Playing Browser Agent</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<div id="hermesApp">
+  
+  <!-- Top Bar -->
+  <header id="topBar">
+    <div class="hermes-icon">🪶</div>
+    <div class="mission-status">
+      <span class="mission-label">MISSION:</span>
+      <span id="missionTitle">Loading...</span>
+    </div>
+    <div class="token-counter">
+      <span class="token-icon">🎯</span>
+      <span id="tokenCount">0</span> tokens found
+    </div>
+    <div class="deck-stats">
+      <span>🃏 <span id="deckSize">0</span> cards</span>
+      <span>✧ <span id="confidenceLevel">0</span>% confidence</span>
+    </div>
+  </header>
+
+  <!-- Main Layout -->
+  <div id="mainLayout">
+    
+    <!-- Left: Deck & Hand -->
+    <aside id="deckPanel">
+      <div class="panel-header">🃏 THE DECK</div>
+      
+      <div class="section">
+        <div class="section-title">CURRENT HAND</div>
+        <div id="handDisplay" class="card-hand"></div>
+      </div>
+      
+      <div class="section">
+        <div class="section-title">DECK</div>
+        <div id="deckDisplay" class="card-list"></div>
+      </div>
+      
+      <div class="section">
+        <div class="section-title">DISCARD</div>
+        <div id="discardDisplay" class="card-list"></div>
+      </div>
+      
+      <button id="drawBtn" class="hermes-btn" onclick="Hermes.drawHand()">
+        🃏 DRAW HAND
+      </button>
+      <button id="playBtn" class="hermes-btn primary" onclick="Hermes.playSequence()">
+        ▶ PLAY SEQUENCE
+      </button>
+      <button id="evolveBtn" class="hermes-btn" onclick="Hermes.evolveDeck()">
+        🔄 EVOLVE DECK
+      </button>
+    </aside>
+
+    <!-- Center: Browser Viewport -->
+    <main id="browserPanel">
+      <div class="browser-chrome">
+        <div class="browser-dots">
+          <span class="dot red"></span>
+          <span class="dot yellow"></span>
+          <span class="dot green"></span>
+        </div>
+        <input type="text" id="urlBar" class="url-bar" 
+               value="https://example.com" 
+               onkeydown="if(event.key==='Enter') Hermes.navigateTo(document.getElementById('urlBar').value)">
+        <button class="go-btn" onclick="Hermes.navigateTo(document.getElementById('urlBar').value)">GO</button>
+      </div>
+      <div id="viewport">
+        <iframe id="browserFrame" sandbox="allow-scripts allow-same-origin"></iframe>
+        <div id="viewportOverlay">
+          <div id="hermesCursor">🪶</div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Right: Hermes Log -->
+    <aside id="logPanel">
+      <div class="panel-header">📜 HERMES SPEAKS</div>
+      <div id="hermesLog" class="log-stream"></div>
+      <div class="log-input-row">
+        <input type="text" id="hermesInput" 
+               placeholder="Speak to Hermes..." 
+               onkeydown="if(event.key==='Enter') Hermes.respondTo(document.getElementById('hermesInput').value)">
+      </div>
+    </aside>
+
+  </div>
+</div>
+
+<script type="module" src="src/app.js"></script>
+</body>
+</html>

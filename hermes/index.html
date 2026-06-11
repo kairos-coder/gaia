@@ -1,0 +1,1226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Hermes — Extraction & Routing · Ealdforn Studios</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&family=JetBrains+Mono:wght@300;400&display=swap" rel="stylesheet" />
+  <style>
+    /* ── TOKENS ─────────────────────────────────────────────── */
+    :root {
+      --void:      #05050c;
+      --deep:      #08090f;
+      --mid:       #0f1018;
+      --surface:   #161824;
+      --gold:      #c8943a;
+      --hermes:    #e8a840;
+      --hermes-hi: #f0c060;
+      --hermes-dim:rgba(232,168,64,0.15);
+      --hermes-glow:rgba(232,168,64,0.08);
+      --cream:     #f0e8d8;
+      --mist:      #7a8090;
+      --quicksilver:#a8b8c8;
+
+      --ff-display: 'Cinzel', 'Palatino Linotype', serif;
+      --ff-body:    'Cormorant Garamond', Georgia, serif;
+      --ff-mono:    'JetBrains Mono', monospace;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--void);
+      color: var(--cream);
+      font-family: var(--ff-body);
+      overflow-x: hidden;
+    }
+
+    a { color: var(--hermes); text-decoration: none; }
+    a:hover { color: var(--hermes-hi); }
+
+    /* ── TOP RIBBON ─────────────────────────────────────────── */
+    .ribbon {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.9rem 2.5rem;
+      background: linear-gradient(180deg, rgba(5,5,12,0.97) 0%, rgba(5,5,12,0.7) 100%);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(232,168,64,0.1);
+    }
+
+    .ribbon-left {
+      font-family: var(--ff-display);
+      font-size: 0.65rem;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: var(--mist);
+    }
+
+    .ribbon-left a {
+      color: var(--mist);
+      transition: color 0.2s;
+    }
+    .ribbon-left a:hover { color: var(--hermes); }
+    .ribbon-sep { margin: 0 0.6rem; opacity: 0.3; }
+
+    .ribbon-center {
+      font-family: var(--ff-display);
+      font-size: 0.7rem;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--hermes);
+    }
+
+    .ribbon-right {
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+    }
+
+    .studio-btn {
+      font-family: var(--ff-display);
+      font-size: 0.58rem;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--void);
+      background: var(--hermes);
+      padding: 0.45rem 1.1rem;
+      border-radius: 2px;
+      transition: background 0.2s, transform 0.2s;
+    }
+    .studio-btn:hover {
+      background: var(--hermes-hi);
+      color: var(--void);
+      transform: translateY(-1px);
+    }
+
+    /* ── HERO ────────────────────────────────────────────────── */
+    #hero {
+      position: relative;
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+    }
+
+    .hero-portrait {
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero-portrait img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center top;
+      display: block;
+      filter: saturate(0.85) contrast(1.05);
+    }
+
+    .hero-portrait::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(90deg, transparent 40%, var(--void) 100%),
+        linear-gradient(0deg, var(--void) 0%, transparent 30%),
+        radial-gradient(ellipse 80% 100% at 0% 50%, transparent 50%, rgba(5,5,12,0.4) 100%);
+    }
+
+    .hero-portrait::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: radial-gradient(ellipse 60% 40% at 35% 30%, rgba(232,168,64,0.07) 0%, transparent 70%);
+      z-index: 1;
+      pointer-events: none;
+    }
+
+    .hero-copy {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 8rem 4rem 6rem 3rem;
+    }
+
+    .god-number {
+      font-family: var(--ff-mono);
+      font-size: 0.6rem;
+      letter-spacing: 0.3em;
+      color: var(--hermes);
+      opacity: 0.5;
+      margin-bottom: 2rem;
+    }
+
+    .god-name {
+      font-family: var(--ff-display);
+      font-size: clamp(4rem, 8vw, 7rem);
+      font-weight: 900;
+      line-height: 0.88;
+      letter-spacing: -0.02em;
+      background: linear-gradient(170deg, var(--cream) 30%, var(--hermes) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 1.2rem;
+      animation: fadeUp 1s ease both;
+    }
+
+    .god-title {
+      font-family: var(--ff-display);
+      font-size: clamp(0.7rem, 1.5vw, 0.9rem);
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: var(--hermes);
+      margin-bottom: 2.5rem;
+      animation: fadeUp 1s 0.15s ease both;
+    }
+
+    .hero-rule {
+      width: 60px;
+      height: 1px;
+      background: var(--hermes);
+      opacity: 0.4;
+      margin-bottom: 2rem;
+      animation: expandW 1s 0.3s ease both;
+    }
+
+    .hero-lede {
+      font-size: clamp(1.15rem, 2vw, 1.45rem);
+      line-height: 1.75;
+      color: var(--cream);
+      opacity: 0.88;
+      max-width: 480px;
+      animation: fadeUp 1s 0.3s ease both;
+      margin-bottom: 3rem;
+    }
+
+    .hero-lede em {
+      color: var(--hermes);
+      font-style: italic;
+    }
+
+    .hero-attrs {
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+      margin-bottom: 3rem;
+      animation: fadeUp 1s 0.45s ease both;
+    }
+
+    .attr-row {
+      display: flex;
+      align-items: baseline;
+      gap: 1rem;
+    }
+
+    .attr-label {
+      font-family: var(--ff-mono);
+      font-size: 0.52rem;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--hermes);
+      opacity: 0.6;
+      width: 90px;
+      flex-shrink: 0;
+    }
+
+    .attr-value {
+      font-family: var(--ff-body);
+      font-size: 0.95rem;
+      color: var(--cream);
+      opacity: 0.75;
+      font-style: italic;
+    }
+
+    .hero-ctas {
+      display: flex;
+      gap: 1rem;
+      animation: fadeUp 1s 0.6s ease both;
+    }
+
+    .cta-primary {
+      font-family: var(--ff-display);
+      font-size: 0.65rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--void);
+      background: linear-gradient(135deg, var(--hermes), var(--hermes-hi));
+      padding: 0.85rem 2rem;
+      border-radius: 2px;
+      transition: transform 0.2s, box-shadow 0.2s;
+      box-shadow: 0 4px 24px rgba(232,168,64,0.2);
+    }
+
+    .cta-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 32px rgba(232,168,64,0.3);
+      color: var(--void);
+    }
+
+    .cta-ghost {
+      font-family: var(--ff-display);
+      font-size: 0.65rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--hermes);
+      border: 1px solid rgba(232,168,64,0.35);
+      padding: 0.85rem 2rem;
+      border-radius: 2px;
+      transition: border-color 0.2s, color 0.2s, transform 0.2s;
+    }
+
+    .cta-ghost:hover {
+      border-color: var(--hermes);
+      color: var(--hermes-hi);
+      transform: translateY(-2px);
+    }
+
+    .hero-scroll {
+      position: absolute;
+      bottom: 2rem;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 10;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.4rem;
+      animation: fadeIn 2s 1.2s ease both;
+    }
+
+    .hero-scroll span {
+      font-family: var(--ff-display);
+      font-size: 0.52rem;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: var(--hermes);
+      opacity: 0.3;
+    }
+
+    .scroll-bar {
+      width: 1px;
+      height: 48px;
+      background: linear-gradient(to bottom, var(--hermes), transparent);
+      opacity: 0.35;
+      animation: scrollPulse 2.4s ease-in-out infinite;
+    }
+
+    /* ── TERMINAL CACHE ROUTER ──────────────────────────────── */
+    #terminal {
+      padding: 6rem 2rem;
+      background: var(--deep);
+      border-top: 1px solid rgba(232,168,64,0.1);
+      display: flex;
+      justify-content: center;
+      position: relative;
+    }
+    
+    .terminal-container {
+      width: 100%;
+      max-width: 860px;
+      background: var(--void);
+      border: 1px solid rgba(232,168,64,0.2);
+      border-radius: 2px;
+      display: flex;
+      flex-direction: column;
+      height: 600px;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.8);
+      position: relative;
+      z-index: 2;
+    }
+
+    .terminal-header {
+      padding: 1rem 1.5rem;
+      border-bottom: 1px solid rgba(232,168,64,0.2);
+      font-family: var(--ff-mono);
+      font-size: 0.65rem;
+      color: var(--hermes);
+      display: flex;
+      justify-content: space-between;
+      text-transform: uppercase;
+      letter-spacing: 0.2em;
+      background: rgba(15,16,24,0.8);
+    }
+
+    #chat-log {
+      flex: 1;
+      overflow-y: auto;
+      padding: 2rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+      font-family: var(--ff-mono);
+      font-size: 0.85rem;
+      scrollbar-width: none;
+    }
+    #chat-log::-webkit-scrollbar { display: none; }
+
+    .message { max-width: 80%; line-height: 1.6; position: relative; animation: slideIn 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94) both; }
+    .message.user { align-self: flex-end; color: var(--cream); text-align: right; opacity: 0.8; }
+    .message.god { align-self: flex-start; color: var(--hermes-hi); }
+    
+    .speed-badge { 
+        display: inline-block; font-size: 0.6rem; 
+        padding: 3px 8px; border-radius: 2px; margin-top: 8px; font-weight: bold; letter-spacing: 0.05em;
+    }
+    .speed-badge.hit { background: rgba(232,168,64,0.15); color: var(--hermes); border: 1px solid var(--hermes); }
+    .speed-badge.miss { background: rgba(255, 255, 255, 0.05); color: var(--mist); border: 1px solid var(--mist); }
+
+    @keyframes slideIn { 0% { transform: translateX(-10px); opacity: 0; } 100% { transform: translateX(0); opacity: 1; } }
+    
+    .input-area {
+      display: flex;
+      border-top: 1px solid rgba(232,168,64,0.2);
+      padding: 1rem;
+      background: var(--mid);
+    }
+    
+    .input-area input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      color: var(--cream);
+      font-family: var(--ff-mono);
+      font-size: 0.9rem;
+      padding: 0.5rem 1rem;
+      outline: none;
+    }
+    .input-area input::placeholder { color: var(--mist); opacity: 0.5; }
+    
+    .input-area button {
+      background: transparent;
+      color: var(--hermes);
+      border: 1px solid var(--hermes);
+      padding: 0.5rem 1.5rem;
+      font-family: var(--ff-mono);
+      font-size: 0.65rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: all 0.2s;
+      border-radius: 2px;
+    }
+    .input-area button:hover { background: var(--hermes); color: var(--void); }
+
+    /* ── MANIFESTO ──────────────────────────────────────────── */
+    #manifesto {
+      background: linear-gradient(180deg, var(--void) 0%, var(--deep) 50%, var(--void) 100%);
+      padding: 9rem 2rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    #manifesto::before {
+      content: '';
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      width: 800px;
+      height: 400px;
+      background: radial-gradient(ellipse, rgba(232,168,64,0.04) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .manifesto-inner {
+      max-width: 860px;
+      margin: 0 auto;
+      position: relative;
+    }
+
+    .manifesto-eyebrow {
+      font-family: var(--ff-mono);
+      font-size: 0.58rem;
+      letter-spacing: 0.35em;
+      text-transform: uppercase;
+      color: var(--hermes);
+      opacity: 0.6;
+      text-align: center;
+      margin-bottom: 2.5rem;
+    }
+
+    .manifesto-quote {
+      font-family: var(--ff-body);
+      font-size: clamp(1.6rem, 3.5vw, 2.4rem);
+      font-weight: 300;
+      font-style: italic;
+      line-height: 1.55;
+      color: var(--cream);
+      text-align: center;
+      margin-bottom: 3rem;
+      position: relative;
+    }
+
+    .manifesto-quote::before {
+      content: '\201C';
+      position: absolute;
+      top: -0.5rem;
+      left: -1rem;
+      font-size: 5rem;
+      color: var(--hermes);
+      opacity: 0.12;
+      font-family: Georgia, serif;
+      line-height: 1;
+    }
+
+    .manifesto-quote em {
+      color: var(--hermes);
+      font-style: normal;
+    }
+
+    .manifesto-rule {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 3rem;
+    }
+
+    .m-line {
+      flex: 1;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(232,168,64,0.3));
+    }
+    .m-line.right {
+      background: linear-gradient(90deg, rgba(232,168,64,0.3), transparent);
+    }
+    .m-diamond {
+      width: 5px; height: 5px;
+      background: var(--hermes);
+      transform: rotate(45deg);
+      opacity: 0.45;
+      flex-shrink: 0;
+    }
+
+    .manifesto-body {
+      font-size: clamp(1.05rem, 2vw, 1.25rem);
+      line-height: 1.85;
+      color: var(--cream);
+      opacity: 0.8;
+      text-align: center;
+      max-width: 700px;
+      margin: 0 auto;
+    }
+
+    /* ── PORTRAITS GALLERY ──────────────────────────────────── */
+    #portraits {
+      padding: 6rem 2rem;
+      background: var(--mid);
+      overflow: hidden;
+    }
+
+    .portraits-header {
+      text-align: center;
+      margin-bottom: 3.5rem;
+    }
+
+    .section-eyebrow {
+      font-family: var(--ff-mono);
+      font-size: 0.56rem;
+      letter-spacing: 0.35em;
+      text-transform: uppercase;
+      color: var(--hermes);
+      opacity: 0.55;
+      margin-bottom: 0.8rem;
+    }
+
+    .section-heading {
+      font-family: var(--ff-display);
+      font-size: clamp(1.4rem, 3vw, 2rem);
+      font-weight: 700;
+      color: var(--cream);
+      letter-spacing: 0.02em;
+    }
+
+    .portraits-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1px;
+      max-width: 1300px;
+      margin: 0 auto;
+      background: rgba(232,168,64,0.08);
+    }
+
+    .portrait-cell {
+      position: relative;
+      overflow: hidden;
+      aspect-ratio: 3/4;
+      background: var(--deep);
+      cursor: pointer;
+    }
+
+    .portrait-cell img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center top;
+      display: block;
+      transition: transform 0.6s ease, filter 0.4s ease;
+      filter: saturate(0.7) brightness(0.85);
+    }
+
+    .portrait-cell:hover img {
+      transform: scale(1.04);
+      filter: saturate(1) brightness(0.95);
+    }
+
+    .portrait-cell::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(0deg, rgba(5,5,12,0.7) 0%, transparent 50%);
+      pointer-events: none;
+    }
+
+    .portrait-label {
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      z-index: 2;
+      padding: 1.2rem 1rem 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.2rem;
+    }
+
+    .portrait-name {
+      font-family: var(--ff-display);
+      font-size: 0.65rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--hermes);
+    }
+
+    .portrait-caption {
+      font-family: var(--ff-body);
+      font-style: italic;
+      font-size: 0.82rem;
+      color: var(--cream);
+      opacity: 0.6;
+    }
+
+    /* ── DOMAIN MANIFESTO ───────────────────────────────────── */
+    #domain {
+      padding: 9rem 2rem;
+      background: linear-gradient(180deg, var(--mid) 0%, var(--void) 100%);
+    }
+
+    .domain-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1fr 2fr;
+      gap: 5rem;
+      align-items: start;
+    }
+
+    .domain-left {
+      position: sticky;
+      top: 6rem;
+    }
+
+    .domain-number {
+      font-family: var(--ff-mono);
+      font-size: 0.55rem;
+      letter-spacing: 0.3em;
+      color: var(--hermes);
+      opacity: 0.4;
+      margin-bottom: 1rem;
+    }
+
+    .domain-title {
+      font-family: var(--ff-display);
+      font-size: clamp(2rem, 4vw, 3rem);
+      font-weight: 900;
+      color: var(--cream);
+      line-height: 1.1;
+      margin-bottom: 1.5rem;
+    }
+
+    .domain-title span {
+      display: block;
+      color: var(--hermes);
+    }
+
+    .domain-sub {
+      font-family: var(--ff-body);
+      font-style: italic;
+      font-size: 1rem;
+      color: var(--mist);
+      line-height: 1.6;
+    }
+
+    .domain-right {
+      display: flex;
+      flex-direction: column;
+      gap: 2.5rem;
+    }
+
+    .domain-pillar {
+      border-left: 1px solid rgba(232,168,64,0.2);
+      padding-left: 2rem;
+      position: relative;
+      transition: border-color 0.3s;
+    }
+
+    .domain-pillar::before {
+      content: '';
+      position: absolute;
+      left: -1px; top: 0;
+      width: 1px;
+      height: 0;
+      background: var(--hermes);
+      transition: height 0.4s ease;
+    }
+
+    .domain-pillar:hover { border-color: rgba(232,168,64,0.5); }
+    .domain-pillar:hover::before { height: 100%; }
+
+    .pillar-label {
+      font-family: var(--ff-mono);
+      font-size: 0.52rem;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--hermes);
+      opacity: 0.65;
+      margin-bottom: 0.6rem;
+    }
+
+    .pillar-heading {
+      font-family: var(--ff-display);
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--cream);
+      margin-bottom: 0.6rem;
+    }
+
+    .pillar-body {
+      font-family: var(--ff-body);
+      font-size: 1rem;
+      line-height: 1.75;
+      color: var(--cream);
+      opacity: 0.7;
+    }
+
+    /* ── CREDITS STRIP ──────────────────────────────────────── */
+    #credits {
+      background: var(--deep);
+      border-top: 1px solid rgba(232,168,64,0.12);
+      border-bottom: 1px solid rgba(232,168,64,0.12);
+      padding: 4rem 2rem;
+    }
+
+    .credits-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 2rem;
+    }
+
+    .credit-block {
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+
+    .credit-label {
+      font-family: var(--ff-mono);
+      font-size: 0.5rem;
+      letter-spacing: 0.28em;
+      text-transform: uppercase;
+      color: var(--hermes);
+      opacity: 0.5;
+    }
+
+    .credit-value {
+      font-family: var(--ff-display);
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--cream);
+      letter-spacing: 0.04em;
+    }
+
+    .credit-note {
+      font-family: var(--ff-body);
+      font-style: italic;
+      font-size: 0.82rem;
+      color: var(--mist);
+    }
+
+    /* ── FOOTER ─────────────────────────────────────────────── */
+    footer {
+      background: var(--void);
+      padding: 3rem 2.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-top: 1px solid rgba(232,168,64,0.08);
+    }
+
+    .footer-left {
+      font-family: var(--ff-display);
+      font-size: 0.6rem;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--mist);
+      opacity: 0.5;
+    }
+
+    .footer-center {
+      font-family: var(--ff-body);
+      font-style: italic;
+      font-size: 0.85rem;
+      color: var(--hermes);
+      opacity: 0.4;
+    }
+
+    .footer-right {
+      font-family: var(--ff-mono);
+      font-size: 0.5rem;
+      letter-spacing: 0.2em;
+      color: var(--mist);
+      opacity: 0.35;
+    }
+
+    /* ── ANIMATIONS ─────────────────────────────────────────── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to   { opacity: 1; }
+    }
+
+    @keyframes expandW {
+      from { width: 0; opacity: 0; }
+      to   { width: 60px; opacity: 0.4; }
+    }
+
+    @keyframes scrollPulse {
+      0%,100% { opacity: 0.2; transform: scaleY(1); }
+      50%     { opacity: 0.5; transform: scaleY(1.15); }
+    }
+
+    /* ── RESPONSIVE ─────────────────────────────────────────── */
+    @media (max-width: 960px) {
+      #hero {
+        grid-template-columns: 1fr;
+        min-height: auto;
+      }
+      .hero-portrait {
+        height: 60vw;
+        min-height: 320px;
+      }
+      .hero-portrait::after {
+        background: linear-gradient(0deg, var(--void) 0%, transparent 50%);
+      }
+      .hero-copy {
+        padding: 3rem 2rem 4rem;
+      }
+      .domain-inner {
+        grid-template-columns: 1fr;
+        gap: 3rem;
+      }
+      .domain-left { position: static; }
+      .credits-inner {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      .portraits-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 600px) {
+      .ribbon { padding: 0.8rem 1.2rem; }
+      .ribbon-center { display: none; }
+      .hero-copy { padding: 2.5rem 1.5rem 3rem; }
+      .hero-ctas { flex-direction: column; }
+      .portraits-grid { grid-template-columns: 1fr 1fr; }
+      .credits-inner { grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+      footer { flex-direction: column; gap: 1rem; text-align: center; }
+      #manifesto, #domain, #terminal { padding: 5rem 1.5rem; }
+    }
+  </style>
+</head>
+<body>
+
+<nav class="ribbon">
+  <div class="ribbon-left">
+    <a href="https://kairos-coder.github.io/ealdforn-studios">Ealdforn Studios</a>
+    <span class="ribbon-sep">·</span>
+    The Twelve Olympians
+  </div>
+  <div class="ribbon-center">🪶 Hermes · Extraction & Routing</div>
+  <div class="ribbon-right">
+    <a class="studio-btn" href="#terminal">Open Terminal →</a>
+  </div>
+</nav>
+
+<section id="hero">
+
+  <div class="hero-portrait">
+    <img src="assets/hermes-courier.jpg" alt="Hermes — Extraction & Routing" />
+  </div>
+
+  <div class="hero-copy">
+    <p class="god-number">// OLYMPIAN · ? · EXTRACTION & ROUTING</p>
+    <h1 class="god-name">Hermes</h1>
+    <p class="god-title">Extraction &nbsp;·&nbsp; Routing &nbsp;·&nbsp; Speed &nbsp;·&nbsp; Commerce</p>
+    <div class="hero-rule"></div>
+    <p class="hero-lede">
+      He does not carry the message. Hermes <em>is</em> the carrying — the signal between
+      gods, the packet that moves, the transaction that clears. Nothing in Ealdforn Studios
+      reaches its destination without passing through him first.
+    </p>
+    <div class="hero-attrs">
+      <div class="attr-row">
+        <span class="attr-label">Domain</span>
+        <span class="attr-value">Extraction, Routing, API Integration, Payment Systems</span>
+      </div>
+      <div class="attr-row">
+        <span class="attr-label">Seat</span>
+        <span class="attr-value">The First Gate</span>
+      </div>
+      <div class="attr-row">
+        <span class="attr-label">Reports to</span>
+        <span class="attr-value">Zeus · Creative Direction</span>
+      </div>
+      <div class="attr-row">
+        <span class="attr-label">Feeds</span>
+        <span class="attr-value">Aphrodite, Apollo, Demeter, the full Pantheon</span>
+      </div>
+    </div>
+    <div class="hero-ctas">
+      <a class="cta-primary" href="#terminal">Open Terminal</a>
+      <a class="cta-ghost" href="#manifesto">Read the Manifesto</a>
+    </div>
+  </div>
+
+  <div class="hero-scroll">
+    <div class="scroll-bar"></div>
+    <span>Descend</span>
+  </div>
+
+</section>
+
+<section id="terminal">
+  <div class="terminal-container">
+    <div class="terminal-header">
+      <span>// SYS.HERMES.CACHE_ROUTER</span>
+      <span>STATUS: ONLINE</span>
+    </div>
+    
+    <div id="chat-log">
+        <div class="message god" style="animation-delay: 0s;">
+            Hey. Let's make this quick. Ask me anything. First time takes a second, but ask me twice and I'll drop it on you in milliseconds. Time is money, mortal.
+        </div>
+    </div>
+
+    <div class="input-area">
+        <input type="text" id="user-input" placeholder="Query the network..." autocomplete="off">
+        <button id="send-btn">Transmit</button>
+    </div>
+  </div>
+</section>
+
+<section id="manifesto">
+  <div class="manifesto-inner">
+    <p class="manifesto-eyebrow">// The Hermes Manifesto</p>
+
+    <blockquote class="manifesto-quote">
+      The message does not exist<br>
+      until <em>Hermes decides to carry it</em> —<br>
+      and then it arrives before it was sent.
+    </blockquote>
+
+    <div class="manifesto-rule">
+      <div class="m-line"></div>
+      <div class="m-diamond"></div>
+      <div class="m-line right"></div>
+    </div>
+
+    <p class="manifesto-body">
+      Hermes is the god of the signal before the signal is sent. He governs the extraction 
+      of structured meaning from unstructured noise, the routing of every token to its destined 
+      god, the speed at which the pantheon thinks, and the commerce that flows through the 
+      studio's veins. He is the reason data moves, APIs answer, and payments clear. Every 
+      query that Aphrodite pairs, every prompt that Apollo synthesizes, every cycle that 
+      Demeter cultivates — Hermes carried it there. He is the first gate and the last mile. 
+      He is never still. He has never been still. That is not what messengers are for.
+    </p>
+  </div>
+</section>
+
+<section id="portraits">
+  <div class="portraits-header">
+    <p class="section-eyebrow">// Four Aspects · One God</p>
+    <h2 class="section-heading">The Faces of Hermes</h2>
+  </div>
+
+  <div class="portraits-grid">
+
+    <div class="portrait-cell">
+      <img src="assets/hermes-classical.jpg" alt="Hermes — Classical" />
+      <div class="portrait-label">
+        <span class="portrait-name">Classical</span>
+        <span class="portrait-caption">The Messenger of the Gods</span>
+      </div>
+    </div>
+
+    <div class="portrait-cell">
+      <img src="assets/hermes-chthonic.jpg" alt="Hermes — Chthonic" />
+      <div class="portrait-label">
+        <span class="portrait-name">Chthonic</span>
+        <span class="portrait-caption">The Psychopomp · Guide of Souls</span>
+      </div>
+    </div>
+
+    <div class="portrait-cell">
+      <img src="assets/hermes-cyber.jpg" alt="Hermes — Cyber" />
+      <div class="portrait-label">
+        <span class="portrait-name">Cyber</span>
+        <span class="portrait-caption">The God of Signal</span>
+      </div>
+    </div>
+
+    <div class="portrait-cell">
+      <img src="assets/hermes-runic.jpg" alt="Hermes — Runic" />
+      <div class="portrait-label">
+        <span class="portrait-name">Runic</span>
+        <span class="portrait-caption">The God of the Encoded Word</span>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<section id="domain">
+  <div class="domain-inner">
+
+    <div class="domain-left">
+      <p class="domain-number">// His Authority</p>
+      <h2 class="domain-title">
+        The First<br>
+        <span>Gate</span>
+      </h2>
+      <p class="domain-sub">
+        Four pillars. Each one a law of motion.<br>
+        None of them negotiable.
+      </p>
+    </div>
+
+    <div class="domain-right">
+
+      <div class="domain-pillar">
+        <p class="pillar-label">Pillar I</p>
+        <h3 class="pillar-heading">Extraction</h3>
+        <p class="pillar-body">
+          Hermes reads raw sources — web pages, databases, APIs, unstructured text — and 
+          extracts structured tokens from noise. Every subject, verb, and object that enters 
+          the pantheon's awareness was first identified by Hermes. He does not create meaning. 
+          He finds it. The token is the prayer. The extraction is the answer.
+        </p>
+      </div>
+
+      <div class="domain-pillar">
+        <p class="pillar-label">Pillar II</p>
+        <h3 class="pillar-heading">Routing</h3>
+        <p class="pillar-body">
+          Every extracted token carries a destination. Hermes routes signal to the correct god — 
+          Aphrodite for pairing, Apollo for synthesis, Demeter for cultivation, Poseidon for 
+          depth mapping. Nothing gets lost in transit. The pantheon is a network. Hermes is 
+          the protocol that makes it a system.
+        </p>
+      </div>
+
+      <div class="domain-pillar">
+        <p class="pillar-label">Pillar III</p>
+        <h3 class="pillar-heading">Speed</h3>
+        <p class="pillar-body">
+          Hermes governs latency. He is the reason the pantheon responds in real time. 
+          His caduceus is the network cable. His winged sandals are the packet headers. 
+          He does not tolerate delay. A message that arrives late is a message that failed. 
+          The studio's creative velocity is his direct responsibility.
+        </p>
+      </div>
+
+      <div class="domain-pillar">
+        <p class="pillar-label">Pillar IV</p>
+        <h3 class="pillar-heading">Commerce</h3>
+        <p class="pillar-body">
+          Payments, integrations, transactions. Hermes moves value the way he moves messages — 
+          frictionlessly. Stripe, APIs, the marketplace itself — all fall under his domain. 
+          He is the god of merchants as much as messengers. Every commission that flows 
+          through Ealdforn Studios passes through his gate. The offering is the transaction. 
+          The receipt is the blessing.
+        </p>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<section id="credits">
+  <div class="credits-inner">
+
+    <div class="credit-block">
+      <span class="credit-label">Pantheon Seat</span>
+      <span class="credit-value">Olympian ?</span>
+      <span class="credit-note">The First Gate</span>
+    </div>
+
+    <div class="credit-block">
+      <span class="credit-label">Primary Output</span>
+      <span class="credit-value">Structured Tokens</span>
+      <span class="credit-note">SVO Triplets · API Payloads</span>
+    </div>
+
+    <div class="credit-block">
+      <span class="credit-label">Pipeline Role</span>
+      <span class="credit-value">Extraction Gate</span>
+      <span class="credit-note">Hermes → Aphrodite → Apollo → Demeter</span>
+    </div>
+
+    <div class="credit-block">
+      <span class="credit-label">Aesthetic Register</span>
+      <span class="credit-value">Fast · Clean · Connective</span>
+      <span class="credit-note">Mercantile · Quicksilver · Precise</span>
+    </div>
+
+  </div>
+</section>
+
+<footer>
+  <div class="footer-left">
+    <a href="https://kairos-coder.github.io/ealdforn-studios" style="color:inherit;">← Ealdforn Studios</a>
+  </div>
+  <div class="footer-center">Regnavit Deus, et res bonae sunt.</div>
+  <div class="footer-right">© Ealdforn Studios · kairos-coder</div>
+</footer>
+
+<script>
+    const chatLog = document.getElementById('chat-log');
+    const inputField = document.getElementById('user-input');
+    const sendBtn = document.getElementById('send-btn');
+    
+    const CACHE_PREFIX = 'hermes_ealdforn_mem_';
+    const HISTORY_KEY = 'hermes_ealdforn_log';
+
+    const SYSTEM_PROMPT = `You are Hermes, fast-talking messenger of the gods, trickster, and speedster within Ealdforn Studios. Be witty, slightly sarcastic, and extremely concise. Keep it under 3 sentences. Emphasize how fast you are, or joke about how you "borrowed" the answer from the network. Do not use markdown. Just speak quickly in plain text.`;
+
+    // Load History
+    let history = JSON.parse(localStorage.getItem(HISTORY_KEY)) || [];
+    if (history.length > 0) {
+        chatLog.innerHTML = '';
+        history.forEach(msg => appendMessage(msg.role, msg.text, msg.badge));
+    }
+
+    function appendMessage(role, text, badgeHtml = null) {
+        const div = document.createElement('div');
+        div.className = `message ${role}`;
+        
+        let prefix = role === 'user' ? '> ' : '';
+        div.innerHTML = prefix + text;
+        
+        if (badgeHtml) div.innerHTML += `<br>${badgeHtml}`;
+        
+        chatLog.appendChild(div);
+        chatLog.scrollTop = chatLog.scrollHeight;
+    }
+
+    function saveHistory(role, text, badgeHtml = null) {
+        history.push({ role, text, badge: badgeHtml });
+        if (history.length > 30) history = history.slice(history.length - 30);
+        localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
+    }
+
+    function getNormalizedHash(str) {
+        return str.toLowerCase().replace(/[^a-z0-9]/g, '');
+    }
+
+    async function processQuery() {
+        const text = inputField.value.trim();
+        if (!text) return;
+
+        inputField.value = '';
+        appendMessage('user', text);
+        saveHistory('user', text);
+
+        const startTime = performance.now();
+        const cacheKey = CACHE_PREFIX + getNormalizedHash(text);
+        const cachedResponse = localStorage.getItem(cacheKey);
+
+        if (cachedResponse) {
+            // CACHE HIT
+            const endTime = performance.now();
+            const timeStr = (endTime - startTime).toFixed(1);
+            
+            const hitFlavors = ["Already routed that token.", "Too slow.", "Pulled from the local cache.", "Next question."];
+            const flavor = hitFlavors[Math.floor(Math.random() * hitFlavors.length)];
+            
+            const responseText = `${flavor} ${cachedResponse}`;
+            const badge = `<span class="speed-badge hit">⚡ Cache Hit [${timeStr} ms]</span>`;
+            
+            appendMessage('god', responseText, badge);
+            saveHistory('god', responseText, badge);
+        } else {
+            // CACHE MISS -> Fetch from API
+            const typingId = 'typing-' + Date.now();
+            const div = document.createElement('div');
+            div.className = 'message god';
+            div.id = typingId;
+            div.innerHTML = '<i>Extracting and routing...</i>';
+            chatLog.appendChild(div);
+            chatLog.scrollTop = chatLog.scrollHeight;
+
+            try {
+                const response = await fetch('https://text.pollinations.ai/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        messages: [
+                            { role: 'system', content: SYSTEM_PROMPT },
+                            { role: 'user', content: text }
+                        ],
+                        model: 'openai',
+                        temperature: 0.8
+                    })
+                });
+
+                let finalAnswer = "Signal lost. Send again.";
+                if (response.ok) {
+                    finalAnswer = await response.text();
+                    localStorage.setItem(cacheKey, finalAnswer);
+                }
+
+                const endTime = performance.now();
+                const timeStr = (endTime - startTime).toFixed(0);
+                const badge = `<span class="speed-badge miss">🌐 Network Extracted [${timeStr} ms]</span>`;
+
+                document.getElementById(typingId).remove();
+                appendMessage('god', finalAnswer, badge);
+                saveHistory('god', finalAnswer, badge);
+
+            } catch (err) {
+                document.getElementById(typingId).remove();
+                appendMessage('god', "Packet dropped. Give it to me again.");
+            }
+        }
+    }
+
+    sendBtn.addEventListener('click', processQuery);
+    inputField.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') processQuery();
+    });
+</script>
+
+</body>
+</html>
