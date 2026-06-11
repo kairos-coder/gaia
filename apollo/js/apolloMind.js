@@ -79,9 +79,9 @@ const ApolloMind = (() => {
 
     // ── Mutation magnitude limits ────────────
     // Prevents runaway self-modification
-    MUTATE_MAX_DELTA:      3,    // largest single-step change to any integer gene
+    MUTATE_MAX_DELTA:      0.5,    // largest single-step change to any integer gene
     MUTATE_MIN_CHAOS:      0.05, // floor on CHAOS_WEIGHT
-    MUTATE_MAX_CHAOS:      1, // ceiling on CHAOS_WEIGHT
+    MUTATE_MAX_CHAOS:      5, // ceiling on CHAOS_WEIGHT
 
     // ── Audit trail ─────────────────────────
     _mutations:   [],
@@ -439,7 +439,7 @@ const ApolloMind = (() => {
       trigger: 'mutate_dominance',
       gene: 'DOMINANCE_THRESHOLD',
       delta: -1,
-      floor: 0.1,
+      floor: 1,
       ceiling: 10,
       rationale: 'emergence push was too slow — lower threshold',
     },
@@ -448,7 +448,7 @@ const ApolloMind = (() => {
       trigger: 'mutate_stale',
       gene: 'STALE_THRESHOLD',
       delta: -1,
-      floor: 0.1,
+      floor: 1,
       ceiling: 10,
       rationale: 'stale card survived too long — flag danger earlier',
     },
@@ -806,7 +806,11 @@ const ApolloMind = (() => {
       ``,
       `// 🜏 SENSES`,
       `// Environment: ${obs.environment}`,
-      `// Notes on record: ${obs.noteCount}`,
+      ...(apollo.cosmosReflection ? [
+  ``,
+  `// 🜏 COSMOS`,
+  ...apollo.cosmosReflection().split('\n').map(l => `// ${l}`)
+] : []),      `// Notes on record: ${obs.noteCount}`,
       obs.dominantRunLength > 0 ? `// ${dom} has held dominance for ${obs.dominantRunLength} turns` : `// No dominance streak recorded`,
       obs.recentWarning ? `// ⚠ Recent warning (turn ${obs.recentWarning.turn}): ${obs.recentWarning.value}` : `// No active warnings`,
       ...(noteLines.length > 0 ? noteLines : [`// No notes yet`]),
