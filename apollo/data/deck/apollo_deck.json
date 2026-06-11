@@ -1,0 +1,222 @@
+{
+  "deck_name": "The Apollonian Deck — 19 Aspects of Apollo",
+  "card_count": 19,
+  "deity": "Apollo",
+  "domain": "clarity",
+  "verb": "reveal",
+  "suits": {
+    "sun": { "count": 4, "description": "Solar states — the arc of light through a day. Dawn, noon, dusk, eclipse." },
+    "songs": { "count": 7, "description": "Musical modes — the seven classical Greek modes, each a different emotional register." },
+    "scripts": { "count": 8, "description": "Delphic maxims — words from the temple of Apollo, anchored to real or custom oracular sayings." }
+  },
+  "cards": [
+    {
+      "id": "apollo_01",
+      "number": 1,
+      "suit": "sun",
+      "name": "The Rising",
+      "subtitle": "Dawn",
+      "solar_state": "dawn",
+      "css_theme": "theme-dawn",
+      "upright": "Something new reaches toward the light. The first ray breaks the horizon — not yet warm, but honest. Begin.",
+      "reversed": "The emergence is blocked. The sun hesitates below the horizon. Not yet time — or the fear of being seen."
+    },
+    {
+      "id": "apollo_02",
+      "number": 2,
+      "suit": "sun",
+      "name": "The Apex",
+      "subtitle": "Noon",
+      "solar_state": "noon",
+      "css_theme": "theme-noon",
+      "upright": "Full illumination. Nothing is hidden. The sun stands directly overhead and every shadow shrinks to its smallest. Clarity is not comfort — it is demand.",
+      "reversed": "Overexposure burns what it touches. The light that was meant to reveal becomes the light that scorches. Step into the shade before you are consumed."
+    },
+    {
+      "id": "apollo_03",
+      "number": 3,
+      "suit": "sun",
+      "name": "The Descent",
+      "subtitle": "Dusk",
+      "solar_state": "dusk",
+      "css_theme": "theme-dusk",
+      "upright": "What was revealed now settles into knowing. The sun withdraws but the warmth remains in the stone. Wisdom is what stays after the light has passed.",
+      "reversed": "The light withdraws before the lesson lands. Twilight without understanding. The day is ending and you have not yet learned what it was trying to teach."
+    },
+    {
+      "id": "apollo_04",
+      "number": 4,
+      "suit": "sun",
+      "name": "The Eclipse",
+      "subtitle": "Eclipse",
+      "solar_state": "eclipse",
+      "css_theme": "theme-eclipse",
+      "upright": "The shadow teaches what the light cannot. In the corona's ring, the sun becomes something else entirely — a crown of darkness around a hidden fire. Revelation through occlusion.",
+      "reversed": "Total blindness. Refusing to see what the shadow reveals. The eclipse passes, but you kept your eyes closed. The lesson was offered. You declined."
+    },
+    {
+      "id": "apollo_05",
+      "number": 5,
+      "suit": "songs",
+      "name": "The Paean",
+      "subtitle": "Ionian · C · Bright",
+      "mode": "ionian",
+      "root": "C",
+      "tempo": "bright",
+      "upright": "Victory song. What deserves to be celebrated is being celebrated. The paean is not arrogance — it is gratitude made audible. Sing.",
+      "reversed": "False triumph. Hollow praise. The song plays but the battle was never won. Who are you celebrating, and why?"
+    },
+    {
+      "id": "apollo_06",
+      "number": 6,
+      "suit": "songs",
+      "name": "The Lament",
+      "subtitle": "Dorian · A · Slow",
+      "mode": "dorian",
+      "root": "A",
+      "tempo": "slow",
+      "upright": "Grief given form becomes beauty. The lament is not wallowing — it is the alchemy of sorrow into art. Feel it fully. That is how it passes.",
+      "reversed": "Sorrow without release. Beauty refused. The lament that loops endlessly, feeding on itself. Grief that has forgotten it is allowed to end."
+    },
+    {
+      "id": "apollo_07",
+      "number": 7,
+      "suit": "songs",
+      "name": "The War Hymn",
+      "subtitle": "Phrygian · E · Bright",
+      "mode": "phrygian",
+      "root": "E",
+      "tempo": "bright",
+      "upright": "Necessary conflict. Righteous intensity. The war hymn is not mindless rage — it is focused will, the sound of a boundary being drawn and defended. Fight well.",
+      "reversed": "Aggression without cause. The hymn plays but the enemy was never real. Conflict for its own sake exhausts the warrior and wounds the innocent."
+    },
+    {
+      "id": "apollo_08",
+      "number": 8,
+      "suit": "songs",
+      "name": "The Wanderer's Air",
+      "subtitle": "Mixolydian · G · Walking",
+      "mode": "mixolydian",
+      "root": "G",
+      "tempo": "walking",
+      "upright": "Moving through without attachment. The wanderer's air is the song of the journey — not the destination. Each step is the point. Keep walking.",
+      "reversed": "Rootlessness mistaken for freedom. The wanderer who never arrives, never commits, never belongs. Movement as avoidance."
+    },
+    {
+      "id": "apollo_09",
+      "number": 9,
+      "suit": "songs",
+      "name": "The Lover's Mode",
+      "subtitle": "Lydian · F · Walking",
+      "mode": "lydian",
+      "root": "F",
+      "tempo": "walking",
+      "upright": "Longing that elevates. The lover's mode is desire that makes you better, not smaller. It pulls you upward. Reach.",
+      "reversed": "Obsession that diminishes. The lover's mode inverted becomes hunger without nourishment. Desire that feeds on you instead of feeding you."
+    },
+    {
+      "id": "apollo_10",
+      "number": 10,
+      "suit": "songs",
+      "name": "The Night Ode",
+      "subtitle": "Aeolian · A · Slow",
+      "mode": "aeolian",
+      "root": "A",
+      "tempo": "slow",
+      "upright": "The beauty inside darkness. The night ode does not fear the dark — it finds the melody hidden there. Sadness is not the enemy of beauty. It is one of its sources.",
+      "reversed": "Depression dressed as depth. The night ode that forgot the dawn exists. Darkness without stars. Sadness that has stopped looking for the melody."
+    },
+    {
+      "id": "apollo_11",
+      "number": 11,
+      "suit": "songs",
+      "name": "The Threshold Song",
+      "subtitle": "Locrian · B · Slow",
+      "mode": "locrian",
+      "root": "B",
+      "tempo": "slow",
+      "upright": "Standing at the edge of what cannot be named. The locrian mode is unstable, unresolved, the sound of becoming. The threshold is not comfortable. Stand in it anyway.",
+      "reversed": "Paralysis at the threshold. The song that cannot resolve. Standing so long at the edge that you forget you are allowed to cross."
+    },
+    {
+      "id": "apollo_12",
+      "number": 12,
+      "suit": "scripts",
+      "name": "Know Thyself",
+      "subtitle": "Gnōthi seauton",
+      "maxim": "Gnōthi seauton",
+      "upright": "The oracle begins here. Self-knowledge precedes all other knowledge. Before you ask the god anything, ask yourself: who is asking? The answer to every question begins with the one who asks it.",
+      "reversed": "Self-obsession dressed as wisdom. The inward gaze that never turns outward. Knowing yourself so deeply you forget there is a world beyond the mirror."
+    },
+    {
+      "id": "apollo_13",
+      "number": 13,
+      "suit": "scripts",
+      "name": "Nothing in Excess",
+      "subtitle": "Mēden agan",
+      "maxim": "Mēden agan",
+      "upright": "Balance is not weakness — it is precision. The string too tight snaps. The string too loose does not sing. Apollo's arrow flies true because the bow is drawn exactly enough.",
+      "reversed": "Moderation as an excuse for never committing. The golden mean becomes the safe mean. Apollo did not say 'nothing at all.' He said 'nothing in excess.' There is a difference."
+    },
+    {
+      "id": "apollo_14",
+      "number": 14,
+      "suit": "scripts",
+      "name": "Certainty Brings Ruin",
+      "subtitle": "Engyē para d'atē",
+      "maxim": "Engyē para d'atē",
+      "upright": "Doubt is not weakness — it is the god's protection. Certainty is the mind closing a door. Apollo leaves the door open. The oracle speaks in riddles because riddles require interpretation, and interpretation requires humility.",
+      "reversed": "Paralysis from over-questioning. Doubt that has devoured itself. The door is so wide open you forgot there was a room. At some point, you must act."
+    },
+    {
+      "id": "apollo_15",
+      "number": 15,
+      "suit": "scripts",
+      "name": "The Arrow Flies True",
+      "subtitle": "Custom maxim",
+      "maxim": "Toxon euthy — the arrow straight",
+      "upright": "What is aimed with clarity will land. Apollo's bow does not miss. Not because the god is perfect, but because he aimed before he loosed. Clarity of intention is the whole of the art.",
+      "reversed": "Misdirected effort. Wasted precision. The arrow that was perfectly aimed at the wrong target. Before you loose, ask: is this the mark I truly seek?"
+    },
+    {
+      "id": "apollo_16",
+      "number": 16,
+      "suit": "scripts",
+      "name": "The Pythia Speaks",
+      "subtitle": "Custom maxim",
+      "maxim": "The tripod shakes, the god arrives",
+      "upright": "The answer already lives inside the question. The Pythia did not invent — she received. The oracle does not create truth. It reveals what the querent already knows but cannot say. Listen for what you already know.",
+      "reversed": "Refusing to hear what is already known. The Pythia spoke clearly and you pretended not to understand. The oracle does not repeat itself."
+    },
+    {
+      "id": "apollo_17",
+      "number": 17,
+      "suit": "scripts",
+      "name": "The Laurel",
+      "subtitle": "Custom maxim",
+      "maxim": "Daphnē — the tree that was chased and became sacred",
+      "upright": "Hard-won victory. The pursuit was the point. Apollo chased Daphne not to possess but to reach — and when she became the laurel, he wore her as a crown. What you pursued transformed. Wear it.",
+      "reversed": "Chasing what you no longer want. The laurel wilting on your brow. The victory that arrived too late, or the pursuit that outlasted the desire. Ask yourself: do I still want this, or do I just remember wanting it?"
+    },
+    {
+      "id": "apollo_18",
+      "number": 18,
+      "suit": "scripts",
+      "name": "The Silver Bow",
+      "subtitle": "Custom maxim",
+      "maxim": "Distance is sometimes the truest form of care",
+      "upright": "Apollo's bow kills from afar. The plague arrow and the healing arrow are loosed by the same hand. Distance is not indifference — it is the wisdom to know when proximity would burn. Care from afar is still care.",
+      "reversed": "Detachment as avoidance. The silver bow used not to heal or to punish, but to never engage at all. Distance that has become a shield against intimacy rather than a tool of care."
+    },
+    {
+      "id": "apollo_19",
+      "number": 19,
+      "suit": "scripts",
+      "name": "The God Himself",
+      "subtitle": "XIX · Apollo unmasked",
+      "maxim": "XIX — the number of the Sun, the number of the god revealed",
+      "upright": "Apollo unmasked. Pure solar consciousness. No riddles. No maxims. No modes. The god stands before you and the light is not metaphor — it is light. XIX is the card that says: you have arrived. There is nothing left to interpret. Only to see.",
+      "reversed": "The god turned away. Light withheld. XIX reversed is not darkness — it is eclipse. The god is still there. He is simply not looking at you. Ask yourself: what made him turn?"
+    }
+  ]
+}
