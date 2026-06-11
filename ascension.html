@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🜃 GAIA · Ascension Dashboard</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: #0a0c12;
+            color: #e3e6f0;
+            font-family: 'Segoe UI', 'Fira Code', monospace;
+            margin: 0;
+            padding: 1rem;
+        }
+        
+        /* Dashboard Grid */
+        .dashboard {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));
+            gap: 1.5rem;
+            padding: 1rem;
+        }
+        
+        /* God Card */
+        .god-card {
+            background: #11151f;
+            border: 1px solid #2a2f3f;
+            border-radius: 1.5rem;
+            overflow: hidden;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+            transition: transform 0.1s ease, box-shadow 0.2s;
+        }
+        
+        .god-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 28px rgba(0,0,0,0.5);
+            border-color: #4a6a8a;
+        }
+        
+        .card-header {
+            background: #1a1f2e;
+            padding: 0.75rem 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #2a2f3f;
+            cursor: grab;
+        }
+        
+        .card-header:active {
+            cursor: grabbing;
+        }
+        
+        .god-name {
+            font-size: 1.4rem;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+        
+        .god-symbol {
+            font-size: 1.8rem;
+        }
+        
+        .card-controls {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .card-controls button {
+            background: #2a2f3f;
+            border: none;
+            color: #e3e6f0;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            padding: 0.25rem 0.6rem;
+            font-size: 0.8rem;
+        }
+        
+        .card-controls button:hover {
+            background: #4a6a8a;
+        }
+        
+        .card-content {
+            padding: 1rem;
+            min-height: 280px;
+            background: #0f121c;
+        }
+        
+        iframe.god-frame {
+            width: 100%;
+            height: 280px;
+            border: none;
+            background: #0a0c12;
+            border-radius: 0.75rem;
+        }
+        
+        /* Toolbar */
+        .toolbar {
+            background: #11151f;
+            border-bottom: 1px solid #2a2f3f;
+            padding: 0.75rem 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+        
+        .title {
+            font-size: 1.6rem;
+            font-weight: bold;
+            background: linear-gradient(135deg, #d4af37, #7a9fcf);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        
+        button {
+            background: #2a2f3f;
+            border: none;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 2rem;
+            cursor: pointer;
+            font-weight: bold;
+            font-family: monospace;
+        }
+        
+        button.ascend {
+            background: #2a6f4f;
+        }
+        
+        button.descend {
+            background: #6f3a2a;
+        }
+        
+        .status {
+            font-family: monospace;
+            font-size: 0.8rem;
+            background: #00000066;
+            padding: 0.25rem 0.75rem;
+            border-radius: 1rem;
+        }
+        
+        @media (max-width: 700px) {
+            .dashboard {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="toolbar">
+    <div class="title">🜃 GAIA · ASCENSION DASHBOARD</div>
+    <div class="status" id="deckStatus">🃟 Memory Deck: 0 cards</div>
+    <div>
+        <button id="exportDeckBtn">📤 Export Deck</button>
+        <button id="importDeckBtn">📥 Import Deck</button>
+        <button id="addGodBtn">✨ Add God Card</button>
+        <button id="ascendBtn" class="ascend">⬆ ASCEND (New God)</button>
+        <button id="descentBtn" class="descend">⬇ DESCENT (Last God)</button>
+    </div>
+</div>
+
+<div id="dashboard" class="dashboard">
+    <!-- Dynamic god cards will appear here -->
+</div>
+
+<script>
+    // ------------------------------
+    // 1. MEMORY DECK (JSON)
+    // ------------------------------
+    let memoryDeck = [];  // each entry = { id, godName, folderPath, addedAt }
+    
+    // Known gods in /gaia/ folder structure
+    const GAIA_BASE = 'https://kairos-coder.github.io/gaia';
+    
+    const AVAILABLE_GODS = [
+        { name: 'Apollo', folder: 'apollo', entryFile: 'apolloTable.html', symbol: '☀️' },
+        { name: 'Athena', folder: 'athena', entryFile: 'studio.html', symbol: '🦉' },
+        { name: 'Hephaestus', folder: 'hephaestus', entryFile: 'forge.html', symbol: '🔨' },
+        { name: 'Aphrodite', folder: 'aphrodite', entryFile: 'heartbeat.html', symbol: '💋' },
+        { name: 'Hermes', folder: 'hermes', entryFile: 'caduceus.html', symbol: '📜' },
+        { name: 'Penelope', folder: 'penelope', entryFile: 'loom.html', symbol: '🪢' },
+        { name: 'Daedalus', folder: 'daedalus', entryFile: 'labyrinth.html', symbol: '🏛️' }
+    ];
+    
+    // Load deck from localStorage
+    function loadDeck() {
+        const saved = localStorage.getItem('gaiaAscensionDeck');
+        if (saved) {
+            memoryDeck = JSON.parse(saved);
+        } else {
+            // Default deck: Apollo only
+            memoryDeck = [
+                {
+                    id: 'god_apollo',
+                    godName: 'Apollo',
+                    folder: 'apollo',
+                    entryFile: 'apolloTable.html',
+                    symbol: '☀️',
+                    addedAt: Date.now()
+                }
+            ];
+            saveDeck();
+        }
+        updateStatus();
+        renderDashboard();
+    }
+    
+    function saveDeck() {
+        localStorage.setItem('gaiaAscensionDeck', JSON.stringify(memoryDeck));
+        updateStatus();
+    }
+    
+    function updateStatus() {
+        document.getElementById('deckStatus').innerText = `🃟 Memory Deck: ${memoryDeck.length} card(s)`;
+    }
+    
+    // Render all god cards
+    function renderDashboard() {
+        const container = document.getElementById('dashboard');
+        if (!container) return;
+        
+        container.innerHTML = '';
+        
+        memoryDeck.forEach((card, idx) => {
+            const godInfo = AVAILABLE_GODS.find(g => g.name === card.godName);
+            if (!godInfo) return;
+            
+            const cardDiv = document.createElement('div');
+            cardDiv.className = 'god-card';
+            cardDiv.setAttribute('data-id', card.id);
+            cardDiv.setAttribute('data-index', idx);
+            
+            // Header (draggable)
+            const header = document.createElement('div');
+            header.className = 'card-header';
+            header.setAttribute('draggable', 'true');
+            header.innerHTML = `
+                <div class="god-name">
+                    <span class="god-symbol">${godInfo.symbol}</span> ${godInfo.name}
+                </div>
+                <div class="card-controls">
+                    <button class="refresh-card" data-id="${card.id}">⟳</button>
+                    <button class="remove-card" data-id="${card.id}">🗑 Descent</button>
+                </div>
+            `;
+            
+            // Drag and drop reorder
+            header.addEventListener('dragstart', (e) => {
+                e.dataTransfer.setData('text/plain', idx);
+                e.dataTransfer.effectAllowed = 'move';
+            });
+            header.addEventListener('dragover', (e) => e.preventDefault());
+            header.addEventListener('drop', (e) => {
+                e.preventDefault();
+                const fromIdx = parseInt(e.dataTransfer.getData('text/plain'));
+                const toIdx = idx;
+                if (!isNaN(fromIdx) && fromIdx !== toIdx) {
+                    const moved = memoryDeck.splice(fromIdx, 1)[0];
+                    memoryDeck.splice(toIdx, 0, moved);
+                    saveDeck();
+                    renderDashboard();
+                }
+            });
+            
+            // Content (iframe to god's entry file)
+            const content = document.createElement('div');
+            content.className = 'card-content';
+            const iframeSrc = `${GAIA_BASE}/${godInfo.folder}/${godInfo.entryFile}`;
+            content.innerHTML = `<iframe class="god-frame" src="${iframeSrc}" title="${godInfo.name}"></iframe>`;
+            
+            cardDiv.appendChild(header);
+            cardDiv.appendChild(content);
+            container.appendChild(cardDiv);
+        });
+        
+        // Attach event listeners to buttons
+        document.querySelectorAll('.refresh-card').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const id = btn.getAttribute('data-id');
+                const cardDiv = btn.closest('.god-card');
+                const iframe = cardDiv.querySelector('.god-frame');
+                if (iframe) iframe.src = iframe.src; // reload
+            });
+        });
+        
+        document.querySelectorAll('.remove-card').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const id = btn.getAttribute('data-id');
+                memoryDeck = memoryDeck.filter(card => card.id !== id);
+                saveDeck();
+                renderDashboard();
+            });
+        });
+    }
+    
+    // Ascend: Add a new god (if not already in deck)
+    function ascendToGod(godName) {
+        const godInfo = AVAILABLE_GODS.find(g => g.name === godName);
+        if (!godInfo) {
+            alert(`Unknown god: ${godName}`);
+            return;
+        }
+        const alreadyExists = memoryDeck.some(card => card.godName === godName);
+        if (alreadyExists) {
+            alert(`${godName} is already in your ascension deck.`);
+            return;
+        }
+        const newCard = {
+            id: `god_${godName.toLowerCase()}_${Date.now()}`,
+            godName: godInfo.name,
+            folder: godInfo.folder,
+            entryFile: godInfo.entryFile,
+            symbol: godInfo.symbol,
+            addedAt: Date.now()
+        };
+        memoryDeck.push(newCard);
+        saveDeck();
+        renderDashboard();
+    }
+    
+    // Descent: Remove the most recently added god (or last card)
+    function descentLastGod() {
+        if (memoryDeck.length === 0) return;
+        if (memoryDeck.length === 1) {
+            alert("Cannot descend from the last god. The fire would go out.");
+            return;
+        }
+        const removed = memoryDeck.pop();
+        saveDeck();
+        renderDashboard();
+        console.log(`⬇ Descent: ${removed.godName} removed.`);
+    }
+    
+    // Export deck as JSON file
+    function exportDeck() {
+        const dataStr = JSON.stringify(memoryDeck, null, 2);
+        const blob = new Blob([dataStr], {type: 'application/json'});
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `gaia_ascension_deck_${Date.now()}.json`;
+        a.click();
+        URL.revokeObjectURL(url);
+    }
+    
+    // Import deck from JSON file
+    function importDeck(file) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            try {
+                const imported = JSON.parse(e.target.result);
+                if (Array.isArray(imported)) {
+                    memoryDeck = imported;
+                    saveDeck();
+                    renderDashboard();
+                    alert(`Imported ${memoryDeck.length} cards.`);
+                } else {
+                    alert("Invalid deck format.");
+                }
+            } catch (err) {
+                alert("Failed to parse JSON.");
+            }
+        };
+        reader.readAsText(file);
+    }
+    
+    // UI Event Binding
+    document.getElementById('exportDeckBtn').addEventListener('click', exportDeck);
+    document.getElementById('importDeckBtn').addEventListener('click', () => {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = 'application/json';
+        input.onchange = (e) => {
+            if (input.files.length) importDeck(input.files[0]);
+        };
+        input.click();
+    });
+    document.getElementById('addGodBtn').addEventListener('click', () => {
+        // Simple prompt to select god from list
+        const godNames = AVAILABLE_GODS.map(g => g.name).join(', ');
+        const chosen = prompt(`Available gods: ${godNames}\nEnter god name to ascend:`);
+        if (chosen) {
+            const match = AVAILABLE_GODS.find(g => g.name.toLowerCase() === chosen.trim().toLowerCase());
+            if (match) ascendToGod(match.name);
+            else alert(`God "${chosen}" not found in the pantheon.`);
+        }
+    });
+    document.getElementById('ascendBtn').addEventListener('click', () => {
+        const notYet = AVAILABLE_GODS.filter(g => !memoryDeck.some(card => card.godName === g.name));
+        if (notYet.length === 0) {
+            alert("All known gods already ascended. The tower is complete.");
+            return;
+        }
+        const nextGod = notYet[0];
+        ascendToGod(nextGod.name);
+    });
+    document.getElementById('descentBtn').addEventListener('click', descentLastGod);
+    
+    // Initialize
+    loadDeck();
+</script>
+</body>
+</html>
