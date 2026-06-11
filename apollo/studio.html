@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>☀️ Apollo · Synthesis Engine</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script type="importmap">
+        { "imports": { "@xenova/transformers": "https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.2/dist/transformers.min.js" } }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;900&family=Crimson+Pro:ital,wght@0,300;0,400;1,300&family=JetBrains+Mono:wght@300;400;500&display=swap');
+        :root {
+            --void: #080a0f; --deep: #0b0e16; --surface: #1e2535;
+            --gold: #c8943a; --apollo: #d4a850; --mist: #6a7a8a; --pale: #d4e0ed;
+            --font-display: 'Cinzel', serif; --font-body: 'Crimson Pro', serif; --font-mono: 'JetBrains Mono', monospace;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: var(--void); font-family: var(--font-body); color: var(--pale); min-height: 100vh; }
+        body::after { content: ''; position: fixed; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, transparent, var(--apollo), var(--gold), var(--apollo), transparent); z-index: 100; }
+
+        .topbar {
+            display: flex; align-items: center; gap: 1rem;
+            padding: 0.5rem 1.5rem; background: var(--deep); border-bottom: 1px solid var(--surface);
+        }
+        .topbar .logo { font-family: var(--font-display); font-size: 1rem; color: var(--gold); }
+        .topbar .telos { flex: 1; font-style: italic; font-size: 0.8rem; border-left: 1px solid var(--surface); padding-left: 1rem; }
+        .topbar .telos.empty { color: var(--mist); }
+        .topbar .dot { width: 8px; height: 8px; border-radius: 50%; background: #4ade80; }
+        .topbar .dot.inactive { background: var(--mist); }
+        .topbar .model-badge {
+            font-family: var(--font-mono); font-size: 0.38rem; padding: 0.15rem 0.5rem;
+            border-radius: 3px; background: rgba(74,222,128,0.1); color: #4ade80;
+        }
+        .topbar .model-badge.loading { background: rgba(255,200,0,0.1); color: #ffc800; animation: pulse 1.2s infinite; }
+        @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+        .container { max-width: 1400px; margin: 0 auto; padding: 1.5rem; }
+        .main { display: flex; gap: 1rem; height: calc(100vh - 130px); }
+
+        /* ── LEFT: SYSTEM STATE ── */
+        .left { width: 380px; flex-shrink: 0; display: flex; flex-direction: column; gap: 0.8rem; }
+        .shrine-image {
+            width: 100%; height: 200px; object-fit: cover; border-radius: 6px;
+            border: 1px solid var(--surface); margin-bottom: 0.5rem;
+        }
+        .panel { background: var(--deep); border: 1px solid var(--surface); border-radius: 6px; padding: 0.8rem; }
+        .panel h2 { font-family: var(--font-display); font-size: 0.65rem; color: var(--apollo); margin-bottom: 0.4rem; letter-spacing: 2px; }
+
+        button {
+            padding: 0.35rem 0.7rem; border: 1px solid var(--surface); background: var(--deep);
+            color: var(--pale); border-radius: 4px; cursor: pointer; font-family: var(--font-mono);
+            font-size: 0.45rem; letter-spacing: 1px; transition: all 0.2s;
+        }
+        button:hover:not(:disabled) { background: var(--apollo); color: var(--void); border-color: var(--apollo); }
+        button.primary { background: var(--apollo); color: var(--void); border-color: var(--apollo); font-weight: bold; }
+        button:disabled { opacity: 0.3; cursor: not-allowed; }
+
+        .stat-row { display: flex; justify-content: space-between; padding: 0.2rem 0; font-family: var(--font-mono); font-size: 0.45rem; }
+        .stat-row .label { color: var(--mist); }
+        .stat-row .value { color: var(--pale); }
+
+        .terminal {
+            flex: 1; background: #060810; border: 1px solid var(--surface); border-radius: 4px;
+            padding: 0.6rem; overflow-y: auto; font-family: var(--font-mono); font-size: 0.4rem;
+            color: var(--mist); line-height: 1.5; min-height: 200px;
+        }
+        .terminal .line { padding: 0.05rem 0; }
+        .terminal .line.highlight { color: var(--apollo); }
+
+        /* ── RIGHT: TRIPLETS + PROMPTS ── */
+        .right { flex: 1; display: flex; flex-direction: column; gap: 0.8rem; overflow-y: auto; }
+
+        .triplet-card {
+            background: var(--deep); border: 1px solid var(--surface); border-left: 3px solid var(--apollo);
+            border-radius: 4px; padding: 0.5rem 0.8rem; margin-bottom: 0.3rem;
+            display: flex; align-items: center; gap: 0.5rem;
+            font-family: var(--font-mono); font-size: 0.5rem;
+        }
+        .triplet-card .s { color: var(--apollo); font-style: italic; }
+        .triplet-card .v { color: var(--pale); font-weight: bold; text-transform: uppercase; }
+        .triplet-card .o { color: var(--mist); font-style: italic; }
+        .triplet-card .domain-tag {
+            font-size: 0.35rem; padding: 0.1rem 0.3rem; border-radius: 2px;
+            background: rgba(212,168,80,0.1); color: var(--apollo); margin-left: auto;
+        }
+
+        .prompt-card {
+            background: var(--deep); border: 1px solid var(--surface); border-left: 3px solid #7a6a40;
+            border-radius: 4px; padding: 0.6rem 0.8rem; margin-bottom: 0.3rem;
+        }
+        .prompt-card .prompt-body {
+            font-family: var(--font-mono); font-size: 0.48rem; color: var(--pale);
+            line-height: 1.5; margin-bottom: 0.3rem;
+        }
+        .prompt-card .prompt-meta {
+            display: flex; gap: 0.8rem; font-family: var(--font-mono); font-size: 0.38rem; color: var(--mist);
+        }
+        .prompt-card .prompt-meta span { cursor: pointer; }
+        .prompt-card .prompt-meta span:hover { color: var(--apollo); }
+
+        .empty-state { color: var(--mist); font-style: italic; font-size: 0.5rem; text-align: center; padding: 2rem; }
+        .section-divider { border-top: 1px solid var(--surface); margin: 0.3rem 0; }
+
+        @media (max-width: 800px) { .main { flex-direction: column; } .left { width: 100%; } }
+    </style>
+</head>
+<body>
+
+<div class="topbar">
+    <span class="logo">☀️ APOLLO</span>
+    <span class="telos empty" id="topTelos">No active telos</span>
+    <span class="dot inactive" id="statusDot"></span>
+    <span class="model-badge loading" id="modelBadge">model loading</span>
+</div>
+
+<div class="container">
+<div class="main">
+
+    <!-- ══ LEFT: SYSTEM STATE ══ -->
+    <div class="left">
+
+        <img src="assets/apollo-hero.jpg" alt="Apollo" class="shrine-image" />
+
+        <div class="panel">
+            <h2>📊 SYSTEM STATE</h2>
+            <div class="stat-row"><span class="label">Tokens</span><span class="value" id="statTokens">—</span></div>
+            <div class="stat-row"><span class="label">Pairs</span><span class="value" id="statPairs">—</span></div>
+            <div class="stat-row"><span class="label">Triplets</span><span class="value" id="statTriplets">—</span></div>
+            <div class="stat-row"><span class="label">Prompts</span><span class="value" id="statPrompts">—</span></div>
+            <div class="stat-row"><span class="label">Mode</span><span class="value" id="statMode">oracle</span></div>
+        </div>
+
+        <div class="panel">
+            <h2>☀️ SYNTHESIS</h2>
+            <button class="primary" onclick="fullCycle()" style="width:100%;margin-bottom:0.4rem;">🌾 Full Cultivation Cycle</button>
+            <div style="display:flex;gap:0.3rem;">
+                <button onclick="runSynthesis()" style="flex:1;">Synthesize</button>
+                <button onclick="dispatchToDemeter()" style="flex:1;" id="dispatchBtn" disabled>→ Demeter</button>
+            </div>
+        </div>
+
+        <!-- TERMINAL -->
+        <div class="terminal" id="terminal">
+            <div class="line highlight">☀️ Apollo synthesis engine online.</div>
+            <div class="line">Waiting for cultivation cycle...</div>
+        </div>
+
+    </div>
+
+    <!-- ══ RIGHT: TRIPLETS + PROMPTS ══ -->
+    <div class="right">
+
+        <!-- SVO Triplets -->
+        <div class="panel">
+            <h2>⚡ SVO TRIPLETS</h2>
+            <div id="tripletsContainer">
+                <div class="empty-state">Run the cultivation cycle to generate triplets.</div>
+            </div>
+        </div>
+
+        <div class="section-divider"></div>
+
+        <!-- Prompt Pack -->
+        <div class="panel">
+            <h2>🎨 PROMPT PACK</h2>
+            <div id="promptsContainer">
+                <div class="empty-state">Synthesize prompts from triplets.</div>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+</div>
+
+<script type="module">
+import { pipeline, env } from '@xenova/transformers';
+env.allowLocalModels = true;
+env.useBrowserCache = true;
+
+const sb = window.supabase.createClient(
+  'https://kzcucjcyxybypncbdbws.supabase.co',
+  'sb_publishable_saeUHGocDah-T2_709M6Fg_g26JtLXw'
+);
+
+let activeTelos = null;
+let currentMode = 'oracle';
+let currentTriplets = [];
+let currentPrompts = [];
+let embedder = null;
+
+// ═══════════════════════════════════════
+// TERMINAL
+// ═══════════════════════════════════════
+function term(msg, highlight = false) {
+  const el = document.getElementById('terminal');
+  const div = document.createElement('div');
+  div.className = `line${highlight ? ' highlight' : ''}`;
+  div.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
+  el.prepend(div);
+  if (el.children.length > 80) el.removeChild(el.lastChild);
+}
+
+// ═══════════════════════════════════════
+// MODEL
+// ═══════════════════════════════════════
+async function loadModel() {
+    try {
+        embedder = await pipeline('feature-extraction', 'Xenova/all-MiniLM-L6-v2');
+        document.getElementById('modelBadge').textContent = 'model ready';
+        document.getElementById('modelBadge').classList.remove('loading');
+        term('MiniLM loaded — synthesis active.', true);
+    } catch {
+        document.getElementById('modelBadge').textContent = 'model offline';
+        document.getElementById('modelBadge').classList.remove('loading');
+        term('MiniLM offline — template synthesis only.');
+    }
+}
+
+// ═══════════════════════════════════════
+// TELOS (read-only)
+// ═══════════════════════════════════════
+async function loadTelos() {
+  const { data } = await sb.from('telos').select('*').eq('is_active', true).maybeSingle();
+  activeTelos = data || null;
+  const topEl = document.getElementById('topTelos');
+  const dot = document.getElementById('statusDot');
+  if (activeTelos) {
+    topEl.textContent = '🎯 ' + activeTelos.statement;
+    topEl.classList.remove('empty');
+    dot.classList.remove('inactive');
+  } else {
+    topEl.textContent = 'No active telos — set one in Hera';
+    topEl.classList.add('empty');
+    dot.classList.add('inactive');
+  }
+}
+
+// ═══════════════════════════════════════
+// SYSTEM STATE
+// ═══════════════════════════════════════
+async function loadSystemState() {
+  const [tokens, pairs, triplets, prompts] = await Promise.all([
+    sb.from('tokens').select('*', { count: 'exact', head: true }),
+    sb.from('pairs').select('*', { count: 'exact', head: true }),
+    sb.from('svo_triplets').select('*', { count: 'exact', head: true }),
+    sb.from('prompts').select('*', { count: 'exact', head: true })
+  ]);
+  document.getElementById('statTokens').textContent = tokens.count || 0;
+  document.getElementById('statPairs').textContent = pairs.count || 0;
+  document.getElementById('statTriplets').textContent = triplets.count || 0;
+  document.getElementById('statPrompts').textContent = prompts.count || 0;
+}
+
+// ═══════════════════════════════════════
+// SYNTHESIS
+// ═══════════════════════════════════════
+
+const DOMAINS = ['signal','love','wisdom','storm','tide','wild','forge','farm','crown','light','vox'];
+
+const VERB_POOL = [
+  'manifests','emerges','becomes','binds','shapes','reveals','transforms',
+  'illuminates','reflects','echoes','weaves','unfolds','radiates','dissolves',
+  'crystallizes','resonates','blooms','cultivates','forges','commands'
+];
+
+const OBJECT_POOL = [
+  'pattern','form','light','shadow','truth','vision','chaos','order',
+  'harmony','silence','beauty','power','wisdom','memory','all things'
+];
+
+const STYLE_MODIFIERS = [
+  'dark mythological, dramatic lighting, symbolic composition, epic scale',
+  'ethereal glow, soft focus, dreamlike, spiritual undertones',
+  'high contrast, sharp details, cinematic framing, emotional intensity',
+  'sacred geometry, divine proportions, ancient temple aesthetics',
+  'celestial radiance, golden light, prophetic atmosphere, healing warmth',
+  'deep ocean abyss, bioluminescent, fluid motion, primordial depths',
+  'moonlit forest, predator energy, primal wilderness, instinctual power'
+];
+
+const DOMAIN_VISUALS = {
+  love: 'warm rose gold light, intimate, soft textures, passionate embrace',
+  war: 'crimson and iron, smoke and fire, sharp edges, battlefield chaos',
+  wisdom: 'cool blue tones, geometric patterns, library halls, owl motifs',
+  storm: 'lightning strikes, dark clouds, raw power, divine fury',
+  tide: 'deep ocean blues, crashing waves, fluid motion, abyssal depths',
+  wild: 'moonlit forests, predator eyes, untamed wilderness, primal energy',
+  forge: 'molten metal, sparks flying, anvil and hammer, divine craft',
+  farm: 'golden fields, harvest bounty, fertile earth, seasonal cycles',
+  crown: 'throne rooms, ancient stone, royal regalia, bloodline echoes',
+  light: 'radiant beams, golden halos, prophetic visions, healing warmth',
+  signal: 'digital pulses, neon pathways, swift transmission, data streams',
+  vox: 'echoing chambers, whispered secrets, resonant frequencies, vocal power'
+};
+
+function synthesizeTriplet(pair) {
+  const subject = pair.token_a_body || 'force';
+  const domain = DOMAINS[Math.floor(Math.random() * DOMAINS.length)];
+  const verb = VERB_POOL[Math.floor(Math.random() * VERB_POOL.length)];
+  const object = OBJECT_POOL[Math.floor(Math.random() * OBJECT_POOL.length)];
+
+  return {
+    subject,
+    verb,
+    object,
+    domain,
+    source: 'apollo-synthesis',
+    state: 'raw',
+    created_at: new Date().toISOString()
+  };
+}
+
+function synthesizePrompt(triplet) {
+  const subject = triplet.subject || 'force';
+  const verb = triplet.verb || 'transforms';
+  const object = triplet.object || 'reality';
+  const domain = triplet.domain || 'signal';
+  const visual = DOMAIN_VISUALS[domain] || DOMAIN_VISUALS.signal;
+  const style = STYLE_MODIFIERS[Math.floor(Math.random() * STYLE_MODIFIERS.length)];
+
+  if (currentMode === 'raw') {
+    const prompt = `${subject} ${verb} ${object}`;
+    return { title: prompt, body: prompt, domain, mode: 'raw' };
+  }
+
+  const prompt = `${subject} ${verb} ${object}. ${visual}. ${style}.`;
+  return {
+    title: `${subject} ${verb} ${object}`,
+    body: prompt,
+    domain,
+    mode: currentMode
+  };
+}
+
+// ═══════════════════════════════════════
+// FULL CULTIVATION CYCLE
+// ═══════════════════════════════════════
+async function fullCycle() {
+  term('🌾 Full cultivation cycle initiated', true);
+  if (!activeTelos) { term('⚠️ Set a telos in Hera first.'); return; }
+
+  // 1. Hermes: extract tokens
+  const words = activeTelos.statement.toLowerCase().match(/\b\w{3,16}\b/g) || [];
+  const tokens = [...new Set(words)].map(w => ({
+    body: w, domain: DOMAINS[Math.floor(Math.random() * DOMAINS.length)],
+    word_type: 'S', score: 50, source: 'apollo-cycle', created_at: new Date().toISOString()
+  }));
+  await sb.from('tokens').upsert(tokens, { onConflict: 'body' });
+  term(`⚡ Hermes: ${tokens.length} tokens extracted`);
+
+  // 2. Aphrodite: form pairs
+  const { data: allTokens } = await sb.from('tokens').select('*').order('score', { ascending: false }).limit(60);
+  const pairs = [];
+  for (let i = 0; i < (allTokens || []).length - 1; i += 2) {
+    pairs.push({
+      token_a_id: allTokens[i].id, token_b_id: allTokens[i+1].id,
+      token_a_body: allTokens[i].body, token_b_body: allTokens[i+1].body,
+      affinity_score: 0.6 + Math.random() * 0.4, tension_score: Math.random(),
+      domain_a: allTokens[i].domain, domain_b: allTokens[i+1].domain,
+      counter_domain_pair: allTokens[i].domain !== allTokens[i+1].domain,
+      pair_type: 'S-S', state: 'raw', consumed: false
+    });
+  }
+  if (pairs.length) await sb.from('pairs').insert(pairs);
+  term(`💗 Aphrodite: ${pairs.length} pairs formed`);
+
+  // 3. Apollo: synthesize triplets from pairs
+  currentTriplets = pairs.slice(0, 15).map(p => synthesizeTriplet(p));
+  if (currentTriplets.length) await sb.from('svo_triplets').insert(currentTriplets);
+  term(`☀️ Apollo: ${currentTriplets.length} triplets synthesized`);
+
+  // 4. Generate prompts from triplets
+  currentPrompts = currentTriplets.map(t => synthesizePrompt(t));
+  await sb.from('prompts').insert(currentPrompts.map(p => ({
+  prompt_text: p.body,             // ← CORRECT
+  telos: activeTelos?.statement || '',
+  domain_tags: [p.domain || 'signal'],
+  visual_mood: 'oracle',
+  status: 'raw',
+  created_at: new Date().toISOString()
+})));
+
+  renderTriplets();
+  renderPrompts();
+  loadSystemState();
+  document.getElementById('dispatchBtn').disabled = false;
+  term(`✅ Cycle complete. ${currentPrompts.length} prompts ready for Demeter.`, true);
+}
+window.fullCycle = fullCycle;
+
+// ═══════════════════════════════════════
+// SYNTHESIZE FROM EXISTING PAIRS
+// ═══════════════════════════════════════
+async function runSynthesis() {
+  term('☀️ Synthesizing from existing pairs...', true);
+  const { data: pairs } = await sb.from('pairs').select('*').eq('consumed', false).order('created_at', { ascending: false }).limit(20);
+  
+  if (!pairs?.length) {
+    term('⚠️ No unconsumed pairs found. Run the full cycle first.');
+    return;
+  }
+
+  currentTriplets = pairs.map(p => synthesizeTriplet(p));
+  if (currentTriplets.length) await sb.from('svo_triplets').insert(currentTriplets);
+  
+  currentPrompts = currentTriplets.map(t => synthesizePrompt(t));
+  await sb.from('prompts').insert(currentPrompts.map(p => ({
+    id: `prompt-${Date.now()}-${Math.random().toString(36).slice(2,8)}`,
+    body: p.body, telos: activeTelos?.statement || '', plan: p.domain,
+    source_triplet_id: null, synthesized_at: new Date().toISOString()
+  })));
+
+  renderTriplets();
+  renderPrompts();
+  loadSystemState();
+  document.getElementById('dispatchBtn').disabled = false;
+  term(`✅ ${currentTriplets.length} triplets synthesized from pairs.`, true);
+}
+window.runSynthesis = runSynthesis;
+
+// ═══════════════════════════════════════
+// DISPATCH TO DEMETER
+// ═══════════════════════════════════════
+async function dispatchToDemeter() {
+  if (!currentTriplets.length) return;
+  
+  // Mark pairs as consumed
+  const { data: pairs } = await sb.from('pairs').select('id').eq('consumed', false).limit(20);
+  if (pairs?.length) {
+    await sb.from('pairs').update({ consumed: true }).in('id', pairs.map(p => p.id));
+  }
+
+  term(`🌾 ${currentTriplets.length} triplets dispatched to Demeter for cultivation.`, true);
+  document.getElementById('dispatchBtn').disabled = true;
+  
+  // Refresh displays
+  currentTriplets = [];
+  currentPrompts = [];
+  renderTriplets();
+  renderPrompts();
+  loadSystemState();
+}
+window.dispatchToDemeter = dispatchToDemeter;
+
+// ═══════════════════════════════════════
+// RENDER
+// ═══════════════════════════════════════
+function renderTriplets() {
+  const container = document.getElementById('tripletsContainer');
+  if (!currentTriplets.length) {
+    container.innerHTML = '<div class="empty-state">Run the cultivation cycle to generate triplets.</div>';
+    return;
+  }
+  container.innerHTML = currentTriplets.map(t => `
+    <div class="triplet-card">
+      <span class="s">${esc(t.subject)}</span>
+      <span class="v">${esc(t.verb)}</span>
+      <span class="o">${esc(t.object)}</span>
+      <span class="domain-tag">${esc(t.domain || '?')}</span>
+    </div>
+  `).join('');
+}
+
+function renderPrompts() {
+  const container = document.getElementById('promptsContainer');
+  if (!currentPrompts.length) {
+    container.innerHTML = '<div class="empty-state">Synthesize prompts from triplets.</div>';
+    return;
+  }
+  container.innerHTML = currentPrompts.map((p, i) => `
+    <div class="prompt-card">
+      <div class="prompt-body">${esc(p.body)}</div>
+      <div class="prompt-meta">
+        <span>${esc(p.domain || '?')}</span>
+        <span>${esc(p.mode || 'oracle')}</span>
+        <span onclick="copyPrompt('${esc(p.body).replace(/'/g, "\\'")}')">📋 Copy</span>
+      </div>
+    </div>
+  `).join('');
+}
+
+function copyPrompt(prompt) {
+  navigator.clipboard.writeText(prompt).then(() => term('📋 Prompt copied to clipboard.'));
+}
+window.copyPrompt = copyPrompt;
+
+// ═══════════════════════════════════════
+// UTILITIES
+// ═══════════════════════════════════════
+function esc(s) { return String(s || '').replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' })[c]); }
+
+// ═══════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════
+loadModel();
+loadTelos();
+loadSystemState();
+term('☀️ Apollo synthesis engine online.', true);
+term('Hermes → Aphrodite → Apollo → Demeter → Poseidon');
+</script>
+</body>
+</html>

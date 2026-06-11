@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Prophecy · Apollo · Ealdforn Studios</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&family=JetBrains+Mono:wght@300;400&display=swap" rel="stylesheet" />
+  <style>
+    /* ── TOKENS ─────────────────────────────────── */
+    :root {
+      --void:      #05050c;
+      --deep:      #08090f;
+      --mid:       #0f1018;
+      --surface:   #161824;
+      --surface2:  #1a1d2e;
+      --gold:      #c8943a;
+      --apollo:    #d4a850;
+      --gold-hi:   #e8c46a;
+      --gold-dim:  rgba(212,168,80,0.12);
+      --gold-glow: rgba(212,168,80,0.06);
+      --cream:     #f0e8d8;
+      --mist:      #7a8090;
+
+      --ff-display: 'Cinzel', 'Palatino Linotype', serif;
+      --ff-body:    'Cormorant Garamond', Georgia, serif;
+      --ff-mono:    'JetBrains Mono', monospace;
+
+      /* Solar theme colors */
+      --dawn:  #d4a850;
+      --noon:  #f5d97a;
+      --dusk:  #b8702a;
+      --eclipse: #6a4a8a;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--void);
+      color: var(--cream);
+      font-family: var(--ff-body);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ── RIBBON ─────────────────────────────────── */
+    .ribbon {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.9rem 2.5rem;
+      background: linear-gradient(180deg, rgba(5,5,12,0.97) 0%, rgba(5,5,12,0.7) 100%);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(212,168,80,0.1);
+    }
+
+    .ribbon-left {
+      font-family: var(--ff-display);
+      font-size: 0.65rem;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: var(--mist);
+    }
+
+    .ribbon-left a {
+      color: var(--mist);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    .ribbon-left a:hover { color: var(--apollo); }
+    .ribbon-sep { margin: 0 0.6rem; opacity: 0.3; }
+
+    .ribbon-center {
+      font-family: var(--ff-display);
+      font-size: 0.7rem;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--apollo);
+    }
+
+    .ribbon-right a {
+      font-family: var(--ff-display);
+      font-size: 0.58rem;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--mist);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    .ribbon-right a:hover { color: var(--apollo); }
+
+    /* ── SANCTUM ────────────────────────────────── */
+    .sanctum {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 8rem 2rem 4rem;
+      position: relative;
+    }
+
+    .sanctum::before {
+      content: '';
+      position: fixed;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      width: 600px;
+      height: 600px;
+      background: radial-gradient(circle, rgba(212,168,80,0.04) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .sanctum-inner {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-width: 660px;
+      text-align: center;
+    }
+
+    .sanctum-sigil {
+      font-size: 48px;
+      margin-bottom: 1.5rem;
+      opacity: 0.6;
+    }
+
+    .sanctum-title {
+      font-family: var(--ff-display);
+      font-size: clamp(1.6rem, 3.5vw, 2.4rem);
+      font-weight: 900;
+      color: var(--apollo);
+      letter-spacing: 0.04em;
+      margin-bottom: 0.5rem;
+    }
+
+    .sanctum-subtitle {
+      font-family: var(--ff-body);
+      font-style: italic;
+      font-size: 1.1rem;
+      color: var(--mist);
+      margin-bottom: 3rem;
+    }
+
+    /* ── QUESTION INPUT ─────────────────────────── */
+    .question-wrap {
+      margin-bottom: 2.5rem;
+    }
+
+    .question-input {
+      width: 100%;
+      background: var(--surface);
+      border: 1px solid rgba(212,168,80,0.15);
+      border-radius: 6px;
+      color: var(--cream);
+      font-family: var(--ff-body);
+      font-size: 1.15rem;
+      font-style: italic;
+      padding: 1rem 1.4rem;
+      text-align: center;
+      transition: border-color 0.3s, box-shadow 0.3s;
+    }
+
+    .question-input:focus {
+      outline: none;
+      border-color: var(--apollo);
+      box-shadow: 0 0 24px rgba(212,168,80,0.1);
+    }
+
+    .question-input::placeholder {
+      color: var(--mist);
+      opacity: 0.4;
+    }
+
+    /* ── SPREAD SELECTOR ────────────────────────── */
+    .spread-selector {
+      display: flex;
+      gap: 0.8rem;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-bottom: 2rem;
+    }
+
+    .spread-btn {
+      font-family: var(--ff-mono);
+      font-size: 0.55rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      padding: 0.6rem 1.4rem;
+      border-radius: 20px;
+      border: 1px solid rgba(212,168,80,0.2);
+      background: transparent;
+      color: var(--mist);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .spread-btn:hover {
+      border-color: var(--apollo);
+      color: var(--apollo);
+    }
+
+    .spread-btn.active {
+      border-color: var(--apollo);
+      color: var(--void);
+      background: var(--apollo);
+    }
+
+    /* ── REVEAL BUTTON ──────────────────────────── */
+    .reveal-btn {
+      font-family: var(--ff-display);
+      font-size: 0.7rem;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--void);
+      background: linear-gradient(135deg, var(--apollo), var(--gold-hi));
+      border: none;
+      padding: 1rem 3rem;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+      box-shadow: 0 4px 28px rgba(212,168,80,0.18);
+      margin-bottom: 3rem;
+    }
+
+    .reveal-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 36px rgba(212,168,80,0.28);
+    }
+
+    .reveal-btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    /* ── PROPHECY RESULT ────────────────────────── */
+    .prophecy-result {
+      display: none;
+      text-align: left;
+      animation: fadeUp 0.6s ease;
+    }
+
+    .prophecy-result.visible {
+      display: block;
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .prophecy-header {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    .prophecy-question {
+      font-family: var(--ff-body);
+      font-style: italic;
+      font-size: 1rem;
+      color: var(--mist);
+      margin-bottom: 2rem;
+      text-align: center;
+    }
+
+    .prophecy-question span {
+      color: var(--apollo);
+    }
+
+    /* ── CARD DISPLAY ───────────────────────────── */
+    .cards-display {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-bottom: 2.5rem;
+    }
+
+    .prophecy-card {
+      flex: 1;
+      min-width: 180px;
+      max-width: 240px;
+      background: var(--surface);
+      border: 1px solid rgba(212,168,80,0.15);
+      border-radius: 8px;
+      padding: 1.5rem 1.2rem;
+      text-align: center;
+      transition: border-color 0.3s, box-shadow 0.3s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .prophecy-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+    }
+
+    .prophecy-card.theme-dawn::before { background: var(--dawn); }
+    .prophecy-card.theme-noon::before { background: var(--noon); }
+    .prophecy-card.theme-dusk::before { background: var(--dusk); }
+    .prophecy-card.theme-eclipse::before { background: var(--eclipse); }
+    .prophecy-card.theme-songs::before { background: linear-gradient(90deg, var(--apollo), var(--gold-hi), var(--apollo)); }
+    .prophecy-card.theme-scripts::before { background: linear-gradient(90deg, var(--cream), var(--apollo), var(--cream)); }
+
+    .card-suit {
+      font-family: var(--ff-mono);
+      font-size: 0.48rem;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--apollo);
+      opacity: 0.5;
+      margin-bottom: 0.8rem;
+    }
+
+    .card-name {
+      font-family: var(--ff-display);
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--cream);
+      margin-bottom: 0.3rem;
+      letter-spacing: 0.03em;
+    }
+
+    .card-subtitle {
+      font-family: var(--ff-body);
+      font-style: italic;
+      font-size: 0.82rem;
+      color: var(--mist);
+      margin-bottom: 1rem;
+    }
+
+    .card-meaning {
+      font-family: var(--ff-body);
+      font-size: 0.9rem;
+      line-height: 1.65;
+      color: var(--cream);
+      opacity: 0.75;
+      font-style: italic;
+    }
+
+    .card-meaning::before { content: '\201C'; }
+    .card-meaning::after  { content: '\201D'; }
+
+    /* ── SYNTHESIS ──────────────────────────────── */
+    .synthesis-block {
+      background: var(--surface);
+      border: 1px solid rgba(212,168,80,0.2);
+      border-radius: 8px;
+      padding: 1.8rem 2rem;
+      text-align: center;
+      margin-bottom: 1.5rem;
+    }
+
+    .synthesis-label {
+      font-family: var(--ff-mono);
+      font-size: 0.5rem;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: var(--apollo);
+      opacity: 0.5;
+      margin-bottom: 1rem;
+    }
+
+    .synthesis-text {
+      font-family: var(--ff-body);
+      font-size: 1.15rem;
+      line-height: 1.75;
+      color: var(--cream);
+      font-style: italic;
+    }
+
+    .confidence {
+      font-family: var(--ff-mono);
+      font-size: 0.5rem;
+      letter-spacing: 0.2em;
+      color: var(--mist);
+      opacity: 0.45;
+      margin-top: 1rem;
+    }
+
+    /* ── NEW PROPHECY BUTTON ────────────────────── */
+    .new-prophecy {
+      text-align: center;
+      margin-top: 2rem;
+    }
+
+    .new-prophecy-btn {
+      font-family: var(--ff-display);
+      font-size: 0.58rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--apollo);
+      background: transparent;
+      border: 1px solid rgba(212,168,80,0.25);
+      padding: 0.7rem 2rem;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .new-prophecy-btn:hover {
+      border-color: var(--apollo);
+      color: var(--gold-hi);
+    }
+
+    /* ── RESPONSIVE ─────────────────────────────── */
+    @media (max-width: 600px) {
+      .ribbon { padding: 0.8rem 1.2rem; }
+      .ribbon-center { display: none; }
+      .sanctum { padding: 6rem 1.2rem 3rem; }
+      .cards-display { flex-direction: column; align-items: center; }
+      .prophecy-card { max-width: 100%; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ══ RIBBON ════════════════════════════════════ -->
+<nav class="ribbon">
+  <div class="ribbon-left">
+    <a href="index.html">Ealdforn Studios</a>
+    <span class="ribbon-sep">·</span>
+    Apollo
+  </div>
+  <div class="ribbon-center">☀ The Inner Sanctum</div>
+  <div class="ribbon-right">
+    <a href="index.html">← Visual Canon</a>
+  </div>
+</nav>
+
+<!-- ══ SANCTUM ══════════════════════════════════ -->
+<section class="sanctum">
+  <div class="sanctum-inner">
+
+    <div class="sanctum-sigil">☀</div>
+    <h1 class="sanctum-title">The Inner Sanctum</h1>
+    <p class="sanctum-subtitle">Speak your question. The god will answer.</p>
+
+    <div class="question-wrap">
+      <input 
+        type="text" 
+        class="question-input" 
+        id="questionInput" 
+        placeholder="What do you seek from Apollo?"
+        maxlength="200"
+      />
+    </div>
+
+    <div class="spread-selector">
+      <button class="spread-btn active" data-count="1" onclick="Prophecy.setCardCount(1)">Single Maxim</button>
+      <button class="spread-btn" data-count="3" onclick="Prophecy.setCardCount(3)">Triad</button>
+      <button class="spread-btn" data-count="5" onclick="Prophecy.setCardCount(5)">Solar Arc</button>
+    </div>
+
+    <button class="reveal-btn" id="revealBtn" onclick="Prophecy.seek()">▸ Receive Prophecy</button>
+
+    <div class="prophecy-result" id="prophecyResult">
+      <div class="prophecy-header">
+        <div class="sanctum-sigil" style="font-size:32px;">☀</div>
+      </div>
+      <div class="prophecy-question" id="prophecyQuestion"></div>
+      <div class="cards-display" id="cardsDisplay"></div>
+      <div class="synthesis-block">
+        <div class="synthesis-label">The God Speaks</div>
+        <div class="synthesis-text" id="synthesisText"></div>
+        <div class="confidence" id="confidenceText"></div>
+      </div>
+      <div class="new-prophecy">
+        <button class="new-prophecy-btn" onclick="Prophecy.reset()">Seek Another Prophecy</button>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ══ SCRIPTS ══════════════════════════════════ -->
+<script src="reveal.js"></script>
+<script>
+  const Prophecy = (() => {
+    let cardCount = 1;
+    let deck = null;
+
+    // Load deck
+    async function loadDeck() {
+      if (deck) return deck;
+      try {
+        const res = await fetch('data/deck/apollo_deck.json');
+        if (!res.ok) throw new Error(`Deck load failed: ${res.status}`);
+        deck = await res.json();
+        return deck;
+      } catch (err) {
+        console.error('Failed to load Apollo deck:', err);
+        return null;
+      }
+    }
+
+    // Shuffle cards
+    function shuffle(array) {
+      const arr = [...array];
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+      return arr;
+    }
+
+    // Draw cards
+    function drawCards(count) {
+      if (!deck || !deck.cards) return [];
+      const shuffled = shuffle(deck.cards);
+      return shuffled.slice(0, Math.min(count, shuffled.length));
+    }
+
+    // Get theme class for a card
+    function getThemeClass(card) {
+      if (card.css_theme) return card.css_theme;
+      if (card.suit === 'songs') return 'theme-songs';
+      if (card.suit === 'scripts') return 'theme-scripts';
+      return '';
+    }
+
+    // Get suit label
+    function getSuitLabel(card) {
+      if (card.suit === 'sun') return `Sun · ${card.solar_state || ''}`;
+      if (card.suit === 'songs') return `Songs · ${card.mode || ''} · ${card.root || ''}`;
+      if (card.suit === 'scripts') return `Scripts · Maxim`;
+      return card.suit || '';
+    }
+
+    // Escape HTML
+    function escapeHTML(str) {
+      if (!str) return '';
+      const div = document.createElement('div');
+      div.textContent = str;
+      return div.innerHTML;
+    }
+
+    // Build synthesis from drawn cards
+    function buildSynthesis(cards) {
+      if (cards.length === 0) return { text: 'The god is silent.', confidence: 0 };
+      
+      if (Apollo && Apollo.synthesize) {
+        const vectors = cards.map(card => ({
+          keywords: [], // We'd need the cardMap from reveal.js
+          motion: 'still',
+          valence: 'neutral',
+          suit: card.suit,
+          name: card.name
+        }));
+        // For now, build a simple synthesis from card names
+      }
+
+      // Simple synthesis
+      const names = cards.map(c => c.name).join(', ');
+      const suits = [...new Set(cards.map(c => c.suit))];
+      
+      let text = '';
+      if (cards.length === 1) {
+        text = `${cards[0].name} arrives alone. ${cards[0].upright}`;
+      } else if (cards.length === 3) {
+        text = `${names} — three aspects of the god converge. `;
+        if (suits.length === 1) {
+          text += `All drawn from the domain of ${suits[0]}. The question is singular. The answer is layered.`;
+        } else if (suits.length === 3) {
+          text += `Sun, Songs, and Scripts all speak. The prophecy spans the full Apollonian domain. Integration is required.`;
+        } else {
+          text += `The cards weave across ${suits.length} domains. Attend to the pattern, not the parts.`;
+        }
+      } else {
+        text = `${cards.length} Maxims have been drawn. `;
+        const suitCounts = {};
+        suits.forEach(s => {
+          suitCounts[s] = cards.filter(c => c.suit === s).length;
+        });
+        const dominant = Object.entries(suitCounts).sort((a,b) => b[1] - a[1])[0];
+        text += `The ${dominant[0]} domain dominates with ${dominant[1]} cards. `;
+        text += `Apollo speaks with clarity. Receive what is revealed.`;
+      }
+
+      const confidence = cards.length === 1 ? 0.85 : cards.length === 3 ? 0.72 : 0.6;
+      return { text, confidence: Math.round(confidence * 100) / 100 };
+    }
+
+    // Seek prophecy
+    async function seek() {
+      const btn = document.getElementById('revealBtn');
+      const question = document.getElementById('questionInput').value.trim() || 'What must I see?';
+      
+      btn.disabled = true;
+      btn.textContent = 'The god attends...';
+
+      const loadedDeck = await loadDeck();
+      if (!loadedDeck) {
+        btn.textContent = 'Error — Check Console';
+        btn.disabled = false;
+        return;
+      }
+
+      const cards = drawCards(cardCount);
+      if (cards.length === 0) {
+        btn.textContent = 'No cards drawn';
+        btn.disabled = false;
+        return;
+      }
+
+      const synthesis = buildSynthesis(cards);
+
+      // Display question
+      document.getElementById('prophecyQuestion').innerHTML = 
+        `You asked: <span>"${escapeHTML(question)}"</span>`;
+
+      // Display cards
+      const cardsHTML = cards.map(card => `
+        <div class="prophecy-card ${getThemeClass(card)}">
+          <div class="card-suit">${getSuitLabel(card)}</div>
+          <div class="card-name">${escapeHTML(card.name)}</div>
+          <div class="card-subtitle">${escapeHTML(card.subtitle || '')}</div>
+          <div class="card-meaning">${escapeHTML(card.upright)}</div>
+        </div>
+      `).join('');
+      document.getElementById('cardsDisplay').innerHTML = cardsHTML;
+
+      // Display synthesis
+      document.getElementById('synthesisText').textContent = synthesis.text;
+      document.getElementById('confidenceText').textContent = 
+        `Confidence: ${synthesis.confidence}`;
+
+      // Show result
+      document.getElementById('prophecyResult').classList.add('visible');
+      document.getElementById('prophecyResult').scrollIntoView({ behavior: 'smooth' });
+
+      btn.textContent = '▸ Receive Prophecy';
+      btn.disabled = false;
+    }
+
+    // Reset
+    function reset() {
+      document.getElementById('prophecyResult').classList.remove('visible');
+      document.getElementById('questionInput').value = '';
+      document.getElementById('cardsDisplay').innerHTML = '';
+      document.getElementById('synthesisText').textContent = '';
+      document.getElementById('confidenceText').textContent = '';
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // Set card count
+    function setCardCount(count) {
+      cardCount = count;
+      document.querySelectorAll('.spread-btn').forEach(btn => {
+        btn.classList.toggle('active', parseInt(btn.dataset.count) === count);
+      });
+      reset();
+    }
+
+    return { seek, reset, setCardCount };
+  })();
+</script>
+
+</body>
+</html>
