@@ -803,17 +803,18 @@ const ApolloMind = (() => {
       obs.strongest ? `// Strongest card: ${obs.strongest.god || obs.strongest.name} · value ${obs.strongest.value}` : `// No cards yet`,
       obs.clusters > 0 ? `// Elemental clusters: ${obs.clusters} detected` : `// No clusters`,
       obs.looping ? `// ∞ Loop memory active — recursion guard engaged` : `// Loop memory: clear`,
-      ``,
+            ``,
       `// 🜏 SENSES`,
       `// Environment: ${obs.environment}`,
-      ...(apollo.cosmosReflection ? [
-  ``,
-  `// 🜏 COSMOS`,
-  ...apollo.cosmosReflection().split('\n').map(l => `// ${l}`)
-] : []),      `// Notes on record: ${obs.noteCount}`,
+      `// Notes on record: ${obs.noteCount}`,
       obs.dominantRunLength > 0 ? `// ${dom} has held dominance for ${obs.dominantRunLength} turns` : `// No dominance streak recorded`,
       obs.recentWarning ? `// ⚠ Recent warning (turn ${obs.recentWarning.turn}): ${obs.recentWarning.value}` : `// No active warnings`,
       ...(noteLines.length > 0 ? noteLines : [`// No notes yet`]),
+      ...(apollo.cosmosReflection ? [
+        ``,
+        `// 🜏 COSMOS`,
+        ...apollo.cosmosReflection().split('\n').map(l => `// ${l}`)
+      ] : []),
       ...genomeLines,
       ``,
       `// INTERPRET`,
