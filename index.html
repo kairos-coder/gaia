@@ -296,29 +296,76 @@
         <div class="ouranos-body">
             <canvas id="ouranosCvs"></canvas>
             <div class="ouranos-sidebar">
-                <div class="sky-section-lbl" style="margin-top:0.3rem;">☀️ APOLLO'S TEMPLE</div>
-<div style="display:flex;gap:0.5rem;padding:0.4rem 0;">
+               <div class="sky-section-lbl" style="margin-top:0.3rem;">🏛️ THE PANTHEON</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:0.4rem;padding:0.4rem 0;">
+
+    <!-- Apollo -->
     <button onclick="window.open('apollo/apolloTable.html','_blank')" 
-        style="flex:1;font-family:'Cinzel',serif;font-size:0.55rem;letter-spacing:0.15em;background:rgba(255,170,50,0.12);border:1px solid rgba(255,170,50,0.25);color:#ffaa44;padding:0.45rem 0.6rem;border-radius:2px;cursor:pointer;transition:all 0.2s;"
-        onmouseover="this.style.background='rgba(255,170,50,0.22)';this.style.borderColor='#ffaa44';"
-        onmouseout="this.style.background='rgba(255,170,50,0.12)';this.style.borderColor='rgba(255,170,50,0.25)';">
-        🃏 TAROT TABLE
+        style="font-family:'Cinzel',serif;font-size:0.52rem;letter-spacing:0.12em;background:rgba(255,170,50,0.1);border:1px solid rgba(255,170,50,0.22);color:#ffaa44;padding:0.4rem 0.5rem;border-radius:2px;cursor:pointer;transition:all 0.2s;"
+        onmouseover="this.style.background='rgba(255,170,50,0.2)';"
+        onmouseout="this.style.background='rgba(255,170,50,0.1)';">
+        ☀️ APOLLO · Tarot
     </button>
-    <button onclick="window.open('apollo/chat.html','_blank')" 
-        style="flex:1;font-family:'Cinzel',serif;font-size:0.55rem;letter-spacing:0.15em;background:rgba(212,168,80,0.12);border:1px solid rgba(212,168,80,0.25);color:var(--apollo);padding:0.45rem 0.6rem;border-radius:2px;cursor:pointer;transition:all 0.2s;"
-        onmouseover="this.style.background='rgba(212,168,80,0.22)';this.style.borderColor='var(--apollo)';"
-        onmouseout="this.style.background='rgba(212,168,80,0.12)';this.style.borderColor='rgba(212,168,80,0.25)';">
-        ☀️ SPEAK
+
+    <!-- Aphrodite -->
+    <button onclick="window.open('aphrodite/index.html','_blank')" 
+        style="font-family:'Cinzel',serif;font-size:0.52rem;letter-spacing:0.12em;background:rgba(255,100,150,0.1);border:1px solid rgba(255,100,150,0.22);color:#ff88aa;padding:0.4rem 0.5rem;border-radius:2px;cursor:pointer;transition:all 0.2s;"
+        onmouseover="this.style.background='rgba(255,100,150,0.2)';"
+        onmouseout="this.style.background='rgba(255,100,150,0.1)';">
+        💋 APHRODITE · Heart
     </button>
-    <button onclick="window.open('aphrodite/aphroditeTable.html','_blank')" 
-    style="flex:1;font-family:'Cinzel',serif;font-size:0.55rem;letter-spacing:0.15em;background:rgba(255,100,150,0.12);border:1px solid rgba(255,100,150,0.25);color:#ff88aa;padding:0.45rem 0.6rem;border-radius:2px;cursor:pointer;transition:all 0.2s;"
-    onmouseover="this.style.background='rgba(255,100,150,0.22)';this.style.borderColor='#ff88aa';"
-    onmouseout="this.style.background='rgba(255,100,150,0.12)';this.style.borderColor='rgba(255,100,150,0.25)';">
-    💋 HEARTBEAT
-</button>
+
+    <!-- Athena -->
+    <button onclick="window.open('athena/index.html','_blank')" 
+        style="font-family:'Cinzel',serif;font-size:0.52rem;letter-spacing:0.12em;background:rgba(170,136,238,0.1);border:1px solid rgba(170,136,238,0.22);color:#aa88ee;padding:0.4rem 0.5rem;border-radius:2px;cursor:pointer;transition:all 0.2s;"
+        onmouseover="this.style.background='rgba(170,136,238,0.2)';"
+        onmouseout="this.style.background='rgba(170,136,238,0.1)';">
+        🦉 ATHENA · Wisdom
+    </button>
+
+    <!-- Hephaestus -->
+    <button onclick="window.open('hephaestus/index.html','_blank')" 
+        style="font-family:'Cinzel',serif;font-size:0.52rem;letter-spacing:0.12em;background:rgba(255,130,50,0.1);border:1px solid rgba(255,130,50,0.22);color:#ff8833;padding:0.4rem 0.5rem;border-radius:2px;cursor:pointer;transition:all 0.2s;"
+        onmouseover="this.style.background='rgba(255,130,50,0.2)';"
+        onmouseout="this.style.background='rgba(255,130,50,0.1)';">
+        🔨 HEPHAESTUS · Forge
+    </button>
+
+    <!-- Hermes -->
+    <button onclick="window.open('hermes/index.html','_blank')" 
+        style="font-family:'Cinzel',serif;font-size:0.52rem;letter-spacing:0.12em;background:rgba(136,200,220,0.1);border:1px solid rgba(136,200,220,0.22);color:#88ccdd;padding:0.4rem 0.5rem;border-radius:2px;cursor:pointer;transition:all 0.2s;"
+        onmouseover="this.style.background='rgba(136,200,220,0.2)';"
+        onmouseout="this.style.background='rgba(136,200,220,0.1)';">
+        🪄 HERMES · Messenger
+    </button>
+
+    <!-- Artemis -->
+    <button onclick="window.open('artemis/index.html','_blank')" 
+        style="font-family:'Cinzel',serif;font-size:0.52rem;letter-spacing:0.12em;background:rgba(180,200,180,0.1);border:1px solid rgba(180,200,180,0.22);color:#aaccaa;padding:0.4rem 0.5rem;border-radius:2px;cursor:pointer;transition:all 0.2s;"
+        onmouseover="this.style.background='rgba(180,200,180,0.2)';"
+        onmouseout="this.style.background='rgba(180,200,180,0.1)';">
+        🏹 ARTEMIS · Hunt
+    </button>
+
+    <!-- Demeter -->
+    <button onclick="window.open('demeter/index.html','_blank')" 
+        style="font-family:'Cinzel',serif;font-size:0.52rem;letter-spacing:0.12em;background:rgba(120,180,100,0.1);border:1px solid rgba(120,180,100,0.22);color:#88bb66;padding:0.4rem 0.5rem;border-radius:2px;cursor:pointer;transition:all 0.2s;"
+        onmouseover="this.style.background='rgba(120,180,100,0.2)';"
+        onmouseout="this.style.background='rgba(120,180,100,0.1)';">
+        🌾 DEMETER · Harvest
+    </button>
+
+    <!-- Zeus -->
+    <button onclick="window.open('zeus/index.html','_blank')" 
+        style="font-family:'Cinzel',serif;font-size:0.52rem;letter-spacing:0.12em;background:rgba(200,180,120,0.1);border:1px solid rgba(200,180,120,0.22);color:#ddcc88;padding:0.4rem 0.5rem;border-radius:2px;cursor:pointer;transition:all 0.2s;"
+        onmouseover="this.style.background='rgba(200,180,120,0.2)';"
+        onmouseout="this.style.background='rgba(200,180,120,0.1)';">
+        ⚡ ZEUS · Court
+    </button>
+
 </div>
-<div style="font-size:0.5rem;font-style:italic;color:rgba(200,160,80,0.3);text-align:center;padding:0.2rem 0 0.5rem;">
-    The living tarot runs. Apollo plays every φ² seconds.
+<div style="font-size:0.5rem;font-style:italic;color:rgba(200,180,100,0.25);text-align:center;padding:0.2rem 0 0.3rem;">
+    The pantheon assembles. Eight gods. One GAIA.
 </div>
                 <div class="sky-section-lbl">☉ APOLLO · ☽ ARTEMIS</div>
                 <div class="sun-moon-strip">
