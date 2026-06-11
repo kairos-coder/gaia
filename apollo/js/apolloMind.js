@@ -79,7 +79,7 @@ const ApolloMind = (() => {
 
     // ── Mutation magnitude limits ────────────
     // Prevents runaway self-modification
-    MUTATE_MAX_DELTA:      0.5,    // largest single-step change to any integer gene
+    MUTATE_MAX_DELTA:      3,    // largest single-step change to any integer gene
     MUTATE_MIN_CHAOS:      0.05, // floor on CHAOS_WEIGHT
     MUTATE_MAX_CHAOS:      5, // ceiling on CHAOS_WEIGHT
 
