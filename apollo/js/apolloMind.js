@@ -775,65 +775,40 @@ const ApolloMind = (() => {
     const godName = card ? (card.god || card.name) : 'none';
     const manaStr = `${obs.mana}/${apollo.maxMana}`;
 
-    const noteLines = obs.notes.slice(0, 3).map(n =>
-      `// 📜 [turn ${n.turn}] ${n.key}: ${n.value}`
-    );
+    // ── Summaries (condensed) ────────────────
+    const cosmosShort = apollo.cosmosSummary ? apollo.cosmosSummary() : '';
+    const skyShort    = apollo.skySummary    ? apollo.skySummary()    : '';
 
-    // Show genome drift if Apollo has mutated
+    // ── Genome drift ─────────────────────────
     const genomeLines = GENOME._generation > 0
-      ? [
-          ``,
-          `// 🧬 GENOME · Generation ${GENOME._generation}`,
-          `// STALE_THRESHOLD: ${GENOME.STALE_THRESHOLD} | DOMINANCE_THRESHOLD: ${GENOME.DOMINANCE_THRESHOLD}`,
-          `// CHAOS_WEIGHT: ${GENOME.CHAOS_WEIGHT.toFixed(2)} | CLUSTER_THRESHOLD: ${GENOME.CLUSTER_THRESHOLD}`,
-          GENOME._mutations.length > 0
-            ? `// Last mutation: ${GENOME._mutations[GENOME._mutations.length - 1].gene} → ${GENOME._mutations[GENOME._mutations.length - 1].newVal}`
-            : null,
-        ].filter(Boolean)
+      ? [`// 🧬 G${GENOME._generation} · STALE:${GENOME.STALE_THRESHOLD} DOM:${GENOME.DOMINANCE_THRESHOLD} CHAOS:${GENOME.CHAOS_WEIGHT.toFixed(2)}`]
       : [];
 
     const lines = [
-      `// ☀ APOLLO · TURN ${apollo.turn} · MANA ${manaStr}`,
-      `// ─────────────────────────────────────────`,
-      ``,
-      `// OBSERVE`,
-      `// Table: ${obs.tableSize} cards | Hand: ${obs.handSize} | Graveyard: ${obs.graveyard.length}`,
-      `// Dominant element: ${dom} (${domN}) | Token pressure: ${obs.hotToken[0].toUpperCase()} (${obs.hotToken[1]})`,
-      obs.oldest    ? `// Oldest card: ${obs.oldest.god || obs.oldest.name} (${obs.oldest.turnsOnTable} turns on table)` : `// Table is fresh`,
-      obs.strongest ? `// Strongest card: ${obs.strongest.god || obs.strongest.name} · value ${obs.strongest.value}` : `// No cards yet`,
-      obs.clusters > 0 ? `// Elemental clusters: ${obs.clusters} detected` : `// No clusters`,
-      obs.looping ? `// ∞ Loop memory active — recursion guard engaged` : `// Loop memory: clear`,
-            ``,
-      `// 🜏 SENSES`,
-      `// Environment: ${obs.environment}`,
-      `// Notes on record: ${obs.noteCount}`,
-      obs.dominantRunLength > 0 ? `// ${dom} has held dominance for ${obs.dominantRunLength} turns` : `// No dominance streak recorded`,
-      obs.recentWarning ? `// ⚠ Recent warning (turn ${obs.recentWarning.turn}): ${obs.recentWarning.value}` : `// No active warnings`,
-      ...(noteLines.length > 0 ? noteLines : [`// No notes yet`]),
-      ...(apollo.cosmosReflection && apollo.cosmosReflection() ? [
-        ``,
-        `// 🜏 COSMOS`,
-       ...apollo.cosmosReflection().split('\n').map(l => `// ${l}`)
-      ] : []),
+      `// ☀ T${apollo.turn} · MANA ${manaStr} · ${dom}(${domN}) · Table:${obs.tableSize} Hand:${obs.handSize} Grave:${obs.graveyard.length}`,
+      `// ${cosmosShort}`,
+      `// ${skyShort}`,
+      obs.oldest && obs.oldest.turnsOnTable >= GENOME.STALE_THRESHOLD
+        ? `// Stale: ${obs.oldest.god || obs.oldest.name} (${obs.oldest.turnsOnTable}t)`
+        : null,
+      obs.clusters >= GENOME.CLUSTER_THRESHOLD
+        ? `// Clusters: ${obs.clusters}`
+        : null,
+      obs.hotToken[1] >= GENOME.VOID_PRESSURE_MIN && obs.hotToken[0] === 'void'
+        ? `// Void pressure: ${obs.hotToken[1]}`
+        : null,
       ...genomeLines,
       ``,
-      `// INTERPRET`,
-      ...situations.slice(0, 3).map((s, i) => `// [${i+1}] ${s.label}`),
+      `// SITUATION`,
+      ...situations.slice(0, 2).map((s, i) => `// [${i+1}] ${s.label}`),
       ``,
       `// DECIDE`,
       decision.intent === 'mutate'
-        ? `// → MUTATE · ${decision.intentVerb}`
+        ? `// → MUTATE · ${decision.mutationTrigger}`
         : card
-          ? `// → ${decision.intentVerb} ${godName} (${card.name})`
-          : `// → No play — Apollo holds`,
-      decision.intent === 'mutate'
-        ? `// Trigger: ${decision.mutationTrigger}`
-        : card
-          ? `// Effect: ${card.effect || 'unknown'} | Element: ${card.element} | Cost: ${card.cost||0} | Value: ${card.value||0}`
-          : '',
-      `// Reason: ${decision.reason}`,
+          ? `// → ${decision.intentVerb} ${godName} · ${card.effect} · ${decision.intent}`
+          : `// → HOLD · ${decision.reason}`,
       ``,
-      `// PROPHECY`,
       `// ${propheticLine}`,
       ``,
       `// ─────────────────────────────────────────`,
@@ -842,11 +817,10 @@ const ApolloMind = (() => {
         : card
           ? `const apolloPlays = "${godName}"; // ${decision.intent.toUpperCase()}`
           : `const apolloPlays = null; // WAITING`,
-    ].filter(l => l !== undefined);
+    ].filter(l => l !== undefined && l !== null);
 
     return lines.join('\n');
   }
-
   // ══════════════════════════════════════════
   // MEMORY — What Apollo writes for future Apollo
   // ══════════════════════════════════════════
