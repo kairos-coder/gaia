@@ -53,16 +53,15 @@ const ApolloMind = (() => {
   // ══════════════════════════════════════════
 
   const GENOME = {
-    // ── Decision thresholds ──────────────────
-    STALE_THRESHOLD:       12,   // turns before a card is considered stale
-    DOMINANCE_THRESHOLD:   7,   // turns of dominance before emergence push
-    PRESSURE_THRESHOLD:    0.9, // table fill ratio before crisis_full fires
-    CLUSTER_THRESHOLD:     3,   // clusters needed to trigger cluster situation
-    DANGER_FLAG_AGE:       9,   // turns before oldest card gets danger note
-    WARNING_TTL:           33,  // turns before old warnings are pruned
+    STALE_THRESHOLD:       5,    // was 12 — matches faster deck pace
+    DOMINANCE_THRESHOLD:   3,    // was 7 — emergence push comes sooner
+    PRESSURE_THRESHOLD:    0.9,
+    CLUSTER_THRESHOLD:     3,
+    DANGER_FLAG_AGE:       6,    // was 9 — flag danger sooner
+    WARNING_TTL:           20,   // was 33 — prune warnings faster
 
-    // ── Decision weights ────────────────────
-    CHAOS_WEIGHT:          0.33, // probability of random play in fallback
+    CHAOS_WEIGHT:          0.25, // was 0.33 — start slightly more strategic
+    // ... rest unchanged
     EMERGENCE_MIN_COUNT:   3,    // dominant element count to trigger emergence_near
     VOID_PRESSURE_MIN:     3,    // void tokens before void_pressure fires
     FIRE_SURGE_MIN:        4,    // fire tokens before fire_surge fires
