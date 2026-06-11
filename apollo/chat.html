@@ -629,7 +629,7 @@ async function callPollinationsWithRetry(messages, retries = 2) {
       
       const response = await fetch('https://text.pollinations.ai/openai', {
         method: 'POST',
-        headers = { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json' },  // ← FIXED: colon not equals
         body: JSON.stringify({
           messages: messages,
           model: 'openai',
@@ -687,23 +687,6 @@ async function callPollinationsWithRetry(messages, retries = 2) {
   // Should never reach here, but just in case:
   return FALLBACK_RESPONSES[0];
 }
-
-  async function generateText(userMessage) {
-    const messages = [
-      { role: 'system', content: APOLLO_SYSTEM },
-    ];
-
-    const recent = conversationHistory.slice(-6);
-    for (const turn of recent) {
-      messages.push({ role: 'user', content: turn.user });
-      messages.push({ role: 'assistant', content: turn.apollo.replace(/\[IMAGE:.*?\]/g, '[Image was generated]') });
-    }
-
-    messages.push({ role: 'user', content: userMessage });
-    
-    return await callPollinationsWithRetry(messages);
-  }
-
   // ── POLLINATIONS IMAGE GENERATION ─────────────────────────
   function generateImageUrl(description) {
     const encoded = encodeURIComponent(description);
