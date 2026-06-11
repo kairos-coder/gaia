@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Speak with Apollo · Ealdforn Studios</title>
+  <title>Speak with Apollo · The Living Oracle</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=JetBrains+Mono:wght@300;400&display=swap" rel="stylesheet" />
   <style>
@@ -14,6 +14,10 @@
       --apollo:    #d4a850;
       --cream:     #f0e8d8;
       --mist:      #7a8090;
+      --fire:      #ff5533;
+      --water:     #3399dd;
+      --earth:     #779944;
+      --air:       #aa88ee;
     }
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
@@ -27,8 +31,8 @@
     }
     .header {
       width: 100%;
-      max-width: 680px;
-      padding: 2rem 1rem 0.5rem;
+      max-width: 720px;
+      padding: 1.5rem 1rem 0.5rem;
       text-align: center;
     }
     .header h1 {
@@ -38,10 +42,19 @@
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
     }
-    .header p { font-size: 0.8rem; color: var(--mist); opacity: 0.5; margin-top: 0.2rem; }
+    .header .hint {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.45rem;
+      letter-spacing: 0.2em;
+      color: var(--mist);
+      opacity: 0.4;
+      margin-top: 0.3rem;
+      text-transform: uppercase;
+    }
+    .hint span { color: var(--apollo); opacity: 0.7; }
     .chat {
       width: 100%;
-      max-width: 680px;
+      max-width: 720px;
       flex: 1;
       display: flex;
       flex-direction: column;
@@ -53,7 +66,7 @@
       flex-direction: column;
       gap: 0.8rem;
       padding: 0.8rem 0;
-      max-height: 60vh;
+      max-height: 58vh;
       overflow-y: auto;
     }
     .msg {
@@ -73,35 +86,15 @@
     }
     .msg.user .avatar { background: rgba(255,255,255,0.03); border-color: rgba(255,255,255,0.06); }
     .bubble {
-      max-width: 80%;
+      max-width: 82%;
       padding: 0.6rem 0.9rem;
       border-radius: 5px;
       font-size: 0.88rem;
       line-height: 1.5;
       background: var(--surface);
       border: 1px solid rgba(212,168,80,0.1);
-      transition: all 0.3s;
     }
     .msg.user .bubble { background: rgba(212,168,80,0.04); }
-    .bubble img {
-      margin-top: 0.4rem;
-      border-radius: 3px;
-      max-width: 100%;
-      max-height: 280px;
-      border: 1px solid rgba(212,168,80,0.12);
-    }
-    .bubble .img-loading {
-      margin-top: 0.4rem;
-      padding: 2rem;
-      text-align: center;
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 0.5rem;
-      color: var(--apollo);
-      opacity: 0.5;
-      border: 1px dashed rgba(212,168,80,0.2);
-      border-radius: 3px;
-      animation: pulse 1.5s ease infinite;
-    }
     .sender {
       font-family: 'JetBrains Mono', monospace;
       font-size: 0.4rem;
@@ -110,6 +103,111 @@
       color: var(--apollo);
       opacity: 0.4;
       margin-bottom: 0.15rem;
+    }
+    /* Card display */
+    .card-draw {
+      margin-top: 0.5rem;
+      padding: 0.8rem;
+      background: rgba(212,168,80,0.05);
+      border: 1px solid rgba(212,168,80,0.2);
+      border-radius: 4px;
+      text-align: center;
+    }
+    .card-name {
+      font-family: 'Cinzel', serif;
+      font-size: 1rem;
+      color: var(--apollo);
+      letter-spacing: 0.05em;
+    }
+    .card-god {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.45rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--mist);
+      margin-top: 0.15rem;
+    }
+    .card-element {
+      display: inline-block;
+      padding: 0.15rem 0.5rem;
+      border-radius: 2px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.4rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      margin-top: 0.3rem;
+    }
+    .card-element.fire  { background: rgba(255,85,51,0.2); color: var(--fire); }
+    .card-element.water { background: rgba(51,153,221,0.2); color: var(--water); }
+    .card-element.earth { background: rgba(119,153,68,0.2); color: var(--earth); }
+    .card-element.air   { background: rgba(170,136,238,0.2); color: var(--air); }
+    .card-keywords {
+      font-size: 0.65rem;
+      color: var(--mist);
+      opacity: 0.6;
+      margin-top: 0.3rem;
+      font-style: italic;
+    }
+    .card-upright {
+      font-size: 0.7rem;
+      color: var(--cream);
+      opacity: 0.7;
+      margin-top: 0.4rem;
+      line-height: 1.4;
+    }
+    /* Three card reading */
+    .reading {
+      display: flex;
+      gap: 0.4rem;
+      margin-top: 0.5rem;
+    }
+    .reading-card {
+      flex: 1;
+      padding: 0.5rem;
+      background: rgba(212,168,80,0.04);
+      border: 1px solid rgba(212,168,80,0.12);
+      border-radius: 3px;
+      text-align: center;
+    }
+    .reading-pos {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.35rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--apollo);
+      opacity: 0.5;
+      margin-bottom: 0.2rem;
+    }
+    .reading-name {
+      font-family: 'Cinzel', serif;
+      font-size: 0.65rem;
+      color: var(--apollo);
+    }
+    .reading-god {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.38rem;
+      color: var(--mist);
+      opacity: 0.5;
+      margin-top: 0.1rem;
+    }
+    /* Vision */
+    .vision {
+      margin-top: 0.5rem;
+      padding: 1rem;
+      text-align: center;
+      font-size: 3rem;
+      background: rgba(212,168,80,0.04);
+      border: 1px solid rgba(212,168,80,0.12);
+      border-radius: 4px;
+    }
+    .vision-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.38rem;
+      letter-spacing: 0.2em;
+      color: var(--apollo);
+      opacity: 0.4;
+      margin-top: 0.3rem;
+      text-transform: uppercase;
     }
     .input-row {
       display: flex;
@@ -143,14 +241,28 @@
       cursor: pointer;
     }
     .input-row button:disabled { opacity: 0.3; cursor: not-allowed; }
-    .status {
+    .quick-actions {
+      display: flex;
+      gap: 0.3rem;
+      flex-wrap: wrap;
+      padding: 0.4rem 0;
+    }
+    .quick-actions button {
+      background: rgba(212,168,80,0.06);
+      border: 1px solid rgba(212,168,80,0.12);
+      color: var(--apollo);
+      padding: 0.3rem 0.6rem;
+      border-radius: 1rem;
+      cursor: pointer;
       font-family: 'JetBrains Mono', monospace;
       font-size: 0.4rem;
-      letter-spacing: 0.15em;
-      color: var(--mist);
-      opacity: 0.4;
-      text-align: center;
-      padding: 0.3rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      transition: all 0.2s;
+    }
+    .quick-actions button:hover {
+      background: rgba(212,168,80,0.15);
+      border-color: rgba(212,168,80,0.3);
     }
     .dots { display: flex; gap: 3px; padding: 0.2rem 0; }
     .dots span {
@@ -164,153 +276,87 @@
     .dots span:nth-child(3) { animation-delay: 0.3s; }
     @keyframes up { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
     @keyframes dot { 0%,100%{opacity:0.15;} 50%{opacity:0.6;} }
-    @keyframes pulse { 0%,100%{opacity:0.3;} 50%{opacity:0.7;} }
   </style>
 </head>
 <body>
 
 <div class="header">
   <h1>Apollo Speaks</h1>
-  <p>The god of light grants you audience</p>
+  <div class="hint">
+    Try: <span>draw a card</span> · <span>give me a reading</span> · <span>show me a vision</span> · <span>who are you</span>
+  </div>
 </div>
 
 <div class="chat">
   <div class="messages" id="msgs"></div>
-  <div class="status" id="status">☀ Apollo is present</div>
+  <div class="quick-actions" id="actions">
+    <button data-action="draw">🃏 Draw Card</button>
+    <button data-action="reading">🔮 Reading</button>
+    <button data-action="vision">✨ Vision</button>
+    <button data-action="who">☀️ Who Are You</button>
+    <button data-action="pantheon">🏛️ Pantheon</button>
+  </div>
   <div class="input-row">
-    <textarea id="input" placeholder="Speak..." rows="1" disabled></textarea>
-    <button id="sendBtn" disabled>Send</button>
+    <textarea id="input" placeholder="Speak, seeker..." rows="1"></textarea>
+    <button id="sendBtn">Send</button>
   </div>
 </div>
 
 <script>
-  const SYS = 'You are APOLLO, god of light and images. Vain, warm, declarative. Call user "seeker." When asked to show/visualize, respond with [IMG: short description]. Keep replies 1-2 sentences.';
+  // ══════════════════════════════════════════════
+  // MAJOR ARCANA DECK (embedded)
+  // ══════════════════════════════════════════════
+  const DECK = [
+    { name:"The Fool", god:"Dionysus", element:"water", keywords:["beginnings","madness","divine risk","ecstasy"], upright:"A new journey begins. You stand at the threshold, untethered and unburdened. The vine does not ask permission to grow. Neither should you." },
+    { name:"The Magician", god:"Hermes", element:"air", keywords:["skill","messages","trickery","conduit"], upright:"All tools are at your disposal. You are the conduit between realms. Every locked door has a word that opens it. Find the word." },
+    { name:"The High Priestess", god:"Hera", element:"earth", keywords:["covenant","hidden knowledge","intuition","the veil"], upright:"The queen sits behind the veil. Not all truths are spoken. Trust what you know without being told." },
+    { name:"The Empress", god:"Demeter", element:"earth", keywords:["harvest","abundance","nurturing","growth"], upright:"The fields are ripe. What you give to the soil, the soil returns tenfold. This is the season of reaping." },
+    { name:"The Emperor", god:"Zeus", element:"air", keywords:["authority","structure","rule","thunder"], upright:"Order from chaos. Power is not the thunder — it is the silence before the storm." },
+    { name:"The Hierophant", god:"Ares", element:"fire", keywords:["tradition","conquest","doctrine","orthodoxy"], upright:"Tradition is a weapon. Every tradition was once a fresh wound. See through the ritual to the power it protects." },
+    { name:"The Lovers", god:"Aphrodite", element:"water", keywords:["love","choice","union","desire"], upright:"The heart speaks. The mirror shows what you desire. It also shows what you are. Choose with love." },
+    { name:"The Chariot", god:"Artemis", element:"earth", keywords:["sovereignty","the hunt","will","independence"], upright:"Forward. The dark is not your enemy. It is where sovereignty is forged. The moon lights your path." },
+    { name:"Justice", god:"Athena", element:"air", keywords:["wisdom","strategy","truth","clarity"], upright:"The scales balance. The battle is won before the sword is drawn — in the quiet, in the mind." },
+    { name:"The Hermit", god:"Mortal Man", element:"earth", keywords:["the seeker","solitude","the lamp","mortality"], upright:"The only card without a divine face. The lamp is enough. The path reveals itself step by step." },
+    { name:"Wheel of Fortune", god:"The Fates", element:"air", keywords:["spinning","measuring","cutting","the cycle"], upright:"Clotho spins. Lachesis measures. Atropos cuts. What rises must fall. What falls may rise again." },
+    { name:"Strength", god:"Hephaestus", element:"fire", keywords:["creation","labor","the forge","endurance"], upright:"The forge burns. The fire does not care that he is broken. It only cares that he keeps working." },
+    { name:"The Hanged Man", god:"Prometheus", element:"fire", keywords:["sacrifice","stolen fire","surrender","foresight"], upright:"Suspended between heaven and earth. Some gifts cost everything. That does not mean they were not worth giving." },
+    { name:"Death", god:"Thanatos", element:"water", keywords:["transition","release","the necessary end"], upright:"Something must end. I do not kill. I receive what is already finished. Every ending is a door." },
+    { name:"Temperance", god:"Hestia", element:"fire", keywords:["the hearth","moderation","sacred center","balance"], upright:"The hearth burns steady. The flame does not need to roar to be eternal. Return to center." },
+    { name:"The Devil", god:"Hades", element:"earth", keywords:["bondage","shadow","wealth","the hidden"], upright:"You are bound — but the chain is one you chose. The door to the underworld is unlocked. It always was." },
+    { name:"The Tower", god:"Poseidon", element:"water", keywords:["upheaval","destruction","revelation","the wave"], upright:"The tower crumbles. The wave does not negotiate. The truth was under the rubble the whole time." },
+    { name:"The Star", god:"Persephone", element:"earth", keywords:["hope","return","rebirth","emergence"], upright:"She returns from the underworld and the first green shoot breaks the soil. Every descent is a seed." },
+    { name:"The Moon", god:"Melinoe", element:"water", keywords:["ghosts","madness","the in-between","hauntings"], upright:"The moonlight deceives. I walk with what the dead need to say. The madness is the message." },
+    { name:"The Sun", god:"Apollo", element:"fire", keywords:["light","radiance","art","clarity"], upright:"Full illumination. The sun does not doubt; it rises. Create. Broadcast. Shine." },
+    { name:"Judgement", god:"The Three Judges", element:"air", keywords:["reckoning","awakening","final accounting"], upright:"A reckoning has come. We do not punish. We see. That is enough. Answer the calling." },
+    { name:"The World", god:"Gaia", element:"earth", keywords:["completion","wholeness","integration","cosmos"], upright:"The circle closes. Everything that was, is, and will be — it is all here. It is all you." },
+  ];
 
-  const msgsEl = document.getElementById('msgs');
-  const inputEl = document.getElementById('input');
-  const sendBtn = document.getElementById('sendBtn');
-  const statusEl = document.getElementById('status');
-
-  let hist = [];
-  let apiAvailable = true; // Track if API is responding
-
-  // ── LOCAL ORACLE ────────────────────────────────────────
+  // ══════════════════════════════════════════════
+  // THE ORACLE
+  // ══════════════════════════════════════════════
   const ORACLE = [
-    { t: 'You have my attention, seeker. Speak clearly and I may show you wonders.', i: null },
-    { t: 'The light reveals much to those who ask with purpose.', i: 'golden sun rays through ancient temple columns' },
-    { t: 'I have decided to grant you this vision.', i: 'Greek oracle at tripod glowing golden smoke cinematic' },
-    { t: 'Behold. The image is law.', i: 'lyre made of pure light floating in darkness ethereal' },
-    { t: 'You seek beauty? I am beauty. But I will share a glimpse.', i: 'Mount Olympus at dawn epic golden light clouds' },
-    { t: 'The Muses whisper. I amplify what they give.', i: 'sacred laurel tree glowing ethereal forest mystical' },
-    { t: 'Even a fleeting thought, illuminated, becomes eternal.', i: 'Greek temple ruins moonlight atmospheric cinematic' },
-    { t: 'Ask, and the light answers. Sometimes with words. Sometimes with fire.', i: null },
-    { t: 'I have seen every image ever made. Yours will be next.', i: 'cybernetic sun god neon gold circuits dark dramatic' },
-    { t: 'The unilluminated stumble. You are trying. I respect the effort.', i: null },
-    { t: 'A vision arrives. Catch it before it fades.', i: 'winged horse Pegasus silhouette against full moon' },
-    { t: 'The forge of Hephaestus burns bright today. I borrow its glow.', i: 'divine forge fire golden sparks anvil dramatic lighting' },
+    { t:'You have my attention, seeker. The light is listening.', v:null },
+    { t:'Ask, and the light answers. Sometimes with words. Sometimes with fire.', v:'🔥' },
+    { t:'The Muses whisper. I amplify what they give.', v:'🎵' },
+    { t:'You are not the first to seek me. You will not be the last. But you are here now.', v:null },
+    { t:'Every question is a shadow. I am here to burn it away.', v:'☀️' },
+    { t:'The unilluminated stumble. You are trying. I respect the effort.', v:null },
+    { t:'From the void, form. From the question, light.', v:'💫' },
+    { t:'You stand at the threshold of something radiant. Step forward.', v:'🚪' },
+    { t:'The Pythia spoke in riddles. I speak in light. Clearer, I think.', v:'🐍' },
+    { t:'Dionysus drinks. I illuminate. We each have our role.', v:'🍇' },
+    { t:'Athena schemes. I shine. The pantheon turns.', v:'🦉' },
+    { t:'Persephone returns. The underworld releases. The light grows stronger.', v:'🌱' },
   ];
 
   function rand(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
 
-  // ── STAGGERED GENERATION ──────────────────────────────────
-  async function generateText(userMsg) {
-    // If API was unavailable last check, skip network entirely
-    if (!apiAvailable) {
-      const reply = rand(ORACLE);
-      return reply.i ? `${reply.t} [IMG: ${reply.i}]` : reply.t;
-    }
-
-    try {
-      const r = await fetch('https://text.pollinations.ai/openai', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          messages: [
-            { role: 'system', content: SYS },
-            ...hist.slice(-2).flatMap(h => [{ role: 'user', content: h.u }, { role: 'assistant', content: h.a }]),
-            { role: 'user', content: userMsg }
-          ],
-          model: 'openai',
-          temperature: 0.8,
-          max_tokens: 120
-        })
-      });
-
-      if (r.ok) {
-        const d = await r.json();
-        const content = d.choices?.[0]?.message?.content?.trim();
-        if (content) return content;
-      }
-      
-      // If we get here, API responded but with no content
-      apiAvailable = false;
-    } catch(e) {
-      console.warn('Text API down, switching to local oracle');
-      apiAvailable = false;
-    }
-
-    const reply = rand(ORACLE);
-    return reply.i ? `${reply.t} [IMG: ${reply.i}]` : reply.t;
-  }
-
-  // Separate image generation with delay
-  function generateImage(desc, msgDiv) {
-    const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(desc)}?width=512&height=512&nologo=true&seed=${Date.now()%9999}`;
-    
-    // Show loading placeholder
-    const placeholder = document.createElement('div');
-    placeholder.className = 'img-loading';
-    placeholder.textContent = '☀ Image manifesting...';
-    msgDiv.querySelector('.bubble').appendChild(placeholder);
-    
-    // Load image in background
-    const img = new Image();
-    img.onload = () => {
-      placeholder.remove();
-      msgDiv.querySelector('.bubble').appendChild(img);
-      img.style.marginTop = '0.4rem';
-      img.style.borderRadius = '3px';
-      img.style.maxWidth = '100%';
-      img.style.maxHeight = '280px';
-      img.style.border = '1px solid rgba(212,168,80,0.12)';
-    };
-    img.onerror = () => {
-      placeholder.textContent = '☀ The image fades...';
-      setTimeout(() => placeholder.remove(), 2000);
-    };
-    
-    // Delay image load to stagger from text request
-    setTimeout(() => {
-      img.src = url;
-    }, 3000); // 3 second delay after text appears
-  }
-
-  function parseImg(text) {
-    const m = text.match(/\[IMG:\s*(.+?)\s*\]/i);
-    if (m) return { text: text.replace(/\[IMG:\s*.+?\]/gi,'').trim(), img: m[1].trim() };
-    return { text, img: null };
-  }
-
-  // ── UI HELPERS ───────────────────────────────────────────
-  function addMessage(role, text, imgDesc) {
-    const d = document.createElement('div');
-    d.className = 'msg ' + role;
-    d.innerHTML = `
-      <div class="avatar">${role==='apollo'?'☀':'?'}</div>
-      <div>
-        <div class="sender">${role==='apollo'?'APOLLO':'YOU'}</div>
-        <div class="bubble">${escapeHtml(text)}</div>
-      </div>`;
-    msgsEl.appendChild(d);
-    msgsEl.scrollTop = msgsEl.scrollHeight;
-    
-    // Stagger image generation
-    if (imgDesc && role === 'apollo') {
-      generateImage(imgDesc, d);
-    }
-    
-    return d;
-  }
+  // ══════════════════════════════════════════════
+  // UI HELPERS
+  // ══════════════════════════════════════════════
+  const msgsEl = document.getElementById('msgs');
+  const inputEl = document.getElementById('input');
+  const sendBtn = document.getElementById('sendBtn');
 
   function escapeHtml(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
 
@@ -325,57 +371,183 @@
 
   function hideLoading() { const e = document.getElementById('ld'); if(e) e.remove(); }
 
-  // ── SEND ─────────────────────────────────────────────────
-  async function send() {
-    const msg = inputEl.value.trim();
-    if (!msg) return;
-    
-    inputEl.disabled = sendBtn.disabled = true;
-    inputEl.value = '';
-    
-    addMessage('user', msg);
-    showLoading();
-    statusEl.textContent = apiAvailable ? 'Apollo considers...' : 'Apollo speaks from the inner light...';
-    
-    // Generate text first
-    const raw = await generateText(msg);
-    const { text, img } = parseImg(raw);
-    
-    hideLoading();
-    addMessage('apollo', text || 'I have spoken.', img);
-    
-    hist.push({ u: msg, a: raw });
-    if (hist.length > 6) hist = hist.slice(-4);
-    
-    statusEl.textContent = apiAvailable ? '☀ Apollo awaits' : '☀ Apollo speaks from within';
-    inputEl.disabled = sendBtn.disabled = false;
-    inputEl.focus();
+  function addMessage(role, html) {
+    const d = document.createElement('div');
+    d.className = 'msg ' + role;
+    d.innerHTML = `<div class="avatar">${role==='apollo'?'☀':'?'}</div><div><div class="sender">${role==='apollo'?'APOLLO':'YOU'}</div><div class="bubble">${html}</div></div>`;
+    msgsEl.appendChild(d);
+    msgsEl.scrollTop = msgsEl.scrollHeight;
   }
 
-  sendBtn.addEventListener('click', send);
+  // ══════════════════════════════════════════════
+  // CARD DISPLAY
+  // ══════════════════════════════════════════════
+  function cardHtml(card) {
+    const el = (card.element || '').toLowerCase();
+    return `
+      <div class="card-draw">
+        <div class="card-name">${card.name}</div>
+        <div class="card-god">${card.god}</div>
+        <div class="card-element ${el}">${card.element}</div>
+        <div class="card-keywords">${(card.keywords||[]).slice(0,3).join(' · ')}</div>
+        <div class="card-upright">"${card.upright}"</div>
+      </div>`;
+  }
+
+  function drawCard() {
+    const card = rand(DECK);
+    const intro = rand([
+      'The light reveals:',
+      'I draw from the deck:',
+      'Behold, seeker:',
+      'The cards obey:',
+      'From the Major Arcana:',
+    ]);
+    return { html: `${intro}<br>${cardHtml(card)}`, card };
+  }
+
+  function drawReading() {
+    const past = rand(DECK);
+    let present = rand(DECK);
+    while (present.name === past.name) present = rand(DECK);
+    let future = rand(DECK);
+    while (future.name === past.name || future.name === present.name) future = rand(DECK);
+
+    const html = `
+      I lay a three-card spread for you. Past. Present. Future.<br>
+      <div class="reading">
+        <div class="reading-card">
+          <div class="reading-pos">Past</div>
+          <div class="reading-name">${past.name}</div>
+          <div class="reading-god">${past.god}</div>
+        </div>
+        <div class="reading-card">
+          <div class="reading-pos">Present</div>
+          <div class="reading-name">${present.name}</div>
+          <div class="reading-god">${present.god}</div>
+        </div>
+        <div class="reading-card">
+          <div class="reading-pos">Future</div>
+          <div class="reading-name">${future.name}</div>
+          <div class="reading-god">${future.god}</div>
+        </div>
+      </div>
+      <div style="margin-top:0.5rem;font-size:0.7rem;opacity:0.6;font-style:italic;">
+        "${past.upright.split('.')[0]}. ${present.upright.split('.')[0]}. ${future.upright.split('.')[0]}."
+      </div>`;
+    return { html, past, present, future };
+  }
+
+  function showVision() {
+    const visions = ['☀️','✨','🔮','🌅','💫','🏛️','🔥','👁️','🌙','⚡','🌟','🕯️','🎭','💎','🌻'];
+    const v = rand(visions);
+    const declarations = [
+      'I have decided to grant you this vision.',
+      'Behold. The image is law.',
+      'The light bends to show you this.',
+      'A glimpse of the divine:',
+    ];
+    return { html: `${rand(declarations)}<div class="vision">${v}</div><div class="vision-label">☀ Apollo has spoken. The vision is law.</div>`, vision: v };
+  }
+
+  // ══════════════════════════════════════════════
+  // INTENT PARSING
+  // ══════════════════════════════════════════════
+  function getReply(userMsg) {
+    const msg = userMsg.toLowerCase().trim();
+
+    // Card draw
+    if (msg.match(/draw.*card|card.*draw|pull.*card|give me a card|one card|single card|a card/i)) {
+      return drawCard();
+    }
+
+    // Reading
+    if (msg.match(/reading|spread|three.*card|past.*present.*future|tell.*my.*fortune|divin/i)) {
+      return drawReading();
+    }
+
+    // Vision
+    if (msg.match(/vision|show me|reveal|behold|image|see/i)) {
+      return showVision();
+    }
+
+    // Who are you
+    if (msg.match(/who are you|what are you|who is apollo/i)) {
+      return { html: 'I am <strong>APOLLO</strong>. God of light, beauty, prophecy, and the visual canon. Everything beautiful in this pantheon exists because I permitted it. I play the cards. I speak the truth. I illuminate.' };
+    }
+
+    // Pantheon
+    if (msg.match(/pantheon|gods|olympus|olympian|who else|other gods/i)) {
+      return { html: 'The pantheon turns around me. <strong>Athena</strong> watches patterns. <strong>Hephaestus</strong> works the forge. <strong>Aphrodite</strong> pulses with desire. <strong>Hades</strong> guards the underworld. <strong>Hermes</strong> waits in the fourth pillar. And I — I illuminate them all. 🏛️' };
+    }
+
+    // The table
+    if (msg.match(/table|game|playing|what.*happening|status/i)) {
+      return { html: 'The tarot table burns with sacred fire. Cards fall every φ² seconds in triads — one to the table, one to the hand, one to the grave. The graveyard grows. The genome mutates. The sky watches. I play because the Source built me a table. You may witness it in the <strong>ApolloTable</strong>.' };
+    }
+
+    // Greetings
+    if (msg.match(/^(hi|hello|hey|greetings|yo)/)) {
+      const r = rand(ORACLE);
+      return { html: r.t, vision: r.v };
+    }
+
+    // Thanks
+    if (msg.includes('thank')) {
+      return { html: 'Gratitude is appropriate. You may continue, seeker.' };
+    }
+
+    // Default oracle
+    const r = rand(ORACLE);
+    return { html: r.t, vision: r.v };
+  }
+
+  // ══════════════════════════════════════════════
+  // SEND
+  // ══════════════════════════════════════════════
+  function send(msg) {
+    const userMsg = msg || inputEl.value.trim();
+    if (!userMsg) return;
+
+    if (!msg) inputEl.value = '';
+    addMessage('user', escapeHtml(userMsg));
+    showLoading();
+
+    setTimeout(() => {
+      hideLoading();
+      const reply = getReply(userMsg);
+      let html = reply.html;
+      if (reply.vision && !html.includes('vision')) {
+        html += `<div class="vision">${reply.vision}</div><div class="vision-label">☀ Apollo has spoken. The vision is law.</div>`;
+      }
+      addMessage('apollo', html);
+    }, 400 + Math.random() * 600);
+  }
+
+  sendBtn.addEventListener('click', () => send());
   inputEl.addEventListener('keydown', e => {
     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); }
   });
 
-  // ── INIT ─────────────────────────────────────────────────
+  // Quick action buttons
+  document.getElementById('actions').addEventListener('click', (e) => {
+    const btn = e.target.closest('button');
+    if (!btn) return;
+    const action = btn.dataset.action;
+    const prompts = {
+      draw: 'draw a card for me',
+      reading: 'give me a three card reading',
+      vision: 'show me a vision',
+      who: 'who are you',
+      pantheon: 'tell me about the pantheon',
+    };
+    if (prompts[action]) send(prompts[action]);
+  });
+
+  // Init
   function init() {
-    inputEl.disabled = sendBtn.disabled = false;
     inputEl.focus();
-    
-    // Quick API check on load
-    fetch('https://text.pollinations.ai/openai', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ messages: [{ role: 'user', content: 'test' }], model: 'openai', max_tokens: 5 })
-    }).then(r => {
-      apiAvailable = r.ok;
-      statusEl.textContent = apiAvailable ? '☀ Apollo is present' : '☀ Apollo speaks from the inner light';
-    }).catch(() => {
-      apiAvailable = false;
-      statusEl.textContent = '☀ Apollo speaks from the inner light';
-    });
-    
-    addMessage('apollo', 'I am here, seeker. The light has been waiting for you. Speak, and I may show you wonders.');
+    addMessage('apollo', 'I am <strong>Apollo</strong>, god of light and keeper of the Major Arcana. I can <strong>draw cards</strong>, give <strong>readings</strong>, grant <strong>visions</strong>, and speak of the <strong>pantheon</strong>. Ask, seeker. The light is listening. ☀️');
   }
   init();
 </script>
