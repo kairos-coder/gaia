@@ -22,8 +22,8 @@ class ApolloPlayer {
     this.deck.draw_interval_ms = this.deck.draw_interval_ms || Math.round(PHI * 1000);
     
     // 🜏 Sacred timing
-    this.drawInterval = Math.round(PHI * 2);
-    this.goldenInterval = Math.round(PHI * PHI * 2);
+    this.drawInterval = Math.round(PHI * PHI * 1000);
+    this.goldenInterval = Math.round(PHI * PHI * PHI * 1000);
     
     // 🜏 Sacred thresholds
     this.STUCK_TURNS = Math.round(PI);                   // 3
