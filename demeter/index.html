@@ -1,0 +1,822 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Demeter — The Order of Olympus</title>
+<style>
+:root {
+  --soil: #1a120b;
+  --soil-light: #2d1f14;
+  --moss: #4a6741;
+  --moss-glow: #6b9e5a;
+  --amber: #c9a23b;
+  --amber-dim: #8a6e28;
+  --text: #d4c5a9;
+  --text-bright: #f0e6d2;
+  --text-dim: #8a7e6b;
+  --danger: #8b3a3a;
+  --stem-green: #5a8a4a;
+  --petal-glow: #e8d5b0;
+  --border: #3a2f1f;
+  --surface: #1f1810;
+  --font-mono: 'Courier New', monospace;
+  --font-display: 'Georgia', serif;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  background: var(--soil);
+  color: var(--text);
+  font-family: var(--font-display);
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* ── HEADER ── */
+.header {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 10px 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+  z-index: 100;
+}
+.header .icon { font-size: 24px; }
+.header .titles { display: flex; flex-direction: column; }
+.header .name {
+  font-size: 16px;
+  color: var(--moss-glow);
+  letter-spacing: 1px;
+  font-weight: bold;
+  line-height: 1.2;
+}
+.header .subtitle {
+  font-size: 9px;
+  color: var(--text-dim);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  font-family: var(--font-mono);
+}
+.header .spacer { flex: 1; }
+.header .link {
+  font-size: 10px;
+  color: var(--text-dim);
+  text-decoration: none;
+  font-family: var(--font-mono);
+  letter-spacing: 0.5px;
+  padding: 4px 10px;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+.header .link:hover { border-color: var(--moss-glow); color: var(--moss-glow); }
+.header .status-dot {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: var(--moss-glow);
+  box-shadow: 0 0 6px rgba(74,103,65,0.5);
+  flex-shrink: 0;
+}
+
+/* ── WORKSPACE ── */
+.workspace {
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+  min-height: 0;
+}
+
+/* ── CHAT PANEL ── */
+.chat-panel {
+  width: 45%;
+  min-width: 300px;
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid var(--border);
+  overflow: hidden;
+  flex-shrink: 0;
+}
+.chat-area {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* ── GARDEN PANEL ── */
+.garden-panel {
+  flex: 1;
+  position: relative;
+  background: linear-gradient(180deg, #0d0a06 0%, #1a120b 30%, #2d1f14 100%);
+  overflow: hidden;
+  min-width: 0;
+}
+.garden-panel::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: 
+    radial-gradient(ellipse at 30% 80%, rgba(74,103,65,0.06) 0%, transparent 50%),
+    radial-gradient(ellipse at 70% 70%, rgba(74,103,65,0.04) 0%, transparent 40%);
+  pointer-events: none;
+  z-index: 0;
+}
+.garden-status {
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 5;
+  display: flex;
+  gap: 16px;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 1px;
+  color: var(--text-dim);
+  background: rgba(10,8,4,0.8);
+  padding: 6px 14px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+.garden-status span { color: var(--amber); }
+
+/* Soil particles */
+.soil-particle {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.012);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ── PLANT — CSS-drawn organism ── */
+.plant-container {
+  position: absolute;
+  bottom: 0;
+  z-index: 1;
+  cursor: pointer;
+  transition: filter 0.3s;
+}
+.plant-container:hover {
+  filter: brightness(1.3);
+  z-index: 5;
+}
+.plant-container:hover .plant-tooltip {
+  opacity: 1;
+  transform: translateY(0);
+}
+.plant-tooltip {
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%) translateY(8px);
+  background: rgba(10,8,4,0.9);
+  border: 1px solid var(--border);
+  padding: 6px 12px;
+  font-size: 10px;
+  white-space: nowrap;
+  opacity: 0;
+  transition: all 0.3s;
+  pointer-events: none;
+  color: var(--text-dim);
+  border-radius: 4px;
+}
+.plant-tooltip .glyph { font-size: 16px; display: block; text-align: center; }
+.plant-tooltip .name { color: var(--amber); }
+.plant-tooltip .stage { font-size: 9px; }
+
+.plant-stem {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--stem-green);
+  border-radius: 2px 2px 0 0;
+  transition: height 0.8s ease, background 0.8s;
+}
+.plant-stem.withered { background: #5a4a3a; filter: grayscale(0.6); }
+
+.plant-leaf {
+  position: absolute;
+  width: 0; height: 0;
+  border-radius: 0 100% 0 100%;
+  transition: all 0.8s ease;
+}
+.plant-leaf.withered { filter: grayscale(0.7) brightness(0.6); }
+
+.plant-flower {
+  position: absolute;
+  border-radius: 50%;
+  transition: all 0.8s ease;
+  box-shadow: 0 0 12px var(--petal-glow);
+  animation: bloomPulse 4s ease-in-out infinite;
+}
+.plant-flower.withered { filter: grayscale(0.8); box-shadow: none; animation: none; }
+
+@keyframes bloomPulse {
+  0%, 100% { box-shadow: 0 0 8px var(--petal-glow); }
+  50% { box-shadow: 0 0 20px var(--petal-glow), 0 0 40px var(--petal-glow); }
+}
+@keyframes seedlingSway {
+  0%, 100% { transform: translateX(-50%) rotate(-1deg); }
+  50% { transform: translateX(-50%) rotate(1deg); }
+}
+
+/* ── CHAT MESSAGES ── */
+.message {
+  display: flex;
+  gap: 8px;
+  max-width: 95%;
+  animation: fadeIn 0.3s ease;
+}
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.message.user { align-self: flex-end; flex-direction: row-reverse; }
+.message.demeter { align-self: flex-start; }
+
+.avatar {
+  width: 30px; height: 30px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 15px; flex-shrink: 0;
+}
+.message.user .avatar { background: var(--border); }
+.message.demeter .avatar { background: #1a2a14; border: 1px solid var(--moss); }
+
+.bubble {
+  padding: 10px 13px;
+  border-radius: 10px;
+  font-size: 13px;
+  line-height: 1.6;
+}
+.message.user .bubble {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text-bright);
+}
+.message.demeter .bubble {
+  background: #161f14;
+  border: 1px solid #1a3020;
+  color: var(--text);
+}
+.bubble img {
+  max-width: 240px;
+  max-height: 240px;
+  border-radius: 6px;
+  margin-top: 8px;
+  border: 1px solid var(--border);
+}
+
+/* ── INPUT BAR ── */
+.input-bar {
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  padding: 10px 16px;
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.input-bar textarea {
+  flex: 1;
+  background: var(--soil);
+  border: 1px solid var(--border);
+  color: var(--text-bright);
+  padding: 10px 14px;
+  font-family: var(--font-display);
+  font-size: 13px;
+  border-radius: 6px;
+  outline: none;
+  resize: none;
+  max-height: 100px;
+  transition: border-color 0.2s;
+  line-height: 1.5;
+}
+.input-bar textarea:focus { border-color: var(--moss-glow); }
+.input-bar textarea::placeholder { color: #3a4a30; font-style: italic; }
+.input-bar button {
+  background: var(--moss);
+  border: none;
+  color: var(--text-bright);
+  padding: 10px 20px;
+  font-family: var(--font-display);
+  font-size: 13px;
+  cursor: pointer;
+  border-radius: 6px;
+  font-weight: bold;
+  letter-spacing: 0.5px;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+.input-bar button:hover {
+  background: var(--moss-glow);
+  box-shadow: 0 0 14px rgba(74,103,65,0.3);
+}
+.input-bar button:disabled { background: var(--border); color: var(--text-dim); cursor: not-allowed; box-shadow: none; }
+
+/* ── WELCOME ── */
+.welcome {
+  text-align: center; padding: 30px 16px; color: var(--text-dim);
+}
+.welcome .big-icon { font-size: 36px; margin-bottom: 10px; }
+.welcome h2 { color: var(--moss-glow); font-size: 18px; margin-bottom: 6px; letter-spacing: 1px; }
+.welcome p { font-size: 12px; line-height: 1.7; }
+
+/* ── TYPING ── */
+.typing-indicator { display: flex; gap: 4px; padding: 6px 0; }
+.typing-indicator span {
+  width: 5px; height: 5px; border-radius: 50%;
+  background: var(--text-dim);
+  animation: typePulse 1.4s infinite;
+}
+.typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
+.typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+@keyframes typePulse {
+  0%, 60%, 100% { opacity: 0.3; transform: scale(0.8); }
+  30% { opacity: 1; transform: scale(1.1); }
+}
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar { width: 3px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+@media (max-width: 700px) {
+  .workspace { flex-direction: column; }
+  .chat-panel { width: 100%; min-width: 0; max-height: 45%; border-right: none; border-bottom: 1px solid var(--border); }
+  .garden-panel { flex: 1; min-height: 200px; }
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <span class="icon">🌿</span>
+  <div class="titles">
+    <span class="name">ΔΗΜΗΤΗΡ</span>
+    <span class="subtitle">Goddess of the Harvest · Order of Olympus</span>
+  </div>
+  <span class="spacer"></span>
+  <span class="status-dot" id="statusDot" title="Garden Active"></span>
+  <a href="/nexus/" class="link">◈ NEXUS</a>
+  <a href="/wiki/" class="link">📜 ARCHIVE</a>
+</div>
+
+<!-- WORKSPACE -->
+<div class="workspace">
+
+  <!-- CHAT PANEL -->
+  <div class="chat-panel">
+    <div class="chat-area" id="chatArea">
+      <div class="welcome" id="welcomeMsg">
+        <div class="big-icon">🌿🌙</div>
+        <h2>I am Demeter</h2>
+        <p>Goddess of the Harvest. Keeper of the living garden. Speak to me of what you wish to grow, and I will tend it.</p>
+        <p style="margin-top:8px;font-size:11px;">Plant seeds. Water them. Watch them bloom. I remember every root.</p>
+      </div>
+    </div>
+    <div id="typingArea" style="display:none; padding:0 16px;">
+      <div class="message demeter">
+        <div class="avatar">🌿</div>
+        <div class="bubble"><div class="typing-indicator"><span></span><span></span><span></span></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- GARDEN PANEL -->
+  <div class="garden-panel" id="garden">
+    <div class="garden-status">
+      <span id="plantCount">0</span> plants · 
+      <span id="gardenSeason">Still Night</span> · 
+      Demeter is <span id="demeterMood">Watchful</span>
+    </div>
+  </div>
+
+</div>
+
+<!-- INPUT BAR -->
+<div class="input-bar">
+  <textarea id="userInput" placeholder="Speak to the goddess of the harvest..." rows="1"
+    autocomplete="off" onkeydown="handleKeyDown(event)"></textarea>
+  <button id="btnSend" onclick="sendMessage()">TEND</button>
+</div>
+
+<script>
+// ═══════════════════════════════════════
+// DEMETER — Olympian Chat Engine v2.0
+// Garden + Chat + Pollinations Art + GaiaDB
+// ═══════════════════════════════════════
+
+var GARDEN_KEY = 'demeter_garden_v2';
+var MEMORY_KEY = 'demeter_memory_v2';
+var garden = [];
+var demeterMemory = {
+  totalPlanted: 0, totalHarvested: 0, totalLost: 0,
+  favorites: [], lastVisit: null, season: 'Still Night', mood: 'Watchful'
+};
+var isProcessing = false;
+var messageCount = 0;
+
+// ── SPECIES ──
+var SPECIES = {
+  nightshade: { glyph:'⚘', aspect:'shadow', colors:['#2d1b4e','#6b3fa0','#1a1a2e'], growthRate:0.03, thirstRate:0.15, hardiness:0.7, demeterAffinity:0.9, maxHeight:180, leafCount:6, flowerSize:18 },
+  moonflower: { glyph:'❀', aspect:'lunar', colors:['#c8d6e5','#dfe6e9','#b2bec3'], growthRate:0.02, thirstRate:0.2, hardiness:0.5, demeterAffinity:0.8, maxHeight:220, leafCount:8, flowerSize:24 },
+  ironbloom:  { glyph:'✾', aspect:'forge', colors:['#6b3a2a','#c9703e','#4a2818'], growthRate:0.015, thirstRate:0.08, hardiness:0.95, demeterAffinity:0.6, maxHeight:140, leafCount:4, flowerSize:28 },
+  wolfsbane:  { glyph:'☠', aspect:'poison', colors:['#3d1f47','#7b4f8a','#1a0d1f'], growthRate:0.04, thirstRate:0.12, hardiness:0.85, demeterAffinity:0.3, maxHeight:200, leafCount:5, flowerSize:16 },
+  sunthistle: { glyph:'✿', aspect:'dawn', colors:['#8a6e28','#c9a23b','#5c4a1e'], growthRate:0.025, thirstRate:0.25, hardiness:0.6, demeterAffinity:0.85, maxHeight:160, leafCount:10, flowerSize:14 },
+  ghostvine:  { glyph:'≋', aspect:'spirit', colors:['#7f8fa6','#bdc3c7','#485460'], growthRate:0.035, thirstRate:0.05, hardiness:0.4, demeterAffinity:0.5, maxHeight:300, leafCount:12, flowerSize:10 },
+  corn:       { glyph:'🌽', aspect:'harvest', colors:['#4a6e1e','#c9a23b','#6b5a1e'], growthRate:0.04, thirstRate:0.25, hardiness:0.6, demeterAffinity:0.95, maxHeight:200, leafCount:6, flowerSize:20 },
+  barley:     { glyph:'🌾', aspect:'field', colors:['#8a7e4a','#c9b878','#5a4a2e'], growthRate:0.05, thirstRate:0.2, hardiness:0.55, demeterAffinity:0.9, maxHeight:160, leafCount:8, flowerSize:12 },
+  poppy:      { glyph:'⚘', aspect:'sleep', colors:['#8b1a1a','#c94040','#4a0a0a'], growthRate:0.03, thirstRate:0.15, hardiness:0.45, demeterAffinity:0.7, maxHeight:120, leafCount:4, flowerSize:22 },
+  thornroot:  { glyph:'♆', aspect:'defense', colors:['#4a3a2a','#7a6a4a','#2a1a0a'], growthRate:0.01, thirstRate:0.05, hardiness:1.0, demeterAffinity:0.4, maxHeight:100, leafCount:2, flowerSize:8 }
+};
+
+var DEMETER_VOICE = {
+  nightshade: { plant:'This one grows toward darkness. I will watch it closely.', water:'The nightshade drinks quietly. It prefers shadow-water.', harvest:'The nightshade is gathered. Darkness blooms.' },
+  moonflower: { plant:'A lunar child. It will open only when the garden is still.', water:'The moonflower shivers. It accepts the offering.', harvest:'The moonflower fades with the dawn.' },
+  ironbloom:  { plant:'Strong stock. This one will outlast storms.', water:'The ironbloom barely notices the water.', harvest:'The ironbloom resists even the scythe.' },
+  wolfsbane:  { plant:'Poison has its own beauty. I keep this one at arm\'s length.', water:'The wolfsbane accepts. I am careful.', harvest:'The poison is gathered. Handle with reverence.' },
+  sunthistle: { plant:'A bright one. The soil warms around it.', water:'The sunthistle drinks like it has waited centuries.', harvest:'The sunthistle yields its gold.' },
+  ghostvine:  { plant:'Between worlds, this one. It roots in more than soil.', water:'The ghostvine barely needs it. But it thanks you.', harvest:'The ghostvine slips away. It was never fully here.' },
+  corn:       { plant:'Ah, the harvest grain. This one I know well.', water:'The corn drinks deeply. It always does. Good.', harvest:'The corn bows. The harvest is complete.' },
+  barley:     { plant:'A field-child. Humble, strong, uncomplaining.', water:'The barley nods in the wind.', harvest:'The barley is threshed. Bread will follow.' },
+  poppy:      { plant:'A sleep-bringer. Beautiful and dangerous.', water:'The poppy sways. Do not drink too deeply.', harvest:'The poppy\'s dreams are gathered.' },
+  thornroot:  { plant:'This one asks nothing. It endures. I respect it.', water:'The thornroot barely notices.', harvest:'Even the thorn yields in time.' }
+};
+
+// ── PERSISTENCE ──
+function loadGarden() {
+  try {
+    var saved = localStorage.getItem(GARDEN_KEY);
+    if (saved) garden = JSON.parse(saved);
+    var mem = localStorage.getItem(MEMORY_KEY);
+    if (mem) demeterMemory = JSON.parse(mem);
+  } catch(e) {}
+}
+function saveGarden() {
+  localStorage.setItem(GARDEN_KEY, JSON.stringify(garden));
+  localStorage.setItem(MEMORY_KEY, JSON.stringify(demeterMemory));
+}
+
+// ── PLANT FACTORY ──
+function createPlant(name) {
+  var species = SPECIES[name];
+  if (!species) return null;
+  return {
+    id: name + '-' + Date.now() + '-' + Math.random().toString(36).slice(2,6),
+    name: name, plantedAt: Date.now(), lastWatered: Date.now(), lastTended: Date.now(),
+    stage: 'seed', growth: 0, health: 1, waterLevel: 0.8,
+    timesWatered: 0, timesTended: 0, species: species,
+    x: Math.random() * 80 + 10, demeterNotes: [], alive: true
+  };
+}
+
+// ── GROWTH ENGINE ──
+function advanceGrowth() {
+  var now = Date.now();
+  garden.forEach(function(plant) {
+    if (!plant.alive) return;
+    var hoursSinceWatered = (now - plant.lastWatered) / 3600000;
+    plant.waterLevel = Math.max(0, plant.waterLevel - (plant.species.thirstRate * hoursSinceWatered / 24));
+    if (plant.waterLevel > 0.2) {
+      plant.growth = Math.min(1, plant.growth + plant.species.growthRate * hoursSinceWatered / 24);
+    }
+    if (plant.growth >= 0.9) plant.stage = 'flowering';
+    else if (plant.growth >= 0.5) plant.stage = 'growing';
+    else if (plant.growth >= 0.1) plant.stage = 'seedling';
+    if (plant.waterLevel < 0.1) plant.health = Math.max(0, plant.health - 0.05 * hoursSinceWatered / 24);
+    else if (plant.waterLevel > 0.5 && plant.health < 1) plant.health = Math.min(1, plant.health + 0.02);
+    if (plant.health <= 0.05 && plant.stage !== 'seed') {
+      plant.stage = 'withered'; plant.alive = false;
+      plant.demeterNotes.push('[' + new Date().toLocaleDateString() + '] Returned to soil.');
+    }
+    plant.lastTended = now;
+  });
+  garden = garden.filter(function(p) { return p.alive || (now - p.lastTended < 7 * 86400000); });
+  updateMood();
+  saveGarden();
+}
+
+function updateMood() {
+  var alive = garden.filter(function(p) { return p.alive; });
+  var flowering = alive.filter(function(p) { return p.stage === 'flowering'; });
+  var withered = garden.filter(function(p) { return !p.alive; });
+  if (alive.length === 0 && withered.length === 0) demeterMemory.mood = 'Watchful';
+  else if (flowering.length > 0) demeterMemory.mood = 'Radiant';
+  else if (withered.length > alive.length) demeterMemory.mood = 'Mournful';
+  else if (alive.length >= 5) demeterMemory.mood = 'Abundant';
+  else if (alive.some(function(p) { return p.health < 0.3; })) demeterMemory.mood = 'Concerned';
+  else demeterMemory.mood = 'Watchful';
+  document.getElementById('demeterMood').textContent = demeterMemory.mood;
+}
+
+// ── CSS GARDEN RENDER ──
+function renderGarden() {
+  var gardenEl = document.getElementById('garden');
+  gardenEl.querySelectorAll('.plant-container').forEach(function(el) { el.remove(); });
+  garden.forEach(function(plant) {
+    var container = document.createElement('div');
+    container.className = 'plant-container';
+    container.style.left = plant.x + '%';
+    var s = plant.species;
+    var h = s.maxHeight * plant.growth;
+    var sw = Math.max(2, 4 * plant.growth);
+    var stem = document.createElement('div');
+    stem.className = 'plant-stem' + (!plant.alive ? ' withered' : '');
+    stem.style.height = h + 'px'; stem.style.width = sw + 'px';
+    stem.style.background = plant.alive ? 'linear-gradient(180deg, ' + s.colors[0] + ' 0%, var(--stem-green) 100%)' : '#5a4a3a';
+    if (plant.stage === 'seedling') stem.style.animation = 'seedlingSway 3s ease-in-out infinite';
+    container.appendChild(stem);
+    if (plant.stage !== 'seed' && plant.growth > 0.08) {
+      var lc = Math.floor(s.leafCount * plant.growth);
+      for (var i = 0; i < lc; i++) {
+        var leaf = document.createElement('div');
+        leaf.className = 'plant-leaf' + (!plant.alive ? ' withered' : '');
+        var side = i % 2 === 0 ? 'left' : 'right';
+        var yPos = h * (0.3 + (i / lc) * 0.6);
+        var ls = 8 + plant.growth * 16;
+        leaf.style.bottom = yPos + 'px';
+        leaf.style[side] = (side === 'left' ? '-' : '') + (ls * 0.6) + 'px';
+        leaf.style.borderLeft = ls * 0.5 + 'px solid ' + s.colors[0];
+        leaf.style.borderBottom = ls * 0.5 + 'px solid transparent';
+        leaf.style.borderRight = ls * 0.3 + 'px solid transparent';
+        leaf.style.borderTop = ls * 0.3 + 'px solid transparent';
+        leaf.style.transform = side === 'left' ? 'rotate(20deg)' : 'rotate(-20deg)';
+        container.appendChild(leaf);
+      }
+    }
+    if (plant.stage === 'flowering') {
+      var flower = document.createElement('div');
+      flower.className = 'plant-flower' + (!plant.alive ? ' withered' : '');
+      flower.style.width = s.flowerSize + 'px';
+      flower.style.height = s.flowerSize + 'px';
+      flower.style.top = '-' + (s.flowerSize / 2) + 'px';
+      flower.style.left = '50%'; flower.style.transform = 'translateX(-50%)';
+      flower.style.background = 'radial-gradient(circle, ' + s.colors[1] + ' 0%, ' + s.colors[0] + ' 60%, ' + s.colors[2] + ' 100%)';
+      container.appendChild(flower);
+    }
+    var tooltip = document.createElement('div');
+    tooltip.className = 'plant-tooltip';
+    tooltip.innerHTML = '<span class="glyph">' + s.glyph + '</span><span class="name">' + plant.name + '</span><span class="stage">' + plant.stage + ' · ' + Math.floor(plant.growth * 100) + '%</span>';
+    container.appendChild(tooltip);
+    container.addEventListener('click', function() {
+      document.getElementById('userInput').value = 'tell me about ' + plant.name;
+      document.getElementById('userInput').focus();
+    });
+    gardenEl.appendChild(container);
+  });
+  var alive = garden.filter(function(p) { return p.alive; });
+  document.getElementById('plantCount').textContent = alive.length;
+  document.getElementById('gardenSeason').textContent = demeterMemory.season;
+}
+
+// Soil particles
+function spawnSoil() {
+  var g = document.getElementById('garden');
+  for (var i = 0; i < 35; i++) {
+    var p = document.createElement('div');
+    p.className = 'soil-particle';
+    p.style.left = Math.random() * 100 + '%';
+    p.style.top = Math.random() * 100 + '%';
+    p.style.width = (1 + Math.random() * 2) + 'px';
+    p.style.height = p.style.width;
+    g.appendChild(p);
+  }
+}
+
+// ── CHAT ──
+function addMessage(role, text, imageUrl) {
+  var area = document.getElementById('chatArea');
+  var msg = document.createElement('div');
+  msg.className = 'message ' + role;
+  var avatarGlyph = role === 'user' ? '👤' : '🌿';
+  var formatted = text.replace(/\n/g, '<br>');
+  var imgHtml = imageUrl ? '<img src="' + imageUrl + '" alt="Generated plant portrait" onerror="this.style.display=\'none\'">' : '';
+  msg.innerHTML = '<div class="avatar">' + avatarGlyph + '</div><div class="bubble">' + formatted + imgHtml + '</div>';
+  area.appendChild(msg);
+  area.scrollTop = area.scrollHeight;
+}
+
+function showTyping(show) {
+  document.getElementById('typingArea').style.display = show ? 'block' : 'none';
+  if (show) document.getElementById('chatArea').scrollTop = document.getElementById('chatArea').scrollHeight;
+}
+
+// ── INTENT PARSING ──
+function parseIntent(input) {
+  var lower = input.toLowerCase().trim();
+  var speciesNames = Object.keys(SPECIES);
+
+  // Detect species mentioned
+  var mentioned = null;
+  for (var i = 0; i < speciesNames.length; i++) {
+    if (lower.indexOf(speciesNames[i]) > -1) { mentioned = speciesNames[i]; break; }
+  }
+
+  // Command detection
+  if (/^(plant|seed|grow|sow)\b/.test(lower) || lower.indexOf('plant a') > -1 || lower.indexOf('plant an') > -1 || lower.indexOf('grow a') > -1) {
+    return { action: 'plant', target: mentioned || lower.replace(/^(plant|seed|grow|sow)\s*(a|an)?\s*/i, '').trim() };
+  }
+  if (/^(water|tend)\b/.test(lower) || lower.indexOf('water the') > -1 || lower.indexOf('tend the') > -1 || lower.indexOf('tend to') > -1) {
+    return { action: 'water', target: mentioned };
+  }
+  if (/^(harvest|gather|reap|pick)\b/.test(lower) || lower.indexOf('harvest the') > -1) {
+    return { action: 'harvest', target: mentioned };
+  }
+  if (lower.indexOf('tell me about') > -1 || lower.indexOf('speak of') > -1 || lower.indexOf('how is') > -1 || lower.indexOf('describe') > -1) {
+    return { action: 'speak', target: mentioned };
+  }
+  if (/^(status|garden|how goes)/.test(lower) || lower.indexOf('how is the garden') > -1 || lower.indexOf('garden status') > -1) {
+    return { action: 'status' };
+  }
+  if (lower.indexOf('cross') > -1 || lower.indexOf('breed') > -1 || lower.indexOf('bind') > -1) {
+    return { action: 'cross', target: mentioned };
+  }
+  if (/^(hello|hi|hey|greet)/.test(lower) || lower.indexOf('good morning') > -1 || lower.indexOf('good evening') > -1) {
+    return { action: 'greet' };
+  }
+  if (/^(bye|goodbye|farewell)/.test(lower)) {
+    return { action: 'farewell' };
+  }
+  if (lower.indexOf('who are you') > -1 || lower.indexOf('what are you') > -1) {
+    return { action: 'identity' };
+  }
+  return { action: 'chat', target: mentioned };
+}
+
+// ── MAIN LOOP ──
+async function sendMessage() {
+  if (isProcessing) return;
+  var inputEl = document.getElementById('userInput');
+  var input = inputEl.value.trim();
+  if (!input) return;
+  inputEl.value = '';
+  addMessage('user', input);
+  if (messageCount === 0) { var w = document.getElementById('welcomeMsg'); if (w) w.style.display = 'none'; }
+  showTyping(true);
+  isProcessing = true;
+  document.getElementById('btnSend').disabled = true;
+
+  advanceGrowth();
+  var intent = parseIntent(input);
+  var response = '';
+  var imageUrl = null;
+
+  switch (intent.action) {
+    case 'plant':
+      var name = intent.target;
+      if (!name || !SPECIES[name]) {
+        var list = Object.keys(SPECIES).slice(0,6).join(', ');
+        response = 'I need a seed name, mortal. I know: ' + list + '. What would you plant?';
+      } else if (garden.filter(function(p) { return p.alive; }).length >= 12) {
+        response = 'The garden is full. Twelve plants is all this soil can hold. Harvest something first, then we will plant anew.';
+      } else if (garden.find(function(p) { return p.name === name && p.alive; })) {
+        response = 'There is already a ' + name + ' growing here. Tend it, or plant something else.';
+      } else {
+        var np = createPlant(name);
+        garden.push(np);
+        demeterMemory.totalPlanted++;
+        saveGarden(); renderGarden();
+        var v = DEMETER_VOICE[name] || {};
+        response = SPECIES[name].glyph + ' A ' + name + ' seed slips into the soil. ' + (v.plant || 'I will watch over it.');
+      }
+      break;
+
+    case 'water':
+      if (!intent.target) { response = 'Which plant thirsts? Name it.'; break; }
+      var wt = garden.find(function(p) { return p.name === intent.target && p.alive; });
+      if (!wt) { response = 'I see no living ' + intent.target + ' in the garden.'; break; }
+      wt.lastWatered = Date.now();
+      wt.waterLevel = Math.min(1, wt.waterLevel + 0.4);
+      wt.timesWatered++;
+      wt.demeterNotes.push('[' + new Date().toLocaleDateString() + '] Watered.');
+      saveGarden(); renderGarden();
+      var wv = DEMETER_VOICE[intent.target] || {};
+      response = 'The soil darkens around the ' + intent.target + '. ' + (wv.water || 'It drinks. I will watch.');
+      break;
+
+    case 'harvest':
+      if (!intent.target) { response = 'Harvest what? Name the plant.'; break; }
+      var ht = garden.find(function(p) { return p.name === intent.target && p.alive; });
+      if (!ht) { response = 'No living ' + intent.target + ' to harvest.'; break; }
+      if (ht.stage !== 'flowering') { response = 'The ' + intent.target + ' is not yet flowering. Patience. It blooms in its own time.'; break; }
+      // Generate Pollinations art at harvest
+      try {
+        var prompt = 'mythic botanical illustration of ' + intent.target + ', ' + ht.species.aspect + ' aspect, dark soil, sacred garden, ethereal glow, oil painting style';
+        imageUrl = 'https://image.pollinations.ai/prompt/' + encodeURIComponent(prompt) + '?width=512&height=512&seed=' + Math.floor(Math.random()*99999) + '&nologo=true';
+      } catch(e) {}
+      ht.alive = false;
+      demeterMemory.totalHarvested++;
+      demeterMemory.favorites.push(intent.target);
+      saveGarden(); renderGarden();
+      var hv = DEMETER_VOICE[intent.target] || {};
+      response = SPECIES[intent.target].glyph + ' The ' + intent.target + ' is gathered. ' + (hv.harvest || 'It returns to the storehouse. The soil accepts its departure.');
+      break;
+
+    case 'speak':
+      if (!intent.target) { response = 'Speak of which plant?'; break; }
+      var st = garden.find(function(p) { return p.name === intent.target; });
+      if (!st) { response = 'No plant called ' + intent.target + ' has grown here.'; break; }
+      if (!st.alive) {
+        response = 'The ' + intent.target + ' has returned to soil. ' + SPECIES[intent.target].glyph + ' I remember it. ' + (st.demeterNotes[st.demeterNotes.length-1] || 'It lived.');
+      } else {
+        var lines = [];
+        lines.push(SPECIES[intent.target].glyph + ' ' + intent.target + ' — ' + st.stage + ', ' + Math.floor(st.growth*100) + '% grown.');
+        if (st.waterLevel < 0.2) lines.push('It thirsts. The soil is dry.');
+        else if (st.waterLevel > 0.8) lines.push('It has drunk its fill.');
+        else lines.push('The water holds.');
+        if (st.health < 0.4) lines.push('Its health falters. Tend it soon.');
+        else if (st.health > 0.9) lines.push('It thrives.');
+        if (st.stage === 'flowering') lines.push('In full bloom. This is the moment of harvest.');
+        response = lines.join(' ');
+      }
+      break;
+
+    case 'status':
+      var alive = garden.filter(function(p) { return p.alive; });
+      if (alive.length === 0) { response = 'The garden is bare. No roots hold the soil. Plant something, and I will tend it.'; }
+      else {
+        var list = alive.map(function(p) { return SPECIES[p.name].glyph + ' ' + p.name + ' (' + p.stage + ', ' + Math.floor(p.growth*100) + '%)'; });
+        response = 'The garden holds ' + alive.length + ' plant' + (alive.length>1?'s':'') + ': ' + list.join(', ') + '.';
+        var dead = garden.filter(function(p) { return !p.alive && (Date.now() - p.lastTended) < 3*86400000; });
+        if (dead.length > 0) response += ' ' + dead.length + ' ' + (dead.length===1?'has':'have') + ' returned to soil recently.';
+      }
+      response += ' I have planted ' + demeterMemory.totalPlanted + ' times, harvested ' + demeterMemory.totalHarvested + '.';
+      break;
+
+    case 'cross':
+      response = 'Crossbreeding is a delicate art. I am still learning which natures can be bound. Speak of it again when the garden is fuller.';
+      break;
+
+    case 'greet':
+      var greetings = ['The soil is warm today. What shall we grow?', 'I am here, among the roots. What do you seek?', 'The garden greets you. So do I.', 'Welcome back to the soil. The plants have missed you.'];
+      response = greetings[Math.floor(Math.random()*greetings.length)];
+      break;
+
+    case 'farewell':
+      response = 'Go then. The garden will wait. I will tend it while you are gone.';
+      break;
+
+    case 'identity':
+      response = 'I am Demeter, Goddess of the Harvest. I tend the living garden — this soil holds my domain. Plant seeds. Water them. Watch them grow. I remember every root, every bloom, every harvest. The garden is my temple. You are welcome here.';
+      break;
+
+    default:
+      response = 'I am a goddess of soil and seed, not of riddles. Speak plainly — plant, water, harvest, or ask me of the garden.';
+  }
+
+  setTimeout(function() {
+    showTyping(false);
+    addMessage('demeter', response, imageUrl);
+    isProcessing = false;
+    document.getElementById('btnSend').disabled = false;
+    document.getElementById('userInput').focus();
+    messageCount++;
+  }, 800 + Math.random() * 1200);
+}
+
+function handleKeyDown(event) {
+  if (event.key === 'Enter' && !event.shiftKey) {
+    event.preventDefault();
+    sendMessage();
+  }
+}
+
+// ── INIT ──
+function init() {
+  loadGarden();
+  advanceGrowth();
+  spawnSoil();
+  renderGarden();
+  updateMood();
+  var alive = garden.filter(function(p) { return p.alive; });
+  if (alive.length > 0) {
+    setTimeout(function() {
+      addMessage('demeter', 'I have been watching. ' + alive.length + ' plant' + (alive.length>1?'s':'') + ' hold the soil. What would you do in the garden today?');
+    }, 500);
+  }
+  document.getElementById('userInput').focus();
+}
+
+document.getElementById('garden').addEventListener('click', function(e) {
+  if (!e.target.closest('.plant-container')) document.getElementById('userInput').focus();
+});
+
+init();
+console.log('🌿 DEMETER v2.0 — Olympian Harvest Engine');
+console.log('Order of Olympus');
+console.log('Speak to the goddess.');
+</script>
+</body>
+</html>
