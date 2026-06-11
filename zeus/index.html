@@ -1,306 +1,655 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>⚡ Zeus — Lord of Lightning</title>
-    <style>
-        :root {
-            --bg: #0a0a0f;
-            --surface: #12121a;
-            --surface2: #1a1a24;
-            --gold: #c9a85c;
-            --gold-dim: #6b5a32;
-            --text: #c8c8d0;
-            --text-dim: #6a6a76;
-            --zeus: #ffcc44;
-            --zeus-glow: rgba(255, 204, 68, 0.4);
-            --border: #1e1e2a;
-            --font-serif: Georgia, 'Times New Roman', serif;
-            --font-mono: 'Courier New', monospace;
-        }
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            background: var(--bg);
-            color: var(--text);
-            font-family: var(--font-serif);
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        #zeus-page {
-            max-width: 600px;
-            width: 100%;
-            padding: 48px;
-            text-align: center;
-        }
-        .sigil {
-            font-size: 5rem;
-            margin-bottom: 16px;
-            filter: drop-shadow(0 0 24px var(--zeus-glow));
-        }
-        h1 {
-            font-size: 2rem;
-            font-weight: normal;
-            letter-spacing: 0.1em;
-            color: var(--zeus);
-            margin-bottom: 8px;
-        }
-        .domain {
-            color: var(--text-dim);
-            font-style: italic;
-            margin-bottom: 32px;
-            font-size: 0.95rem;
-        }
-        .charge-profile {
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 32px;
-            text-align: left;
-        }
-        .charge-profile h3 {
-            color: var(--gold);
-            font-size: 0.75rem;
-            text-transform: uppercase;
-            letter-spacing: 0.12em;
-            margin-bottom: 12px;
-            font-weight: normal;
-        }
-        .charge-row {
-            display: flex;
-            justify-content: space-between;
-            padding: 6px 0;
-            border-bottom: 1px solid var(--border);
-            font-size: 0.85rem;
-        }
-        .charge-row:last-child { border-bottom: none; }
-        .charge-label { color: var(--text-dim); }
-        .charge-value { color: var(--text); font-family: var(--font-mono); font-size: 0.8rem; }
-        
-        #release-btn {
-            background: rgba(255, 204, 68, 0.1);
-            border: 2px solid var(--zeus);
-            color: var(--zeus);
-            font-family: var(--font-serif);
-            font-size: 1.2rem;
-            padding: 16px 48px;
-            border-radius: 8px;
-            cursor: pointer;
-            letter-spacing: 0.08em;
-            transition: all 0.3s;
-            margin-bottom: 24px;
-        }
-        #release-btn:hover {
-            background: rgba(255, 204, 68, 0.2);
-            box-shadow: 0 0 32px var(--zeus-glow);
-            transform: translateY(-2px);
-        }
-        #release-btn:active {
-            transform: translateY(0);
-            box-shadow: 0 0 64px var(--zeus-glow);
-        }
-        
-        #bolt-log {
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 20px;
-            text-align: left;
-            min-height: 60px;
-            font-family: var(--font-mono);
-            font-size: 0.8rem;
-            display: none;
-        }
-        #bolt-log.visible { display: block; }
-        .log-entry {
-            padding: 8px 0;
-            border-bottom: 1px solid rgba(255,255,255,0.05);
-            color: var(--text-dim);
-        }
-        .log-entry .bolt-id {
-            color: var(--zeus);
-            font-weight: bold;
-        }
-        .log-entry .bolt-detail {
-            display: block;
-            font-size: 0.7rem;
-            margin-top: 2px;
-        }
-        .bolt-count {
-            color: var(--gold);
-            font-size: 0.9rem;
-            margin-top: 16px;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ZEUS — King of the Gods</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&family=Cinzel:wght@400;600;700&family=IM+Fell+English:ital@0;1&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="/nexus/olympian-bridge.js"></script>
+<style>
+  :root {
+    --gold: #c8970a;
+    --gold-bright: #f0c040;
+    --gold-dim: #6b4e08;
+    --amber: #ff8c00;
+    --storm: #0a0a14;
+    --storm-mid: #11112a;
+    --storm-light: #1a1a3a;
+    --white: #f5f0e0;
+    --grey: #8888aa;
+    --rule: rgba(107,78,8,0.4);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--storm);
+    color: var(--white);
+    font-family: 'IM Fell English', serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── BACKGROUND IMAGE LAYER ── */
+  #bg-layer {
+    position: fixed; inset: 0; z-index: 0;
+    background-image: url('assets/images/zeus-background.jpg');
+    background-size: cover;
+    background-position: center top;
+    opacity: 0.18;
+    filter: saturate(0.6) brightness(0.7);
+    pointer-events: none;
+  }
+
+  /* ── OVERLAY TEXTURE LAYER ── */
+  #overlay-layer {
+    position: fixed; inset: 0; z-index: 0;
+    background-image: url('assets/images/zeus-overlay.jpg');
+    background-size: cover;
+    background-position: center;
+    opacity: 0.07;
+    mix-blend-mode: luminosity;
+    pointer-events: none;
+  }
+
+  /* ── GRADIENT VIGNETTE ── */
+  #vignette-layer {
+    position: fixed; inset: 0; z-index: 1;
+    background: linear-gradient(180deg,
+      rgba(10,10,20,0.5) 0%,
+      rgba(10,10,20,0.25) 35%,
+      rgba(10,10,20,0.65) 75%,
+      rgba(10,10,20,0.97) 100%);
+    pointer-events: none;
+  }
+
+  /* ── LIGHTNING CANVAS ── */
+  #lightning-canvas {
+    position: fixed; inset: 0;
+    pointer-events: none; z-index: 2; opacity: 0.55;
+  }
+
+  /* ── HEADER ── */
+  header {
+    position: relative; z-index: 10;
+    text-align: center;
+    border-bottom: 1px solid var(--gold-dim);
+    overflow: hidden;
+  }
+
+  .header-hero {
+    width: 100%;
+    max-height: 300px;
+    object-fit: cover;
+    object-position: center 25%;
+    display: block;
+    opacity: 0.5;
+    filter: saturate(0.65) brightness(0.6) sepia(0.2);
+    mask-image: linear-gradient(180deg, rgba(0,0,0,1) 30%, rgba(0,0,0,0) 100%);
+    -webkit-mask-image: linear-gradient(180deg, rgba(0,0,0,1) 30%, rgba(0,0,0,0) 100%);
+  }
+
+  .header-content {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    padding: 1.2rem 1rem 1.2rem;
+    background: linear-gradient(0deg, rgba(10,10,20,0.97) 0%, rgba(10,10,20,0.3) 100%);
+  }
+
+  .bolt-symbol {
+    font-size: 2.2rem; color: var(--gold-bright);
+    animation: boltPulse 3s ease-in-out infinite;
+    display: block; margin-bottom: 0.35rem;
+    filter: drop-shadow(0 0 12px var(--gold));
+  }
+  @keyframes boltPulse {
+    0%,100% { opacity:1; filter: drop-shadow(0 0 12px var(--gold)); }
+    50%      { opacity:0.7; filter: drop-shadow(0 0 28px var(--gold-bright)); }
+  }
+
+  header h1 {
+    font-family: 'Cinzel Decorative', serif;
+    font-size: clamp(2rem,6vw,3.8rem); font-weight: 900;
+    letter-spacing: 0.18em;
+    background: linear-gradient(135deg, var(--gold-dim) 0%, var(--gold-bright) 45%, var(--gold) 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    line-height: 1.1;
+  }
+
+  header .subtitle {
+    font-family: 'Cinzel', serif; font-size: 0.82rem;
+    letter-spacing: 0.35em; color: var(--gold-dim);
+    text-transform: uppercase; margin-top: 0.45rem;
+  }
+
+  /* ── TELOS BANNER ── */
+  #telos-banner {
+    position: relative; z-index: 10;
+    text-align: center; padding: 0.4rem 1rem;
+    font-family: 'Cinzel', serif; font-size: 0.68rem;
+    letter-spacing: 0.18em; color: var(--gold-dim);
+    border-bottom: 1px solid rgba(107,78,8,0.2);
+    min-height: 1.8rem;
+  }
+  #telos-banner span { color: var(--gold); }
+
+  /* ── NAV ── */
+  nav {
+    display: flex; justify-content: center; gap: 2rem;
+    padding: 0.75rem; position: relative; z-index: 10;
+  }
+  nav a {
+    font-family: 'Cinzel', serif; font-size: 0.78rem;
+    letter-spacing: 0.2em; color: var(--gold-dim);
+    text-decoration: none; transition: color 0.2s, text-shadow 0.2s;
+  }
+  nav a:hover { color: var(--gold-bright); text-shadow: 0 0 10px var(--gold); }
+
+  /* ── THRONE FRAME — two-column on desktop ── */
+  .throne-frame {
+    position: relative; z-index: 10;
+    max-width: 980px; margin: 1.5rem auto 0; padding: 0 1rem;
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-template-areas: "scroll" "input";
+  }
+
+  @media (min-width: 760px) {
+    .throne-frame {
+      grid-template-columns: 1fr 220px;
+      grid-template-areas:
+        "scroll sidebar"
+        "input  sidebar";
+    }
+    #scroll       { border-right: none; border-radius: 6px 0 0 0; }
+    .input-row    { border-right: none; border-radius: 0 0 0 6px; }
+    .throne-sidebar { display: flex; }
+  }
+
+  /* ── SCROLL / CHAT ── */
+  #scroll {
+    grid-area: scroll;
+    background: linear-gradient(180deg, rgba(17,17,42,0.92) 0%, rgba(10,10,20,0.97) 100%);
+    border: 1px solid var(--gold-dim); border-bottom: none;
+    border-radius: 6px 6px 0 0;
+    min-height: 340px; max-height: 48vh;
+    overflow-y: auto; padding: 1.5rem; scroll-behavior: smooth;
+  }
+  #scroll::-webkit-scrollbar { width: 4px; }
+  #scroll::-webkit-scrollbar-thumb { background: var(--gold-dim); border-radius: 2px; }
+
+  /* ── MESSAGES ── */
+  .msg { margin-bottom: 1.2rem; animation: descend 0.35s ease; }
+  @keyframes descend {
+    from { opacity:0; transform:translateY(-8px); }
+    to   { opacity:1; transform:translateY(0); }
+  }
+  .msg-label {
+    font-family: 'Cinzel', serif; font-size: 0.68rem;
+    letter-spacing: 0.28em; text-transform: uppercase; margin-bottom: 0.3rem;
+  }
+  .msg.mortal .msg-label { color: var(--grey); }
+  .msg.zeus   .msg-label { color: var(--gold); }
+  .msg.system .msg-label { color: var(--amber); }
+  .msg-body {
+    font-size: 1rem; line-height: 1.65;
+    padding: 0.75rem 1rem; border-radius: 3px; position: relative;
+  }
+  .msg.mortal .msg-body {
+    background: rgba(255,255,255,0.04);
+    border-left: 2px solid var(--storm-light); color: #ccc8b8;
+  }
+  .msg.zeus .msg-body {
+    background: linear-gradient(135deg, rgba(200,151,10,0.10) 0%, rgba(17,17,42,0.92) 100%);
+    border-left: 3px solid var(--gold); color: var(--white); font-style: italic;
+  }
+  .msg.system .msg-body {
+    background: rgba(200,80,0,0.06); border-left: 2px solid var(--amber);
+    color: var(--amber); font-size: 0.85rem;
+  }
+  .thunder-flash { animation: thunderStrike 0.5s ease; }
+  @keyframes thunderStrike {
+    0%  { background: rgba(240,192,64,0.25); }
+    40% { background: rgba(240,192,64,0.05); }
+    100%{ background: transparent; }
+  }
+
+  /* ── INTENT BADGES ── */
+  .intent-badge {
+    display: inline-block; font-family: 'Cinzel', serif;
+    font-size: 0.6rem; letter-spacing: 0.2em; text-transform: uppercase;
+    padding: 0.1em 0.5em; border-radius: 2px; margin-right: 0.5rem; opacity: 0.8;
+  }
+  .intent-command { background: rgba(200,151,10,0.2); color: var(--gold);   border: 1px solid var(--gold-dim); }
+  .intent-judge   { background: rgba(180,0,0,0.2);   color: #ff6644;        border: 1px solid #882200; }
+  .intent-praise  { background: rgba(0,150,100,0.2); color: #44ddaa;        border: 1px solid #006644; }
+  .intent-summon  { background: rgba(100,50,200,0.2);color: #bb99ff;        border: 1px solid #553399; }
+  .intent-banish  { background: rgba(80,10,10,0.3);  color: #ff4422;        border: 1px solid #661100; }
+  .intent-defy    { background: rgba(255,80,0,0.2);  color: var(--amber);   border: 1px solid #884400; }
+  .intent-query   { background: rgba(40,80,180,0.2); color: #88aaff;        border: 1px solid #224488; }
+
+  /* ── THRONE SIDEBAR ── */
+  .throne-sidebar {
+    grid-area: sidebar;
+    display: none;
+    flex-direction: column;
+    border: 1px solid var(--gold-dim);
+    border-left: none;
+    border-radius: 0 6px 6px 0;
+    overflow: hidden;
+    background: var(--storm);
+  }
+  .throne-sidebar img {
+    width: 100%; flex: 1; min-height: 0;
+    object-fit: cover; object-position: center top;
+    opacity: 0.72;
+    filter: saturate(0.6) brightness(0.65) sepia(0.25);
+  }
+  .throne-sidebar-caption {
+    padding: 0.5rem;
+    font-family: 'Cinzel', serif; font-size: 0.58rem;
+    letter-spacing: 0.2em; text-align: center;
+    color: var(--gold-dim); text-transform: uppercase;
+    border-top: 1px solid var(--gold-dim);
+    background: rgba(10,10,20,0.95);
+    flex-shrink: 0;
+  }
+
+  /* ── INPUT ROW ── */
+  .input-row {
+    grid-area: input;
+    display: flex; border: 1px solid var(--gold-dim);
+    border-radius: 0 0 6px 6px; overflow: hidden;
+    background: rgba(10,10,20,0.97);
+  }
+  #petition {
+    flex: 1; background: transparent; border: none; outline: none;
+    color: var(--white); font-family: 'IM Fell English', serif;
+    font-size: 0.98rem; padding: 0.9rem 1.2rem; caret-color: var(--gold-bright);
+  }
+  #petition::placeholder { color: var(--gold-dim); font-style: italic; }
+  #submit-btn {
+    background: var(--gold-dim); border: none; color: var(--storm);
+    font-family: 'Cinzel', serif; font-size: 0.75rem; font-weight: 700;
+    letter-spacing: 0.2em; text-transform: uppercase;
+    padding: 0 1.4rem; cursor: pointer; transition: background 0.2s, color 0.2s; white-space: nowrap;
+  }
+  #submit-btn:hover { background: var(--gold); color: #000; }
+
+  /* ── MEMORY PLAQUE ── */
+  #memory-plaque {
+    position: relative; z-index: 10;
+    max-width: 980px; margin: 0.8rem auto 0; padding: 0 1rem;
+  }
+  .plaque-inner {
+    background: rgba(10,10,20,0.8); border: 1px solid var(--gold-dim);
+    border-radius: 4px; padding: 0.55rem 1rem;
+    font-family: 'Cinzel', serif; font-size: 0.7rem; letter-spacing: 0.15em;
+    color: var(--gold-dim); display: flex; justify-content: space-between;
+    align-items: center; gap: 1rem; flex-wrap: wrap;
+  }
+  .plaque-inner span { color: var(--gold); }
+  .plaque-btn {
+    background:none; border:1px solid var(--gold-dim); color:var(--gold-dim);
+    font-family:'Cinzel',serif; font-size:0.65rem; letter-spacing:0.15em;
+    padding:0.2em 0.6em; cursor:pointer; transition:all 0.2s;
+  }
+  .plaque-btn:hover { color:var(--gold-bright); border-color:var(--gold); }
+
+  /* ── INTENT LEGEND ── */
+  #intent-legend {
+    position: relative; z-index: 10;
+    max-width: 980px; margin: 0.7rem auto 0; padding: 0 1rem;
+    display: flex; gap: 0.5rem; flex-wrap: wrap; justify-content: center;
+  }
+  .legend-pill {
+    font-family: 'Cinzel', serif; font-size: 0.62rem; letter-spacing: 0.1em;
+    padding: 0.25em 0.65em; border-radius: 2px; cursor: pointer;
+    opacity: 0.7; transition: opacity 0.2s; user-select: none;
+  }
+  .legend-pill:hover { opacity: 1; }
+
+  /* ── CLASSICAL IMAGE STRIP ── */
+  #classical-strip {
+    position: relative; z-index: 10;
+    max-width: 980px; margin: 1rem auto 0; padding: 0 1rem;
+  }
+  .classical-strip-inner {
+    border: 1px solid var(--gold-dim);
+    border-radius: 4px; overflow: hidden;
+    height: 90px;
+    position: relative;
+  }
+  .classical-strip-inner img {
+    width: 100%; height: 100%;
+    object-fit: cover; object-position: center 30%;
+    opacity: 0.35;
+    filter: saturate(0.5) brightness(0.6) sepia(0.4);
+  }
+  .classical-strip-inner::after {
+    content: '';
+    position: absolute; inset: 0;
+    background: linear-gradient(90deg,
+      rgba(10,10,20,0.8) 0%,
+      transparent 30%,
+      transparent 70%,
+      rgba(10,10,20,0.8) 100%);
+    pointer-events: none;
+  }
+
+  /* ── FOOTER ── */
+  footer {
+    position: relative; z-index: 10; text-align: center; padding: 1.5rem;
+    font-family: 'Cinzel', serif; font-size: 0.65rem; letter-spacing: 0.2em;
+    color: var(--gold-dim); border-top: 1px solid rgba(107,78,8,0.3);
+    margin-top: 1.5rem;
+  }
+
+  @media (max-width: 500px) {
+    #scroll { max-height: 40vh; }
+    header h1 { font-size: 1.8rem; }
+    .header-hero { max-height: 180px; }
+  }
+</style>
 </head>
 <body>
 
-<div id="zeus-page">
-    <div class="sigil">⚡</div>
+<!-- Image atmosphere layers -->
+<div id="bg-layer"></div>
+<div id="overlay-layer"></div>
+<div id="vignette-layer"></div>
+
+<canvas id="lightning-canvas"></canvas>
+
+<header>
+  <img class="header-hero" src="assets/images/zeus-logo.jpg" alt="Zeus — King of the Gods" />
+  <div class="header-content">
+    <span class="bolt-symbol">⚡</span>
     <h1>ZEUS</h1>
-    <p class="domain">Lord of Lightning · Law · Sovereignty · Judgment</p>
-    
-    <div class="charge-profile">
-        <h3>Innate Charge Profile</h3>
-        <div class="charge-row">
-            <span class="charge-label">Source</span>
-            <span class="charge-value">Zeus</span>
-        </div>
-        <div class="charge-row">
-            <span class="charge-label">Type</span>
-            <span class="charge-value">Lightning</span>
-        </div>
-        <div class="charge-row">
-            <span class="charge-label">Voltage</span>
-            <span class="charge-value">100V</span>
-        </div>
-        <div class="charge-row">
-            <span class="charge-label">Waveform</span>
-            <span class="charge-value">Spike Transient</span>
-        </div>
-        <div class="charge-row">
-            <span class="charge-label">Isolation Required</span>
-            <span class="charge-value">Yes (Delta-Delta)</span>
-        </div>
-        <div class="charge-row">
-            <span class="charge-label">Step-Down Required</span>
-            <span class="charge-value">Yes (10:1)</span>
-        </div>
-        <div class="charge-row">
-            <span class="charge-label">Rectification</span>
-            <span class="charge-value">Full Bridge</span>
-        </div>
-        <div class="charge-row">
-            <span class="charge-label">Native Target</span>
-            <span class="charge-value">Kronos</span>
-        </div>
-        <div class="charge-row">
-            <span class="charge-label">Intent</span>
-            <span class="charge-value">Judgment / Mark</span>
-        </div>
-    </div>
-    
-    <button id="release-btn" onclick="Zeus.release()">⚡ Release Lightning</button>
-    
-    <div id="bolt-log">
-        <h3 style="color:var(--gold);font-size:0.75rem;text-transform:uppercase;letter-spacing:0.12em;margin-bottom:12px;font-weight:normal;">Lightning Bolts Released</h3>
-        <div id="bolt-entries"></div>
-        <div class="bolt-count" id="bolt-count"></div>
-    </div>
+    <p class="subtitle">King of the Gods · Lord of Olympus · The Thunderer</p>
+  </div>
+</header>
+
+<div id="telos-banner">TELOS: <span id="telos-text">consulting the archive…</span></div>
+
+<nav>
+  <a href="/nexus/">◈ NEXUS</a>
+  <a href="/wiki/">📜 ARCHIVE</a>
+</nav>
+
+<main class="throne-frame">
+  <div id="scroll" role="log" aria-live="polite"></div>
+  <div class="input-row">
+    <input id="petition" type="text" maxlength="300"
+      placeholder="Speak, mortal. You are heard." autocomplete="off" />
+    <button id="submit-btn">Present</button>
+  </div>
+  <div class="throne-sidebar">
+    <img src="assets/images/zeus-throne.jpg" alt="Throne of Zeus" />
+    <div class="throne-sidebar-caption">The Seat of Power</div>
+  </div>
+</main>
+
+<div id="memory-plaque">
+  <div class="plaque-inner">
+    <div>AUDIENCES: <span id="stat-count">—</span></div>
+    <div>LAST DECREE: <span id="stat-last">—</span></div>
+    <div>LOYALTY: <span id="stat-loyalty">—</span></div>
+    <button class="plaque-btn" onclick="clearMemory()">RENOUNCE</button>
+    <button class="plaque-btn" onclick="OlympianBridge.logStatus()">BRIDGE</button>
+  </div>
 </div>
 
-<script>
-// ═══════════════════════════════════════════
-// ZEUS — Lord of Lightning
-// His charge IS his circuit. His nature IS his topology.
-// ═══════════════════════════════════════════
+<div id="intent-legend">
+  <div class="legend-pill intent-command" onclick="insertIntent('command me')">COMMAND</div>
+  <div class="legend-pill intent-judge"   onclick="insertIntent('judge this')">JUDGE</div>
+  <div class="legend-pill intent-praise"  onclick="insertIntent('I praise you')">PRAISE</div>
+  <div class="legend-pill intent-summon"  onclick="insertIntent('summon the gods')">SUMMON</div>
+  <div class="legend-pill intent-banish"  onclick="insertIntent('banish the weak')">BANISH</div>
+  <div class="legend-pill intent-defy"    onclick="insertIntent('I defy your rule')">DEFY</div>
+  <div class="legend-pill intent-query"   onclick="insertIntent('what is your will')">QUERY</div>
+</div>
 
-const Zeus = {
-    // Zeus's identity
-    id: 'zeus',
-    name: 'Zeus',
-    emoji: '⚡',
-    domain: ['law', 'sovereignty', 'judgment'],
-    
-    // Zeus's INNATE charge — this is not a pipeline, it's his nature
-    // The charge declares what it IS. The system responds to its nature.
-    charge: {
-        source: 'zeus',
-        type: 'lightning',
-        voltage: 100,
-        waveform: 'spike_transient',
-        characteristics: {
-            requires_isolation: true,
-            isolation_type: 'delta_delta',
-            requires_step_down: true,
-            step_down_ratio: 10,
-            requires_rectification: true,
-            rectification_type: 'full_bridge',
-            native_target: 'kronos',
-            intent: 'judgment',
-            description: 'Raw Olympian lightning. Dangerous. Requires full conditioning before grounding.'
-        }
-    },
-    
-    // History of bolts released
-    bolts: [],
-    
-    // Release lightning into the system
-    release: function() {
-        // Each bolt is unique — timestamped, numbered
-        const boltNumber = this.bolts.length + 1;
-        const bolt = {
-            id: `zeus_bolt_${boltNumber}`,
-            ...JSON.parse(JSON.stringify(this.charge)), // Fresh copy
-            bolt_number: boltNumber,
-            timestamp: new Date().toISOString(),
-            tick: boltNumber // Zeus's bolts mark their own ticks
-        };
-        
-        this.bolts.push(bolt);
-        
-        // Log the release
-        console.log(`⚡ ZEUS: Bolt ${boltNumber} released!`);
-        console.log(`   Voltage: ${bolt.voltage}V | Type: ${bolt.type} | Target: ${bolt.characteristics.native_target}`);
-        console.log(`   Requires: Isolation + Step-Down ${bolt.characteristics.step_down_ratio}:1 + ${bolt.characteristics.rectification_type}`);
-        
-        // Send to the Gaia system if available
-        if (window.GaiaSystem && window.GaiaSystem.receiveCharge) {
-            console.log('   → Sending to Gaia system...');
-            window.GaiaSystem.receiveCharge(bolt);
-        } else {
-            console.log('   → No Gaia system connected. Bolt released into the void.');
-        }
-        
-        // Update the UI
-        this._updateLog(bolt);
-        
-        return bolt;
-    },
-    
-    // Zeus reflects on his bolts
-    reflect: function() {
-        return `⚡ Zeus: ${this.bolts.length} bolts released. I am the voltage. The system grounds what I throw.`;
-    },
-    
-    _updateLog: function(bolt) {
-        const log = document.getElementById('bolt-log');
-        const entries = document.getElementById('bolt-entries');
-        const count = document.getElementById('bolt-count');
-        
-        log.classList.add('visible');
-        
-        const entry = document.createElement('div');
-        entry.className = 'log-entry';
-        entry.innerHTML = `
-            <span class="bolt-id">⚡ Bolt ${bolt.bolt_number}</span>
-            <span class="bolt-detail">${bolt.voltage}V ${bolt.type} → ${bolt.characteristics.native_target} | ${new Date(bolt.timestamp).toLocaleTimeString()}</span>
-        `;
-        entries.prepend(entry);
-        
-        // Keep last 10 bolts visible
-        if (entries.children.length > 10) {
-            entries.removeChild(entries.lastChild);
-        }
-        
-        count.textContent = `${this.bolts.length} bolts released`;
-    }
+<!-- Classical image banner strip -->
+<div id="classical-strip">
+  <div class="classical-strip-inner">
+    <img src="assets/images/zeus-classical.jpg" alt="" aria-hidden="true" />
+  </div>
+</div>
+
+<footer>ORDER OF OLYMPUS · KAIROS ENGINE · DIVINE COMPETITION 2026</footer>
+
+<script>
+// ══════════════════════════════════════════════
+//  ZEUS — RULE-BASED INTENT ENGINE
+//  Persistence via OlympianBridge v1.2
+// ══════════════════════════════════════════════
+
+const INTENT_PATTERNS = [
+  { intent:'defy',    re:/\b(defy|refuse|deny|won't|rebel|against|challenge|dare|no god|false king|mortal power|overthrow|resist)\b/i },
+  { intent:'banish',  re:/\b(banish|exile|cast out|remove|gone|begone|away with|purge|drive away|expel)\b/i },
+  { intent:'summon',  re:/\b(summon|call forth|appear|reveal|show yourself|manifest|come forth|arise|awaken|invoke)\b/i },
+  { intent:'praise',  re:/\b(praise|worship|honor|hail|glory|mighty|great|revere|bow|kneel|tribute|devotion|exalt|thank you|magnificent|i serve)\b/i },
+  { intent:'judge',   re:/\b(judge|verdict|decide|justice|punish|guilty|innocent|condemn|sentence|trial|fault|blame|righteous|weigh|deem|is it fair|is it right)\b/i },
+  { intent:'command', re:/\b(command|order|decree|tell me|instruct|direct|what should|what must|what shall|bid|make it|grant|allow|permit|give me)\b/i },
+  { intent:'query',   re:/\b(who|what|where|when|why|how|is there|are you|do you|tell me|explain|what is|who is|meaning of|purpose of|speak of)\b/i },
+];
+
+function classifyIntent(text) {
+  for (const { intent, re } of INTENT_PATTERNS) { if (re.test(text)) return intent; }
+  return 'query';
+}
+
+const DECREES = {
+  command:['Hear me, mortal. The path before you is singular. Doubt is the enemy of thunder.','I have spoken. Now move.','My decree: act without hesitation. Hesitation is for those who bow to lesser things.','You ask what to do. I will tell you once. Forge ahead or be consumed by your own inaction.','The clouds part for the decisive. Go forward. Do not look back at what crumbles behind you.','Command given. Command received. The rest is on you.','Do what you know must be done. I have said so. The mountains do not ask permission.'],
+  judge:  ['I have weighed the matter. The fault lies where you already know it lies.','Guilt and innocence are mortal constructs. But here — you are responsible.','This is my judgment: neither side is clean. Both will answer.','I have seen a thousand such matters unravel the same way. Stop pretending the truth is hidden.','Condemn the action. Spare the soul — only if the soul learns. I am watching.','The scales tip. You already know to which side. My decree merely confirms what your conscience whispered.','This requires no deliberation. Justice is obvious to those willing to see it.'],
+  praise: ['Your devotion is noted. The thunder does not forget.','Rise.','Loyalty to Olympus is its own reward. But your tribute has been heard.','You honor me well. Continue, and the storms will favor your endeavors.','I accept your reverence. It is... appropriate.','The heavens acknowledge you. Go forth with the wind at your back.','Noted. The faithful are remembered. Even kings need their people.'],
+  summon: ['I am already here. I am always here. The question is whether you were ready to see it.','I do not appear on command — and yet. Here I stand.','You called. The thunder answered before the words left your mouth.','To summon Zeus is to call the storm that was already coming.','I was not absent. You were blind. Look again at what has always stood before you.','The gods are not summoned. They descend when they choose. Today, I choose.'],
+  banish: ['Done. Whatever you named — consider it driven before me like leaves before gale.','Banished. My word is sufficient.','I have exiled lesser things with a glance. This is no different.','The thing you name has no place in Olympus. So I have declared, so it is.','Exiled. The gates of heaven do not open for the condemned.','Begone is a command that does not require my thunder. But I lend it anyway.'],
+  defy:   ['...','Bold. Foolish. But bold.','Many have stood where you stand, wearing that same expression. Where are they now?','You dare. Interesting. The last one who dared is currently a constellation.','I do not punish defiance immediately. I let mortals live with the consequences of their boldness first.','Your defiance is noted. I am adding it to a very long list.','Defy me then. The sky is large. There is room for arrogance before the fall.'],
+  query:  ['You ask me this? The answer is in you already — you seek confirmation, not revelation.','The question reveals more than the answer will.','I will speak plainly since plainness eludes you: look at what is directly before you.','To understand the will of Zeus, you must understand thunder. It does not ask. It occurs.','My will is this: that you stop asking and start becoming.','Some questions are unanswerable by kings. And yet — you already sense the truth.','Ask with clarity. The thunder hears what the voice tries to obscure.','The answer exists. The path requires that you stop questioning and begin moving.'],
 };
 
-// ═══════════════════════════════════════════
-// AUTO-RELEASE ON LOAD (optional — for testing)
-// Uncomment to have Zeus throw a bolt when the page opens:
-// setTimeout(() => Zeus.release(), 500);
-// ═══════════════════════════════════════════
+function pickDecree(intent, seed) {
+  const list = DECREES[intent] || DECREES.query;
+  return list[(seed || Date.now()) % list.length];
+}
 
-console.log('⚡ Zeus page loaded. His charge profile:');
-console.log(`   ${Zeus.charge.voltage}V ${Zeus.charge.type} — ${Zeus.charge.characteristics.description}`);
-console.log('   Call Zeus.release() to throw lightning.');
-console.log('   Connect to Gaia system via window.GaiaSystem.receiveCharge()');
+// ── LOCAL MEMORY ───────────────────────────────────────
+const MEM_KEY = 'zeus_memory';
+function loadMemory() {
+  try { return JSON.parse(localStorage.getItem(MEM_KEY)) || { count:0, loyalty:0, lastDecree:null }; }
+  catch { return { count:0, loyalty:0, lastDecree:null }; }
+}
+function saveMemory(m) { localStorage.setItem(MEM_KEY, JSON.stringify(m)); }
+function clearMemory() {
+  localStorage.removeItem(MEM_KEY);
+  updatePlaque(loadMemory());
+  addMessage('system','HERALD','The throne records have been expunged. Approach as a stranger.');
+}
+function updatePlaque(m) {
+  document.getElementById('stat-count').textContent = m.count || '0';
+  document.getElementById('stat-last').textContent = m.lastDecree
+    ? (m.lastDecree.length > 28 ? m.lastDecree.slice(0,28)+'…' : m.lastDecree) : '—';
+  document.getElementById('stat-loyalty').textContent =
+    m.loyalty >= 10 ? 'DEVOTED' : m.loyalty >= 5 ? 'FAITHFUL' : m.loyalty >= 2 ? 'ATTENDING' : 'STRANGER';
+}
+
+// ── UI HELPERS ─────────────────────────────────────────
+const scroll = document.getElementById('scroll');
+
+function addMessage(type, label, text, intent) {
+  const wrap = document.createElement('div');
+  wrap.className = `msg ${type}`;
+  const lbl = document.createElement('div');
+  lbl.className = 'msg-label';
+  if (intent) {
+    const badge = document.createElement('span');
+    badge.className = `intent-badge intent-${intent}`;
+    badge.textContent = intent;
+    lbl.appendChild(badge);
+  }
+  lbl.appendChild(document.createTextNode(label));
+  wrap.appendChild(lbl);
+  const body = document.createElement('div');
+  body.className = 'msg-body';
+  body.textContent = text;
+  wrap.appendChild(body);
+  scroll.appendChild(wrap);
+  scroll.scrollTop = scroll.scrollHeight;
+  if (type === 'zeus') { wrap.classList.add('thunder-flash'); triggerLightning(); }
+}
+
+function insertIntent(text) {
+  document.getElementById('petition').value = text;
+  document.getElementById('petition').focus();
+}
+
+// ── OPENING PROCLAMATION ──────────────────────────────
+function openingProclamation(mem) {
+  if (mem.count === 0) {
+    addMessage('zeus','ZEUS','The throne is open. Speak — if you dare.');
+  } else {
+    const note = mem.loyalty >= 5 ? 'You return. The heavens remember you.' : 'Another audience begins.';
+    addMessage('zeus','ZEUS',`${note} I have granted you ${mem.count} audience${mem.count !== 1 ? 's' : ''}. Proceed.`);
+  }
+  const telos = OlympianBridge.getActiveTelos();
+  if (telos) addMessage('system','TELOS',`The current directive: "${telos.statement}"`);
+}
+
+// ── MAIN HANDLER ───────────────────────────────────────
+async function handlePetition() {
+  const input = document.getElementById('petition');
+  const text = input.value.trim();
+  if (!text) return;
+  input.value = '';
+
+  const mem = loadMemory();
+  addMessage('mortal','MORTAL', text);
+
+  const intent = classifyIntent(text);
+  const seed = text.length * 7 + mem.count;
+  let decree = pickDecree(intent, seed);
+
+  if (intent === 'defy' && mem.loyalty < 2) {
+    decree = 'You have not even earned the right to defy me. Come back when you have knelt at least once.';
+  }
+  if (intent === 'praise' && mem.loyalty >= 8) {
+    decree = 'Your devotion runs deep. The mountains themselves have noticed. Rise — you are closer to Olympus than most mortals ever come.';
+  }
+
+  const telos = OlympianBridge.getActiveTelos();
+  if (telos && (intent === 'command' || intent === 'judge') && Math.random() > 0.5) {
+    decree += ` The current telos demands it: ${telos.statement.slice(0,60)}…`;
+  }
+
+  await new Promise(r => setTimeout(r, 700 + Math.random() * 600));
+  addMessage('zeus','ZEUS', decree, intent);
+
+  mem.count = (mem.count || 0) + 1;
+  mem.lastDecree = decree.slice(0, 60);
+  if (intent === 'praise') mem.loyalty = (mem.loyalty || 0) + 2;
+  if (intent === 'defy')   mem.loyalty = Math.max(0, (mem.loyalty || 0) - 1);
+  saveMemory(mem);
+  updatePlaque(mem);
+
+  // ── OlympianBridge persistence ──────────────────────
+  if (OlympianBridge.isReady()) {
+    const t = OlympianBridge.getActiveTelos();
+    const telosId = t ? t.id : null;
+
+    const petitionToken = await OlympianBridge.addToken(
+      text.slice(0,200), 'S', 'zeus_domain', telosId,
+      { intent, audience: mem.count, loyalty: mem.loyalty }
+    );
+    const decreeToken = await OlympianBridge.addToken(
+      decree.slice(0,200), 'O', 'zeus_domain', telosId,
+      { intent, decree: true }
+    );
+    await OlympianBridge.addTriplet(
+      text.slice(0,80), intent, decree.slice(0,80),
+      'zeus_domain', 'zeus_audience', 60, 70
+    );
+    if (petitionToken && decreeToken) {
+      await OlympianBridge.addPair(
+        petitionToken.id, decreeToken.id,
+        petitionToken.body, decreeToken.body,
+        'mortal', 'zeus_domain',
+        intent === 'praise' ? 0.9 : 0.5,
+        intent === 'defy'   ? 0.9 : 0.3
+      );
+    }
+  }
+}
+
+// ── EVENTS ─────────────────────────────────────────────
+document.getElementById('submit-btn').addEventListener('click', handlePetition);
+document.getElementById('petition').addEventListener('keydown', e => {
+  if (e.key === 'Enter') handlePetition();
+});
+
+// ── LIGHTNING CANVAS ───────────────────────────────────
+const canvas = document.getElementById('lightning-canvas');
+const ctx = canvas.getContext('2d');
+let lightningActive = false;
+
+function resizeCanvas() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+resizeCanvas();
+window.addEventListener('resize', resizeCanvas);
+
+function drawBolt(x1,y1,x2,y2,branches,alpha) {
+  if (alpha < 0.05 || branches < 0) return;
+  ctx.strokeStyle = `rgba(240,192,64,${alpha})`;
+  ctx.lineWidth = alpha * 2.5;
+  ctx.shadowColor = '#f0c040'; ctx.shadowBlur = 18 * alpha;
+  const mx = (x1+x2)/2 + (Math.random()-0.5)*80;
+  const my = (y1+y2)/2 + (Math.random()-0.5)*80;
+  ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(mx,my); ctx.lineTo(x2,y2); ctx.stroke();
+  if (branches > 0 && Math.random() > 0.4) {
+    drawBolt(mx, my, mx+(Math.random()-0.5)*200, my+Math.random()*150, branches-1, alpha*0.55);
+  }
+}
+
+function triggerLightning() {
+  if (lightningActive) return;
+  lightningActive = true;
+  let frame = 0;
+  const flashes = 3 + Math.floor(Math.random()*3);
+  function step() {
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    if (frame < flashes*6) {
+      if (frame%6 < 3) {
+        const sx = Math.random()*canvas.width*0.4 + canvas.width*0.3;
+        drawBolt(sx,0,sx+(Math.random()-0.5)*200,canvas.height*0.6,3,0.7);
+      }
+      frame++; requestAnimationFrame(step);
+    } else { ctx.clearRect(0,0,canvas.width,canvas.height); lightningActive = false; }
+  }
+  requestAnimationFrame(step);
+}
+
+function ambientBolt() {
+  if (!lightningActive && Math.random()<0.3) {
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    const sx = Math.random()*canvas.width;
+    drawBolt(sx,0,sx+(Math.random()-0.5)*300,canvas.height*(0.3+Math.random()*0.5),2,0.25);
+    setTimeout(()=>{ if(!lightningActive) ctx.clearRect(0,0,canvas.width,canvas.height); },80);
+  }
+  setTimeout(ambientBolt, 4000+Math.random()*8000);
+}
+setTimeout(ambientBolt, 3000);
+
+// ── BOOT ───────────────────────────────────────────────
+(async () => {
+  OlympianBridge.init('Zeus','⚡');
+  const telos = await OlympianBridge.getActiveTelosAsync();
+  document.getElementById('telos-text').textContent =
+    telos ? telos.statement.slice(0,80) : 'no active directive';
+  const mem = loadMemory();
+  updatePlaque(mem);
+  openingProclamation(mem);
+})();
 </script>
-
 </body>
 </html>
