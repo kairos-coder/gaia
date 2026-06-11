@@ -530,17 +530,6 @@ class ApolloPlayer {
         this._lastHandSize = this.hand.length;
     }
 
-    // π-FORCE: Dealer after π turns stuck
-    if (this._handStuckTurns >= this.STUCK_TURNS) {
-        const dealt = this._dealerDeal(7);
-        if (dealt && dealt.length > 0 && this.onDeal) this.onDeal(dealt);
-        return;
-    }
-
-    if (typeof ApolloDB !== 'undefined' && this.turn % 2 === 0) {
-        ApolloDB.syncToVault(this);
-    }
-
     // 🜏 DRAW TRIAD — Three cards arrive. No hand insertion.
     const triad = [];
     for (let i = 0; i < 3; i++) {
