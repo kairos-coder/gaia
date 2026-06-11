@@ -905,6 +905,7 @@ async function initGame() {
     apollo = new ApolloPlayer(deck);
 
     ApolloSenses.attach(apollo);
+    await apollo.loadCosmology();  // ← this must be here before apollo.start()
     ApolloTools.attach(apollo);
 
     if (skyState && typeof ApolloSkyBridge !== 'undefined') {
