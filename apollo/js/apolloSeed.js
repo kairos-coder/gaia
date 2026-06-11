@@ -22,8 +22,8 @@ class ApolloPlayer {
     this.deck.draw_interval_ms = this.deck.draw_interval_ms || Math.round(PHI * 1000);
     
     // 🜏 Sacred timing
-    this.drawInterval = Math.round(PHI * 1000);
-    this.goldenInterval = Math.round(PHI * PHI * 1000);
+    this.drawInterval = Math.round(PHI * 2);
+    this.goldenInterval = Math.round(PHI * PHI * 2);
     
     // 🜏 Sacred thresholds
     this.STUCK_TURNS = Math.round(PI);                   // 3
@@ -236,7 +236,7 @@ class ApolloPlayer {
   // π-DEALER — Sacred intervention
   // ══════════════════════════════════════════
 
-  _dealerDeal(count = 7) {
+  _dealerDeal(count = 3) {
     while (this.hand.length > 0) this.discard.push(this.hand.pop());
     if (this.drawPile.length < count) {
       this.drawPile.push(...this.shuffle([...this.discard]));
