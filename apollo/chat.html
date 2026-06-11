@@ -360,8 +360,6 @@
   const SUPABASE_URL = 'https://nbdvavzqvxrlxhsbrluz.supabase.co';
   const SUPABASE_KEY = 'sb_publishable_6x1xlieXjs3dWqEETQcxnQ_4L1UO2uR';
   
-  // Use the global 'supabase' object that the CDN script already created.
-  // We initialize it with createClient and assign right back to the global.
   window.supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
   
   // ── APOLLO'S SYSTEM PROMPT ────────────────────────────────
@@ -400,6 +398,19 @@ If asked something outside your domain of beauty, images, or visual canon, respo
 
   let conversationHistory = [];
   let currentSession = null;
+
+  // ── RATE LIMITING ─────────────────────────────────────────
+  let lastRequestTime = 0;
+  const MIN_REQUEST_INTERVAL = 5000; // 5 seconds between requests
+
+  // ── FALLBACK RESPONSES (when API is rate-limited) ─────────
+  const FALLBACK_RESPONSES = [
+    "The light is bright today, and many seek it. Wait a moment, then speak again. [IMAGE: radiant golden sun behind classical columns, warm beams of light, peaceful dawn over a temple]",
+    "Even gods feel the press of supplicants. Patience, seeker. [IMAGE: a glowing oracle at a tripod, prophetic vapors rising, golden hour light]",
+    "The connection to the mortal realm flickers. I will still answer. [IMAGE: a lyre with strings of light vibrating into the darkness, cinematic, dramatic]",
+    "You ask, and even through the noise, I hear. [IMAGE: abstract swirling gold and deep blue, divine inspiration, ethereal atmosphere]",
+    "The Muses are crowded today. Wait, then ask again. [IMAGE: Mount Helicon at twilight, sacred springs, soft golden light filtering through laurel trees]"
+  ];
 
   // ── HELPERS ───────────────────────────────────────────────
   function escapeHtml(str) {
@@ -487,7 +498,6 @@ If asked something outside your domain of beauty, images, or visual canon, respo
       }
     }
     
-    // Create new session
     sessionToken = crypto.randomUUID();
     localStorage.setItem('apollo_session_token', sessionToken);
     
@@ -594,7 +604,6 @@ If asked something outside your domain of beauty, images, or visual canon, respo
       const match = userMessage.match(pattern);
       if (match && match[1]) {
         const name = match[1];
-        // Filter out obviously not-names
         const notNames = ['not', 'just', 'here', 'the', 'your', 'a', 'an'];
         if (!notNames.includes(name.toLowerCase()) && name.length > 1) {
           return name.charAt(0).toUpperCase() + name.slice(1).toLowerCase();
@@ -604,7 +613,68 @@ If asked something outside your domain of beauty, images, or visual canon, respo
     return null;
   }
 
-  // ── POLLINATIONS TEXT GENERATION ──────────────────────────
+  // ── POLLINATIONS TEXT GENERATION (WITH RATE LIMITING + RETRY + FALLBACK) ──
+  async function callPollinationsWithRetry(messages, retries = 2) {
+    for (let attempt = 0; attempt <= retries; attempt++) {
+      try {
+        // Rate limiting: wait if needed
+        const now = Date.now();
+        const timeSinceLast = now - lastRequestTime;
+        if (timeSinceLast < MIN_REQUEST_INTERVAL) {
+          const waitTime = MIN_REQUEST_INTERVAL - timeSinceLast;
+          await new Promise(resolve => setTimeout(resolve, waitTime));
+        }
+        
+        lastRequestTime = Date.now();
+        
+        const response = await fetch('https://text.pollinations.ai/openai', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            messages: messages,
+            model: 'openai',
+            temperature: 0.85,
+            max_tokens: 350,
+          }),
+        });
+
+        if (response.status === 429) {
+          // Rate limited — wait and retry
+          const waitTime = (attempt + 1) * 2000;
+          await new Promise(resolve => setTimeout(resolve, waitTime));
+          continue;
+        }
+
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
+        }
+
+        const data = await response.json();
+        
+        if (data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content) {
+          return data.choices[0].message.content.trim();
+        }
+        if (data.text) {
+          return data.text.trim();
+        }
+        if (typeof data === 'string') {
+          return data.trim();
+        }
+        
+        throw new Error('Unexpected response shape');
+        
+      } catch (err) {
+        if (attempt === retries) {
+          // All retries failed — use fallback
+          return FALLBACK_RESPONSES[Math.floor(Math.random() * FALLBACK_RESPONSES.length)];
+        }
+        // Wait before retry
+        await new Promise(resolve => setTimeout(resolve, (attempt + 1) * 1500));
+      }
+    }
+    return FALLBACK_RESPONSES[0];
+  }
+
   async function generateText(userMessage) {
     const messages = [
       { role: 'system', content: APOLLO_SYSTEM },
@@ -617,38 +687,8 @@ If asked something outside your domain of beauty, images, or visual canon, respo
     }
 
     messages.push({ role: 'user', content: userMessage });
-
-    const response = await fetch('https://text.pollinations.ai/openai', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        messages: messages,
-        model: 'openai',
-        temperature: 0.9,
-        max_tokens: 200,
-      }),
-    });
-
-    if (!response.ok) {
-      throw new Error(`Pollinations text API failed with status ${response.status}`);
-    }
-
-    const data = await response.json();
-
-    if (data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content) {
-      return data.choices[0].message.content.trim();
-    }
     
-    if (data.text) {
-      return data.text.trim();
-    }
-    
-    if (typeof data === 'string') {
-      return data.trim();
-    }
-
-    console.error('Unexpected Pollinations response shape:', data);
-    throw new Error('Could not parse Apollo\'s response. The light flickered.');
+    return await callPollinationsWithRetry(messages);
   }
 
   // ── POLLINATIONS IMAGE GENERATION ─────────────────────────
@@ -679,12 +719,10 @@ If asked something outside your domain of beauty, images, or visual canon, respo
 
     addMessage('user', userMessage);
     
-    // Log user message to GaiaDB
     if (currentSession && currentSession.id) {
       await logMessage(currentSession.id, 'user', userMessage);
     }
 
-    // Detect name
     if (currentSession && currentSession.id && !currentSession.user_name) {
       const detectedName = detectNameInMessage(userMessage);
       if (detectedName) {
@@ -713,17 +751,14 @@ If asked something outside your domain of beauty, images, or visual canon, respo
       const displayText = cleanText || (imageDesc ? 'Behold.' : 'I have spoken.');
       addMessage('apollo', displayText, imageUrl);
 
-      // Save to localStorage gallery
       if (imageUrl && imagePrompt) {
         saveToGallery(imageUrl, imagePrompt);
       }
 
-      // Log Apollo response to GaiaDB
       if (currentSession && currentSession.id) {
         await logMessage(currentSession.id, 'apollo', displayText, imageUrl, imagePrompt);
       }
 
-      // Store in conversation history
       conversationHistory.push({ user: userMessage, apollo: rawResponse });
       if (conversationHistory.length > 15) {
         conversationHistory = conversationHistory.slice(-10);
@@ -734,7 +769,6 @@ If asked something outside your domain of beauty, images, or visual canon, respo
       removeLoading();
       addMessage('apollo', 'The light falters. Even gods have limits. Try again, seeker.');
       
-      // Log error fallback
       if (currentSession && currentSession.id) {
         await logMessage(currentSession.id, 'apollo', 'The light falters. Even gods have limits. Try again, seeker.');
       }
@@ -753,24 +787,19 @@ If asked something outside your domain of beauty, images, or visual canon, respo
     try {
       statusBar.textContent = 'Summoning the god of light...';
       
-      // Get or create session
       currentSession = await getOrCreateSession();
       
-      // Load conversation history from GaiaDB
       const history = currentSession && currentSession.id 
         ? await loadConversationHistory(currentSession.id) 
         : [];
       
-      // Display history if it exists
       if (history.length > 0) {
         for (const msg of history) {
           addMessage(msg.role, msg.content, msg.image_url);
         }
         
-        // Rebuild conversation history for context injection
         for (const msg of history) {
           if (msg.role === 'user') {
-            // Find corresponding Apollo response
             const userIdx = history.indexOf(msg);
             const apolloMsg = history.slice(userIdx).find(m => m.role === 'apollo');
             if (apolloMsg) {
@@ -783,17 +812,14 @@ If asked something outside your domain of beauty, images, or visual canon, respo
         }
       }
       
-      // Build and display context-aware greeting
       const greeting = buildGreeting(currentSession, history);
       
-      // Only show greeting if no history exists
       if (history.length === 0) {
         addMessage('apollo', greeting);
         if (currentSession && currentSession.id) {
           await logMessage(currentSession.id, 'apollo', greeting);
         }
       } else {
-        // Show a smaller "welcome back" above the loaded history
         const greetingDiv = document.createElement('div');
         greetingDiv.style.cssText = 'text-align:center;padding:0.5rem 0;font-family:var(--ff-mono);font-size:0.5rem;letter-spacing:0.2em;color:var(--apollo);opacity:0.4;';
         greetingDiv.textContent = '// THE LIGHT REMEMBERS';
@@ -829,7 +855,6 @@ If asked something outside your domain of beauty, images, or visual canon, respo
     inputEl.style.height = Math.min(inputEl.scrollHeight, 150) + 'px';
   });
 
-  // ── START ─────────────────────────────────────────────────
   init();
 </script>
 
