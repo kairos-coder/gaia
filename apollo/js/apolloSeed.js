@@ -531,6 +531,10 @@ class ApolloPlayer {
   // SACRED TICK
   // ══════════════════════════════════════════
 
+   // ══════════════════════════════════════════
+  // SACRED TICK
+  // ══════════════════════════════════════════
+
   tick() {
     this.turn++;
     this.mana = Math.min(this.mana + 2, this.maxMana);
@@ -544,6 +548,84 @@ class ApolloPlayer {
         this._handStuckTurns = 0;
         this._lastHandSize = this.hand.length;
     }
+
+    // π-FORCE: Dealer after π turns stuck
+    if (this._handStuckTurns >= this.STUCK_TURNS) {
+        const dealt = this._dealerDeal(7);
+        if (dealt && dealt.length > 0 && this.onDeal) this.onDeal(dealt);
+        return;
+    }
+
+    if (typeof ApolloDB !== 'undefined' && this.turn % 2 === 0) {
+        ApolloDB.syncToVault(this);
+    }
+
+    // 🜏 DRAW TRIAD — Three cards arrive
+    const triad = [];
+    for (let i = 0; i < 3; i++) {
+      const card = this.draw();
+      if (card) triad.push(card);
+    }
+
+    if (triad.length === 0) return;
+
+    // If we couldn't draw a full triad, handle edge case
+    if (triad.length < 3) {
+      if (triad[0]) this.play(triad[0]);
+      return;
+    }
+
+    // ── TRIAD DECISION ──────────────────────────
+    let tableCard = null, handCard = null, graveCard = null;
+
+    if (typeof ApolloMind !== 'undefined' && typeof ApolloMind.triadDecision === 'function') {
+      const decision = ApolloMind.triadDecision(this, triad);
+      tableCard = decision.table;
+      handCard  = decision.hand;
+      graveCard = decision.grave;
+    } else {
+      // Fallback: highest value to table, middle to hand, lowest to grave
+      const sorted = [...triad].sort((a, b) => (b.value || 0) - (a.value || 0));
+      tableCard = sorted[0];
+      handCard  = sorted[1];
+      graveCard = sorted[2];
+    }
+
+    // Log the triad event
+    const tName = (c) => c.god || c.ruling_god || c.name || 'Unknown';
+    const tEmoji = (c) => {
+      const map = {'Zeus':'⚡','Hera':'🦚','Poseidon':'🌊','Demeter':'🌾','Athena':'🦉','Apollo':'☀️','Artemis':'🏹','Ares':'⚔️','Aphrodite':'💋','Hephaestus':'🔨','Hermes':'🪄','Hestia':'🔥','Dionysus':'🍇','Hades':'💀','Persephone':'🌱','Melinoe':'👻','Thanatos':'🕯️','The Fates':'🧵','Prometheus':'🔓','Gaia':'🌍','Mortal Man':'🧔','The Three Judges':'⚖️'};
+      return map[tName(c)] || '🃏';
+    };
+
+    if (this.onEmergence) {
+      this.onEmergence(`🃏 TRIAD: ${tEmoji(tableCard)} ${tName(tableCard)} → TABLE · ${tEmoji(handCard)} ${tName(handCard)} → HAND · ${tEmoji(graveCard)} ${tName(graveCard)} → GRAVE`);
+    }
+
+    // Execute the triad
+    if (tableCard) {
+      // Remove from hand first (draw() puts cards in hand)
+      const idx = this.hand.indexOf(tableCard);
+      if (idx > -1) this.hand.splice(idx, 1);
+      this.play(tableCard);
+    }
+
+    if (handCard) {
+      const idx = this.hand.indexOf(handCard);
+      if (idx > -1) this.hand.splice(idx, 1);
+      if (this.hand.length < this.deck.max_hand_size) {
+        this.hand.push(handCard);
+      } else {
+        this.graveyard.push(handCard);
+      }
+    }
+
+    if (graveCard) {
+      const idx = this.hand.indexOf(graveCard);
+      if (idx > -1) this.hand.splice(idx, 1);
+      this.graveyard.push(graveCard);
+    }
+  }
 
     // π-FORCE: Dealer after π turns stuck
     if (this._handStuckTurns >= this.STUCK_TURNS) {
