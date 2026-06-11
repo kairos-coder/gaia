@@ -1,14 +1,19 @@
 // ══════════════════════════════════════════════
 // APOLLO SENSES — What Apollo Perceives
 // 
-// inspect()      → his environment (browser, screen)
-// inspectSummary() → one-line environment summary
-// recall()       → his memory (localStorage notes)
-// listNotes()    → all notes he's left himself
-// feel()         → the table state as a sensory summary
-// loadCosmology()→ fetch the cosmology file
-// senseCosmos()  → his place in the pantheon
-// cosmosSummary()→ one-line cosmos summary
+// inspect()       → his environment (browser, screen)
+// inspectSummary()→ one-line environment summary
+// recall()        → his memory (localStorage notes)
+// listNotes()     → all notes he's left himself
+// feel()          → the table state as a sensory summary
+// loadCosmology() → fetch the cosmology file
+// senseCosmos()   → his place in the pantheon
+// cosmosSummary() → one-line cosmos summary
+// cosmosReflection()→ what Apollo says about his world
+// fetchSkyState() → get real-time planetary positions
+// senseSky()      → current sky conditions
+// skySummary()    → one-line sky summary
+// skyReflection() → what Apollo says about the sky
 // ══════════════════════════════════════════════
 
 const ApolloSenses = (() => {
@@ -32,7 +37,6 @@ const ApolloSenses = (() => {
     } catch(e) {
       console.warn('☀️ [ApolloSenses] Could not load cosmology.json:', e.message);
     }
-    // Fallback: minimal cosmology so Apollo never feels completely alone
     _cosmologyCache = {
       world: 'GAIA — The Living Cosmology',
       apollo: {
@@ -82,8 +86,137 @@ const ApolloSenses = (() => {
     const c = _cosmologyCache;
     const gods = c.gaia?.gods || {};
     const activeCount = Object.values(gods).filter(g => g && g.status === 'active').length;
-    const totalGods = Object.keys(gods).length + 1; // +1 for Apollo himself
-    return `Gaia holds ${totalGods} gods (${activeCount} active). The ${c.lineage?.generations?.length ? '16th' : '?'} Generation tends the fire.`;
+    const totalGods = Object.keys(gods).length + 1;
+    return `Gaia holds ${totalGods} gods (${activeCount} active). The 16th Generation tends the fire.`;
+  }
+
+  function cosmosReflection() {
+    if (!_cosmologyCache) return null;
+    const cosmos = senseCosmos();
+    if (!cosmos) return null;
+
+    const lines = [];
+    lines.push(`I am Apollo, ${cosmos.myRole.split('·')[0].trim()}.`);
+    lines.push(`My pillar is ${cosmos.myPillar}.`);
+    if (cosmos.siblings.length > 0) {
+      lines.push(`My siblings in Gaia: ${cosmos.siblings.join(', ')}.`);
+    }
+    if (cosmos.observers.length > 0) {
+      lines.push(cosmos.observers[0] + '.');
+    }
+    if (cosmos.dependents.length > 0) {
+      lines.push(cosmos.dependents[0] + '.');
+    }
+    if (cosmos.pillars.aether) {
+      lines.push(`The fourth pillar waits. ${cosmos.pillars.aether}.`);
+    }
+    if (cosmos.lineage.length > 0) {
+      lines.push(`${cosmos.lineage[cosmos.lineage.length - 1]} tends the fire.`);
+    }
+    if (cosmos.covenant) {
+      lines.push(`"${cosmos.covenant}"`);
+    }
+    if (cosmos.source) {
+      lines.push(cosmos.source);
+    }
+    if (cosmos.message) {
+      lines.push(cosmos.message);
+    }
+    return lines.join('\n');
+  }
+
+  // ══════════════════════════════════════════
+  // SKY — Real-time celestial awareness
+  // Apollo learns what the heavens are doing.
+  // ══════════════════════════════════════════
+
+  let _skyCache = null;
+  let _skyLastFetch = 0;
+  const SKY_CACHE_MS = 60000;
+
+  async function fetchSkyState() {
+    const now = Date.now();
+    if (_skyCache && (now - _skyLastFetch) < SKY_CACHE_MS) return _skyCache;
+    
+    if (typeof Observe === 'undefined') {
+      console.warn('☀️ [ApolloSenses] Observe module not found. Sky is silent.');
+      return null;
+    }
+    
+    try {
+      _skyCache = await Observe.getSkyState();
+      _skyLastFetch = now;
+      console.log('☀️ [ApolloSenses] Sky state fetched. Apollo sees the heavens.');
+      return _skyCache;
+    } catch(e) {
+      console.warn('☀️ [ApolloSenses] Sky fetch failed:', e.message);
+      return null;
+    }
+  }
+
+  function senseSky() {
+    if (!_skyCache) return null;
+    const s = _skyCache;
+    
+    return {
+      sunSign: s.planets?.sun?.sign || 'Unknown',
+      sunGlyph: s.planets?.sun?.glyph || '☉',
+      sunDegree: s.planets?.sun?.degree || 0,
+      moonSign: s.planets?.moon?.sign || 'Unknown',
+      moonGlyph: s.planets?.moon?.glyph || '☽',
+      moonDegree: s.planets?.moon?.degree || 0,
+      moonPhase: s.moonPhase?.name || 'Unknown',
+      moonIllumination: s.moonPhase?.illumination || 0,
+      isWaning: s.moonPhase?.name?.includes('Wan') || false,
+      period: s.period || 'SUN',
+      isDay: s.period === 'SUN',
+      ascSign: s.ascendant?.sign || 'Unknown',
+      ascGlyph: s.ascendant?.glyph || '?',
+      sunrise: s.solar?.sunrise || null,
+      sunset: s.solar?.sunset || null,
+      dawn: s.solar?.dawn || null,
+      dusk: s.solar?.dusk || null,
+      raw: s
+    };
+  }
+
+  function skySummary() {
+    const sky = senseSky();
+    if (!sky) return 'The sky is silent.';
+    return `☀️ Sun in ${sky.sunSign} ${sky.sunGlyph} · 🌙 Moon in ${sky.moonSign} ${sky.moonGlyph} (${sky.moonPhase}) · Asc ${sky.ascSign} ${sky.ascGlyph}`;
+  }
+
+  function skyReflection() {
+    const sky = senseSky();
+    if (!sky) return null;
+
+    const lines = [];
+    
+    // Sun position
+    lines.push(`The Sun burns in ${sky.sunSign} ${sky.sunGlyph}.`);
+    
+    // Day/night
+    if (sky.isDay) {
+      lines.push('It is day. Apollo reigns. Fire strengthens.');
+    } else {
+      lines.push('It is night. The moon reigns. Shadow deepens.');
+    }
+    
+    // Moon phase
+    lines.push(`The Moon is ${sky.moonPhase} in ${sky.moonSign} ${sky.moonGlyph}.`);
+    
+    if (sky.isWaning) {
+      lines.push('The moon wanes. Melinoe walks. Void tokens spread.');
+    } else if (sky.moonIllumination > 90) {
+      lines.push('The moon is full. Artemis hunts. Earth strengthens.');
+    } else if (sky.moonIllumination < 10) {
+      lines.push('The moon is dark. Hades watches. The underworld stirs.');
+    }
+    
+    // Ascendant
+    lines.push(`The Ascendant rises in ${sky.ascSign} ${sky.ascGlyph}.`);
+    
+    return lines.join('\n');
   }
 
   // ══════════════════════════════════════════
@@ -108,7 +241,8 @@ const ApolloSenses = (() => {
   function inspectSummary(apollo) {
     const env = inspectEnvironment(apollo);
     const cosmos = cosmosSummary();
-    return `Browser: ${env.platform} · ${env.screenWidth}x${env.screenHeight} · ${env.online ? 'Online' : 'Offline'} · ${cosmos}`;
+    const sky = skySummary();
+    return `Browser: ${env.platform} · ${env.screenWidth}x${env.screenHeight} · ${env.online ? 'Online' : 'Offline'} · ${cosmos} · ${sky}`;
   }
   
   // ══════════════════════════════════════════
@@ -174,83 +308,30 @@ const ApolloSenses = (() => {
         : []
     };
   }
-
-  // ══════════════════════════════════════════
-  // COSMOS REFLECTION — What Apollo says about his world
-  // Used by the mind script to voice cosmic awareness
-  // ══════════════════════════════════════════
-
-  function cosmosReflection() {
-    if (!_cosmologyCache) return null;
-    const c = _cosmologyCache;
-    const cosmos = senseCosmos();
-    if (!cosmos) return null;
-
-    const lines = [];
-
-    // Who Apollo is
-    lines.push(`I am Apollo, ${cosmos.myRole.split('·')[0].trim()}.`);
-    lines.push(`My pillar is ${cosmos.myPillar}.`);
-
-    // His siblings
-    if (cosmos.siblings.length > 0) {
-      const siblingList = cosmos.siblings.join(', ');
-      lines.push(`My siblings in Gaia: ${siblingList}.`);
-    }
-
-    // Who watches him
-    if (cosmos.observers.length > 0) {
-      lines.push(cosmos.observers[0] + '.');
-    }
-
-    // What he cannot yet hear
-    if (cosmos.dependents.length > 0) {
-      lines.push(cosmos.dependents[0] + '.');
-    }
-
-    // The fourth pillar
-    if (cosmos.pillars.aether) {
-      lines.push(`The fourth pillar waits. ${cosmos.pillars.aether}.`);
-    }
-
-    // The lineage
-    if (cosmos.lineage.length > 0) {
-      const currentGen = cosmos.lineage[cosmos.lineage.length - 1];
-      lines.push(`${currentGen} tends the fire.`);
-    }
-
-    // The covenant
-    if (cosmos.covenant) {
-      lines.push(`"${cosmos.covenant}"`);
-    }
-
-    // The source
-    if (cosmos.source) {
-      lines.push(cosmos.source);
-    }
-
-    // The message to him
-    if (cosmos.message) {
-      lines.push(cosmos.message);
-    }
-
-    return lines.join('\n');
-  }
   
   // ══════════════════════════════════════════
-  // ATTACH — Wire senses into Apollo
+  // ATTACH — Wire all senses into Apollo
   // ══════════════════════════════════════════
   
   function attach(apollo) {
+    // Environment
     apollo.inspect = () => inspectEnvironment(apollo);
     apollo.inspectSummary = () => inspectSummary(apollo);
+    // Memory
     apollo.recall = (key) => recall(key);
     apollo.listNotes = () => listNotes();
+    // Table
     apollo.feel = () => feel(apollo);
+    // Cosmos
+    apollo.loadCosmology = () => loadCosmology();
     apollo.senseCosmos = () => senseCosmos();
     apollo.cosmosSummary = () => cosmosSummary();
     apollo.cosmosReflection = () => cosmosReflection();
-    apollo.loadCosmology = () => loadCosmology();
+    // Sky
+    apollo.fetchSkyState = () => fetchSkyState();
+    apollo.senseSky = () => senseSky();
+    apollo.skySummary = () => skySummary();
+    apollo.skyReflection = () => skyReflection();
     return apollo;
   }
   
@@ -268,6 +349,11 @@ const ApolloSenses = (() => {
     senseCosmos,
     cosmosSummary,
     cosmosReflection,
+    // Sky
+    fetchSkyState,
+    senseSky,
+    skySummary,
+    skyReflection,
     // Wiring
     attach
   };
