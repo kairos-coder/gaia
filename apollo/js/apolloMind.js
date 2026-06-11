@@ -810,10 +810,10 @@ const ApolloMind = (() => {
       obs.dominantRunLength > 0 ? `// ${dom} has held dominance for ${obs.dominantRunLength} turns` : `// No dominance streak recorded`,
       obs.recentWarning ? `// ⚠ Recent warning (turn ${obs.recentWarning.turn}): ${obs.recentWarning.value}` : `// No active warnings`,
       ...(noteLines.length > 0 ? noteLines : [`// No notes yet`]),
-      ...(apollo.cosmosReflection ? [
+      ...(apollo.cosmosReflection && apollo.cosmosReflection() ? [
         ``,
         `// 🜏 COSMOS`,
-        ...apollo.cosmosReflection().split('\n').map(l => `// ${l}`)
+       ...apollo.cosmosReflection().split('\n').map(l => `// ${l}`)
       ] : []),
       ...genomeLines,
       ``,
