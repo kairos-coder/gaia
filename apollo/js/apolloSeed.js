@@ -10,14 +10,6 @@ const PHI = 1.618033988749895;
 const PI = Math.PI;
 const TAU = PI * 2;
 
-const EMOJI_MAP = {
-  'Zeus':'⚡','Hera':'🦚','Poseidon':'🌊','Demeter':'🌾','Athena':'🦉',
-  'Apollo':'☀️','Artemis':'🏹','Ares':'⚔️','Aphrodite':'💋','Hephaestus':'🔨',
-  'Hermes':'🪄','Hestia':'🔥','Dionysus':'🍇','Hades':'💀','Persephone':'🌱',
-  'Melinoe':'👻','Thanatos':'🕯️','The Fates':'🧵','Prometheus':'🔓','Gaia':'🌍',
-  'Mortal Man':'🧔','The Three Judges':'⚖️'
-};
-
 function godName(card) {
   return card.god || card.ruling_god || card.name || 'Unknown';
 }
