@@ -1,0 +1,922 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🏛️ KairosDB · System Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;900&family=Crimson+Pro:ital,wght@0,300;0,400;1,300&family=JetBrains+Mono:wght@300;400;500&display=swap');
+
+        :root {
+            --bg: #080a0f;
+            --panel: #0e1118;
+            --panel2: #131720;
+            --border: #1a2030;
+            --border2: #242d40;
+            --text: #c8d8e8;
+            --muted: #4a5a6a;
+            --gold: #c8943a;
+            --gold-dim: #7a5a22;
+            --signal: #d4b84a;
+            --love: #b05870;
+            --war: #c0382a;
+            --light: #d4a850;
+            --farm: #6a7a3a;
+            --forge: #c07040;
+            --crown: #5a7aaa;
+            --tide: #3a7090;
+            --wisdom: #6a8898;
+            --storm: #8a7ab0;
+            --wild: #5a8050;
+            --vine: #8a4080;
+            --online: #2ea44f;
+            --offline: #f85149;
+            --warn: #d2991d;
+            --building: #3a4a6a;
+            --font-display: 'Cinzel', serif;
+            --font-body: 'Crimson Pro', serif;
+            --font-mono: 'JetBrains Mono', monospace;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: var(--font-body);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background:
+                radial-gradient(ellipse 80% 40% at 20% 0%, rgba(200,148,58,0.04) 0%, transparent 60%),
+                radial-gradient(ellipse 60% 30% at 80% 100%, rgba(90,122,170,0.04) 0%, transparent 60%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .container { position: relative; z-index: 1; max-width: 1600px; margin: 0 auto; padding: 1.5rem; }
+
+        /* ── HEADER ── */
+        .header {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            align-items: end;
+            border-bottom: 1px solid var(--border2);
+            padding-bottom: 1rem;
+            margin-bottom: 1.5rem;
+            gap: 1rem;
+        }
+        .header h1 {
+            font-family: var(--font-display);
+            font-size: 2rem;
+            color: var(--gold);
+            letter-spacing: 5px;
+        }
+        .header h1 span { color: var(--text); }
+        .header-sub {
+            font-family: var(--font-mono);
+            font-size: 0.48rem;
+            color: var(--muted);
+            letter-spacing: 2px;
+            margin-top: 0.3rem;
+        }
+        .header-right { text-align: right; }
+        .live-time {
+            font-family: var(--font-mono);
+            font-size: 0.65rem;
+            color: var(--muted);
+        }
+        .live-dot {
+            width: 6px; height: 6px;
+            border-radius: 50%;
+            background: var(--online);
+            display: inline-block;
+            margin-right: 0.4rem;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse { 0%,100% { opacity:1; box-shadow: 0 0 4px var(--online); } 50% { opacity:0.3; box-shadow: none; } }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes fadeIn { from { opacity:0; transform: translateY(4px); } to { opacity:1; transform: translateY(0); } }
+
+        /* ── KALENDAR + SYSTEM STATE ── */
+        .top-row {
+            display: grid;
+            grid-template-columns: 180px 1fr 340px;
+            gap: 1rem;
+            margin-bottom: 1.2rem;
+        }
+
+        .kalendar-card {
+            background: var(--panel);
+            border: 1px solid var(--border2);
+            border-top: 2px solid var(--gold);
+            border-radius: 10px;
+            padding: 1rem;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 0.4rem;
+        }
+        .kal-icon { font-size: 2.2rem; }
+        .kal-name { font-family: var(--font-display); font-size: 1.1rem; }
+        .kal-meta { font-family: var(--font-mono); font-size: 0.42rem; color: var(--muted); line-height: 1.8; }
+
+        /* ── PIPELINE FLOW ── */
+        .pipeline-card {
+            background: var(--panel);
+            border: 1px solid var(--border2);
+            border-radius: 10px;
+            padding: 1rem 1.2rem;
+        }
+        .pipeline-label {
+            font-family: var(--font-mono);
+            font-size: 0.48rem;
+            letter-spacing: 2px;
+            color: var(--muted);
+            margin-bottom: 0.8rem;
+        }
+        .pipeline-flow {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            flex-wrap: wrap;
+        }
+        .pipe-node {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-width: 56px;
+            padding: 0.5rem 0.3rem;
+            border-radius: 6px;
+            background: rgba(0,0,0,0.2);
+            border: 1px solid var(--border);
+            cursor: pointer;
+            transition: border-color 0.2s;
+        }
+        .pipe-node:hover { border-color: var(--gold-dim); }
+        .pipe-icon { font-size: 1.1rem; line-height: 1; }
+        .pipe-count { font-family: var(--font-display); font-size: 0.75rem; margin-top: 0.2rem; }
+        .pipe-lbl { font-family: var(--font-mono); font-size: 0.38rem; color: var(--muted); margin-top: 0.1rem; }
+        .pipe-arrow { color: var(--border2); font-size: 0.9rem; flex-shrink: 0; }
+
+        /* ── ORACLE PANEL ── */
+        .oracle-card {
+            background: var(--panel);
+            border: 1px solid var(--border2);
+            border-left: 3px solid var(--gold);
+            border-radius: 10px;
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.6rem;
+        }
+        .oracle-label {
+            font-family: var(--font-mono);
+            font-size: 0.48rem;
+            letter-spacing: 2px;
+            color: var(--gold);
+        }
+        .oracle-text {
+            font-family: var(--font-body);
+            font-size: 0.78rem;
+            font-style: italic;
+            color: var(--text);
+            line-height: 1.6;
+            flex: 1;
+        }
+        .oracle-footer {
+            font-family: var(--font-mono);
+            font-size: 0.42rem;
+            color: var(--muted);
+        }
+        .oracle-btn {
+            font-family: var(--font-mono);
+            font-size: 0.48rem;
+            padding: 0.3rem 0.6rem;
+            border-radius: 4px;
+            border: 1px solid var(--gold-dim);
+            background: transparent;
+            color: var(--gold);
+            cursor: pointer;
+            transition: all 0.2s;
+            letter-spacing: 1px;
+            align-self: flex-start;
+        }
+        .oracle-btn:hover { background: var(--gold); color: #000; }
+        .oracle-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+        .spin { display: inline-block; animation: spin 0.8s linear infinite; }
+
+        /* ── GODS GRID ── */
+        .gods-grid {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 0.6rem;
+            margin-bottom: 1.2rem;
+        }
+
+        .god-card {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 0.7rem 0.5rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+            overflow: hidden;
+            animation: fadeIn 0.4s ease both;
+        }
+        .god-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 2px;
+        }
+        .god-card:hover { transform: translateY(-2px); border-color: var(--border2); }
+        .god-card.live { border-color: rgba(46,164,79,0.2); }
+        .god-card.offline-card { border-color: rgba(248,81,73,0.15); opacity: 0.7; }
+        .god-card.building-card { border-color: var(--border); opacity: 0.6; }
+
+        .god-icon { font-size: 1.6rem; line-height: 1; margin-bottom: 0.3rem; }
+        .god-name { font-family: var(--font-display); font-size: 0.52rem; letter-spacing: 1px; margin-bottom: 0.2rem; }
+        .god-domain { font-family: var(--font-mono); font-size: 0.38rem; color: var(--muted); margin-bottom: 0.4rem; }
+        .god-count { font-family: var(--font-display); font-size: 1rem; margin-bottom: 0.2rem; }
+        .god-status-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.3rem;
+            margin-top: 0.3rem;
+        }
+        .status-pip {
+            width: 5px; height: 5px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+        .status-pip.live { background: var(--online); box-shadow: 0 0 4px var(--online); }
+        .status-pip.offline { background: var(--offline); }
+        .status-pip.building { background: var(--building); }
+        .status-pip.checking { background: var(--warn); animation: pulse 1s infinite; }
+        .status-text { font-family: var(--font-mono); font-size: 0.38rem; }
+        .status-text.live { color: var(--online); }
+        .status-text.offline { color: var(--offline); }
+        .status-text.building { color: var(--muted); }
+        .status-text.checking { color: var(--warn); }
+
+        .god-bar {
+            height: 2px;
+            border-radius: 1px;
+            margin-top: 0.4rem;
+            transition: width 0.5s ease;
+        }
+
+        /* ── SYSTEM LOG ── */
+        .log-panel {
+            background: var(--panel);
+            border: 1px solid var(--border2);
+            border-radius: 8px;
+            overflow: hidden;
+            margin-bottom: 1.2rem;
+        }
+        .log-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem 0.8rem;
+            border-bottom: 1px solid var(--border);
+            background: rgba(0,0,0,0.2);
+        }
+        .log-title { font-family: var(--font-mono); font-size: 0.48rem; letter-spacing: 2px; color: var(--muted); }
+        .log-body {
+            padding: 0.5rem;
+            max-height: 120px;
+            overflow-y: auto;
+            font-family: var(--font-mono);
+            font-size: 0.48rem;
+            color: var(--muted);
+        }
+        .log-entry { padding: 0.15rem 0.3rem; border-bottom: 1px solid rgba(26,32,48,0.4); }
+        .log-entry.ok { color: var(--online); }
+        .log-entry.err { color: var(--offline); }
+        .log-entry.info { color: var(--gold); }
+        .log-entry.oracle { color: var(--storm); }
+
+        /* ── QUICK ACTIONS ── */
+        .actions-row {
+            display: flex;
+            gap: 0.4rem;
+            flex-wrap: wrap;
+            margin-bottom: 1rem;
+        }
+        button {
+            font-family: var(--font-mono);
+            font-size: 0.5rem;
+            padding: 0.35rem 0.7rem;
+            border-radius: 4px;
+            cursor: pointer;
+            border: 1px solid var(--border2);
+            background: var(--panel);
+            color: var(--text);
+            transition: all 0.2s;
+            letter-spacing: 1px;
+        }
+        button:hover { border-color: var(--gold); color: var(--gold); }
+        button.primary { background: var(--gold); color: #000; border-color: var(--gold); font-weight: 600; }
+        button.primary:hover { background: #e0a840; }
+
+        /* ── GODS TABLE ── */
+        .gods-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-family: var(--font-mono);
+            font-size: 0.48rem;
+        }
+        .gods-table th {
+            color: var(--muted);
+            text-align: left;
+            padding: 0.4rem 0.6rem;
+            border-bottom: 1px solid var(--border2);
+            letter-spacing: 1px;
+        }
+        .gods-table td {
+            padding: 0.4rem 0.6rem;
+            border-bottom: 1px solid rgba(26,32,48,0.3);
+            vertical-align: middle;
+        }
+        .gods-table tr:hover td { background: rgba(200,148,58,0.03); }
+        .latency-bar {
+            display: inline-block;
+            height: 3px;
+            border-radius: 2px;
+            margin-left: 0.4rem;
+            vertical-align: middle;
+        }
+
+        @media (max-width: 1100px) {
+            .top-row { grid-template-columns: 1fr 1fr; }
+            .oracle-card { grid-column: 1/-1; }
+            .gods-grid { grid-template-columns: repeat(4, 1fr); }
+        }
+        @media (max-width: 700px) {
+            .top-row { grid-template-columns: 1fr; }
+            .gods-grid { grid-template-columns: repeat(3, 1fr); }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+
+    <div class="header">
+        <div>
+            <h1>🏛️ KAIROS<span>DB</span></h1>
+            <div class="header-sub">SYSTEM DASHBOARD · 12 GODS · LIVE PING · SEMANTIC RUNTIME · ORACLE ENABLED</div>
+        </div>
+        <div class="header-right">
+            <div class="live-time"><span class="live-dot"></span><span id="liveTime">—</span></div>
+            <div id="kalendarBadge" style="font-family:var(--font-mono);font-size:0.44rem;color:var(--gold);margin-top:0.3rem;text-align:right;"></div>
+        </div>
+    </div>
+
+    <div class="top-row">
+        <div class="kalendar-card" id="kalendarCard">
+            <div class="kal-icon">⏳</div>
+            <div class="kal-name" style="color:var(--gold)">Loading...</div>
+            <div class="kal-meta">—</div>
+        </div>
+
+        <div class="pipeline-card">
+            <div class="pipeline-label">⚡ LIVE PIPELINE · LOVE ↔ WAR DIALECTIC</div>
+            <div class="pipeline-flow" id="pipelineFlow">
+                <div style="font-family:var(--font-mono);font-size:0.5rem;color:var(--muted);">Fetching pipeline state...</div>
+            </div>
+        </div>
+
+        <div class="oracle-card">
+            <div class="oracle-label">🔮 ORACLE · SYSTEM INSIGHT</div>
+            <div class="oracle-text" id="oracleText" style="color:var(--muted);font-style:italic;">Awaiting system state...</div>
+            <div class="oracle-footer" id="oracleFooter">—</div>
+            <button class="oracle-btn" id="oracleBtn" onclick="runOracle()">🔮 Consult Oracle</button>
+        </div>
+    </div>
+
+    <div class="gods-grid" id="godsGrid">
+        <!-- populated by JS -->
+    </div>
+
+    <div class="log-panel">
+        <div class="log-header">
+            <span class="log-title">📡 SYSTEM LOG</span>
+            <button onclick="document.getElementById('sysLog').innerHTML=''" style="font-size:0.42rem;padding:0.2rem 0.4rem;">clear</button>
+        </div>
+        <div class="log-body" id="sysLog">
+            <div class="log-entry info">[init] KairosDB Dashboard starting...</div>
+        </div>
+    </div>
+
+    <div class="actions-row">
+        <button onclick="refreshAll()" class="primary">🔄 Refresh All</button>
+        <button onclick="pingAllGods()">📡 Ping All Gods</button>
+        <button onclick="runOracle()">🔮 Oracle Insight</button>
+        <button onclick="window.open('https://kairos-coder.github.io/hermes')">⚡ Hermes</button>
+        <button onclick="window.open('https://kairos-coder.github.io/aphrodite')">💗 Aphrodite</button>
+        <button onclick="window.open('https://kairos-coder.github.io/ares')">⚔️ Ares</button>
+        <button onclick="window.open('https://kairos-coder.github.io/apollo')">☀️ Apollo</button>
+        <button onclick="window.open('https://kairos-coder.github.io/demeter')">🌾 Demeter</button>
+        <button onclick="window.open('https://kairos-coder.github.io/hephaestus')">🔨 Hephaestus</button>
+        <button onclick="window.open('https://kairos-coder.github.io/athena')">🦉 Athena</button>
+        <button onclick="window.open('https://kairos-coder.github.io/hera')">👑 Hera</button>
+    </div>
+
+    <table class="gods-table">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>GOD</th>
+                <th>DOMAIN</th>
+                <th>TELOS</th>
+                <th>DB TOKENS</th>
+                <th>PING</th>
+                <th>LATENCY</th>
+                <th>REPO</th>
+                <th>STATUS</th>
+            </tr>
+        </thead>
+        <tbody id="godsTableBody"></tbody>
+    </table>
+
+</div>
+
+<script type="module">
+// ════════════════════════════════════════════════
+// CONFIG
+// ════════════════════════════════════════════════
+const KAIROS_URL = 'https://kzcucjcyxybypncbdbws.supabase.co';
+const KAIROS_KEY = 'sb_publishable_saeUHGocDah-T2_709M6Fg_g26JtLXw';
+const sb = window.supabase.createClient(KAIROS_URL, KAIROS_KEY);
+
+const CYCLE_START = new Date('2026-05-01');
+const CYCLE_LENGTH = 14;
+
+// ════════════════════════════════════════════════
+// GOD DEFINITIONS
+// ════════════════════════════════════════════════
+const GODS = [
+    {
+        num: 1, name: 'Hermes', icon: '⚡', domain: 'signal', color: 'var(--signal)',
+        telos: 'Deliver raw tokens to all domains',
+        table: 'concepts', tableFilter: { band: 'hermes' },
+        url: 'https://kairos-coder.github.io/hermes',
+        status: 'live'
+    },
+    {
+        num: 2, name: 'Aphrodite', icon: '💗', domain: 'love', color: 'var(--love)',
+        telos: 'Compose couplets from desire',
+        table: 'aphrodite_dispatch', tableFilter: {},
+        url: 'https://kairos-coder.github.io/aphrodite',
+        status: 'live'
+    },
+    {
+        num: 3, name: 'Ares', icon: '⚔️', domain: 'war', color: 'var(--war)',
+        telos: 'Stress-test concepts to destruction',
+        table: 'ares_dispatch', tableFilter: {},
+        url: 'https://kairos-coder.github.io/ares',
+        status: 'live'
+    },
+    {
+        num: 4, name: 'Apollo', icon: '☀️', domain: 'light', color: 'var(--light)',
+        telos: 'Synthesize love and war into truth',
+        table: 'apollo_artifacts', tableFilter: {},
+        url: 'https://kairos-coder.github.io/apollo',
+        status: 'live'
+    },
+    {
+        num: 5, name: 'Demeter', icon: '🌾', domain: 'farm', color: 'var(--farm)',
+        telos: 'Cultivate, cross-pollinate, mutate stale',
+        table: 'svo_triplets', tableFilter: {},
+        url: 'https://kairos-coder.github.io/demeter',
+        status: 'live'
+    },
+    {
+        num: 6, name: 'Hephaestus', icon: '🔨', domain: 'forge', color: 'var(--forge)',
+        telos: 'Forge coherent SVO structures',
+        table: 'svo_triplets', tableFilter: { state: 'cultivated' },
+        url: 'https://kairos-coder.github.io/hephaestus',
+        status: 'live'
+    },
+    {
+        num: 7, name: 'Hera', icon: '👑', domain: 'crown', color: 'var(--crown)',
+        telos: 'Coronate, seal lineage, keep memory',
+        table: null, tableFilter: {},
+        url: 'https://kairos-coder.github.io/hera',
+        status: 'live'
+    },
+    {
+        num: 8, name: 'Poseidon', icon: '🌊', domain: 'tide', color: 'var(--tide)',
+        telos: 'Govern depth and long-form concepts',
+        table: null, tableFilter: {},
+        url: null,
+        status: 'building'
+    },
+    {
+        num: 9, name: 'Athena', icon: '🦉', domain: 'wisdom', color: 'var(--wisdom)',
+        telos: 'Audit repos, generate templates',
+        table: 'html', tableFilter: {},
+        url: 'https://kairos-coder.github.io/athena',
+        status: 'live'
+    },
+    {
+        num: 10, name: 'Zeus', icon: '🌩️', domain: 'storm', color: 'var(--storm)',
+        telos: 'Arbitrate contested concepts',
+        table: null, tableFilter: {},
+        url: null,
+        status: 'building'
+    },
+    {
+        num: 11, name: 'Artemis', icon: '🏹', domain: 'wild', color: 'var(--wild)',
+        telos: 'Hunt pattern, disrupt with wildness',
+        table: null, tableFilter: {},
+        url: null,
+        status: 'building'
+    },
+    {
+        num: 12, name: 'Dionysus', icon: '🍇', domain: 'vine', color: 'var(--vine)',
+        telos: 'Dissolve boundaries, recombine chaos',
+        table: null, tableFilter: {},
+        url: null,
+        status: 'building'
+    },
+];
+
+// Runtime state
+const godState = {};
+GODS.forEach(g => {
+    godState[g.num] = { pingStatus: 'checking', latency: null, dbCount: null };
+});
+
+// ════════════════════════════════════════════════
+// LOGGING
+// ════════════════════════════════════════════════
+function sysLog(msg, type = 'info') {
+    const el = document.getElementById('sysLog');
+    const div = document.createElement('div');
+    div.className = `log-entry ${type}`;
+    div.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
+    el.insertBefore(div, el.firstChild);
+    while (el.children.length > 50) el.removeChild(el.lastChild);
+}
+
+// ════════════════════════════════════════════════
+// KALENDAR
+// ════════════════════════════════════════════════
+function getTodayGod() {
+    const d = Math.floor((new Date() - CYCLE_START) / 86400000);
+    if (d < 0) return GODS[0];
+    return GODS[d % CYCLE_LENGTH] || GODS[0];
+}
+
+function renderKalendar() {
+    const god = getTodayGod();
+    const d = Math.floor((new Date() - CYCLE_START) / 86400000);
+    const cycle = Math.floor(d / CYCLE_LENGTH) + 1;
+    const day = (d % CYCLE_LENGTH) + 1;
+    const dateStr = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+
+    document.getElementById('kalendarCard').innerHTML = `
+        <div class="kal-icon">${god.icon}</div>
+        <div class="kal-name" style="color:${god.color}">${god.name}</div>
+        <div class="kal-meta">
+            Pythagorean #${god.num}<br>
+            Cycle ${cycle} · Day ${day}<br>
+            ${dateStr}
+        </div>
+    `;
+    document.getElementById('kalendarBadge').textContent = `📅 ${god.name} Day · #${god.num}`;
+}
+
+// ════════════════════════════════════════════════
+// PING A SINGLE GOD
+// ════════════════════════════════════════════════
+async function pingGod(god) {
+    if (!god.url) {
+        godState[god.num].pingStatus = 'building';
+        godState[god.num].latency = null;
+        return;
+    }
+
+    godState[god.num].pingStatus = 'checking';
+    renderGodsGrid();
+
+    const start = performance.now();
+    try {
+        // Use a no-cors fetch — if it doesn't throw, the page exists
+        const res = await fetch(god.url, { method: 'HEAD', mode: 'no-cors', cache: 'no-store' });
+        const ms = Math.round(performance.now() - start);
+        // no-cors always returns opaque (type='opaque'), which means it resolved = live
+        godState[god.num].pingStatus = 'live';
+        godState[god.num].latency = ms;
+        sysLog(`${god.icon} ${god.name} — LIVE (${ms}ms)`, 'ok');
+    } catch (e) {
+        const ms = Math.round(performance.now() - start);
+        godState[god.num].pingStatus = 'offline';
+        godState[god.num].latency = ms;
+        sysLog(`${god.icon} ${god.name} — OFFLINE: ${e.message}`, 'err');
+    }
+}
+
+async function pingAllGods() {
+    sysLog('Pinging all gods...', 'info');
+    // Ping in batches of 4 to avoid flooding
+    const live = GODS.filter(g => g.url);
+    for (let i = 0; i < live.length; i += 4) {
+        const batch = live.slice(i, i + 4);
+        await Promise.all(batch.map(g => pingGod(g)));
+        renderGodsGrid();
+        renderGodsTable();
+    }
+    sysLog('Ping sweep complete.', 'info');
+}
+
+// ════════════════════════════════════════════════
+// DB COUNTS
+// ════════════════════════════════════════════════
+async function fetchDbCounts() {
+    await Promise.all(GODS.map(async (god) => {
+        if (!god.table) { godState[god.num].dbCount = null; return; }
+        try {
+            let query = sb.from(god.table).select('*', { count: 'exact', head: true });
+            if (god.tableFilter) {
+                Object.entries(god.tableFilter).forEach(([k, v]) => { query = query.eq(k, v); });
+            }
+            const { count } = await query;
+            godState[god.num].dbCount = count || 0;
+        } catch { godState[god.num].dbCount = '?'; }
+    }));
+}
+
+// ════════════════════════════════════════════════
+// PIPELINE
+// ════════════════════════════════════════════════
+async function renderPipeline() {
+    const stages = [
+        { label: 'Hermes', icon: '⚡', color: 'var(--signal)', table: 'concepts', filter: { band: 'hermes', state: 'raw' }, url: 'hermes' },
+        { label: 'Aphrodite', icon: '💗', color: 'var(--love)', table: 'aphrodite_dispatch', filter: { consumed: false }, url: 'aphrodite' },
+        { label: 'Ares', icon: '⚔️', color: 'var(--war)', table: 'ares_dispatch', filter: { consumed: false }, url: 'ares' },
+        { label: 'Apollo', icon: '☀️', color: 'var(--light)', table: 'apollo_artifacts', filter: {}, url: 'apollo' },
+        { label: 'Demeter', icon: '🌾', color: 'var(--farm)', table: 'svo_triplets', filter: {}, url: 'demeter' },
+        { label: 'Hephaestus', icon: '🔨', color: 'var(--forge)', table: 'svo_triplets', filter: { state: 'cultivated' }, url: 'hephaestus' },
+    ];
+
+    const counts = await Promise.all(stages.map(async (s) => {
+        try {
+            let q = sb.from(s.table).select('*', { count: 'exact', head: true });
+            Object.entries(s.filter).forEach(([k, v]) => { q = q.eq(k, v); });
+            const { count } = await q;
+            return count || 0;
+        } catch { return 0; }
+    }));
+
+    const flow = document.getElementById('pipelineFlow');
+    flow.innerHTML = stages.map((s, i) => `
+        <div class="pipe-node" onclick="window.open('https://kairos-coder.github.io/${s.url}')" title="${s.label}">
+            <div class="pipe-icon">${s.icon}</div>
+            <div class="pipe-count" style="color:${s.color}">${counts[i]}</div>
+            <div class="pipe-lbl">${s.label}</div>
+        </div>
+        ${i < stages.length - 1 ? '<span class="pipe-arrow">→</span>' : ''}
+    `).join('');
+}
+
+// ════════════════════════════════════════════════
+// GODS GRID
+// ════════════════════════════════════════════════
+function renderGodsGrid() {
+    const maxCount = Math.max(...GODS.map(g => godState[g.num].dbCount || 0), 1);
+
+    document.getElementById('godsGrid').innerHTML = GODS.map((g, i) => {
+        const state = godState[g.num];
+        const ps = state.pingStatus;
+        const count = state.dbCount;
+        const cardClass = ps === 'live' ? 'live' : ps === 'offline' ? 'offline-card' : ps === 'building' ? 'building-card' : '';
+        const barWidth = count ? `${Math.max(8, (count / maxCount) * 100)}%` : '8%';
+        const barOpacity = ps === 'building' ? '0.3' : '1';
+
+        return `
+            <div class="god-card ${cardClass}" style="animation-delay:${i * 0.04}s"
+                 onclick="${g.url ? `window.open('${g.url}')` : ''}"
+                 title="${g.telos}">
+                <div style="position:absolute;top:0;left:0;right:0;height:2px;background:${g.color};opacity:${barOpacity}"></div>
+                <div class="god-icon">${g.icon}</div>
+                <div class="god-name" style="color:${g.color}">${g.name}</div>
+                <div class="god-domain">${g.domain.toUpperCase()}</div>
+                <div class="god-count" style="color:${g.color}">${count !== null ? count : '—'}</div>
+                <div class="god-status-row">
+                    <div class="status-pip ${ps}"></div>
+                    <div class="status-text ${ps}">${
+                        ps === 'live' ? 'LIVE' :
+                        ps === 'offline' ? 'OFFLINE' :
+                        ps === 'building' ? 'BUILDING' :
+                        'CHECKING'
+                    }</div>
+                </div>
+                <div class="god-bar" style="background:${g.color};width:${barWidth};opacity:${barOpacity}"></div>
+            </div>
+        `;
+    }).join('');
+}
+
+// ════════════════════════════════════════════════
+// GODS TABLE
+// ════════════════════════════════════════════════
+function renderGodsTable() {
+    const rows = GODS.map(g => {
+        const state = godState[g.num];
+        const ps = state.pingStatus;
+        const latency = state.latency;
+        const count = state.dbCount;
+
+        const statusColor = ps === 'live' ? 'var(--online)' : ps === 'offline' ? 'var(--offline)' : ps === 'building' ? 'var(--muted)' : 'var(--warn)';
+        const statusText = ps === 'live' ? '● LIVE' : ps === 'offline' ? '✕ OFFLINE' : ps === 'building' ? '◌ BUILDING' : '… CHECKING';
+
+        const latencyColor = !latency ? 'var(--muted)' : latency < 300 ? 'var(--online)' : latency < 800 ? 'var(--warn)' : 'var(--offline)';
+        const latencyBarW = latency ? Math.min(60, latency / 20) : 0;
+
+        const urlCell = g.url
+            ? `<a href="${g.url}" target="_blank" style="color:var(--gold);text-decoration:none;">/${g.url.split('/').pop()}</a>`
+            : '—';
+
+        return `<tr>
+            <td style="color:var(--muted)">#${g.num}</td>
+            <td>${g.icon} <strong style="color:${g.color}">${g.name}</strong></td>
+            <td style="color:${g.color}">${g.domain}</td>
+            <td style="color:var(--muted);font-size:0.42rem;max-width:200px;">${g.telos}</td>
+            <td>${count !== null ? count : '—'}</td>
+            <td style="color:${statusColor}">${statusText}</td>
+            <td>
+                ${latency ? `<span style="color:${latencyColor}">${latency}ms</span>
+                <span class="latency-bar" style="width:${latencyBarW}px;background:${latencyColor}"></span>` : '—'}
+            </td>
+            <td>${urlCell}</td>
+            <td style="color:${statusColor};font-size:0.42rem;">${ps === 'live' ? '🟢' : ps === 'offline' ? '🔴' : ps === 'building' ? '🔵' : '🟡'}</td>
+        </tr>`;
+    });
+    document.getElementById('godsTableBody').innerHTML = rows.join('');
+}
+
+// ════════════════════════════════════════════════
+// ORACLE — AI SYSTEM INSIGHT
+// ════════════════════════════════════════════════
+async function runOracle() {
+    const btn = document.getElementById('oracleBtn');
+    const text = document.getElementById('oracleText');
+    const footer = document.getElementById('oracleFooter');
+
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spin">⟳</span> Consulting...';
+    text.style.color = 'var(--muted)';
+    text.textContent = 'Reading the system state...';
+
+    // Gather live system state
+    const liveGods = GODS.filter(g => godState[g.num].pingStatus === 'live');
+    const offlineGods = GODS.filter(g => godState[g.num].pingStatus === 'offline');
+    const buildingGods = GODS.filter(g => g.status === 'building');
+
+    // Pull recent DB snapshots
+    let conceptCount = 0, svoCount = 0, artifactCount = 0, dispatchCount = 0;
+    try {
+        const [c, s, a, d] = await Promise.all([
+            sb.from('concepts').select('*', { count: 'exact', head: true }),
+            sb.from('svo_triplets').select('*', { count: 'exact', head: true }),
+            sb.from('apollo_artifacts').select('*', { count: 'exact', head: true }),
+            sb.from('aphrodite_dispatch').select('*', { count: 'exact', head: true }).eq('consumed', false),
+        ]);
+        conceptCount = c.count || 0;
+        svoCount = s.count || 0;
+        artifactCount = a.count || 0;
+        dispatchCount = d.count || 0;
+    } catch {}
+
+    const todayGod = getTodayGod();
+
+    const systemPrompt = `You are the Oracle of KairosDB — a semantic runtime where browser agents called Gods each have a telos (purpose) and process conceptual tokens through a shared Supabase backend. You speak in brief, mythic, actionable language. Never use bullet points. One or two sentences maximum. Speak as if reading the system's vital signs.`;
+
+    const userPrompt = `KairosDB system state as of ${new Date().toLocaleString()}:
+- Today's god: ${todayGod.name} (${todayGod.telos})
+- Live gods: ${liveGods.map(g => g.name).join(', ') || 'none'}
+- Offline gods: ${offlineGods.map(g => g.name).join(', ') || 'none'}
+- Still building: ${buildingGods.map(g => g.name).join(', ')}
+- Concepts in DB: ${conceptCount}
+- SVO triplets forged: ${svoCount}
+- Apollo artifacts compiled: ${artifactCount}
+- Aphrodite dispatches unconsumed: ${dispatchCount}
+
+Read the system. Give one mythic insight about its current state and what the builder should focus on next.`;
+
+    try {
+        const res = await fetch('https://api.anthropic.com/v1/messages', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                model: 'claude-sonnet-4-20250514',
+                max_tokens: 1000,
+                system: systemPrompt,
+                messages: [{ role: 'user', content: userPrompt }]
+            })
+        });
+
+        const data = await res.json();
+        const insight = data.content?.[0]?.text || 'The oracle is silent.';
+
+        text.style.color = 'var(--text)';
+        text.textContent = insight;
+        footer.textContent = `Oracle consulted · ${new Date().toLocaleTimeString()} · ${liveGods.length}/${GODS.filter(g=>g.url).length} gods live`;
+        sysLog(`Oracle: "${insight.substring(0, 80)}..."`, 'oracle');
+    } catch (err) {
+        text.style.color = 'var(--offline)';
+        text.textContent = 'The oracle could not be reached.';
+        sysLog(`Oracle error: ${err.message}`, 'err');
+    }
+
+    btn.disabled = false;
+    btn.innerHTML = '🔮 Consult Oracle';
+}
+
+// ════════════════════════════════════════════════
+// CLOCK
+// ════════════════════════════════════════════════
+function startClock() {
+    const tick = () => {
+        document.getElementById('liveTime').textContent = new Date().toLocaleTimeString();
+    };
+    tick();
+    setInterval(tick, 1000);
+}
+
+// ════════════════════════════════════════════════
+// REFRESH ALL
+// ════════════════════════════════════════════════
+async function refreshAll() {
+    sysLog('Full refresh initiated...', 'info');
+    renderKalendar();
+    renderGodsGrid(); // show checking state
+    await Promise.all([
+        fetchDbCounts(),
+        renderPipeline(),
+        pingAllGods()
+    ]);
+    renderGodsGrid();
+    renderGodsTable();
+    sysLog('Refresh complete.', 'ok');
+}
+
+// Expose globally
+window.refreshAll = refreshAll;
+window.pingAllGods = pingAllGods;
+window.runOracle = runOracle;
+
+// ════════════════════════════════════════════════
+// INIT
+// ════════════════════════════════════════════════
+async function init() {
+    startClock();
+    renderKalendar();
+
+    // Render empty grid immediately so page feels alive
+    GODS.forEach(g => {
+        godState[g.num].pingStatus = g.url ? 'checking' : 'building';
+    });
+    renderGodsGrid();
+    renderGodsTable();
+
+    // Fetch DB counts fast
+    await fetchDbCounts();
+    renderGodsGrid();
+    renderGodsTable();
+
+    // Pipeline
+    await renderPipeline();
+
+    // Ping gods (takes longer, runs after)
+    await pingAllGods();
+    renderGodsGrid();
+    renderGodsTable();
+
+    // Auto-oracle on load
+    setTimeout(runOracle, 2000);
+
+    // Auto-refresh every 60s
+    setInterval(refreshAll, 60000);
+
+    sysLog('KairosDB Dashboard ready.', 'ok');
+}
+
+init();
+</script>
+</body>
+</html>
