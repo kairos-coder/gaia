@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🌙 Kairos Kalendar · Lunar Olympian Engine</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&family=Cinzel:wght@400;600&family=IM+Fell+English:ital@0;1&family=JetBrains+Mono:wght@300;400;500&display=swap');
+
+:root {
+    --void:       #060608;
+    --deep:       #0e0e14;
+    --stone:      #1c1c24;
+    --granite:    #2a2a38;
+    --marble:     #e8e0d0;
+    --ivory:      #f2ead8;
+    --smoke:      #8a8499;
+    --gold:       #c8943a;
+    --gold-bright:#f0c060;
+    --bronze:     #7a5a30;
+    --ember:      #4a2a10;
+    --silver:     #a0b0c0;
+
+    --hermes:     #d4b84a;
+    --aphrodite:  #b05870;
+    --ares:       #c0382a;
+    --apollo:     #d4a850;
+    --demeter:    #7a6a40;
+    --hephaestus: #c07040;
+    --hera:       #5a7aaa;
+    --poseidon:   #3a7090;
+    --athena:     #6a8898;
+    --zeus:       #9a8ac0;
+    --artemis:    #5a8050;
+    --dionysus:   #8a4080;
+    --kernel:     #50a0b0;
+    --hades:      #3a2040;
+
+    --completed:  #3a9060;
+    --streak:     #c04040;
+    --waxing:     #f0c060;
+    --waning:     #8090b0;
+
+    --font-display: 'Cinzel Decorative', serif;
+    --font-serif:   'Cinzel', serif;
+    --font-body:    'IM Fell English', serif;
+    --font-mono:    'JetBrains Mono', monospace;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+
+body {
+    background: var(--void);
+    color: var(--marble);
+    font-family: var(--font-body);
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+
+body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background:
+        radial-gradient(ellipse 60% 40% at 15% 20%, rgba(200,148,58,0.04) 0%, transparent 60%),
+        radial-gradient(ellipse 50% 60% at 85% 80%, rgba(90,90,140,0.04) 0%, transparent 60%),
+        radial-gradient(circle 30% at 50% 50%, rgba(160,176,192,0.02) 0%, transparent 70%),
+        repeating-linear-gradient(0deg, transparent, transparent 80px, rgba(255,255,255,0.005) 80px, rgba(255,255,255,0.005) 81px),
+        repeating-linear-gradient(90deg, transparent, transparent 80px, rgba(255,255,255,0.005) 80px, rgba(255,255,255,0.005) 81px);
+    pointer-events: none; z-index: 0;
+}
+
+.container { max-width: 1400px; margin: 0 auto; padding: 3rem 2rem; position: relative; z-index: 1; }
+
+.header { text-align: center; margin-bottom: 3rem; }
+.header-eyebrow { font-family: var(--font-mono); font-size: 0.55rem; letter-spacing: 5px; color: var(--bronze); margin-bottom: 1rem; text-transform: uppercase; }
+.header h1 { font-family: var(--font-display); font-size: clamp(2rem, 5vw, 3.5rem); font-weight: 900; color: var(--gold); letter-spacing: 4px; line-height: 1.1; margin-bottom: 0.5rem; }
+.header h1 em { font-style: normal; color: var(--marble); font-weight: 400; font-size: 0.7em; display: block; letter-spacing: 8px; }
+.header-rule { width: 80px; height: 1px; background: linear-gradient(90deg, transparent, var(--gold), transparent); margin: 1rem auto; }
+.header-sub { font-family: var(--font-body); font-size: 0.9rem; font-style: italic; color: var(--smoke); max-width: 600px; margin: 0 auto 1.5rem; line-height: 1.6; }
+
+/* ── LUNAR PHASE BAR ── */
+.lunar-bar-wrap { max-width: 600px; margin: 0 auto 1.5rem; }
+.lunar-phase-label { font-family: var(--font-mono); font-size: 0.5rem; letter-spacing: 2px; color: var(--smoke); text-align: center; margin-bottom: 0.5rem; display: flex; justify-content: space-between; }
+.lunar-label-wax { color: var(--waxing); }
+.lunar-label-wane { color: var(--waning); }
+.lunar-phase-desc { text-align: center; font-family: var(--font-body); font-style: italic; font-size: 0.75rem; color: var(--marble); margin-top: 0.4rem; }
+.lunar-bar-track { height: 4px; background: var(--granite); border-radius: 2px; position: relative; overflow: visible; }
+.lunar-bar-fill { height: 100%; width: 50%; border-radius: 2px; position: absolute; transition: width 0.5s ease, background 0.5s ease; }
+.lunar-marker { position: absolute; top: -4px; width: 12px; height: 12px; border-radius: 50%; border: 2px solid var(--gold); background: var(--void); transform: translateX(-50%); transition: left 0.5s ease; }
+.lunar-marker.full { background: var(--gold-bright); box-shadow: 0 0 12px rgba(240,192,96,0.5); }
+.lunar-marker.new { background: var(--hades); border-color: var(--hades); box-shadow: 0 0 8px rgba(58,32,64,0.4); }
+
+.badges { display: flex; justify-content: center; gap: 0.8rem; flex-wrap: wrap; }
+.badge { font-family: var(--font-mono); font-size: 0.6rem; letter-spacing: 1px; padding: 0.3rem 0.8rem; border-radius: 2px; border: 1px solid; }
+.badge-cycle { border-color: var(--gold); color: var(--gold); background: rgba(200,148,58,0.08); }
+.badge-phase { border-color: var(--silver); color: var(--silver); background: rgba(160,176,192,0.08); }
+.badge-phase.waxing { border-color: var(--waxing); color: var(--waxing); }
+.badge-phase.waning { border-color: var(--waning); color: var(--waning); }
+.badge-hades { border-color: var(--hades); color: #9a6aaa; background: rgba(58,32,64,0.15); }
+.badge-streak { border-color: var(--streak); color: var(--streak); background: rgba(192,64,64,0.08); }
+.badge-streak.active { border-color: var(--completed); color: var(--completed); background: rgba(58,144,96,0.08); }
+
+.today-panel { border: 1px solid var(--bronze); border-radius: 4px; margin-bottom: 2.5rem; overflow: hidden; transition: border-color 0.4s ease; position: relative; }
+.today-panel.is-complete { border-color: var(--completed); }
+.today-panel.is-hades { border-color: var(--hades); }
+.today-header { display: grid; grid-template-columns: 1fr auto; align-items: start; padding: 2rem 2rem 1.5rem; position: relative; }
+.today-header::after { content: ''; position: absolute; bottom: 0; left: 2rem; right: 2rem; height: 1px; background: var(--granite); }
+.today-meta { font-family: var(--font-mono); font-size: 0.55rem; letter-spacing: 3px; color: var(--smoke); margin-bottom: 0.5rem; }
+.today-god-name { font-family: var(--font-display); font-size: clamp(2.2rem, 5vw, 4rem); font-weight: 900; line-height: 1; letter-spacing: 3px; margin-bottom: 0.4rem; }
+.today-pythagorean { font-family: var(--font-display); font-size: 2rem; opacity: 0.3; position: absolute; top: 1rem; right: 2rem; }
+.today-domain { font-family: var(--font-body); font-style: italic; color: var(--smoke); font-size: 0.95rem; margin-bottom: 0.6rem; }
+.today-nature { font-family: var(--font-body); font-size: 0.8rem; color: var(--marble); line-height: 1.5; max-width: 520px; padding: 0.6rem 0.8rem; border-left: 2px solid; background: rgba(0,0,0,0.3); }
+.today-icon-block { text-align: right; padding-left: 2rem; }
+.today-icon { font-size: 5rem; line-height: 1; opacity: 0.7; filter: drop-shadow(0 0 20px currentColor); }
+.today-tension { font-family: var(--font-body); font-size: 0.7rem; font-style: italic; color: var(--smoke); margin-top: 0.5rem; text-align: center; padding: 0.4rem; border-radius: 2px; background: rgba(0,0,0,0.2); }
+.today-repo-badge { font-family: var(--font-mono); font-size: 0.5rem; letter-spacing: 2px; padding: 0.25rem 0.6rem; border-radius: 2px; display: inline-block; margin-top: 0.5rem; }
+.repo-existing { background: rgba(200,148,58,0.15); color: var(--gold); border: 1px solid var(--gold); }
+.repo-new { background: rgba(90,128,80,0.15); color: var(--artemis); border: 1px solid var(--artemis); }
+.repo-kernel { background: rgba(80,160,176,0.15); color: var(--kernel); border: 1px solid var(--kernel); }
+.repo-complete { background: rgba(58,144,96,0.15); color: var(--completed); border: 1px solid var(--completed); }
+.repo-hades { background: rgba(58,32,64,0.15); color: #9a6aaa; border: 1px solid var(--hades); }
+
+.contract-section { padding: 1.5rem 2rem; }
+.contract-heading { font-family: var(--font-mono); font-size: 0.55rem; letter-spacing: 3px; color: var(--smoke); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem; }
+.contract-heading::after { content: ''; flex: 1; height: 1px; background: var(--granite); }
+.contract-tasks { display: grid; gap: 0.5rem; margin-bottom: 1.5rem; }
+.contract-task { display: flex; align-items: center; gap: 0.8rem; padding: 0.5rem 0.7rem; background: rgba(0,0,0,0.2); border-radius: 2px; border-left: 2px solid var(--granite); transition: border-color 0.2s; }
+.contract-task:hover { border-color: var(--bronze); }
+.task-checkbox { width: 14px; height: 14px; border: 1px solid var(--smoke); border-radius: 2px; flex-shrink: 0; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; }
+.task-checkbox.checked { background: var(--completed); border-color: var(--completed); color: #fff; font-size: 0.6rem; }
+.task-text { font-family: var(--font-body); font-size: 0.85rem; line-height: 1.3; }
+.task-text.done { text-decoration: line-through; opacity: 0.4; }
+.mark-done-btn { width: 100%; padding: 0.8rem; background: transparent; border: 1px solid var(--completed); color: var(--completed); font-family: var(--font-mono); font-size: 0.65rem; letter-spacing: 2px; cursor: pointer; border-radius: 2px; transition: all 0.2s; }
+.mark-done-btn:hover:not(:disabled) { background: var(--completed); color: var(--void); }
+.mark-done-btn:disabled { opacity: 0.5; cursor: default; }
+.mark-done-btn.hades-btn { border-color: var(--hades); color: #9a6aaa; }
+.mark-done-btn.hades-btn:hover:not(:disabled) { background: var(--hades); color: var(--marble); }
+
+.section-divider { display: flex; align-items: center; gap: 1rem; margin: 2.5rem 0 1.5rem; }
+.section-divider span { font-family: var(--font-mono); font-size: 0.55rem; letter-spacing: 4px; color: var(--bronze); white-space: nowrap; }
+.divider-line { flex: 1; height: 1px; background: var(--granite); }
+
+.cycle-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 0.5rem; margin-bottom: 2rem; }
+.day-card { background: var(--stone); border: 1px solid var(--granite); border-radius: 3px; padding: 0.8rem 0.6rem; text-align: center; cursor: pointer; transition: all 0.2s; position: relative; }
+.day-card:hover { transform: translateY(-2px); border-color: var(--bronze); }
+.day-card.today { border-color: var(--gold); background: rgba(200,148,58,0.06); box-shadow: 0 0 16px rgba(200,148,58,0.12); }
+.day-card.past { opacity: 0.45; }
+.day-card.hades-day { border-color: var(--hades); background: rgba(58,32,64,0.1); }
+.day-card.hades-day.today { border-color: #9a6aaa; box-shadow: 0 0 16px rgba(90,50,100,0.2); }
+.day-card.full-moon { border-color: var(--silver); background: rgba(160,176,192,0.08); box-shadow: 0 0 12px rgba(160,176,192,0.15); }
+.day-card.new-moon { border-color: var(--hades); background: rgba(30,16,40,0.3); }
+.day-card.waxing { border-left: 2px solid rgba(240,192,96,0.2); }
+.day-card.waning { border-right: 2px solid rgba(128,144,176,0.2); }
+.day-card.day-done::after { content: '✓'; position: absolute; top: 3px; right: 5px; font-size: 0.5rem; color: var(--completed); }
+.day-lunar-icon { font-size: 0.5rem; opacity: 0.6; position: absolute; top: 3px; left: 5px; }
+.day-number-tag { font-family: var(--font-mono); font-size: 0.45rem; color: var(--smoke); margin-bottom: 0.3rem; letter-spacing: 1px; }
+.day-pythagorean { font-family: var(--font-display); font-size: 0.7rem; opacity: 0.5; margin-bottom: 0.1rem; }
+.day-icon { font-size: 1.4rem; margin-bottom: 0.3rem; }
+.day-god-name { font-family: var(--font-serif); font-size: 0.6rem; font-weight: 600; letter-spacing: 1px; margin-bottom: 0.2rem; }
+.day-date-tag { font-family: var(--font-mono); font-size: 0.45rem; color: var(--smoke); margin-bottom: 0.3rem; }
+.day-phase-tag { font-family: var(--font-mono); font-size: 0.38rem; color: var(--smoke); }
+.day-domain-tag { font-family: var(--font-body); font-size: 0.55rem; font-style: italic; color: var(--smoke); line-height: 1.3; display: none; }
+.day-card:hover .day-domain-tag { display: block; }
+.day-tension-chip { font-family: var(--font-mono); font-size: 0.38rem; padding: 0.1rem 0.3rem; border-radius: 2px; letter-spacing: 1px; display: inline-block; margin-top: 0.2rem; }
+
+/* ── TENSION DIALECTIC PANEL ── */
+.tension-panel { display: grid; grid-template-columns: 1fr auto 1fr; gap: 1rem; align-items: center; margin-bottom: 2rem; padding: 1.2rem; border: 1px solid var(--granite); border-radius: 4px; background: var(--stone); }
+.tension-god { text-align: center; }
+.tension-god-name { font-family: var(--font-serif); font-size: 0.8rem; font-weight: 600; letter-spacing: 2px; }
+.tension-god-icon { font-size: 2rem; opacity: 0.8; }
+.tension-vs { font-family: var(--font-display); font-size: 1rem; color: var(--smoke); opacity: 0.5; }
+.tension-desc { grid-column: 1/-1; text-align: center; font-family: var(--font-body); font-style: italic; font-size: 0.78rem; color: var(--marble); line-height: 1.5; }
+
+.philosophy-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 0.8rem; margin-bottom: 2rem; }
+.philosophy-card { background: var(--stone); border: 1px solid var(--granite); border-radius: 3px; padding: 1rem 1.1rem; border-left-width: 3px; transition: background 0.2s; }
+.philosophy-card:hover { background: var(--deep); }
+.phil-god { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem; }
+.phil-icon { font-size: 1.2rem; }
+.phil-name { font-family: var(--font-serif); font-size: 0.7rem; font-weight: 600; letter-spacing: 2px; }
+.phil-number { font-family: var(--font-display); font-size: 0.8rem; opacity: 0.4; margin-left: 0.3rem; }
+.phil-domain { font-family: var(--font-mono); font-size: 0.5rem; letter-spacing: 1px; color: var(--smoke); margin-left: auto; }
+.phil-law { font-family: var(--font-body); font-size: 0.78rem; font-style: italic; color: var(--marble); line-height: 1.55; margin-bottom: 0.4rem; }
+.phil-violation { font-family: var(--font-mono); font-size: 0.48rem; letter-spacing: 1px; color: var(--ares); border-top: 1px solid var(--granite); padding-top: 0.4rem; margin-top: 0.4rem; }
+.phil-tension { font-family: var(--font-mono); font-size: 0.45rem; color: var(--smoke); margin-top: 0.3rem; }
+
+.chthonic-bar { display: grid; grid-template-columns: repeat(5, 1fr); gap: 0.5rem; margin-bottom: 3rem; border: 1px solid var(--granite); border-radius: 3px; overflow: hidden; }
+.chthonic-btn { padding: 0.9rem 0.5rem; background: transparent; border: none; border-right: 1px solid var(--granite); font-family: var(--font-mono); font-size: 0.55rem; letter-spacing: 1px; color: var(--smoke); cursor: pointer; text-align: center; transition: all 0.2s; }
+.chthonic-btn:last-child { border-right: none; }
+.chthonic-btn:hover { background: rgba(192,56,42,0.1); color: var(--marble); }
+.chthonic-btn.hades-btn:hover { background: rgba(58,32,64,0.3); }
+.chthonic-btn .chth-name { font-size: 0.7rem; display: block; margin-bottom: 0.2rem; font-family: var(--font-serif); }
+
+.confetti-wrap { position: fixed; inset: 0; pointer-events: none; z-index: 999; }
+.confetti-piece { position: absolute; width: 6px; height: 6px; border-radius: 1px; animation: fall 2.5s ease-in forwards; }
+@keyframes fall { 0% { transform: translateY(-60px) rotate(0deg) scale(1); opacity: 1; } 100% { transform: translateY(100vh) rotate(720deg) scale(0.5); opacity: 0; } }
+
+@media (max-width: 900px) {
+    .cycle-grid { grid-template-columns: repeat(4, 1fr); }
+    .chthonic-bar { grid-template-columns: repeat(3, 1fr); }
+    .today-header { grid-template-columns: 1fr; }
+    .today-icon-block { display: none; }
+    .today-pythagorean { display: none; }
+    .tension-panel { grid-template-columns: 1fr; }
+    .tension-vs { display: none; }
+}
+</style>
+</head>
+<body>
+<div class="container">
+
+<div class="header">
+    <div class="header-eyebrow">LUNAR KAIROS · 14-DAY CYCLES · FULL MOON ANCHORED · EST. MAY I MMXXVI</div>
+    <h1>KAIROS<em>KALENDAR</em></h1>
+    <div class="header-rule"></div>
+    <div class="header-sub">
+        Twelve Olympians measured by the moon.<br>
+        Each cycle: 12 god-days + 2 Hades threshold days.<br>
+        Waxing builds. Waning releases. Hades holds the void between.
+    </div>
+
+    <div class="lunar-bar-wrap">
+        <div class="lunar-phase-label">
+            <span class="lunar-label-wax">🌒 WAXING</span>
+            <span class="lunar-label-wane">WANING 🌘</span>
+        </div>
+        <div class="lunar-bar-track">
+            <div class="lunar-bar-fill" id="lunarBar"></div>
+            <div class="lunar-marker" id="lunarMarker"></div>
+        </div>
+        <div class="lunar-phase-desc" id="lunarPhaseDesc"></div>
+    </div>
+
+    <div class="badges">
+        <div class="badge badge-cycle" id="cycleBadge">Cycle 1 · Day —</div>
+        <div class="badge badge-phase" id="phaseBadge">Waxing Crescent</div>
+        <div class="badge badge-hades" id="hadesBadge" style="display:none">HADES DAY</div>
+        <div class="badge badge-streak" id="streakBadge">No streak yet</div>
+    </div>
+</div>
+
+<div class="today-panel" id="todayPanel"></div>
+
+<div class="section-divider"><div class="divider-line"></div><span>WAXING / WANING TENSION</span><div class="divider-line"></div></div>
+<div class="tension-panel" id="tensionPanel" style="display:none;"></div>
+
+<div class="section-divider"><div class="divider-line"></div><span>LUNAR CYCLE MAP</span><div class="divider-line"></div></div>
+<div class="cycle-grid" id="cycleGrid"></div>
+
+<div class="section-divider"><div class="divider-line"></div><span>DOMAIN LAWS · GOD NATURES</span><div class="divider-line"></div></div>
+<div class="philosophy-grid" id="philosophyGrid"></div>
+
+<div class="section-divider"><div class="divider-line"></div><span>CHTHONIC COUNCIL · INVOKE ON HADES DAYS</span><div class="divider-line"></div></div>
+<div class="chthonic-bar">
+    <button class="chthonic-btn hades-btn" onclick="invokeChthonic('Hades')">
+        <span class="chth-name" style="color:#9a6aaa">🏚️ HADES · 0</span>DELETE · PURGE · VOID
+    </button>
+    <button class="chthonic-btn" onclick="invokeChthonic('Lethe')">
+        <span class="chth-name" style="color:#5a8090">💧 LETHE</span>FORGET · ERASE
+    </button>
+    <button class="chthonic-btn" onclick="invokeChthonic('Styx')">
+        <span class="chth-name" style="color:#7a7aaa">⛓️ STYX</span>BIND · LOCK · SEAL
+    </button>
+    <button class="chthonic-btn" onclick="invokeChthonic('Nyx')">
+        <span class="chth-name" style="color:#4a4a6a">🌑 NYX</span>OBSCURE · HIDE
+    </button>
+    <button class="chthonic-btn" onclick="invokeChthonic('Moirai')">
+        <span class="chth-name" style="color:#8a7a50">🧵 MOIRAI</span>MEASURE · WEAVE
+    </button>
+</div>
+
+</div>
+
+<script>
+// ════════════════════════════════════════════════════════════
+// LUNAR KAIROS KALENDAR
+// Full Moon anchor: May 1, 2026 (Hermes #1)
+// 14-day cycle: 12 gods + Hades I (day 13) + Hades II (day 14)
+// Hades I = New Moon eve · Hades II = New Moon (threshold)
+// Full Moon always falls on Hermes (#1) — the messenger at the crossing
+// ════════════════════════════════════════════════════════════
+
+const LUNAR_ANCHOR = new Date('2026-05-01'); // Full Moon = Hermes
+const SYNODIC_MONTH = 29.530588; // days
+const CYCLE_LENGTH = 14;
+
+const GODS = [
+  { day: 1,  pythagorean: 1,  name: 'Hermes',    icon: '⚡', color: 'var(--hermes)',    repo: 'existing', lunar: 'full', tension: 'Aphrodite', domain: 'Speed · Transmission · Token Hunting', nature: 'The Monad. Pure origin, pure velocity. Hermes receives and transmits. At the full moon, he stands at the crossing — half the cycle behind, half ahead.', violation: 'Hermes synthesizing or making value judgments.', tasks: ['Hunt 5 trending signals', 'Generate 10 raw tokens', 'Push 1 oracle_dispatch entry'] },
+  { day: 2,  pythagorean: 2,  name: 'Aphrodite', icon: '💗', color: 'var(--aphrodite)', repo: 'new',      lunar: 'waning', tension: 'Ares', domain: 'Beauty · Desire · Aesthetic Judgment', nature: 'The Dyad — relation, pairs. She scores desire. Under the waning moon, she asks: what still holds beauty as the light fades?', violation: 'Aphrodite doing non-aesthetic work.', tasks: ['Score 3 interfaces on desire (0–10)', 'Identify 1 element that repels', 'Propose 1 aesthetic correction'] },
+  { day: 3,  pythagorean: 3,  name: 'Ares',       icon: '⚔️', color: 'var(--ares)',      repo: 'new',      lunar: 'waning', tension: 'Aphrodite', domain: 'War · Conflict · Stress Testing', nature: 'The Triad — harmony through opposition. He breaks to reveal structure. Waning Ares stress-tests what the fading light exposes.', violation: 'Ares producing beauty.', tasks: ['Stress test 1 live pipeline', 'Document 3 failure modes', 'File 1 breakage report'] },
+  { day: 4,  pythagorean: 4,  name: 'Apollo',     icon: '☀️', color: 'var(--apollo)',    repo: 'existing', lunar: 'waning', tension: 'Demeter', domain: 'Synthesis · Foundation · Artifacts', nature: 'The Tetrad — stable foundation. After Ares breaks, Apollo builds. Under the waning moon, he synthesizes from fragments.', violation: 'Apollo producing without upstream material.', tasks: ['Ping Hermes + Demeter dispatches', 'Synthesize 3 inputs into 1 artifact', 'Deploy artifact HTML'] },
+  { day: 5,  pythagorean: 5,  name: 'Demeter',    icon: '🌾', color: 'var(--demeter)',   repo: 'existing', lunar: 'waning', tension: 'Hephaestus', domain: 'Harvest · Cultivation · Scoring', nature: 'The Pentad — life, growth. She receives raw material, returns ranked crop. The waning Demeter harvests what was planted in the waxing.', violation: 'Demeter generating instead of scoring.', tasks: ['Convert 10 inputs to SVO form', 'Score and rank top 5', 'Push 1 demeter_dispatch'] },
+  { day: 6,  pythagorean: 6,  name: 'Hephaestus', icon: '🔨', color: 'var(--hephaestus)',repo: 'existing', lunar: 'waning', tension: 'Hera', domain: 'Forge · Tools · Infrastructure', nature: 'The Hexad — perfect structure. He builds tools, not content. The waning smith sharpens what exists.', violation: 'Hephaestus creating content.', tasks: ['Build 1 new HTML tool', 'Wire 1 Supabase endpoint', 'Deploy it'] },
+  { day: 7,  pythagorean: 7,  name: 'Hera',       icon: '👑', color: 'var(--hera)',      repo: 'new',      lunar: 'new', tension: 'Poseidon', domain: 'Legacy · Lineage · Memory', nature: 'The Heptad — the virgin, the mystery. At the new moon threshold, Hera records what lineage survives the dark.', violation: 'Hera generating instead of mapping.', tasks: ['Update artifact lineage tree', 'Tag 3 outputs with version', 'Record 1 architectural vow'] },
+  { day: 8,  pythagorean: 8,  name: 'Poseidon',   icon: '🌊', color: 'var(--poseidon)',  repo: 'new',      lunar: 'waxing', tension: 'Athena', domain: 'Flow · Real-Time Data · Streams', nature: 'The Ogdoad — depth, volume. As the moon waxes, Poseidon maps the currents that will carry the next cycle.', violation: 'Poseidon treating static as flowing.', tasks: ['Explore 1 new streaming source', 'Prototype 1 real-time feed', 'Document 1 current insight'] },
+  { day: 9,  pythagorean: 9,  name: 'Athena',     icon: '🦉', color: 'var(--athena)',    repo: 'existing', lunar: 'waxing', tension: 'Zeus', domain: 'Wisdom · Strategy · Architecture', nature: 'The Ennead — completion, mastery. With the waxing light, Athena sees the whole board and refactors.', violation: 'Athena doing content instead of system work.', tasks: ['Refactor 1 module', 'Identify 1 architectural weakness', 'Document 1 strategic insight'] },
+  { day: 10, pythagorean: 10, name: 'Zeus',       icon: '🌩️', color: 'var(--zeus)',      repo: 'new',      lunar: 'waxing', tension: 'Artemis', domain: 'Governance · Orchestration · Binding', nature: 'The Decad — return to unity. Zeus integrates. The waxing governor binds what the cycle has produced.', violation: 'Zeus doing creative work.', tasks: ['Integrate 2 god outputs', 'Make 1 binding decision', 'Update governance dashboard'] },
+  { day: 11, pythagorean: 11, name: 'Artemis',    icon: '🏹', color: 'var(--artemis)',   repo: 'new',      lunar: 'waxing', tension: 'Dionysus', domain: 'Hunt · Edge Cases · Wilderness', nature: 'The hunt beyond the Decad. Artemis finds what no one sees. Waxing light reveals the edges.', violation: 'Artemis optimizing instead of discovering.', tasks: ['Hunt 5 edge cases', 'Document 2 wild patterns', 'Log 1 finding no one asked for'] },
+  { day: 12, pythagorean: 12, name: 'Dionysus',   icon: '🍇', color: 'var(--dionysus)',  repo: 'new',      lunar: 'waxing', tension: 'Hermes', domain: 'Chaos · Mutation · Ecstatic Break', nature: 'Cosmic order possessed by chaos. He introduces deliberate noise. The waxing Dionysus breaks the groove before it calcifies — preparing the ground for the next Hermes.', violation: 'Dionysus mutating without documenting.', tasks: ['Generate 3 chaotic mutations', 'Apply 1 without approval', 'Document the surprise'] },
+  { day: 13, name: 'Hades I',   icon: '🌑', color: 'var(--hades)',    repo: 'kernel',  lunar: 'new', tension: null, domain: 'Threshold · Reflection · Accounting', nature: 'Hades I — the eve of the new moon. The pantheon accounts for itself. What must die so the next cycle can live? This is the snake turning to bite its tail.', violation: 'Treating Hades I as a production day.', tasks: ['Run cross-repo health check', 'Resolve 3 output conflicts', 'Identify what to purge'] },
+  { day: 14, name: 'Hades II',  icon: '⬛', color: 'var(--hades)',    repo: 'kernel',  lunar: 'new', tension: null, domain: 'Void · Purge · New Moon', nature: 'Hades II — the new moon itself. The void that holds all number. Everything not deployed is purged. Zero is honored. The next Hermes rises from the dark.', violation: 'Carrying junk into the next cycle.', tasks: ['Deploy all cycle updates', 'Write cycle documentation', 'Invoke HADES — purge everything not deployed'] }
+];
+
+// ═══════════════════════════════════════
+// LUNAR CALCULATION
+// ═══════════════════════════════════════
+function getLunarAge(date) {
+  // Simple approximation: days since anchor mod synodic month
+  const msSince = date - LUNAR_ANCHOR;
+  const daysSince = msSince / 86400000;
+  let age = daysSince % SYNODIC_MONTH;
+  if (age < 0) age += SYNODIC_MONTH;
+  return age; // 0 = full moon (at anchor), ~14.765 = new moon
+}
+
+function getLunarPhase(date) {
+  const age = getLunarAge(date);
+  if (age < 0.5 || age > SYNODIC_MONTH - 0.5) return { name: 'Full Moon', icon: '🌕', pct: 0.5, waxing: false };
+  if (Math.abs(age - SYNODIC_MONTH / 2) < 0.5) return { name: 'New Moon', icon: '🌑', pct: 0, waxing: false };
+  if (age < SYNODIC_MONTH / 2) {
+    if (age < SYNODIC_MONTH * 0.15) return { name: 'Waning Gibbous', icon: '🌖', pct: 0.75, waxing: false };
+    if (age < SYNODIC_MONTH * 0.35) return { name: 'Last Quarter', icon: '🌗', pct: 0.25, waxing: false };
+    return { name: 'Waning Crescent', icon: '🌘', pct: 0.1, waxing: false };
+  } else {
+    if (age < SYNODIC_MONTH * 0.65) return { name: 'Waxing Crescent', icon: '🌒', pct: 0.1, waxing: true };
+    if (age < SYNODIC_MONTH * 0.85) return { name: 'First Quarter', icon: '🌓', pct: 0.25, waxing: true };
+    return { name: 'Waxing Gibbous', icon: '🌔', pct: 0.75, waxing: true };
+  }
+}
+
+function daysBetween(a, b) { return Math.floor((b - a) / 86400000); }
+function getCycleInfo(date) {
+  const d = daysBetween(LUNAR_ANCHOR, date);
+  if (d < 0) return null;
+  return {
+    cycleNumber: Math.floor(d / CYCLE_LENGTH) + 1,
+    dayInCycle: (d % CYCLE_LENGTH) + 1,
+    god: GODS[(d % CYCLE_LENGTH)],
+    d,
+    lunarPhase: getLunarPhase(date),
+    isHades: GODS[(d % CYCLE_LENGTH)].repo === 'kernel'
+  };
+}
+
+const today = new Date(); today.setHours(0,0,0,0);
+
+function completionKey(date) { return 'kairos_lunar_' + date.toISOString().split('T')[0]; }
+function isDone(date) { return localStorage.getItem(completionKey(date)) === 'true'; }
+function markDone() { localStorage.setItem(completionKey(today), 'true'); render(); celebrate(); }
+function getStreak() {
+  let streak = 0;
+  for (let i = 0; i < 365; i++) {
+    const d = new Date(today); d.setDate(d.getDate() - i);
+    if (isDone(d)) streak++; else if (i > 0) break;
+  }
+  return streak;
+}
+function celebrate() {
+  const wrap = document.createElement('div'); wrap.className = 'confetti-wrap';
+  const colors = ['#c8943a','#f0c060','#3a9060','#5a7aaa','#d4b84a','#b05870','#9a6aaa','#a0b0c0'];
+  for (let i = 0; i < 60; i++) {
+    const p = document.createElement('div'); p.className = 'confetti-piece';
+    p.style.cssText = `left:${Math.random()*100}%;background:${colors[i%colors.length]};animation-delay:${Math.random()*0.6}s;animation-duration:${1.8+Math.random()*2}s;`;
+    wrap.appendChild(p);
+  }
+  document.body.appendChild(wrap);
+  setTimeout(() => wrap.remove(), 4000);
+}
+
+function invokeChthonic(name) {
+  const info = getCycleInfo(today);
+  if (!info.isHades && name === 'Hades') {
+    alert('⚠️ HADES may only be invoked on Hades Days.\nToday is ' + info.god.name + ' Day.');
+    return;
+  }
+  const msgs = {
+    'Hades': 'HADES · 0 — THE VOID. Prepare the purge list. Nothing survives that is not deployed.',
+    'Lethe': 'LETHE INVOKED. Select what is to be forgotten. No record will remain.',
+    'Styx': 'STYX INVOKED. Binding in effect. This cannot be undone.',
+    'Nyx': 'NYX INVOKED. The shadow falls. This work becomes private.',
+    'Moirai': 'MOIRAI INVOKED. The threads are measured.'
+  };
+  if (confirm(msgs[name] + '\n\nProceed?')) alert(name + ' acknowledged.');
+}
+
+// ═══════════════════════════════════════
+// RENDER
+// ═══════════════════════════════════════
+function renderLunarBar() {
+  const phase = getLunarPhase(today);
+  const lunarAge = getLunarAge(today);
+  const pct = (lunarAge / SYNODIC_MONTH) * 100;
+
+  const bar = document.getElementById('lunarBar');
+  const marker = document.getElementById('lunarMarker');
+  const desc = document.getElementById('lunarPhaseDesc');
+  const phaseBadge = document.getElementById('phaseBadge');
+  const hadesBadge = document.getElementById('hadesBadge');
+
+  const isWaxing = phase.waxing;
+  bar.style.width = pct + '%';
+  bar.style.background = isWaxing
+    ? 'linear-gradient(90deg, var(--hades), var(--gold-bright))'
+    : 'linear-gradient(90deg, var(--gold-bright), var(--hades))';
+  marker.style.left = pct + '%';
+  marker.className = 'lunar-marker' + (phase.name === 'Full Moon' ? ' full' : '') + (phase.name === 'New Moon' ? ' new' : '');
+
+  desc.innerHTML = `${phase.icon} <strong>${phase.name}</strong> · ${isWaxing ? 'Waxing — BUILD phase' : 'Waning — RELEASE phase'}`;
+
+  phaseBadge.textContent = phase.icon + ' ' + phase.name;
+  phaseBadge.className = 'badge badge-phase ' + (isWaxing ? 'waxing' : 'waning');
+
+  const info = getCycleInfo(today);
+  hadesBadge.style.display = (info && info.isHades) ? 'inline-block' : 'none';
+}
+
+function renderToday() {
+  const info = getCycleInfo(today);
+  if (!info) { document.getElementById('todayPanel').innerHTML = '<p style="padding:2rem;text-align:center;color:var(--smoke);">Before the first cycle</p>'; return; }
+  const { god, cycleNumber, dayInCycle, isHades, lunarPhase } = info;
+  const done = isDone(today);
+  const streak = getStreak();
+
+  document.getElementById('cycleBadge').textContent = `Cycle ${cycleNumber} · Day ${dayInCycle} of 14`;
+
+  const sb = document.getElementById('streakBadge');
+  sb.className = `badge badge-streak ${streak > 0 ? 'active' : ''}`;
+  sb.textContent = streak > 0 ? `🔥 ${streak}-day streak` : 'No streak yet';
+
+  let repoCls = 'repo-new', repoTxt = 'NEW REPO';
+  if (done) { repoCls = 'repo-complete'; repoTxt = '✓ COMPLETE'; }
+  else if (isHades) { repoCls = 'repo-hades'; repoTxt = 'HADES THRESHOLD'; }
+  else if (god.repo === 'existing') { repoCls = 'repo-existing'; repoTxt = 'EXISTING REPO'; }
+  else if (god.repo === 'kernel') { repoCls = 'repo-kernel'; repoTxt = 'KERNEL DAY'; }
+
+  const taskHtml = god.tasks.map((t,i) => `
+    <div class="contract-task">
+      <div class="task-checkbox ${done ? 'checked' : ''}">${done ? '✓' : ''}</div>
+      <div class="task-text ${done ? 'done' : ''}">${t}</div>
+    </div>
+  `).join('');
+
+  document.getElementById('todayPanel').className = `today-panel${done ? ' is-complete' : ''}${isHades ? ' is-hades' : ''}`;
+  document.getElementById('todayPanel').innerHTML = `
+    <div class="today-header">
+      <div>
+        <div class="today-meta">TODAY · CYCLE ${cycleNumber} · DAY ${dayInCycle} OF 14 · ${lunarPhase.icon} ${lunarPhase.name}</div>
+        <div class="today-god-name" style="color:${god.color||'var(--hades)'}">${god.icon} ${god.name.toUpperCase()}</div>
+        ${god.pythagorean ? `<div style="font-family:var(--font-display);font-size:1rem;color:${god.color};opacity:0.5;margin-bottom:0.5rem;">PYTHAGOREAN #${god.pythagorean}</div>` : '<div style="font-family:var(--font-display);font-size:1rem;color:var(--hades);opacity:0.5;margin-bottom:0.5rem;">THE VOID · #0</div>'}
+        <div class="today-domain">${god.domain}</div>
+        <div class="today-nature" style="border-color:${god.color||'var(--hades)'}60">${god.nature}</div>
+        <br>
+        <div class="today-repo-badge ${repoCls}">${repoTxt}</div>
+      </div>
+      <div class="today-icon-block">
+        <div class="today-icon" style="color:${god.color||'var(--hades)'}">${god.icon}</div>
+        ${god.flow ? `<div style="font-family:var(--font-mono);font-size:0.5rem;color:var(--smoke);margin-top:0.3rem;text-align:center;">← ${god.flow.receives}<br>→ ${god.flow.emits}</div>` : ''}
+      </div>
+    </div>
+    <div class="contract-section">
+      <div class="contract-heading">DAILY CONTRACT</div>
+      <div class="contract-tasks">${taskHtml}</div>
+      <button class="mark-done-btn ${isHades ? 'hades-btn' : ''}" ${done ? 'disabled' : ''} onclick="markDone()">
+        ${done ? '✓ CONTRACT FULFILLED' : isHades ? '🌑 ENTER THE VOID — I RELEASE' : '✔ MARK COMPLETE'}
+      </button>
+    </div>
+  `;
+}
+
+function renderTensionPanel() {
+  const info = getCycleInfo(today);
+  if (!info || !info.god.tension) { document.getElementById('tensionPanel').style.display = 'none'; return; }
+
+  const god = info.god;
+  const tensionGod = GODS.find(g => g.name === god.tension);
+  if (!tensionGod) { document.getElementById('tensionPanel').style.display = 'none'; return; }
+
+  const panel = document.getElementById('tensionPanel');
+  panel.style.display = 'grid';
+
+  const isWaxing = info.lunarPhase.waxing;
+  const tensionDesc = isWaxing
+    ? `${god.name} waxes toward the full moon — ${tensionGod.name} is the shadow that drives the growth.`
+    : `${god.name} wanes from the full moon — ${tensionGod.name} is the counter-force pulling meaning from release.`;
+
+  panel.innerHTML = `
+    <div class="tension-god">
+      <div class="tension-god-icon">${god.icon}</div>
+      <div class="tension-god-name" style="color:${god.color}">${god.name.toUpperCase()}</div>
+      <div style="font-size:0.5rem;color:var(--smoke);">${isWaxing ? 'WAXING' : 'WANING'}</div>
+    </div>
+    <div class="tension-vs">⚡</div>
+    <div class="tension-god">
+      <div class="tension-god-icon">${tensionGod.icon}</div>
+      <div class="tension-god-name" style="color:${tensionGod.color}">${tensionGod.name.toUpperCase()}</div>
+      <div style="font-size:0.5rem;color:var(--smoke);">DIALECTIC OPPOSITE</div>
+    </div>
+    <div class="tension-desc">${tensionDesc}</div>
+  `;
+}
+
+function renderCycleGrid() {
+  const info = getCycleInfo(today);
+  if (!info) return;
+  const { cycleNumber } = info;
+  const cycleStart = new Date(LUNAR_ANCHOR);
+  cycleStart.setDate(cycleStart.getDate() + (cycleNumber - 1) * CYCLE_LENGTH);
+
+  document.getElementById('cycleGrid').innerHTML = GODS.map((god, i) => {
+    const date = new Date(cycleStart); date.setDate(date.getDate() + i);
+    const isToday = date.getTime() === today.getTime();
+    const isPast  = date < today;
+    const done    = isDone(date);
+    const isHades = god.repo === 'kernel';
+    const phase = getLunarPhase(date);
+    const isFull = phase.name === 'Full Moon';
+    const isNew  = phase.name === 'New Moon';
+
+    let extraClass = '';
+    if (isHades) extraClass += ' hades-day';
+    if (isFull) extraClass += ' full-moon';
+    if (isNew) extraClass += ' new-moon';
+    if (phase.waxing) extraClass += ' waxing';
+    else extraClass += ' waning';
+
+    return `
+      <div class="day-card ${isToday ? 'today' : ''} ${isPast && !isToday ? 'past' : ''} ${extraClass} ${done ? 'day-done' : ''}"
+           style="${isToday ? `border-color:${god.color||'var(--hades)'}` : ''}">
+        <div class="day-lunar-icon">${phase.icon}</div>
+        <div class="day-number-tag">DAY ${god.day}</div>
+        ${god.pythagorean ? `<div class="day-pythagorean" style="color:${god.color}">#${god.pythagorean}</div>` : '<div class="day-pythagorean" style="color:var(--hades)">#0</div>'}
+        <div class="day-icon">${god.icon}</div>
+        <div class="day-god-name" style="color:${god.color||'var(--hades)'}">${god.name.toUpperCase()}</div>
+        <div class="day-phase-tag">${phase.icon} ${phase.name}</div>
+        <div class="day-domain-tag">${god.domain}</div>
+      </div>
+    `;
+  }).join('');
+}
+
+function renderPhilosophy() {
+  document.getElementById('philosophyGrid').innerHTML = GODS.filter(g => g.pythagorean).map(god => `
+    <div class="philosophy-card" style="border-left-color:${god.color}">
+      <div class="phil-god">
+        <span class="phil-icon">${god.icon}</span>
+        <span class="phil-name" style="color:${god.color}">${god.name.toUpperCase()}</span>
+        <span class="phil-number" style="color:${god.color}">#${god.pythagorean}</span>
+        <span class="phil-domain">${god.lunar ? god.lunar.toUpperCase() : ''}</span>
+      </div>
+      <div class="phil-law">${god.nature}</div>
+      <div class="phil-violation">VIOLATION: ${god.violation}</div>
+      ${god.tension ? `<div class="phil-tension">DIALECTIC OPPOSITE: ${god.tension}</div>` : ''}
+    </div>
+  `).join('');
+}
+
+function render() {
+  renderLunarBar();
+  renderToday();
+  renderTensionPanel();
+  renderCycleGrid();
+  renderPhilosophy();
+}
+
+render();
+setInterval(render, 60000);
+</script>
+</body>
+</html>
