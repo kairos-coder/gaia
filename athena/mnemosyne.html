@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🧠 Mnemosyne · Human Synthesis + Rejection</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: #0a0c12; font-family: 'Courier New', monospace; padding: 2rem; color: #d4e0ed; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        .header { border-left: 4px solid #8a6a4a; padding-left: 1rem; margin-bottom: 2rem; }
+        h1 { font-size: 2rem; color: #8a6a4a; }
+        .sub { color: #6a7a8a; font-size: 0.8rem; }
+        
+        .panel { background: #0b0e16; border: 1px solid #1e2535; border-radius: 0.5rem; padding: 1.5rem; margin-bottom: 1.5rem; }
+        .panel-title { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 2px; color: #6a7a8a; margin-bottom: 1rem; }
+        
+        button { background: #1e2535; border: none; color: #d4e0ed; padding: 0.5rem 1rem; border-radius: 8px; cursor: pointer; margin-right: 0.5rem; font-family: monospace; transition: all 0.2s; }
+        button:hover { background: #8a6a4a; color: #0a0c12; }
+        button.primary { background: #8a6a4a; color: #0a0c12; }
+        button.reject { background: #5a2a2a; }
+        button.reject:hover { background: #8b3a3a; color: #fff; }
+        
+        .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 1.5rem; }
+        .stat-card { background: #0f141e; border: 1px solid #1e2535; border-radius: 0.5rem; padding: 0.75rem; text-align: center; }
+        .stat-number { font-size: 1.5rem; font-weight: bold; color: #8a6a4a; }
+        .stat-label { font-size: 0.65rem; color: #6a7a8a; }
+        
+        .queue-item { background: #0f141e; border: 1px solid #1e2535; border-radius: 0.5rem; padding: 1rem; margin-bottom: 1rem; cursor: pointer; transition: all 0.2s; }
+        .queue-item:hover { border-color: #8a6a4a; }
+        .queue-item.selected { border-color: #8a6a4a; background: #1a1f2a; }
+        .queue-text { font-size: 0.85rem; line-height: 1.3; }
+        .queue-meta { font-size: 0.65rem; color: #8a6a4a; margin: 0.5rem 0; display: flex; gap: 1rem; flex-wrap: wrap; }
+        .selected-sources { background: #1a1f2a; border-radius: 0.5rem; padding: 0.75rem; margin: 0.5rem 0; font-size: 0.7rem; }
+        
+        textarea { width: 100%; background: #060810; border: 1px solid #1e2535; border-radius: 0.5rem; padding: 1rem; color: #d4e0ed; font-family: monospace; font-size: 0.9rem; resize: vertical; }
+        textarea:focus { outline: none; border-color: #8a6a4a; }
+        
+        .word-count { font-size: 0.7rem; margin-top: 0.5rem; text-align: right; }
+        .word-count.valid { color: #6b8e23; }
+        .word-count.invalid { color: #cd5c5c; }
+        
+        .log-area { background: #060810; border: 1px solid #1e2535; border-radius: 0.5rem; padding: 1rem; max-height: 200px; overflow-y: auto; font-size: 0.7rem; }
+        .log-entry { padding: 0.2rem 0; border-bottom: 1px solid #1a1f2a; color: #6a7a8a; }
+        .log-entry.success { color: #6b8e23; }
+        .log-entry.reject { color: #cd5c5c; }
+        
+        .rating { display: flex; gap: 0.5rem; align-items: center; margin-top: 0.5rem; }
+        .star { font-size: 1.2rem; cursor: pointer; color: #3a3a4a; transition: all 0.1s; }
+        .star.active { color: #d4af37; }
+        .star:hover { color: #d4af37; }
+        
+        .action-bar { display: flex; gap: 0.5rem; margin-top: 0.5rem; flex-wrap: wrap; }
+        .rejection-reason { margin-top: 0.5rem; display: none; }
+        .rejection-reason input { background: #060810; border: 1px solid #1e2535; border-radius: 0.5rem; padding: 0.5rem; color: #d4e0ed; width: 100%; margin-top: 0.5rem; }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1>🧠 MNEMOSYNE · HUMAN SYNTHESIS + REJECTION</h1>
+        <div class="sub">Accept → Collapse meaning into 16-32 words | Reject → Send back to Hephaestus for recombination</div>
+    </div>
+
+    <div class="stats-grid" id="statsGrid"></div>
+
+    <div class="panel">
+        <div class="panel-title">📥 SYNTHESIS QUEUE (from Apollo PROMOTE)</div>
+        <div id="queueContainer">
+            <div class="log-entry">Loading synthesis queue...</div>
+        </div>
+    </div>
+
+    <div class="panel">
+        <div class="panel-title">✍️ SYNTHESIS WORKSPACE</div>
+        <div id="selectedInfo" class="selected-sources">No sources selected. Click a construct above to add.</div>
+        <textarea id="synthesisInput" rows="4" placeholder="Write a 16-32 word synthesis that collapses the meaning of selected constructs..."></textarea>
+        <div class="word-count" id="wordCount">0 / 16-32 words</div>
+        
+        <div class="rating">
+            <span style="font-size:0.7rem;">Confidence:</span>
+            <span class="star" data-rating="1">★</span>
+            <span class="star" data-rating="2">★</span>
+            <span class="star" data-rating="3">★</span>
+            <span class="star" data-rating="4">★</span>
+            <span class="star" data-rating="5">★</span>
+            <span style="font-size:0.6rem; margin-left:0.5rem;">(How confident are you in this synthesis?)</span>
+        </div>
+        
+        <div class="action-bar">
+            <button id="submitBtn" class="primary">✅ Accept & Save to human_synthesis</button>
+            <button id="rejectSelectedBtn" class="reject">❌ Reject Selected & Send to Hephaestus</button>
+            <button id="clearBtn">Clear</button>
+        </div>
+        
+        <div id="rejectionReasonArea" class="rejection-reason">
+            <input type="text" id="rejectionReason" placeholder="Optional rejection reason (e.g., 'too vague', 'incoherent', 'low tension')">
+        </div>
+    </div>
+
+    <div class="panel">
+        <div class="panel-title">📜 SYNTHESIS LOG</div>
+        <div id="ingestLog" class="log-area">
+            <div class="log-entry">🧠 Mnemosyne ready. Accept constructs → synthesize. Reject → back to Hephaestus.</div>
+        </div>
+    </div>
+</div>
+
+<script>
+    (function() {
+        const SUPABASE_URL = 'https://kzcucjcyxybypncbdbws.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_saeUHGocDah-T2_709M6Fg_g26JtLXw';
+        let supabase = null;
+        
+        let queueItems = [];
+        let selectedIds = [];
+        let selectedItems = [];
+        let confidence = 3;
+        
+        // ============================================
+        // DATABASE FUNCTIONS
+        // ============================================
+        async function loadQueue() {
+            const { data, error } = await supabase
+                .from('mnemosyne_queue')
+                .select('*')
+                .eq('status', 'pending')
+                .order('created_at', { ascending: false });
+            
+            if (error) { 
+                if (error.message.includes('does not exist')) {
+                    addLog('mnemosyne_queue table not yet created. Apollo will create it when sending PROMOTE items.', 'warning');
+                } else {
+                    addLog(`Error loading queue: ${error.message}`, 'error');
+                }
+                return [];
+            }
+            queueItems = data || [];
+            renderQueue();
+            updateStats();
+            return queueItems;
+        }
+        
+        async function saveSynthesis() {
+            const synthesis = document.getElementById('synthesisInput').value.trim();
+            const wordCount = synthesis.split(/\s+/).filter(w => w.length > 0).length;
+            
+            if (wordCount < 16 || wordCount > 32) {
+                addLog(`Synthesis must be 16-32 words (currently ${wordCount})`, 'error');
+                return;
+            }
+            
+            if (selectedIds.length === 0) {
+                addLog('Please select at least one source construct', 'error');
+                return;
+            }
+            
+            const sourceIds = selectedIds;
+            const sourceBodies = selectedItems.map(i => i.body);
+            const sourceScores = selectedItems.map(i => i.demeter_score);
+            
+            const synthesisData = {
+                body: synthesis.toLowerCase(),
+                source_ids: sourceIds,
+                source_bodies: sourceBodies,
+                source_scores: sourceScores,
+                word_count: wordCount,
+                confidence: confidence,
+                created_at: new Date().toISOString()
+            };
+            
+            const { error } = await supabase.from('human_synthesis').insert(synthesisData);
+            
+            if (error) {
+                addLog(`Save failed: ${error.message}`, 'error');
+                return;
+            }
+            
+            // Mark used queue items as completed
+            for (const id of selectedIds) {
+                await supabase
+                    .from('mnemosyne_queue')
+                    .update({ status: 'completed' })
+                    .eq('construct_id', id);
+            }
+            
+            addLog(`✅ Synthesis accepted! ${wordCount} words, confidence ${confidence}/5`, 'success');
+            
+            // Clear workspace
+            document.getElementById('synthesisInput').value = '';
+            updateWordCount();
+            clearSelection();
+            await loadQueue();
+        }
+        
+        async function rejectSelected() {
+            if (selectedIds.length === 0) {
+                addLog('Please select at least one construct to reject', 'error');
+                return;
+            }
+            
+            const reason = document.getElementById('rejectionReason').value.trim() || 'No reason provided';
+            
+            for (const item of selectedItems) {
+                // Add to rejection queue
+                const rejectData = {
+                    construct_id: item.construct_id,
+                    original_body: item.body,
+                    demeter_score: item.demeter_score,
+                    rejection_reason: reason,
+                    rejected_by: 'human',
+                    created_at: new Date().toISOString()
+                };
+                
+                await supabase.from('rejection_queue').insert(rejectData);
+                
+                // Mark as rejected in mnemosyne_queue
+                await supabase
+                    .from('mnemosyne_queue')
+                    .update({ status: 'rejected' })
+                    .eq('construct_id', item.construct_id);
+                
+                // Get current metadata from the item (it's in the queue item, not the concept)
+                // We need to fetch the concept to get its current metadata
+                const { data: concept } = await supabase
+                    .from('concepts')
+                    .select('metadata')
+                    .eq('id', item.construct_id)
+                    .single();
+                
+                const currentMetadata = concept?.metadata || {};
+                const updatedMetadata = {
+                    ...currentMetadata,
+                    human_rejected: true,
+                    rejection_reason: reason,
+                    rejected_at: new Date().toISOString()
+                };
+                
+                // Update concept with rejection flag and penalize score
+                await supabase
+                    .from('concepts')
+                    .update({ 
+                        metadata: updatedMetadata,
+                        score: Math.max(0, (item.demeter_score || 50) - 15)
+                    })
+                    .eq('id', item.construct_id);
+            }
+            
+            addLog(`❌ Rejected ${selectedIds.length} construct(s). Reason: "${reason}" — sent back to Hephaestus pool.`, 'reject');
+            
+            // Clear rejection reason field and hide area
+            document.getElementById('rejectionReason').value = '';
+            document.getElementById('rejectionReasonArea').style.display = 'none';
+            
+            // Clear workspace
+            clearSelection();
+            await loadQueue();
+            await updateStats();
+        }
+        
+        // ============================================
+        // UI FUNCTIONS
+        // ============================================
+        function renderQueue() {
+            const container = document.getElementById('queueContainer');
+            if (!queueItems.length) {
+                container.innerHTML = '<div class="log-entry">No pending synthesis items. Apollo will send PROMOTE constructs here.</div>';
+                return;
+            }
+            
+            container.innerHTML = queueItems.map(item => {
+                const isSelected = selectedIds.includes(item.construct_id);
+                return `
+                    <div class="queue-item ${isSelected ? 'selected' : ''}" onclick="toggleSelect('${item.construct_id}')">
+                        <div class="queue-text">${escapeHtml(item.body)}</div>
+                        <div class="queue-meta">
+                            <span>🎯 Demeter: ${item.demeter_score}%</span>
+                            <span>🎯 Intent: ${(item.intent * 100).toFixed(0)}%</span>
+                            <span>📅 ${new Date(item.created_at).toLocaleDateString()}</span>
+                            ${isSelected ? '<span>✅ Selected</span>' : ''}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        window.toggleSelect = (id) => {
+            const item = queueItems.find(i => i.construct_id === id);
+            if (!item) return;
+            
+            const index = selectedIds.indexOf(id);
+            if (index === -1) {
+                selectedIds.push(id);
+                selectedItems.push(item);
+            } else {
+                selectedIds.splice(index, 1);
+                selectedItems.splice(index, 1);
+            }
+            updateSelectedDisplay();
+            renderQueue();
+        };
+        
+        function updateSelectedDisplay() {
+            const container = document.getElementById('selectedInfo');
+            if (selectedIds.length === 0) {
+                container.innerHTML = 'No sources selected. Click a construct above to add.';
+                return;
+            }
+            container.innerHTML = `
+                <strong>📚 Selected Sources (${selectedIds.length}):</strong><br>
+                ${selectedItems.map(i => `• [${i.demeter_score}%] ${escapeHtml(i.body.substring(0, 80))}...`).join('<br>')}
+            `;
+        }
+        
+        function clearSelection() {
+            selectedIds = [];
+            selectedItems = [];
+            updateSelectedDisplay();
+            renderQueue();
+        }
+        
+        function updateWordCount() {
+            const input = document.getElementById('synthesisInput').value;
+            const wordCount = input.trim().split(/\s+/).filter(w => w.length > 0).length;
+            const elem = document.getElementById('wordCount');
+            elem.textContent = `${wordCount} / 16-32 words`;
+            elem.className = (wordCount >= 16 && wordCount <= 32) ? 'word-count valid' : 'word-count invalid';
+        }
+        
+        function initRatingStars() {
+            const stars = document.querySelectorAll('.star');
+            stars.forEach(star => {
+                star.addEventListener('click', () => {
+                    const rating = parseInt(star.dataset.rating);
+                    confidence = rating;
+                    stars.forEach((s, i) => {
+                        if (i < rating) s.classList.add('active');
+                        else s.classList.remove('active');
+                    });
+                });
+            });
+        }
+        
+        async function updateStats() {
+            const { data: pending } = await supabase.from('mnemosyne_queue').select('id', { count: 'exact' }).eq('status', 'pending');
+            const { data: completed } = await supabase.from('human_synthesis').select('id', { count: 'exact' });
+            const { data: rejected } = await supabase.from('rejection_queue').select('id', { count: 'exact' });
+            
+            document.getElementById('statsGrid').innerHTML = `
+                <div class="stat-card"><div class="stat-number">${pending?.length || 0}</div><div class="stat-label">Pending Synthesis</div></div>
+                <div class="stat-card"><div class="stat-number">${completed?.length || 0}</div><div class="stat-label">Accepted Syntheses</div></div>
+                <div class="stat-card"><div class="stat-number">${rejected?.length || 0}</div><div class="stat-label">Rejected & Returned</div></div>
+                <div class="stat-card"><div class="stat-number">${selectedIds.length}</div><div class="stat-label">Selected Sources</div></div>
+            `;
+        }
+        
+        function addLog(msg, type = 'info') {
+            const log = document.getElementById('ingestLog');
+            const entry = document.createElement('div');
+            entry.className = `log-entry ${type}`;
+            entry.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
+            log.appendChild(entry);
+            entry.scrollIntoView({ behavior: 'smooth' });
+        }
+        
+        function escapeHtml(str) {
+            return String(str).replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
+        }
+        
+        async function init() {
+            if (!window.supabase) { addLog('Supabase failed to load', 'error'); return; }
+            supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+            await loadQueue();
+            await updateStats();
+            
+            document.getElementById('submitBtn').onclick = saveSynthesis;
+            document.getElementById('rejectSelectedBtn').onclick = () => {
+                const reasonArea = document.getElementById('rejectionReasonArea');
+                if (reasonArea.style.display === 'none') {
+                    reasonArea.style.display = 'block';
+                    addLog('Enter rejection reason and click Reject again to confirm.', 'info');
+                } else {
+                    rejectSelected();
+                }
+            };
+            document.getElementById('clearBtn').onclick = () => {
+                document.getElementById('synthesisInput').value = '';
+                updateWordCount();
+                clearSelection();
+                document.getElementById('rejectionReasonArea').style.display = 'none';
+                document.getElementById('rejectionReason').value = '';
+            };
+            document.getElementById('synthesisInput').oninput = updateWordCount;
+            initRatingStars();
+            
+            addLog('🧠 Mnemosyne ready. Accept constructs → synthesize (16-32 words). Reject → back to Hephaestus.', 'success');
+        }
+        
+        init();
+    })();
+</script>
+</body>
+</html>
