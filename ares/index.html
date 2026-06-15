@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>⚔️ Ares · War Engine</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script type="importmap">
+        { "imports": { "@xenova/transformers": "https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.2/dist/transformers.min.js" } }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;900&family=Crimson+Pro:ital,wght@0,300;0,400;1,300&family=JetBrains+Mono:wght@300;400;500&display=swap');
+        :root {
+            --void: #080a0f; --deep: #0b0e16; --surface: #1e2535;
+            --gold: #c8943a; --ares: #c0382a; --mist: #6a7a8a; --pale: #d4e0ed;
+            --war: #c0382a; --blood: #8b1a1a; --iron: #4a4a5a; --ember: #d4784a;
+            --font-display: 'Cinzel', serif; --font-body: 'Crimson Pro', serif; --font-mono: 'JetBrains Mono', monospace;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: var(--void); font-family: var(--font-body); color: var(--pale); min-height: 100vh; }
+
+        body::after {
+            content: ''; position: fixed; top: 0; left: 0; right: 0; height: 3px;
+            background: linear-gradient(90deg, transparent, var(--war), var(--ember), var(--war), transparent);
+            z-index: 100;
+        }
+
+        /* ── HERO ── */
+        .shrine-hero {
+            position: relative; width: 100%; height: 280px; overflow: hidden;
+            border-radius: 6px; margin-bottom: 1rem;
+        }
+        .shrine-hero img {
+            width: 100%; height: 100%; object-fit: cover; object-position: center 30%;
+            display: block; transition: transform 8s ease; filter: brightness(0.8) saturate(1.1);
+        }
+        .shrine-hero:hover img { transform: scale(1.04); }
+        .shrine-hero-overlay {
+            position: absolute; inset: 0;
+            background: linear-gradient(to bottom, rgba(8,10,15,0.1) 0%, rgba(8,10,15,0.7) 75%, rgba(8,10,15,1) 100%);
+        }
+        .shrine-hero-label {
+            position: absolute; bottom: 1rem; left: 50%; transform: translateX(-50%);
+            font-family: var(--font-mono); font-size: 0.45rem; letter-spacing: 4px;
+            color: var(--ember); opacity: 0.7; text-transform: uppercase; white-space: nowrap;
+        }
+
+        .container { max-width: 1300px; margin: 0 auto; padding: 1.5rem; }
+
+        /* ── HEADER ── */
+        .header { text-align: center; margin-bottom: 1rem; }
+        .header h1 { font-family: var(--font-display); font-size: 2.5rem; color: var(--war); letter-spacing: 6px; text-shadow: 0 0 30px rgba(192,56,42,0.3); }
+        .header-sub { font-family: var(--font-mono); font-size: 0.5rem; color: var(--mist); letter-spacing: 3px; }
+
+        /* ── TELOS ── */
+        .telos-bar {
+            background: rgba(192,56,42,0.06); border: 1px solid rgba(192,56,42,0.3);
+            border-left: 3px solid var(--war); border-radius: 4px;
+            padding: 0.5rem 1rem; margin-bottom: 1rem;
+            display: flex; align-items: center; gap: 0.6rem;
+        }
+        .telos-bar .telos-label { font-family: var(--font-mono); font-size: 0.4rem; letter-spacing: 3px; color: var(--ember); text-transform: uppercase; white-space: nowrap; }
+        .telos-bar .telos-text { font-family: var(--font-body); font-size: 0.8rem; color: var(--pale); font-style: italic; flex: 1; }
+        .telos-bar .telos-text.empty { color: var(--mist); }
+
+        /* ── STATS ── */
+        .stats-bar { display: flex; gap: 2rem; justify-content: center; flex-wrap: wrap; margin-bottom: 1rem; font-family: var(--font-mono); font-size: 0.45rem; color: var(--mist); }
+        .stats-bar span { color: var(--pale); font-size: 0.55rem; }
+
+        /* ── MAIN ── */
+        .main { display: flex; gap: 1rem; }
+
+        /* ── LEFT: TRIPLETS ── */
+        .left { flex: 1; display: flex; flex-direction: column; gap: 0.6rem; }
+        .left h2 { font-family: var(--font-display); font-size: 0.8rem; color: var(--war); letter-spacing: 2px; }
+        .triplet-card {
+            background: var(--deep); border: 1px solid var(--surface); border-left: 3px solid var(--war);
+            border-radius: 4px; padding: 0.8rem 1rem; transition: all 0.2s;
+        }
+        .triplet-card:hover { border-color: var(--war); box-shadow: 0 0 16px rgba(192,56,42,0.1); }
+        .triplet-svo {
+            display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;
+            font-family: var(--font-body); font-size: 1rem;
+        }
+        .triplet-svo .s { color: var(--ember); font-style: italic; }
+        .triplet-svo .v { color: var(--war); font-weight: bold; text-transform: uppercase; }
+        .triplet-svo .o { color: var(--pale); font-style: italic; }
+        .triplet-meta { display: flex; gap: 1.5rem; margin-top: 0.5rem; font-family: var(--font-mono); font-size: 0.4rem; color: var(--mist); }
+        .tension-high { color: var(--war); font-weight: bold; }
+        .tension-med  { color: var(--ember); }
+        .empty-state { color: var(--mist); font-style: italic; font-size: 0.55rem; text-align: center; padding: 3rem; }
+
+        /* ── RIGHT: QUEUE ── */
+        .right { width: 420px; flex-shrink: 0; display: flex; flex-direction: column; gap: 0.6rem; }
+        .right h2 { font-family: var(--font-display); font-size: 0.8rem; color: var(--war); letter-spacing: 2px; }
+        .right .hint { font-family: var(--font-mono); font-size: 0.4rem; color: var(--mist); margin-bottom: 0.5rem; }
+        .queue-item {
+            background: var(--deep); border: 1px solid var(--surface);
+            border-radius: 4px; padding: 0.5rem 0.7rem;
+            display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;
+        }
+        .queue-item .pair-words { font-family: var(--font-body); font-size: 0.7rem; color: var(--pale); font-style: italic; flex: 1; min-width: 120px; }
+        .queue-item input {
+            width: 90px; background: #060810; color: var(--ember);
+            border: 1px solid var(--surface); padding: 0.3rem 0.4rem;
+            font-family: var(--font-mono); font-size: 0.5rem; border-radius: 3px;
+            text-transform: uppercase;
+        }
+        .queue-item input:focus { border-color: var(--war); outline: none; }
+        .queue-item .suggested-verb { font-family: var(--font-mono); font-size: 0.38rem; color: var(--mist); }
+        .queue-item button {
+            padding: 0.2rem 0.5rem; border: 1px solid var(--surface);
+            background: transparent; color: var(--mist); border-radius: 3px;
+            cursor: pointer; font-family: var(--font-mono); font-size: 0.4rem;
+        }
+        .queue-item button.forge { border-color: var(--war); color: var(--war); }
+        .queue-item button.forge:hover { background: var(--war); color: #fff; }
+        .queue-item button.skip { border-color: var(--mist); }
+        .queue-item button.skip:hover { background: var(--mist); color: #000; }
+
+        /* ── BUTTONS ── */
+        button.btn {
+            padding: 0.4rem 0.8rem; border: 1px solid var(--surface);
+            background: var(--deep); color: var(--pale); border-radius: 4px;
+            cursor: pointer; font-family: var(--font-mono); font-size: 0.5rem;
+            letter-spacing: 1px; transition: all 0.2s;
+        }
+        button.btn:hover:not(:disabled) { background: var(--war); color: #fff; border-color: var(--war); }
+        button.btn.primary { background: var(--war); color: #fff; border-color: var(--war); }
+        button.btn:disabled { opacity: 0.3; cursor: not-allowed; }
+        .spin { display: inline-block; animation: spin 0.8s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* ── SHRINE STRIP ── */
+        .shrine-strip { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; margin-top: 1.5rem; }
+        .shrine-strip-item {
+            border: 1px solid var(--surface); border-radius: 4px; overflow: hidden;
+            position: relative; height: 140px; transition: border-color 0.3s, box-shadow 0.3s;
+        }
+        .shrine-strip-item img {
+            width: 100%; height: 100%; object-fit: cover; object-position: center top;
+            filter: brightness(0.65) saturate(0.9); transition: filter 0.4s, transform 0.5s;
+        }
+        .shrine-strip-item:hover { border-color: var(--war); box-shadow: 0 0 16px rgba(192,56,42,0.2); }
+        .shrine-strip-item:hover img { filter: brightness(1) saturate(1.1); transform: scale(1.05); }
+        .shrine-strip-glyph {
+            position: absolute; bottom: 0; left: 0; right: 0;
+            padding: 0.5rem; background: linear-gradient(to top, rgba(8,10,15,0.9), transparent);
+            text-align: center; font-family: var(--font-mono); font-size: 0.35rem;
+            letter-spacing: 2px; color: var(--ember); opacity: 0; transition: opacity 0.3s;
+        }
+        .shrine-strip-item:hover .shrine-strip-glyph { opacity: 1; }
+
+        .log { background: #060810; border: 1px solid var(--surface); border-radius: 4px; padding: 0.5rem; max-height: 80px; overflow-y: auto; font-family: var(--font-mono); font-size: 0.4rem; color: var(--mist); margin-top: 1rem; }
+
+        @media (max-width: 800px) { .main { flex-direction: column; } .right { width: 100%; } }
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <!-- ══ HERO ══ -->
+    <div class="shrine-hero">
+        <img src="assets/ares-hero.jpg" alt="Ares · War Engine" />
+        <div class="shrine-hero-overlay"></div>
+        <div class="shrine-hero-label">⚔️ the stress-tester · forge of conflict · breaker of bonds</div>
+    </div>
+
+    <!-- ══ HEADER ══ -->
+    <div class="header">
+        <h1>⚔️ ARES</h1>
+        <div class="header-sub">WAR ENGINE · TRIPLET FORGE · PYTHAGOREAN #3</div>
+    </div>
+
+    <!-- ══ TELOS ══ -->
+    <div class="telos-bar">
+        <span class="telos-label">🎯 ACTIVE TELOS</span>
+        <span class="telos-text empty" id="telosText">Loading...</span>
+    </div>
+
+    <!-- ══ STATS ══ -->
+    <div class="stats-bar">
+        <div>Pairs in Queue: <span id="queueCount">—</span></div>
+        <div>Triplets Forged: <span id="tripletCount">—</span></div>
+        <div>Avg Tension: <span id="avgTension">—</span></div>
+        <div>Dispatched: <span id="dispatchedCount">—</span></div>
+    </div>
+
+    <!-- ══ MAIN ══ -->
+    <div class="main">
+
+        <!-- LEFT: TRIPLETS -->
+        <div class="left">
+            <h2>⚔️ FORGED TRIPLETS</h2>
+            <button class="btn primary" id="dispatchBtn" disabled>⚔ Dispatch All to Apollo</button>
+            <div id="tripletsContainer">
+                <div class="empty-state">No triplets forged yet. Load pairs and assign verbs.</div>
+            </div>
+        </div>
+
+        <!-- RIGHT: QUEUE -->
+        <div class="right">
+            <h2>📋 PAIR QUEUE</h2>
+            <div class="hint">Pairs from Aphrodite. Assign a verb to forge a triplet.</div>
+            <button class="btn" id="loadPairsBtn">📥 Load Pairs from Aphrodite</button>
+            <button class="btn" id="forgeAllBtn" disabled>⚔ Forge All with Suggested Verbs</button>
+            <div id="queueContainer">
+                <div class="empty-state">Load pairs from Aphrodite to begin.</div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ══ SHRINE STRIP ══ -->
+    <div class="shrine-strip">
+        <div class="shrine-strip-item">
+            <img src="assets/ares-chthonic.jpg" alt="Ares · Chthonic" />
+            <div class="shrine-strip-glyph">CHTHONIC · BLOOD · IRON</div>
+        </div>
+        <div class="shrine-strip-item">
+            <img src="assets/ares-runic.jpg" alt="Ares · Runic" />
+            <div class="shrine-strip-glyph">RUNIC · CONFLICT · STRENGTH</div>
+        </div>
+        <div class="shrine-strip-item">
+            <img src="assets/ares-cyber.jpg" alt="Ares · Cyber" />
+            <div class="shrine-strip-glyph">CYBER · COMBAT · PROTOCOL</div>
+        </div>
+    </div>
+
+    <div class="log" id="log"><div>⚔️ Ares stands ready. The forge is lit.</div></div>
+
+</div>
+
+<script type="module">
+const sb = window.supabase.createClient(
+  'https://kzcucjcyxybypncbdbws.supabase.co',
+  'sb_publishable_saeUHGocDah-T2_709M6Fg_g26JtLXw'
+);
+
+import { pipeline, env } from '@xenova/transformers';
+env.allowLocalModels = true;
+env.useBrowserCache = true;
+
+let embedder = null;
+let pairsQueue = [];      // { id, token_a_body, token_b_body, domain_a, domain_b, ... }
+let forgedTriplets = [];  // { subject, verb, object, tension, domain, ... }
+
+const WAR_VERBS = [
+  'strikes', 'clashes', 'crushes', 'breaks', 'shatters', 'destroys', 'burns',
+  'hunts', 'tracks', 'seizes', 'conquers', 'resists', 'fights', 'defends',
+  'forges', 'tempers', 'hardens', 'wields', 'commands', 'dominates', 'overthrows',
+  'assaults', 'invades', 'raids', 'ambushes', 'counters', 'parries', 'thrusts',
+  'bleeds', 'wounds', 'scars', 'rages', 'howls', 'roars', 'storms', 'devastates',
+  'cleaves', 'rends', 'grinds', 'pounds', 'batters', 'rampages'
+];
+
+// ── MODEL ──────────────────────────────────────────
+async function loadModel() {
+    try {
+        embedder = await pipeline('feature-extraction', 'Xenova/all-MiniLM-L6-v2');
+        log('MiniLM loaded — tension scoring active.', 'success');
+    } catch {
+        log('MiniLM offline — using random tension.', 'warn');
+    }
+}
+
+async function getEmbedding(text) {
+    if (!embedder) return null;
+    const r = await embedder(text, { pooling: 'mean', normalize: true });
+    return Array.from(r.data);
+}
+
+function cosineSim(a, b) {
+    if (!a || !b || a.length !== b.length) return 0;
+    let dot = 0, na = 0, nb = 0;
+    for (let i = 0; i < a.length; i++) { dot += a[i] * b[i]; na += a[i] * a[i]; nb += b[i] * b[i]; }
+    return (na && nb) ? dot / (Math.sqrt(na) * Math.sqrt(nb)) : 0;
+}
+
+// ── TELOS ──────────────────────────────────────────
+async function loadTelos() {
+    const { data } = await sb.from('telos').select('statement').eq('is_active', true).maybeSingle();
+    const el = document.getElementById('telosText');
+    if (el) {
+        el.textContent = data?.statement || 'No active telos — set one in Apollo';
+        el.classList.toggle('empty', !data?.statement);
+    }
+}
+
+// ── LOAD PAIRS FROM APHRODITE ──────────────────────
+async function loadPairs() {
+    const btn = document.getElementById('loadPairsBtn');
+    btn.disabled = true; btn.innerHTML = '<span class="spin">⟳</span> Loading...';
+    log('Loading pairs from Aphrodite...');
+
+    const { data: pairs, error } = await sb
+        .from('pairs')
+        .select('*')
+        .eq('consumed', false)
+        .order('tension_score', { ascending: false })
+        .limit(40);
+
+    if (error || !pairs?.length) {
+        log('No pairs available from Aphrodite.', 'warn');
+        btn.disabled = false; btn.textContent = '📥 Load Pairs from Aphrodite';
+        return;
+    }
+
+    pairsQueue = pairs;
+    log(`Loaded ${pairs.length} pairs.`, 'success');
+    updateStats();
+    renderQueue();
+    document.getElementById('forgeAllBtn').disabled = false;
+    btn.disabled = false; btn.textContent = '📥 Load Pairs from Aphrodite';
+}
+
+// ── SUGGEST VERB ────────────────────────────────────
+function suggestVerb(subject, object) {
+    // Pick a war verb that sounds right with the subject
+    const hash = (subject + object).split('').reduce((a, c) => a + c.charCodeAt(0), 0);
+    return WAR_VERBS[hash % WAR_VERBS.length];
+}
+
+// ── FORGE SINGLE TRIPLET ────────────────────────────
+async function forgeTriplet(index) {
+    const pair = pairsQueue[index];
+    if (!pair) return;
+
+    const verbInput = document.getElementById(`verb-${index}`);
+    const verb = verbInput?.value?.trim() || suggestVerb(pair.token_a_body, pair.token_b_body);
+
+    // Compute tension via semantic distance
+    let tension = 0.5;
+    if (embedder) {
+        const embA = await getEmbedding(pair.token_a_body);
+        const embB = await getEmbedding(pair.token_b_body);
+        if (embA && embB) {
+            const sim = cosineSim(embA, embB);
+            tension = 1 - sim; // Distance = tension. Counter-domain pairs get high tension.
+        }
+    }
+    // Boost tension for counter-domain pairs
+    if (pair.counter_domain_pair || pair.domain_a !== pair.domain_b) {
+        tension = Math.min(1, tension + 0.2);
+    }
+
+// NEW (matches actual schema):
+forgedTriplets.push({
+  subject: pair.token_a_body,
+  verb: verb.toLowerCase(),
+  object: pair.token_b_body,
+  source: 'ares-forge',
+  state: 'raw',
+  created_at: new Date().toISOString()
+});
+
+    // Remove from queue
+    pairsQueue.splice(index, 1);
+
+    updateStats();
+    renderQueue();
+    renderTriplets();
+    log(`Forged: ${pair.token_a_body} ${verb.toUpperCase()} ${pair.token_b_body} (tension: ${(tension * 100).toFixed(0)}%)`, 'success');
+
+    // Enable dispatch if we have triplets
+    document.getElementById('dispatchBtn').disabled = !forgedTriplets.length;
+    document.getElementById('forgeAllBtn').disabled = !pairsQueue.length;
+}
+
+// ── FORGE ALL ────────────────────────────────────────
+async function forgeAll() {
+    for (let i = pairsQueue.length - 1; i >= 0; i--) {
+        await forgeTriplet(i);
+    }
+}
+
+// ── DISPATCH TO APOLLO ──────────────────────────────
+async function dispatchToApollo() {
+    if (!forgedTriplets.length) return;
+
+    const btn = document.getElementById('dispatchBtn');
+    btn.disabled = true; btn.innerHTML = '<span class="spin">⟳</span> Dispatching...';
+    log('Dispatching triplets to Apollo...');
+
+    const { error } = await sb.from('svo_triplets').insert(forgedTriplets);
+
+    if (error) {
+        log(`Dispatch failed: ${error.message}`, 'err');
+        btn.disabled = false; btn.textContent = '⚔ Dispatch All to Apollo';
+        return;
+    }
+
+    // Mark pairs as consumed
+    const pairIds = forgedTriplets.map(t => t.pair_id).filter(Boolean);
+    if (pairIds.length) {
+        await sb.from('pairs').update({ consumed: true }).in('id', pairIds);
+    }
+
+    document.getElementById('dispatchedCount').textContent = 
+        (parseInt(document.getElementById('dispatchedCount').textContent) || 0) + forgedTriplets.length;
+
+    log(`${forgedTriplets.length} triplets dispatched to svo_triplets.`, 'success');
+
+    forgedTriplets = [];
+    renderTriplets();
+    updateStats();
+    btn.disabled = true; btn.textContent = '⚔ Dispatch All to Apollo';
+}
+
+// ── RENDER ──────────────────────────────────────────
+function renderQueue() {
+    const container = document.getElementById('queueContainer');
+    if (!pairsQueue.length) {
+        container.innerHTML = '<div class="empty-state">Queue empty. Load more pairs.</div>';
+        return;
+    }
+    container.innerHTML = pairsQueue.map((p, i) => {
+        const suggested = suggestVerb(p.token_a_body, p.token_b_body);
+        return `
+            <div class="queue-item">
+                <span class="pair-words">${esc(p.token_a_body)} ↔ ${esc(p.token_b_body)}</span>
+                <span class="suggested-verb">sugg: ${suggested}</span>
+                <input id="verb-${i}" type="text" placeholder="${suggested}" maxlength="14" />
+                <button class="forge" onclick="window._forge(${i})">⚔</button>
+                <button class="skip" onclick="window._skip(${i})">✕</button>
+            </div>
+        `;
+    }).join('');
+}
+
+function renderTriplets() {
+    const container = document.getElementById('tripletsContainer');
+    if (!forgedTriplets.length) {
+        container.innerHTML = '<div class="empty-state">No triplets forged yet.</div>';
+        return;
+    }
+    container.innerHTML = forgedTriplets.map((t, i) => {
+        const tensionClass = t.tension >= 0.8 ? 'tension-high' : t.tension >= 0.5 ? 'tension-med' : '';
+        return `
+            <div class="triplet-card">
+                <div class="triplet-svo">
+                    <span class="s">${esc(t.subject)}</span>
+                    <span class="v">${esc(t.verb.toUpperCase())}</span>
+                    <span class="o">${esc(t.object)}</span>
+                </div>
+                <div class="triplet-meta">
+                    <span class="${tensionClass}">Tension: ${Math.round(t.tension * 100)}%</span>
+                    <span>${esc(t.domain_a || '?')}/${esc(t.domain_b || '?')}</span>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+function updateStats() {
+    document.getElementById('queueCount').textContent = pairsQueue.length;
+    document.getElementById('tripletCount').textContent = forgedTriplets.length;
+    if (forgedTriplets.length) {
+        const avg = forgedTriplets.reduce((s, t) => s + t.tension, 0) / forgedTriplets.length;
+        document.getElementById('avgTension').textContent = Math.round(avg * 100) + '%';
+    }
+}
+
+// ── UTILITIES ───────────────────────────────────────
+function log(msg, type = '') {
+    const el = document.getElementById('log');
+    const div = document.createElement('div');
+    div.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
+    div.style.color = type === 'success' ? '#4ade80' : type === 'warn' ? '#d4a850' : type === 'err' ? '#f87171' : '';
+    el.prepend(div);
+    while (el.children.length > 40) el.removeChild(el.lastChild);
+}
+
+function esc(s) { return String(s || '').replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' })[c]); }
+
+// Global references for onclick handlers
+window._forge = (i) => forgeTriplet(i);
+window._skip = (i) => { pairsQueue.splice(i, 1); updateStats(); renderQueue(); };
+
+// ── INIT ────────────────────────────────────────────
+function init() {
+    document.getElementById('loadPairsBtn').onclick = loadPairs;
+    document.getElementById('forgeAllBtn').onclick = forgeAll;
+    document.getElementById('dispatchBtn').onclick = dispatchToApollo;
+    loadModel();
+    loadTelos();
+}
+
+init();
+</script>
+</body>
+</html>
