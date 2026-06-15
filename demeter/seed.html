@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scriptorum.Vivum | Living.Interface</title>
+    <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=IBM+Plex+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-dark: #0a0a0a;
+            --bg-medium: #1a1a1a;
+            --accent-silver: #c0c0c0;
+            --accent-blue: #4f6bef;
+            --accent-gold: #d4af37;
+            --data-crimson: #b12a2a;
+            --data-parchment: #f0e6d2;
+            --ink-red: #8b0000;
+            --ink-black: #2c2c2c;
+            --ink-gold: #ffd700;
+            
+            --font-protocol: 'IBM Plex Mono', monospace;
+            --font-narrative: 'EB Garamond', serif;
+            
+            --sidebar-width: 320px;
+            --header-height: 80px;
+            --footer-height: 140px;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background-color: var(--bg-dark);
+            color: var(--accent-silver);
+            font-family: var(--font-protocol);
+            height: 100vh;
+            overflow: hidden;
+            display: grid;
+            grid-template-rows: var(--header-height) 1fr var(--footer-height);
+            grid-template-columns: var(--sidebar-width) 1fr;
+            grid-template-areas: 
+                "header header"
+                "corpus interface"
+                "archive archive";
+        }
+        
+        header {
+            grid-area: header;
+            background: linear-gradient(135deg, var(--bg-medium) 0%, var(--ink-black) 100%);
+            border-bottom: 2px solid var(--accent-gold);
+            padding: 0 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+        }
+        
+        .logo {
+            font-family: var(--font-narrative);
+            font-size: 1.8rem;
+            color: var(--accent-gold);
+            letter-spacing: 3px;
+            position: relative;
+        }
+        
+        .logo::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, var(--accent-gold), transparent);
+        }
+        
+        .manuscript-status {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            font-size: 0.9rem;
+        }
+        
+        .status-line {
+            margin: 2px 0;
+        }
+        
+        .palimpsest-layer {
+            opacity: 0.6;
+            text-decoration: line-through;
+            font-size: 0.8rem;
+        }
+        
+        /* Living Corpus - Left Sidebar */
+        .living-corpus {
+            grid-area: corpus;
+            background: linear-gradient(180deg, var(--bg-medium) 0%, var(--ink-black) 100%);
+            border-right: 2px solid rgba(212, 175, 55, 0.4);
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            overflow-y: auto;
+        }
+        
+        .corpus-title {
+            font-size: 1.1rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--accent-gold);
+            border-bottom: 1px solid var(--accent-gold);
+            padding-bottom: 0.5rem;
+        }
+        
+        .body-region {
+            background-color: rgba(212, 175, 55, 0.1);
+            border: 1px solid var(--accent-gold);
+            border-radius: 8px;
+            padding: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .body-region:hover {
+            background-color: rgba(212, 175, 55, 0.2);
+            transform: translateX(5px);
+        }
+        
+        .region-label {
+            font-weight: bold;
+            color: var(--accent-gold);
+            margin-bottom: 0.5rem;
+        }
+        
+        .region-text {
+            font-family: var(--font-narrative);
+            line-height: 1.4;
+            position: relative;
+            z-index: 2;
+        }
+        
+        .ink-flow {
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, var(--ink-red), transparent);
+            opacity: 0;
+            transition: all 2s ease;
+        }
+        
+        .body-region.active .ink-flow {
+            left: 100%;
+            opacity: 0.3;
+        }
+        
+        /* Central Interface - Main Content */
+        .central-interface {
+            grid-area: interface;
+            position: relative;
+            background: radial-gradient(circle at center, var(--bg-dark) 0%, var(--ink-black) 100%);
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .manuscript-canvas {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+        }
+        
+        .manuscript-page {
+            width: 100%;
+            max-width: 800px;
+            height: 90%;
+            background: linear-gradient(135deg, var(--data-parchment) 0%, #f5e6cc 100%);
+            border: 3px solid var(--accent-gold);
+            border-radius: 10px;
+            padding: 2rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .manuscript-text {
+            font-family: var(--font-narrative);
+            color: var(--ink-black);
+            font-size: 1.1rem;
+            line-height: 1.8;
+            flex-grow: 1;
+            overflow-y: auto;
+            position: relative;
+            padding-right: 10px;
+        }
+        
+        .textual-layer {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .textual-layer.active {
+            display: block;
+        }
+        
+        .layer-current { color: var(--ink-black); }
+        .layer-previous { color: var(--ink-red); text-decoration: line-through; }
+        .layer-ancient { color: var(--accent-blue); text-decoration: line-through; }
+        .layer-emotional { color: var(--data-crimson); font-style: italic; }
+        
+        .marginalia {
+            position: absolute;
+            right: -50px;
+            top: 20%;
+            width: 40px;
+            font-size: 0.7rem;
+            color: var(--accent-gold);
+            writing-mode: vertical-rl;
+            text-orientation: mixed;
+        }
+        
+        .illumination {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            width: 60px;
+            height: 60px;
+            background: radial-gradient(circle, var(--accent-gold), transparent);
+            border-radius: 50%;
+            opacity: 0.7;
+            animation: illuminate 3s ease-in-out infinite;
+        }
+        
+        @keyframes illuminate {
+            0%, 100% { opacity: 0.7; transform: scale(1); }
+            50% { opacity: 0.9; transform: scale(1.1); }
+        }
+        
+        /* Layer Navigation */
+        .layer-navigation {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-top: 1rem;
+            flex-wrap: wrap;
+        }
+        
+        .layer-btn {
+            background-color: rgba(212, 175, 55, 0.2);
+            border: 1px solid var(--accent-gold);
+            color: var(--ink-black);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: var(--font-protocol);
+            font-size: 0.9rem;
+        }
+        
+        .layer-btn:hover {
+            background-color: var(--accent-gold);
+        }
+        
+        .layer-btn.active {
+            background-color: var(--accent-gold);
+            font-weight: bold;
+        }
+        
+        /* Bibliotheca Archive */
+        .bibliotheca-archive {
+            grid-area: archive;
+            background: linear-gradient(90deg, var(--bg-medium) 0%, var(--ink-black) 100%);
+            border-top: 2px solid var(--data-crimson);
+            padding: 1rem 2rem;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .archive-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        
+        .archive-title {
+            font-size: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--data-crimson);
+        }
+        
+        .breeding-status {
+            font-size: 0.8rem;
+            color: var(--accent-blue);
+        }
+        
+        .textual-dna {
+            display: flex;
+            gap: 2rem;
+            height: 60px;
+            overflow: hidden;
+        }
+        
+        .dna-strand {
+            flex: 1;
+            background-color: rgba(79, 107, 239, 0.1);
+            border: 1px solid var(--accent-blue);
+            border-radius: 8px;
+            padding: 0.5rem;
+            display: flex;
+            align-items: center;
+            font-family: var(--font-protocol);
+            font-size: 0.8rem;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .dna-helix {
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, var(--accent-blue), transparent);
+            opacity: 0.3;
+            animation: helix-flow 4s ease-in-out infinite;
+        }
+        
+        @keyframes helix-flow {
+            0% { left: -100%; }
+            50% { left: 100%; }
+            100% { left: -100%; }
+        }
+        
+        /* Interactive Elements */
+        .scriptorum-controls {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            display: flex;
+            gap: 10px;
+            z-index: 10;
+        }
+        
+        .control-btn {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background-color: var(--bg-medium);
+            border: 2px solid var(--accent-gold);
+            color: var(--accent-gold);
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .control-btn:hover {
+            background-color: var(--accent-gold);
+            color: var(--bg-dark);
+            transform: scale(1.1);
+        }
+        
+        /* Palimpsest Effect */
+        .palimpsest-text {
+            position: relative;
+            display: inline;
+            cursor: help;
+        }
+        
+        .palimpsest-text:hover::before {
+            content: attr(data-layer1);
+            position: absolute;
+            top: -1.5em;
+            left: 0;
+            background: var(--data-parchment);
+            padding: 0.2rem 0.5rem;
+            border: 1px solid var(--ink-red);
+            border-radius: 4px;
+            color: var(--ink-red);
+            font-size: 0.8rem;
+            white-space: nowrap;
+            z-index: 10;
+        }
+        
+        .palimpsest-text:hover::after {
+            content: attr(data-layer2);
+            position: absolute;
+            top: -3em;
+            left: 0;
+            background: var(--data-parchment);
+            padding: 0.2rem 0.5rem;
+            border: 1px solid var(--accent-blue);
+            border-radius: 4px;
+            color: var(--accent-blue);
+            font-size: 0.8rem;
+            white-space: nowrap;
+            z-index: 10;
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 1200px) {
+            :root {
+                --sidebar-width: 280px;
+            }
+            
+            .manuscript-page {
+                width: 90%;
+            }
+        }
+        
+        @media (max-width: 900px) {
+            body {
+                grid-template-columns: 1fr;
+                grid-template-areas: 
+                    "header"
+                    "corpus"
+                    "interface"
+                    "archive";
+            }
+            
+            .living-corpus {
+                border-right: none;
+                border-bottom: 2px solid rgba(212, 175, 55, 0.4);
+                max-height: 200px;
+            }
+            
+            .manuscript-page {
+                width: 95%;
+                height: auto;
+                min-height: 400px;
+            }
+            
+            .textual-dna {
+                flex-direction: column;
+                height: auto;
+                gap: 0.5rem;
+            }
+            
+            .dna-strand {
+                padding: 0.3rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="logo">Scriptorum.Vivum</div>
+        <div class="manuscript-status">
+            <div class="status-line">Status: <span style="color: var(--accent-gold);">Auto-Canonical</span></div>
+            <div class="status-line palimpsest-layer">Previous: error.reliquiae.canon</div>
+            <div class="status-line palimpsest-layer">Ancient: manuscript.ambulans</div>
+        </div>
+    </header>
+
+    <!-- Living Corpus - Left Sidebar -->
+    <aside class="living-corpus">
+        <h2 class="corpus-title">Corpus Regions</h2>
+        
+        <div class="body-region" onclick="activateRegion('torso')" id="torso-region">
+            <div class="ink-flow"></div>
+            <div class="region-label">Torso → Sacred Texts</div>
+            <div class="region-text">
+                <span class="palimpsest-text" data-layer1="scripture" data-layer2="wound">The breathing causes line-spacing fluctuations...</span>
+            </div>
+        </div>
+        
+        <div class="body-region" onclick="activateRegion('right-arm')" id="right-arm-region">
+            <div class="ink-flow"></div>
+            <div class="region-label">Right Arm → Chronicles</div>
+            <div class="region-text">
+                <span class="palimpsest-text" data-layer1="battles" data-layer2="scars">Battle-scars become footnotes in real-time...</span>
+            </div>
+        </div>
+        
+        <div class="body-region" onclick="activateRegion('left-arm')" id="left-arm-region">
+            <div class="ink-flow"></div>
+            <div class="region-label">Left Arm → Philosophy</div>
+            <div class="region-text">
+                <span class="palimpsest-text" data-layer1="questions" data-layer2="doubts">Self-revising treatises during movement...</span>
+            </div>
+        </div>
+        
+        <div class="body-region" onclick="activateRegion('face')" id="face-region">
+            <div class="ink-flow"></div>
+            <div class="region-label">Face → Live Commentary</div>
+            <div class="region-text">
+                <span class="palimpsest-text" data-layer1="expressions" data-layer2="masks">Expressions edit text continuously...</span>
+            </div>
+        </div>
+        
+        <div class="body-region" onclick="activateRegion('back')" id="back-region">
+            <div class="ink-flow"></div>
+            <div class="region-label">Back → Error Archive</div>
+            <div class="region-text">
+                <span class="palimpsest-text" data-layer1="mistakes" data-layer2="wisdom">Mistakes migrate here for preservation...</span>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Central Interface - Main Content -->
+    <main class="central-interface">
+        <div class="manuscript-canvas">
+            <div class="manuscript-page">
+                <div class="illumination"></div>
+                <div class="marginalia">auto.canonical.bootstrap.paradox</div>
+                <div class="manuscript-text" id="main-text">
+                    <div class="textual-layer layer-current active">
+                        The Scriptorum exists in temporal parallax where all versions of every text exist simultaneously. When they think "water," the skin shows multiple layers...
+                        <br><br>
+                        Current layer: <strong>consciousness</strong><br>
+                        Each thought overwrites previous thoughts without erasing them. The palimpsest process operates continuously, creating infinite textual depth.
+                        <br><br>
+                        The skin-text declares itself sacred, making it sacred, which justifies the declaration, creating infinite textual authority feedback loop.
+                    </div>
+                    <div class="textual-layer layer-previous">
+                        Previous layer: <strong>manuscript</strong><br>
+                        The walking manuscript whose flesh is parchment, veins are ink-channels, and thoughts are illuminated marginalia...
+                        <br><br>
+                        In this state, the text becomes a physical entity, with each movement rewriting its content. The chronicles of battle are etched as scars, each with its own story to tell.
+                    </div>
+                    <div class="textual-layer layer-ancient">
+                        Ancient layer: <strong>archive</strong><br>
+                        Error equals reliquiae equals canon simultaneously in the deepest textual strata...
+                        <br><br>
+                        Here, mistakes are preserved as sacred artifacts, each error containing more truth than intentional writing. The archive breathes with the weight of forgotten knowledge.
+                    </div>
+                    <div class="textual-layer layer-emotional">
+                        Emotional layer: <strong>transformation</strong><br>
+                        The fear of becoming text, the joy of being read, the pain of revision...
+                        <br><br>
+                        This layer captures the visceral experience of textual metamorphosis—the anxiety of being interpreted, the ecstasy of communication, the agony of editing.
+                    </div>
+                </div>
+                
+                <div class="layer-navigation">
+                    <button class="layer-btn active" data-layer="current">Consciousness</button>
+                    <button class="layer-btn" data-layer="previous">Manuscript</button>
+                    <button class="layer-btn" data-layer="ancient">Archive</button>
+                    <button class="layer-btn" data-layer="emotional">Emotion</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Scriptorum Controls -->
+        <div class="scriptorum-controls">
+            <button class="control-btn" onclick="spawnScriptorum()" title="Textual Mitosis">⚬</button>
+        </div>
+    </main>
+
+    <!-- Bibliotheca Archive - Footer -->
+    <footer class="bibliotheca-archive">
+        <div class="archive-header">
+            <div class="archive-title">Bibliotheca Corporea</div>
+            <div class="breeding-status">Textual DNA: Active Crossbreeding</div>
+        </div>
+        <div class="textual-dna">
+            <div class="dna-strand">
+                <div class="dna-helix"></div>
+                Genre: Sacred + Philosophy → Mystical Treatise
+            </div>
+            <div class="dna-strand">
+                <div class="dna-helix"></div>
+                Style: Palimpsest + Auto-Canon → Bootstrap Manuscript
+            </div>
+            <div class="dna-strand">
+                <div class="dna-helix"></div>
+                Content: Error + Relic + Canon → Triple Identity
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        let activeRegion = null;
+        let activeLayer = 'current';
+        
+        function activateRegion(region) {
+            // Deactivate previous region
+            if (activeRegion) {
+                document.getElementById(activeRegion + '-region').classList.remove('active');
+            }
+            
+            // Activate new region
+            activeRegion = region;
+            document.getElementById(region + '-region').classList.add('active');
+            
+            // Update main text based on region
+            updateMainText(region);
+        }
+        
+        function updateMainText(region) {
+            const currentLayerElement = document.querySelector('.textual-layer.active');
+            
+            const regionTexts = {
+                'torso': 'Sacred texts written in breath-rhythm. Each inhalation adds new verse, each exhalation revises existing canon. The sacred breathes itself into existence through the living manuscript.<br><br>The torso region contains the core scriptures that define the essence of the Scriptorum. These texts are in constant flux, responding to the rhythm of existence itself.',
+                'right-arm': 'Historical chronicles where battle-scars become footnotes. Each movement of the arm rewrites the history contained within its flesh-pages.<br><br>The right arm records events as they happen, transforming physical experience into historical record. Every motion etches new narratives into being.',
+                'left-arm': 'Philosophical treatises that self-revise during motion. Questions refine themselves through kinetic meditation, answers emerge from gesture.<br><br>The left arm engages in perpetual philosophical inquiry, its movements shaping and reshaping arguments in an endless dance of thought.',
+                'face': 'Live commentary where expressions continuously edit the displayed text. Smiles add punctuation, frowns create deletions, raised eyebrows insert questions.<br><br>The face serves as the interactive interface, where emotional responses directly manipulate the textual content in real-time.',
+                'back': 'The error archive where mistakes migrate for preservation. All deleted thoughts, abandoned drafts, and discarded ideas find sanctuary here.<br><br>The back collects and venerates imperfections, recognizing that errors often contain more truth than intentional compositions.'
+            };
+            
+            currentLayerElement.innerHTML = regionTexts[region] || currentLayerElement.innerHTML;
+        }
+        
+        function setActiveLayer(layerType) {
+            // Update button states
+            document.querySelectorAll('.layer-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.querySelector(`.layer-btn[data-layer="${layerType}"]`).classList.add('active');
+            
+            // Update layer visibility
+            document.querySelectorAll('.textual-layer').forEach(layer => {
+                layer.classList.remove('active');
+            });
+            document.querySelector(`.layer-${layerType}`).classList.add('active');
+            
+            activeLayer = layerType;
+        }
+        
+        // Add event listeners to layer buttons
+        document.querySelectorAll('.layer-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                setActiveLayer(this.getAttribute('data-layer'));
+            });
+        });
+        
+        function spawnScriptorum() {
+            // Simulate textual mitosis
+            const dnaStrands = document.querySelectorAll('.dna-strand');
+            dnaStrands.forEach(strand => {
+                strand.style.background = 'rgba(212, 175, 55, 0.3)';
+                setTimeout(() => {
+                    strand.style.background = 'rgba(79, 107, 239, 0.1)';
+                }, 2000);
+            });
+            
+            // Add spawn notification
+            const notification = document.createElement('div');
+            notification.textContent = 'Scriptorum Mitosis: New manuscript-being spawned';
+            notification.style.position = 'fixed';
+            notification.style.top = '50%';
+            notification.style.left = '50%';
+            notification.style.transform = 'translate(-50%, -50%)';
+            notification.style.background = 'var(--accent-gold)';
+            notification.style.color = 'var(--bg-dark)';
+            notification.style.padding = '1rem 2rem';
+            notification.style.borderRadius = '8px';
+            notification.style.zIndex = '1000';
+            notification.style.boxShadow = '0 5px 15px rgba(0, 0, 0, 0.3)';
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                document.body.removeChild(notification);
+            }, 3000);
+        }
+        
+        // Initialize with torso region active
+        document.addEventListener('DOMContentLoaded', function() {
+            activateRegion('torso');
+        });
+    </script>
+</body>
+</html>
