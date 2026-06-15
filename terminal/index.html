@@ -1,0 +1,811 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Kairos Terminal · Infinite Scale · v4.6</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: radial-gradient(ellipse at 15% 25%, #080b10 0%, #020406 100%);
+            min-height: 100vh;
+            display: flex; align-items: center; justify-content: center;
+            font-family: 'SF Mono', 'Fira Code', 'Courier New', monospace;
+            padding: 1rem;
+        }
+        .terminal {
+            background-color: #080b11;
+            border: 1px solid #1e2535;
+            border-radius: 10px;
+            width: 100%; max-width: 860px;
+            height: 92vh; min-height: 580px;
+            display: flex; flex-direction: column;
+            overflow: hidden;
+            box-shadow: 0 0 60px rgba(0,0,0,0.8), inset 0 1px 0 rgba(255,255,255,0.03);
+        }
+        .terminal-header {
+            padding: 0.6rem 1rem;
+            background: #050709;
+            border-bottom: 1px solid #151c28;
+            display: flex; justify-content: space-between; align-items: center;
+            flex-wrap: wrap; gap: 0.4rem;
+        }
+        .badge { color: #5a7a90; font-size: 0.65rem; letter-spacing: 0.05em; }
+        .spectrum { display: flex; gap: 0.25rem; align-items: center; }
+        .spectrum-dot {
+            width: 8px; height: 8px; border-radius: 2px;
+            opacity: 0.18; transition: opacity 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .spectrum-dot.active   { opacity: 1; transform: scale(1.35); box-shadow: 0 0 7px currentColor; }
+        .spectrum-dot.saved    { opacity: 1; transform: scale(1.2);  box-shadow: 0 0 10px currentColor; }
+        .spectrum-dot.rejected { opacity: 1; background: #c0392b !important; box-shadow: 0 0 10px #c0392b; animation: dotShake 0.35s ease; }
+        .spectrum-dot.duped    { opacity: 1; background: #d4a017 !important; box-shadow: 0 0 10px #d4a017; }
+        @keyframes dotShake { 0%,100%{transform:scale(1.35) translateX(0)} 30%{transform:scale(1.35) translateX(-3px)} 70%{transform:scale(1.35) translateX(3px)} }
+        .status { display: flex; align-items: center; gap: 0.45rem; color: #4a5e72; font-size: 0.62rem; }
+        .led { width: 7px; height: 7px; border-radius: 50%; background: #27ae60; box-shadow: 0 0 5px #27ae60; animation: ledPulse 2.4s infinite; }
+        .led.dreaming { background: #7d3c98; box-shadow: 0 0 5px #7d3c98; }
+        .led.saving   { background: #d4a017; box-shadow: 0 0 5px #d4a017; }
+        @keyframes ledPulse { 0%,100%{opacity:0.45} 50%{opacity:1} }
+        .counter { font-size: 0.6rem; background: #0f141e; padding: 0.15rem 0.4rem; border-radius: 10px; color: #3a4e62; }
+        .session-tag { font-size: 0.58rem; background: #0a0f18; padding: 0.1rem 0.4rem; border-radius: 8px; color: #2a3e52; font-family: monospace; }
+
+        .output {
+            flex: 1; overflow-y: auto;
+            padding: 0.85rem 1rem;
+            font-size: 0.8rem; line-height: 1.65;
+            color: #c8d8e8; background: #060810;
+            scroll-behavior: smooth;
+        }
+        .output::-webkit-scrollbar { width: 4px; }
+        .output::-webkit-scrollbar-thumb { background: #1e2535; border-radius: 2px; }
+        .output div {
+            white-space: pre-wrap; word-break: break-word;
+            margin-bottom: 0.1rem; animation: lineIn 0.18s ease-out;
+        }
+        @keyframes lineIn { from{opacity:0;transform:translateX(-3px)} to{opacity:1;transform:translateX(0)} }
+
+        .band-hermes     { color: #d4956a; border-left: 2px solid #d4956a; padding-left: 0.5rem; }
+        .band-apollo     { color: #c9a84c; border-left: 2px solid #c9a84c; padding-left: 0.5rem; }
+        .band-hephaestus { color: #b84a00; border-left: 2px solid #b84a00; padding-left: 0.5rem; }
+        .band-demeter    { color: #6b8e23; border-left: 2px solid #6b8e23; padding-left: 0.5rem; }
+        .band-poseidon   { color: #2a5e8a; border-left: 2px solid #2a5e8a; padding-left: 0.5rem; }
+        .band-athena     { color: #7a3a9a; border-left: 2px solid #7a3a9a; padding-left: 0.5rem; }
+        .band-zeus       { color: #b39ddb; border-left: 2px solid #7e57c2; padding-left: 0.5rem; }
+        .zeus-full {
+            color: #c8b8f0; border-left: 3px solid #7e57c2; padding-left: 0.6rem;
+            margin: 0.25rem 0 0.5rem 0; font-style: italic; line-height: 1.8;
+            animation: thunderFlash 0.7s ease-out;
+        }
+        @keyframes thunderFlash { 0%{text-shadow:none} 35%{text-shadow:0 0 20px #9b59b6,0 0 40px #d4af37;color:#ffe082} 100%{text-shadow:none;color:#c8b8f0} }
+        .dream { opacity: 0.7; font-style: italic; color: #9c8de0; border-left: 2px solid #3d2e6e; padding-left: 0.5rem; }
+        .sys    { color: #2e3f52; }
+        .sysdim { color: #1e2a38; }
+        .gate-pass { color: #1e8449; border-left: 2px solid #1e8449; padding-left: 0.5rem; }
+        .gate-fail { color: #922b21; border-left: 2px solid #922b21; padding-left: 0.5rem; animation: lineShake 0.3s ease; }
+        .gate-dupe { color: #b8860b; border-left: 2px solid #b8860b; padding-left: 0.5rem; }
+        @keyframes lineShake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-4px)} 75%{transform:translateX(4px)} }
+        .demeter-markup { border-left: 2px solid #6b8e23; padding-left: 0.5rem; margin: 0.2rem 0; font-size: 0.72rem; }
+        .demeter-health-high { color: #6b8e23; }
+        .demeter-health-mid  { color: #d45500; }
+        .demeter-health-low  { color: #922b21; }
+        .chain-open  { color: #1a3a52; border-left: 1px solid #1a3a52; padding-left: 0.5rem; font-size: 0.7rem; }
+        .chain-save  { color: #1e4a2e; border-left: 1px solid #1e4a2e; padding-left: 0.5rem; font-size: 0.7rem; }
+        .chain-dupe  { color: #4a3a00; border-left: 1px solid #4a3a00; padding-left: 0.5rem; font-size: 0.7rem; }
+        .bias-line   { color: #3d2e6e; border-left: 1px solid #3d2e6e; padding-left: 0.5rem; font-size: 0.68rem; font-style: italic; }
+
+        .input-line {
+            display: flex; align-items: center; gap: 0.45rem;
+            background: #040608; border-top: 1px solid #111820;
+            padding: 0.6rem 1rem;
+        }
+        .prompt { color: #4a7a9b; font-weight: 700; font-size: 0.85rem; }
+        #command {
+            flex: 1; background: transparent; border: none;
+            color: #ddeeff; font-family: inherit;
+            font-size: 0.82rem; outline: none; caret-color: #4a7a9b;
+        }
+        .footer {
+            background: #030508; font-size: 0.58rem; padding: 0.25rem 1rem;
+            color: #1e2a38; border-top: 1px solid #0d1220;
+            display: flex; justify-content: space-between; flex-wrap: wrap; gap: 0.3rem;
+        }
+        @media (max-width:600px) { .output{font-size:0.72rem;padding:0.7rem 0.8rem} .input-line{padding:0.5rem 0.8rem} }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+<div class="terminal">
+    <div class="terminal-header">
+        <span class="badge">⚡ KAIROS · INFINITE SCALE v4.6</span>
+        <div class="spectrum" id="spectrumDots">
+            <div class="spectrum-dot" style="background:#d4956a" title="hermes"></div>
+            <div class="spectrum-dot" style="background:#c9a84c" title="apollo"></div>
+            <div class="spectrum-dot" style="background:#b84a00" title="hephaestus"></div>
+            <div class="spectrum-dot" style="background:#6b8e23" title="demeter"></div>
+            <div class="spectrum-dot" style="background:#2a5e8a" title="poseidon"></div>
+            <div class="spectrum-dot" style="background:#7a3a9a" title="athena"></div>
+            <div class="spectrum-dot" style="background:#7e57c2" title="zeus"></div>
+        </div>
+        <div class="status">
+            <span class="led" id="statusLed"></span>
+            <span id="stateLabel">AWAKE</span>
+            <span class="counter" id="counter">0/30</span>
+            <span class="session-tag" id="sessionTag">—</span>
+        </div>
+    </div>
+
+    <div id="output" class="output"></div>
+
+    <div class="input-line">
+        <span class="prompt">➜</span>
+        <input type="text" id="command"
+               placeholder="help · pause · resume · hoard · view <band> · seed <words>"
+               autofocus spellcheck="false" autocomplete="off">
+    </div>
+
+    <div class="footer">
+        <span>🎵 Pass 1→2→3→4→5→6→7→loop · Full chain saves · Dedup + mutate · Dream bias</span>
+        <span>v4.6 · infinite scale</span>
+    </div>
+</div>
+
+<script>
+// ============================================================
+// KAIROS TERMINAL v4.6 — INFINITE SCALE
+// Changes from v4.5:
+//   • Every band in every pass is saved (full chain)
+//   • Session ID links all entries in a pass via label suffix
+//   • Deduplication: exact + word-overlap >60%, mutate+retry once
+//   • Dream cycle biases next hermes seed (adds fragment to cluster pool)
+//   • Spectrum dots show save/dupe state per band
+// ============================================================
+
+const SUPABASE_URL     = 'https://kzcucjcyxybypncbdbws.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_saeUHGocDah-T2_709M6Fg_g26JtLXw';
+
+let db = null;
+let commandHistory = [], historyIndex = -1;
+
+// ── Band configuration ────────────────────────────────────────────────────────
+const DIVINE_BANDS = {
+    hermes:     { index:1, icon:'✈️',  name:'Hermes',     table:'hermes_entries',     min:1,  max:2,  target:2,  time:1618, color:'#d4956a' },
+    apollo:     { index:2, icon:'☀️',  name:'Apollo',     table:'apollo_entries',     min:3,  max:5,  target:4,  time:2427, color:'#c9a84c' },
+    hephaestus: { index:3, icon:'🔥',  name:'Hephaestus', table:'hephaestus_entries', min:6,  max:10, target:8,  time:3236, color:'#b84a00' },
+    demeter:    { index:4, icon:'🌾',  name:'Demeter',    table:'demeter_entries',    min:11, max:20, target:15, time:4045, color:'#6b8e23' },
+    poseidon:   { index:5, icon:'🌊',  name:'Poseidon',   table:'poseidon_entries',   min:21, max:35, target:28, time:4854, color:'#2a5e8a' },
+    athena:     { index:6, icon:'🦉',  name:'Athena',     table:'athena_entries',     min:36, max:50, target:43, time:5663, color:'#7a3a9a', threshold:70 },
+    zeus:       { index:7, icon:'⚡',  name:'Zeus',       table:'zeus_entries',       min:51, max:64, target:57, time:6472, color:'#7e57c2' }
+};
+const BAND_ORDER = ['hermes','apollo','hephaestus','demeter','poseidon','athena','zeus'];
+
+function getBandFromWordCount(n) {
+    if (n <= 2)  return 'hermes';
+    if (n <= 5)  return 'apollo';
+    if (n <= 10) return 'hephaestus';
+    if (n <= 20) return 'demeter';
+    if (n <= 35) return 'poseidon';
+    if (n <= 50) return 'athena';
+    return 'zeus';
+}
+
+// ── Semantic clusters ─────────────────────────────────────────────────────────
+const CLUSTERS = {
+    decay:  { words: ['ash','bone','rust','dust','hollow','ruin','rot','silt','husk','marrow','splinter','char','residue','fragment','remnant','glass','broken','smoke','shadow','salt','decay','stone'] },
+    light:  { words: ['ember','threshold','dawn','signal','pulse','gleam','flicker','ignite','radiance','luminous','kindle','aureole','beacon','solstice','corona','thunder','fire','moon','star','mirror','glass','wing'] },
+    memory: { words: ['echo','thread','trace','residue','mark','imprint','fossil','sediment','inscription','archive','relic','refrain','palimpsest','vestige','scar','whisper','name','remains','shadow','mirror','myth','smoke'] },
+    motion: { words: ['tide','current','drift','spiral','return','surge','oscillate','cycle','recede','cascade','flux','eddy','undulate','momentum','vortex','wind','rain','wing','weave','falls','turns','wanders'] },
+    void:   { words: ['silence','gap','absence','depth','between','hollow','abyss','lacuna','suspension','interval','pause','null','negative','liminal','recess','dark','shadow','soul','beneath','stone','mountain','smoke'] },
+    forge:  { words: ['iron','hammer','anvil','temper','alloy','slag','crucible','weld','smelt','quench','mold','cast','strike','fuse','reforge','fire','stone','blood','thunder','salt','mountain','broken'] },
+    myth:   { words: ['serpent','raven','phoenix','wolf','oracle','augur','sovereign','exile','wanderer','threshold','labyrinth','augury','omen','sigil','totem','moon','soul','myth','wing','thunder','shadow','witness'] }
+};
+const CLUSTER_NAMES = Object.keys(CLUSTERS);
+const SUBJECTS  = ['The raven','The forge','An ember','The river','A threshold','The dreamer','The watcher','A blade','The tide','Memory','Silence','The ancient flame','A root system','The void','Dust','Iron','The gate','The oracle','A hollow bone','The current','Residue','The exile'];
+const VERBS     = ['carries','holds','breaks','remembers','forgets','burns','returns','rises','fractures','echoes','consumes','reveals','dissolves','endures','recedes','descends','illuminates','devours','persists','collapses','accumulates','drifts','spirals','marks','inscribes','tempers','suspends'];
+const ABSTRACT  = ['consciousness','impermanence','recursion','entropy','emergence','paradox','resonance','dissolution','transcendence','fragmentation','memory','longing','threshold','void','fate','wisdom','chaos','silence','truth','absence','oscillation','continuity','rupture','interval','sediment','trace'];
+
+function rand(arr)    { return arr[Math.floor(Math.random() * arr.length)]; }
+function randN(arr,n) { return [...arr].sort(() => 0.5 - Math.random()).slice(0,n); }
+function wc(str)      { return str.trim().split(/\s+/).filter(Boolean).length; }
+function cap(str)     { return str.charAt(0).toUpperCase() + str.slice(1); }
+
+// ── Dream bias state ──────────────────────────────────────────────────────────
+let dreamBias    = [];   // fragment words from last dream — biases next hermes
+let forcedSeed   = null; // operator seed via `seed` command
+
+function getClusterPool(clusterName) {
+    const base = [...(CLUSTERS[clusterName]?.words || CLUSTERS.void.words)];
+    // Bias words added twice for higher selection weight
+    if (dreamBias.length) {
+        dreamBias.forEach(w => { base.push(w); base.push(w); });
+    }
+    return base;
+}
+
+// ── Deduplication ─────────────────────────────────────────────────────────────
+const OVERLAP_THRESHOLD = 0.60; // 60% word overlap = near-duplicate
+const DEDUP_SAMPLE      = 50;   // how many recent entries to check against
+
+async function fetchRecentBodies(table) {
+    try {
+        const { data } = await db.from(table)
+            .select('body')
+            .order('created_at', { ascending: false })
+            .limit(DEDUP_SAMPLE);
+        return (data || []).map(e => e.body);
+    } catch(_) { return []; }
+}
+
+function wordOverlap(a, b) {
+    const setA = new Set(a.toLowerCase().split(/\s+/).filter(Boolean));
+    const setB = new Set(b.toLowerCase().split(/\s+/).filter(Boolean));
+    if (!setA.size || !setB.size) return 0;
+    let inter = 0;
+    setA.forEach(w => { if (setB.has(w)) inter++; });
+    return inter / Math.max(setA.size, setB.size);
+}
+
+function isDuplicate(candidate, existing) {
+    for (const body of existing) {
+        if (body.trim().toLowerCase() === candidate.trim().toLowerCase()) return true;
+        if (wordOverlap(candidate, body) > OVERLAP_THRESHOLD) return true;
+    }
+    return false;
+}
+
+function mutateBody(body, clusterName, bandMin, bandMax) {
+    const pool  = CLUSTERS[clusterName]?.words || CLUSTERS.void.words;
+    let words   = body.split(/\s+/);
+    // Swap 1-2 content words with fresh cluster words
+    const swapCount = Math.min(2, words.length);
+    for (let i = 0; i < swapCount; i++) {
+        const idx = Math.floor(Math.random() * words.length);
+        words[idx] = rand(pool);
+    }
+    // Ensure word count stays in band
+    while (words.length < bandMin) words.push(rand(pool));
+    words = words.slice(0, bandMax);
+    let mutated = words.join(' ');
+    if (!/[.!?]$/.test(mutated) && body.endsWith('.')) mutated += '.';
+    return mutated;
+}
+
+// ── Spectrum dot helpers ──────────────────────────────────────────────────────
+function dotForBand(band) {
+    const idx = BAND_ORDER.indexOf(band);
+    return document.querySelectorAll('.spectrum-dot')[idx];
+}
+function setDotState(band, state) {
+    const dot = dotForBand(band);
+    if (!dot) return;
+    dot.className = 'spectrum-dot';
+    if (state) dot.classList.add(state);
+}
+function resetDots() {
+    document.querySelectorAll('.spectrum-dot').forEach(d => { d.className = 'spectrum-dot'; });
+}
+
+// ── Session ID display ────────────────────────────────────────────────────────
+function setSessionTag(id) {
+    const el = document.getElementById('sessionTag');
+    if (el) el.textContent = id ? `#${id}` : '—';
+}
+
+// ── Demeter markup & transform (unchanged from v4.5) ─────────────────────────
+function demeterMarkup(input, cluster) {
+    const words = input.body.split(/\s+/);
+    const text  = input.body;
+    const uniqueWords = new Set(words.map(w => w.toLowerCase().replace(/[^a-z]/g,'')));
+    const lexicalDensity = uniqueWords.size / words.length;
+    let abstractCount = 0;
+    ABSTRACT.forEach(ab => { if (text.toLowerCase().includes(ab)) abstractCount++; });
+    abstractCount = Math.min(abstractCount, 5);
+    const sentenceCount = (text.match(/[.!?]/g) || []).length;
+    let purityScore = 1.0;
+    const trigrams = [];
+    for (let i = 0; i < words.length - 2; i++) {
+        const tri = words.slice(i,i+3).join(' ').toLowerCase();
+        if (trigrams.includes(tri)) purityScore -= 0.1;
+        trigrams.push(tri);
+    }
+    purityScore = Math.max(0, purityScore);
+    const clusterWords = CLUSTERS[cluster]?.words || CLUSTERS.void.words;
+    let clusterAlignment = 0;
+    clusterWords.forEach(cw => { if (text.toLowerCase().includes(cw)) clusterAlignment++; });
+    clusterAlignment = Math.min(1, clusterAlignment / 5);
+    let driftLevel = 0;
+    CLUSTER_NAMES.filter(c => c !== cluster).forEach(oc => {
+        CLUSTERS[oc].words.forEach(ow => { if (text.toLowerCase().includes(ow)) driftLevel += 0.02; });
+    });
+    driftLevel = Math.min(1, driftLevel);
+    const healthScore = Math.round(
+        (lexicalDensity*25) + (abstractCount*5) + (Math.min(sentenceCount,4)*6.25) +
+        (purityScore*25) + (clusterAlignment*25) - (driftLevel*20)
+    );
+    return {
+        lexicalDensity: Math.round(lexicalDensity*100), abstractCount, sentenceCount,
+        purityScore: Math.round(purityScore*100), clusterAlignment: Math.round(clusterAlignment*100),
+        driftLevel: Math.round(driftLevel*100), healthScore: Math.max(0, Math.min(100, healthScore))
+    };
+}
+
+function demeterTransform(input, cluster, scores) {
+    let body = input.body; let words = body.split(/\s+/);
+    if (scores.driftLevel > 60 || scores.purityScore < 50) {
+        body = body.replace(/(\b\w+\b)(?: \1)+/gi, '$1').replace(/\b(very|really|quite|extremely|incredibly)\b/gi,'');
+        words = body.split(/\s+/);
+        if (words.length > 30) words = words.slice(0, Math.floor(words.length*0.8));
+        body = words.join(' ');
+    }
+    if (scores.lexicalDensity < 40 || scores.abstractCount < 1) {
+        const cw = CLUSTERS[cluster]?.words || CLUSTERS.void.words;
+        const anchors = ['ash','stone','water','fire','wind','earth','void'];
+        const temporal = ['before','after','during','while','as','when'];
+        if (scores.abstractCount < 1 && cw[0]) body += ` ${cw[0]} and ${cw[1]||cw[0]}`;
+        if (scores.lexicalDensity < 40) body += ` like ${anchors[Math.floor(Math.random()*anchors.length)]}`;
+        if (body.split(/\s+/).length < 15) body += ` ${temporal[Math.floor(Math.random()*temporal.length)]} the ${cluster} returns`;
+        words = body.split(/\s+/);
+    }
+    if (scores.clusterAlignment < 40) { const sw = rand(CLUSTERS[cluster]?.words||CLUSTERS.void.words); body = `${cap(sw)} ${body}`; words = body.split(/\s+/); }
+    if (scores.driftLevel > 50)       { const an = CLUSTERS[cluster]?.words[0]||'threshold'; body = `${cap(an)} carries ${body.toLowerCase()}`; words = body.split(/\s+/); }
+    if (!/[.!?]$/.test(body)) body += '.';
+    return { body, wordCount: words.length,
+        pruningApplied: scores.driftLevel>60||scores.purityScore<50,
+        expansionApplied: scores.lexicalDensity<40||scores.abstractCount<1,
+        steeringApplied: scores.clusterAlignment<40,
+        driftCorrectionApplied: scores.driftLevel>50
+    };
+}
+
+// ── Single band evolution ─────────────────────────────────────────────────────
+async function evolveSingleBand(band, previousResult) {
+    const result = { body:'', wordCount:0, passedGate:true, scores:null, transformed:null };
+    const pool   = getClusterPool(activeCluster);
+
+    if (band === 'hermes') {
+        let words;
+        if (forcedSeed) {
+            words = forcedSeed.split(/\s+/).slice(0,2);
+            forcedSeed = null;
+        } else {
+            const count = 1 + Math.floor(Math.random()*2);
+            words = randN(pool, count);
+        }
+        // Clear dream bias after use
+        if (dreamBias.length) {
+            printLine(`   ✦ dream bias active: [${dreamBias.join(', ')}] blended into pool`, 'bias-line');
+            dreamBias = [];
+        }
+        return { body: words.join(' '), wordCount: words.length, passedGate: true };
+    }
+    if (band === 'apollo') {
+        const seedWords = previousResult.body.split(/\s+/);
+        const needed    = 3 + Math.floor(Math.random()*3);
+        const extra     = randN(pool.filter(w => !seedWords.includes(w)), needed - seedWords.length);
+        const words     = [...seedWords, ...extra].slice(0, needed);
+        words[0]        = cap(words[0]);
+        return { body: words.join(' '), wordCount: words.length, passedGate: true };
+    }
+    if (band === 'hephaestus') {
+        const subject = rand(SUBJECTS);
+        const verb    = rand(VERBS);
+        const obj     = [...previousResult.body.split(/\s+/), ...randN(pool, 3)].slice(0,5).join(' ').toLowerCase();
+        const raw     = `${subject} ${verb} ${obj}`;
+        const words   = raw.split(/\s+/).slice(0,10);
+        const body    = words.join(' ') + '.';
+        const passed  = /^[A-Z]/.test(body) && VERBS.some(v => body.includes(` ${v} `)) && words.length >= 6;
+        return { body, wordCount: words.length, passedGate: passed };
+    }
+    if (band === 'demeter') {
+        let body  = previousResult.body;
+        let words = body.split(/\s+/);
+        while (words.length < 11) { body = `${body} ${rand(pool)}`; words = body.split(/\s+/); }
+        const scores      = demeterMarkup({ body }, activeCluster);
+        const transformed = demeterTransform({ body }, activeCluster, scores);
+        body  = transformed.body.split(/\s+/).slice(0,20).join(' ');
+        if (!/[.!?]$/.test(body)) body += '.';
+        return { body, wordCount: wc(body), passedGate: true, scores, transformed };
+    }
+    if (band === 'poseidon') {
+        let body  = previousResult.body.replace(/\.$/, '');
+        let words = body.split(/\s+/);
+        const ex  = [
+            () => `${rand(SUBJECTS)} ${rand(VERBS)} what ${rand(pool)} cannot contain.`,
+            () => `In the space between ${rand(pool)} and ${rand(pool)}, ${rand(ABSTRACT)} accumulates.`,
+            () => `Where ${rand(pool)} meets ${rand(pool)}, something ${rand(VERBS)}.`,
+            () => `${rand(pool)} against ${rand(ABSTRACT)} — ${rand(SUBJECTS).toLowerCase()} ${rand(VERBS)}.`
+        ];
+        while (words.length < 21) { body = `${body} ${rand(ex)()}`; words = body.split(/\s+/); }
+        body = words.slice(0,35).join(' ');
+        if (!/[.!?]$/.test(body)) body += '.';
+        return { body, wordCount: wc(body), passedGate: true };
+    }
+    if (band === 'athena') {
+        let body  = previousResult.body.replace(/[.!?]$/, '');
+        let words = body.split(/\s+/);
+        while (words.length < 36) {
+            body = `${body} ${rand(SUBJECTS)} ${rand(VERBS)} ${rand(pool)} — ${rand(ABSTRACT)} without ${rand(pool)}.`;
+            words = body.split(/\s+/);
+        }
+        words = words.slice(0,50); body = words.join(' ');
+        if (!/[.!?—]$/.test(body)) body += '.';
+        const unique = new Set(words.map(w => w.toLowerCase().replace(/[^a-z]/g,''))).size;
+        const lexDen = unique / words.length;
+        const absCount = ABSTRACT.filter(a => body.toLowerCase().includes(a)).length;
+        const sentCount = (body.match(/[.!?]/g)||[]).length;
+        const trigrams = []; let hasPadding = false;
+        for (let i=0; i<words.length-2; i++) {
+            const tri = words.slice(i,i+3).join(' ').toLowerCase();
+            if (trigrams.includes(tri)) { hasPadding=true; break; }
+            trigrams.push(tri);
+        }
+        let score = 0;
+        if (lexDen >= 0.72) score += 25;
+        if (absCount >= 1)  score += 25;
+        if (sentCount >= 2) score += 25;
+        if (!hasPadding)    score += 25;
+        return { body, wordCount: words.length, wisdomScore: score, passedGate: score >= 70 };
+    }
+    if (band === 'zeus') {
+        let body  = previousResult.body.replace(/[.!?—]$/, '');
+        let words = body.split(/\s+/);
+        while (words.length < 51) {
+            body = `${body} ${rand(SUBJECTS)} ${rand(VERBS)} what ${rand(ABSTRACT)} conceals — ${rand(pool)}, ${rand(pool)}, the ${rand(ABSTRACT)} of ${rand(pool)}.`;
+            words = body.split(/\s+/);
+        }
+        body = words.slice(0,64).join(' ');
+        if (!/[.!?—]$/.test(body)) body += '.';
+        return { body, wordCount: wc(body), passedGate: true };
+    }
+    return result;
+}
+
+// ── Save with dedup ───────────────────────────────────────────────────────────
+async function saveWithDedup(band, result, passNum, sessionId) {
+    const bandInfo = DIVINE_BANDS[band];
+    const recent   = await fetchRecentBodies(bandInfo.table);
+
+    let body    = result.body;
+    let attempt = 1;
+
+    if (isDuplicate(body, recent)) {
+        printLine(`   ⟳ near-duplicate detected in ${bandInfo.name} · mutating…`, 'gate-dupe');
+        setDotState(band, 'duped');
+        body = mutateBody(body, activeCluster, bandInfo.min, bandInfo.max);
+        attempt = 2;
+        if (isDuplicate(body, recent)) {
+            printLine(`   ✗ mutation also duplicate · skipping ${bandInfo.name} save`, 'chain-dupe');
+            setDotState(band, 'rejected');
+            return false;
+        }
+    }
+
+    const label = `pass_${passNum}_${band}_${Date.now()}_${sessionId}`;
+    const { error } = await db.from(bandInfo.table).insert({
+        label, body, word_count: wc(body), created_at: new Date().toISOString()
+    });
+
+    if (error) {
+        printLine(`   ⚠ save failed (${bandInfo.name}): ${error.message}`, 'sys');
+        setDotState(band, 'rejected');
+        return false;
+    }
+
+    const attemptNote = attempt === 2 ? ' (mutated)' : '';
+    printLine(`   ✓ ${bandInfo.icon} ${bandInfo.name} saved${attemptNote} · session #${sessionId}`, 'chain-save');
+    setDotState(band, 'saved');
+    return true;
+}
+
+// ── Evolution state ───────────────────────────────────────────────────────────
+let evolutionActive = true;
+let currentPass     = 1;
+const MAX_PASS      = 7;
+let passTimer       = null;
+let activeCluster   = null;
+
+// ── Run a full pass — saves every band ───────────────────────────────────────
+async function runPass() {
+    if (!evolutionActive) return;
+
+    resetDots();
+    const sessionId    = crypto.randomUUID().slice(0,8);
+    const godsInPass   = BAND_ORDER.slice(0, currentPass);
+    const passIcons    = godsInPass.map(b => DIVINE_BANDS[b].icon).join(' → ');
+
+    setSessionTag(sessionId);
+    printLine(`\n🎵 PASS ${currentPass}/${MAX_PASS} · #${sessionId} · ${passIcons}`, 'sys');
+
+    if (!activeCluster || currentPass === 1) activeCluster = rand(CLUSTER_NAMES);
+    printLine(`   cluster: ${activeCluster}`, 'chain-open');
+
+    let previousResult = null;
+
+    for (const band of godsInPass) {
+        const bandInfo = DIVINE_BANDS[band];
+        setDotState(band, 'active');
+
+        // Mythic narration
+        const mythic = MYTHIC_VOICES[band];
+        if (mythic) printLine(mythic[Math.floor(Math.random()*mythic.length)], 'sysdim');
+
+        const result = await evolveSingleBand(band, previousResult);
+        previousResult = result;
+
+        // Demeter markup display
+        if (band === 'demeter' && result.scores) {
+            const s = result.scores, t = result.transformed;
+            const hc = s.healthScore >= 70 ? 'demeter-health-high' : (s.healthScore >= 40 ? 'demeter-health-mid' : 'demeter-health-low');
+            printLine(`🌾 markup: health ${s.healthScore}% · lex ${s.lexicalDensity}% · abs ${s.abstractCount} · purity ${s.purityScore}% · align ${s.clusterAlignment}% · drift ${s.driftLevel}%`, 'demeter-markup');
+            if (t.pruningApplied)        printLine(`   ✂️ pruned`, 'sysdim');
+            if (t.expansionApplied)      printLine(`   🌱 expanded`, 'sysdim');
+            if (t.steeringApplied)       printLine(`   🧭 steered`, 'sysdim');
+            if (t.driftCorrectionApplied)printLine(`   ⚓ drift corrected`, 'sysdim');
+        }
+
+        // Gate checks
+        if (band === 'hephaestus' && !result.passedGate) {
+            printLine(`🔥 Hephaestus rejects · pass abandoned`, 'gate-fail');
+            setDotState(band, 'rejected');
+            break;
+        }
+        if (band === 'athena') {
+            if (!result.passedGate) {
+                printLine(`🦉 Athena rejects ${result.wisdomScore}% (need 70%) · zeus skipped`, 'gate-fail');
+                setDotState(band, 'rejected');
+                // Save everything up to athena anyway — athena itself not saved on fail
+                break;
+            }
+            printLine(`🦉 Athena accepts ${result.wisdomScore}%`, 'gate-pass');
+        }
+
+        // Display
+        const preview = result.body.substring(0,60) + (result.body.length > 60 ? '…' : '');
+        if (band === 'zeus') {
+            printLine(`${bandInfo.icon} ${bandInfo.name} [${result.wordCount}w]`, band);
+            printLine(result.body, 'zeus-full');
+        } else {
+            printLine(`${bandInfo.icon} ${bandInfo.name} [${result.wordCount}w] "${preview}"`, band);
+        }
+
+        // Save this band — every band, every pass
+        if (result.passedGate) {
+            await saveWithDedup(band, result, currentPass, sessionId);
+        }
+
+        await new Promise(r => setTimeout(r, bandInfo.time));
+    }
+
+    currentPass++;
+    if (currentPass > MAX_PASS) {
+        currentPass = 1;
+        printLine(`⟳ CYCLE COMPLETE · new cycle from Pass 1`, 'sys');
+    }
+
+    passTimer = setTimeout(() => runPass(), 3000);
+}
+
+function startPassSystem() {
+    if (passTimer) clearTimeout(passTimer);
+    evolutionActive = true;
+    currentPass     = 1;
+    runPass();
+}
+function pausePassSystem() {
+    evolutionActive = false;
+    if (passTimer) clearTimeout(passTimer);
+}
+
+// ── Dream cycle ───────────────────────────────────────────────────────────────
+let awakePulseCount = 0, pulseInterval = null, isDreaming = false;
+
+function updateCounter() {
+    const el = document.getElementById('counter');
+    if (el) el.textContent = `${awakePulseCount}/30`;
+}
+function startAwakePulses() {
+    if (pulseInterval) clearInterval(pulseInterval);
+    pulseInterval = setInterval(() => {
+        if (!isDreaming) { awakePulseCount++; updateCounter(); if (awakePulseCount >= 30) enterDream(); }
+    }, 1618);
+}
+
+async function enterDream() {
+    isDreaming = true;
+    pausePassSystem();
+    document.getElementById('statusLed').classList.add('dreaming');
+    document.getElementById('stateLabel').textContent = 'DREAMING';
+    printLine('\n✦ dreaming — reaching into the hoard…', 'dream');
+
+    // Pull a fragment from a random band to bias next hermes
+    const tables = ['hermes_entries','apollo_entries','hephaestus_entries','zeus_entries'];
+    let biasWords = [];
+    for (const table of tables) {
+        try {
+            const { data } = await db.from(table).select('body,label').limit(20);
+            if (data && data.length > 0) {
+                const entry = data[Math.floor(Math.random()*data.length)];
+                const words = entry.body.split(/\s+/).filter(w => w.length > 3);
+                biasWords   = randN(words, Math.min(3, words.length));
+                const cluster = CLUSTER_NAMES.find(c => (entry.label||'').includes(c)) || rand(CLUSTER_NAMES);
+                printLine(`  fragment: "${entry.body.split(/\s+/).slice(0,4).join(' ')}…"`, 'dream');
+                printLine(`  bias words: [${biasWords.join(', ')}] → next cluster pool`, 'dream');
+                // Set active cluster from fragment's cluster if detectable
+                if (CLUSTER_NAMES.find(c => (entry.label||'').includes(c))) activeCluster = cluster;
+                break;
+            }
+        } catch(_) {}
+    }
+
+    // Apply bias — these will be added to pool on next pass
+    dreamBias = biasWords;
+    setTimeout(exitDream, 7000);
+}
+
+function exitDream() {
+    isDreaming      = false;
+    awakePulseCount = 0;
+    updateCounter();
+    document.getElementById('statusLed').classList.remove('dreaming');
+    document.getElementById('stateLabel').textContent = 'AWAKE';
+    printLine(`✦ wakes · bias loaded · resuming passes`, 'dream');
+    printLine('', null);
+    startPassSystem();
+}
+
+// ── Mythic voices ─────────────────────────────────────────────────────────────
+const MYTHIC_VOICES = {
+    hermes:     ['✈️ Hermes scatters the seeds across the threshold.','✈️ The messenger carries whispers between worlds.','✈️ Seeds fall where the wind decides.','✈️ Hermes opens the gate; something crosses over.'],
+    apollo:     ['☀️ Apollo gives the seeds sunlight; their forms begin to show.','☀️ The sun reveals what darkness concealed.','☀️ Patterns emerge where there was only shadow.','☀️ Apollo\'s light illuminates the growing shape.'],
+    hephaestus: ['🔥 Hephaestus forges the tools Demeter will wield.','🔥 The hammer falls; structure emerges from chaos.','🔥 Fire shapes what sunlight only warms.','🔥 The forge transforms potential into instrument.'],
+    demeter:    ['🌾 Demeter kneels in the soil, tending what the forge has shaped.','🌾 The gardener prunes what grows wild.','🌾 She nurtures the weak and cuts what cannot be saved.','🌾 The harvest begins to take form under her hands.'],
+    poseidon:   ['🌊 Poseidon\'s tide rises; images drift through the roots.','🌊 The deep waters carry memory upward.','🌊 What was planted now drinks from the abyss.','🌊 The tide brings what the earth alone cannot.'],
+    athena:     ['🦉 Athena inspects the harvest and judges its purity.','🦉 The owl sees what the gardener cannot.','🦉 Wisdom weighs what has grown.','🦉 Not every fruit is worthy of the hoard.'],
+    zeus:       ['⚡ Zeus seals the harvest with thunder; the cycle completes.','⚡ The king of gods speaks the final word.','⚡ What has passed through all gates becomes canon.','⚡ The hoard remembers what Zeus has thundered.']
+};
+
+// ── Output ────────────────────────────────────────────────────────────────────
+function printLine(text, cls=null) {
+    const output = document.getElementById('output');
+    const line   = document.createElement('div');
+    line.textContent = text;
+    const direct = ['gate-pass','gate-fail','gate-dupe','sys','sysdim','dream','zeus-full','demeter-markup','demeter-health-high','demeter-health-mid','demeter-health-low','chain-open','chain-save','chain-dupe','bias-line'];
+    if (cls && direct.includes(cls))  line.classList.add(cls);
+    else if (cls && DIVINE_BANDS[cls]) line.classList.add(`band-${cls}`);
+    output.appendChild(line);
+    output.scrollTop = output.scrollHeight;
+}
+
+// ── Commands ──────────────────────────────────────────────────────────────────
+const KNOWN_COMMANDS = ['help','clear','pause','resume','stats','hoard','view','seed','cycle','chain','bias'];
+
+const commands = {
+    help: () => `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+KAIROS v4.6 · INFINITE SCALE · FULL CHAIN SAVES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PASS SYSTEM (saves every band in every pass):
+  Pass 1: ✈️             → hermes only
+  Pass 2: ✈️→☀️          → hermes + apollo
+  Pass 3: +🔥            → + hephaestus
+  Pass 4: +🌾            → + demeter
+  Pass 5: +🌊            → + poseidon
+  Pass 6: +🦉            → + athena (if gate passes)
+  Pass 7: +⚡            → + zeus (full chain)
+  Then loop. Session ID links all entries in a pass.
+
+DEDUPLICATION:
+  Exact or >60% word overlap → mutate + retry once
+  Second duplicate → skip save, log, continue
+
+COMMANDS:
+  help · clear · pause · resume · stats
+  hoard · view <band> [n] · seed <words>
+  cycle · chain <sessionId> · bias
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`,
+    clear:  () => { document.getElementById('output').innerHTML=''; return null; },
+    pause:  () => { pausePassSystem(); return '⏸ passes paused'; },
+    resume: () => { if (!evolutionActive) { startPassSystem(); return '▶ passes resumed'; } return 'already running'; },
+    bias:   () => dreamBias.length ? `✦ active bias: [${dreamBias.join(', ')}]` : `✦ no dream bias active`,
+    stats: async () => {
+        let total = 0;
+        for (const b of BAND_ORDER) { const { count } = await db.from(DIVINE_BANDS[b].table).select('*',{count:'exact',head:true}); total += (count||0); }
+        return `📊 Stats\n  Pass: ${currentPass}/${MAX_PASS} · Cluster: ${activeCluster}\n  Dream bias: [${dreamBias.join(', ')||'none'}]\n  Total entries: ${total}`;
+    },
+    hoard: async () => {
+        let out = `🗄 hoard\n`;
+        for (const b of BAND_ORDER) {
+            const info = DIVINE_BANDS[b];
+            const { count } = await db.from(info.table).select('*',{count:'exact',head:true});
+            const n = count||0; const bar = '█'.repeat(Math.min(n,30));
+            out += `  ${info.icon} ${info.name.padEnd(12)} ${String(n).padStart(3)}  ${bar}\n`;
+        }
+        return out;
+    },
+    view: async (args) => {
+        const band = args[0]?.toLowerCase(); const n = Math.min(parseInt(args[1])||3,10);
+        if (!band || !DIVINE_BANDS[band]) return `usage: view <band> [n]\nbands: ${BAND_ORDER.join(', ')}`;
+        const info = DIVINE_BANDS[band];
+        const { data, error } = await db.from(info.table).select('label,body,word_count').order('created_at',{ascending:false}).limit(n);
+        if (error) return `error: ${error.message}`;
+        if (!data?.length) return `${info.icon} ${info.name} hoard empty`;
+        let out = `${info.icon} ${info.name} · ${data.length} recent\n`;
+        data.forEach((e,i) => { out += `\n[${i+1}] ${e.label} (${e.word_count}w)\n${e.body}\n`; });
+        return out;
+    },
+    chain: async (args) => {
+        const sid = args[0];
+        if (!sid) return `usage: chain <sessionId>`;
+        let out = `🔗 chain #${sid}\n`;
+        for (const b of BAND_ORDER) {
+            const info = DIVINE_BANDS[b];
+            const { data } = await db.from(info.table).select('label,body,word_count').ilike('label', `%_${sid}`).limit(1);
+            if (data?.length) out += `\n${info.icon} ${info.name} [${data[0].word_count}w]\n${data[0].body}\n`;
+        }
+        return out;
+    },
+    seed: (args, fullInput) => {
+        const s = fullInput.replace(/^seed\s*/i,'').trim();
+        if (!s) return 'usage: seed <words>';
+        const words = s.split(/\s+/).slice(0,2);
+        forcedSeed = words.join(' ');
+        return `▶ seeded: "${forcedSeed}" · will use on next hermes pass`;
+    },
+    cycle: () => `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🌱 THE SEED CYCLE
+✈️  HERMES      1-2w  · seed + cluster assignment
+☀️  APOLLO      3-5w  · expansion + harmonic clustering
+🔥  HEPHAESTUS  6-10w · structural shaping + gate
+🌾  DEMETER     11-20w· markup + pruning + grounding
+🌊  POSEIDON    21-35w· imagistic expansion + recursion
+🦉  ATHENA      36-50w· wisdom gate (70% threshold)
+⚡  ZEUS        51-64w· canonization + hoard storage
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Dream cycle feeds fragments back as hermes bias.
+Session ID links all entries in a pass as a chain.
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`
+};
+
+async function processCommand(input) {
+    if (!input.trim()) return;
+    awakePulseCount = 0; updateCounter();
+    const parts = input.trim().split(/\s+/);
+    const cmd   = parts[0].toLowerCase();
+    const args  = parts.slice(1);
+    if (KNOWN_COMMANDS.includes(cmd)) {
+        const result = await commands[cmd](args, input);
+        if (result) printLine(result);
+        return;
+    }
+    const n = wc(input.trim()), band = getBandFromWordCount(n), info = DIVINE_BANDS[band];
+    printLine(`   ${n}w · ${info.icon} ${info.name} (${info.min}–${info.max}w)`, 'sysdim');
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+window.addEventListener('DOMContentLoaded', async () => {
+    const input = document.getElementById('command');
+    if (!window.supabase) { printLine('ERROR: Supabase not loaded'); return; }
+    db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    printLine('⚡ KAIROS TERMINAL v4.6 — INFINITE SCALE', 'sys');
+    printLine('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', 'sysdim');
+    printLine('Full chain saves · Session IDs · Dedup+mutate · Dream bias', 'sys');
+    printLine('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', 'sysdim');
+    printLine('');
+
+    startPassSystem();
+    startAwakePulses();
+
+    input.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            const val = input.value.trim();
+            if (val) { printLine(`➜ ${val}`, 'sys'); processCommand(val); commandHistory.push(val); historyIndex = commandHistory.length; }
+            input.value = '';
+        }
+        if (e.key === 'ArrowUp')   { e.preventDefault(); if (historyIndex > 0) { historyIndex--; input.value = commandHistory[historyIndex]; } }
+        if (e.key === 'ArrowDown') { e.preventDefault(); if (historyIndex < commandHistory.length-1) { historyIndex++; input.value = commandHistory[historyIndex]; } else { historyIndex = commandHistory.length; input.value = ''; } }
+    });
+    input.focus();
+});
+</script>
+</body>
+</html>
