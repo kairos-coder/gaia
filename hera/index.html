@@ -1,0 +1,1252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>👑 Hera · Command Center</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;900&family=Crimson+Pro:ital,wght@0,300;0,400;1,300;1,400&family=JetBrains+Mono:wght@300;400;500&display=swap');
+
+:root {
+  --void:     #060810;
+  --deep:     #090d18;
+  --surface:  #141a2a;
+  --rim:      #1e2840;
+  --gold:     #c8943a;
+  --gold-dim: #7a5720;
+  --hera:     #5a7aaa;
+  --hera-dim: #2e4060;
+  --mist:     #5a6880;
+  --pale:     #ccd8ee;
+  --soft:     #8a9ab8;
+  --spawn:    #4ade80;
+  --warn:     #f0c060;
+  --danger:   #f87171;
+
+  --font-display: 'Cinzel', serif;
+  --font-body:    'Crimson Pro', serif;
+  --font-mono:    'JetBrains Mono', monospace;
+
+  --radius: 6px;
+  --panel-pad: 1.1rem 1.2rem;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--void);
+  font-family: var(--font-body);
+  color: var(--pale);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* Atmospheric background */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 60% 40% at 20% 0%, rgba(90,122,170,0.07) 0%, transparent 70%),
+    radial-gradient(ellipse 40% 30% at 80% 100%, rgba(200,148,58,0.05) 0%, transparent 60%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Top accent line */
+body::after {
+  content: '';
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent 0%, var(--hera) 30%, var(--gold) 55%, var(--hera) 80%, transparent 100%);
+  z-index: 200;
+}
+
+/* ── TOPBAR ── */
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.55rem 1.5rem;
+  background: rgba(9,13,24,0.92);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--surface);
+}
+
+.topbar .logo {
+  font-family: var(--font-display);
+  font-size: 0.8rem;
+  color: var(--hera);
+  letter-spacing: 3px;
+  white-space: nowrap;
+}
+
+.topbar-divider {
+  width: 1px;
+  height: 20px;
+  background: var(--rim);
+  flex-shrink: 0;
+}
+
+.topbar .telos-display {
+  flex: 1;
+  font-family: var(--font-body);
+  font-style: italic;
+  font-size: 0.8rem;
+  color: var(--pale);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+.topbar .telos-display.empty { color: var(--mist); }
+
+.topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-shrink: 0;
+}
+
+.status-pip {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-family: var(--font-mono);
+  font-size: 0.5rem;
+  color: var(--mist);
+}
+
+.dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--mist);
+  flex-shrink: 0;
+  transition: background 0.3s;
+}
+.dot.active   { background: var(--spawn); box-shadow: 0 0 6px var(--spawn); }
+.dot.idle     { background: var(--warn);  box-shadow: 0 0 6px var(--warn); }
+.dot.inactive { background: var(--mist); }
+.dot.pulse    { animation: pulse-dot 2s ease-in-out infinite; }
+
+@keyframes pulse-dot {
+  0%,100% { opacity: 1; }
+  50%      { opacity: 0.3; }
+}
+
+/* ── LAYOUT ── */
+.container {
+  position: relative;
+  z-index: 1;
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 1.2rem 1.2rem 2rem;
+}
+
+.main {
+  display: grid;
+  grid-template-columns: 360px 1fr;
+  gap: 1rem;
+}
+
+.left, .right {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+/* ── PANELS ── */
+.panel {
+  position: relative;
+  background: var(--deep);
+  border: 1px solid var(--rim);
+  border-radius: var(--radius);
+  padding: var(--panel-pad);
+  overflow: hidden;
+}
+
+.panel::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(90,122,170,0.3), transparent);
+}
+
+.panel h2 {
+  font-family: var(--font-display);
+  font-size: 0.62rem;
+  color: var(--hera);
+  letter-spacing: 3px;
+  margin-bottom: 0.8rem;
+  text-transform: uppercase;
+}
+
+/* ── INPUTS ── */
+textarea, input[type="text"], input:not([type]) {
+  width: 100%;
+  background: rgba(6,8,16,0.7);
+  color: var(--pale);
+  border: 1px solid var(--rim);
+  border-radius: 4px;
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  line-height: 1.6;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+textarea { padding: 0.6rem 0.7rem; resize: vertical; min-height: 64px; border-left: 2px solid var(--hera-dim); }
+input[type="text"], input:not([type]) { padding: 0.4rem 0.6rem; }
+
+textarea:focus, input:focus {
+  border-color: var(--hera);
+  box-shadow: 0 0 0 2px rgba(90,122,170,0.12);
+}
+
+select {
+  background: var(--surface);
+  color: var(--pale);
+  border: 1px solid var(--rim);
+  border-radius: 4px;
+  font-family: var(--font-mono);
+  font-size: 0.55rem;
+  padding: 0.25rem 0.4rem;
+  outline: none;
+  cursor: pointer;
+}
+select:focus { border-color: var(--hera); }
+
+/* ── BUTTONS ── */
+button {
+  padding: 0.4rem 0.85rem;
+  border: 1px solid var(--rim);
+  background: var(--surface);
+  color: var(--soft);
+  border-radius: 4px;
+  cursor: pointer;
+  font-family: var(--font-mono);
+  font-size: 0.53rem;
+  letter-spacing: 0.8px;
+  transition: background 0.18s, color 0.18s, border-color 0.18s, box-shadow 0.18s;
+  white-space: nowrap;
+}
+button:hover:not(:disabled) {
+  background: var(--hera-dim);
+  color: var(--pale);
+  border-color: var(--hera);
+}
+button:active:not(:disabled) { transform: translateY(1px); }
+button:disabled { opacity: 0.3; cursor: not-allowed; }
+
+button.primary {
+  background: var(--hera);
+  color: #fff;
+  border-color: var(--hera);
+  font-weight: 500;
+}
+button.primary:hover:not(:disabled) {
+  background: #6a8ac0;
+  box-shadow: 0 0 12px rgba(90,122,170,0.3);
+}
+
+button.gold {
+  border-color: var(--gold-dim);
+  color: var(--gold);
+  background: transparent;
+}
+button.gold:hover:not(:disabled) {
+  background: rgba(200,148,58,0.15);
+  border-color: var(--gold);
+  box-shadow: 0 0 10px rgba(200,148,58,0.2);
+}
+
+button.danger { border-color: var(--danger); color: var(--danger); background: transparent; }
+button.danger:hover:not(:disabled) { background: rgba(248,113,113,0.12); }
+
+button.icon-btn {
+  padding: 0.3rem 0.5rem;
+  font-size: 0.55rem;
+}
+
+/* ── TELOS PANEL ── */
+.telos-hint {
+  font-family: var(--font-mono);
+  font-size: 0.48rem;
+  color: var(--mist);
+  margin-top: 0.4rem;
+}
+
+/* ── PRE-TELOS SLOTS ── */
+.slot-row {
+  display: grid;
+  grid-template-columns: 20px 1fr auto;
+  gap: 0.4rem;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+.slot-num {
+  font-family: var(--font-mono);
+  font-size: 0.52rem;
+  color: var(--hera);
+  text-align: right;
+}
+.slot-actions { display: flex; gap: 0.25rem; }
+.slot-actions button { padding: 0.25rem 0.45rem; font-size: 0.5rem; }
+
+/* ── TOGGLE ── */
+.toggle-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.35rem 0;
+}
+.toggle-label {
+  font-family: var(--font-mono);
+  font-size: 0.55rem;
+  color: var(--soft);
+}
+.toggle-switch {
+  width: 34px;
+  height: 18px;
+  background: var(--rim);
+  border-radius: 9px;
+  position: relative;
+  cursor: pointer;
+  transition: background 0.2s;
+  flex-shrink: 0;
+}
+.toggle-switch.on { background: var(--hera); }
+.toggle-switch::after {
+  content: '';
+  position: absolute;
+  top: 2px; left: 2px;
+  width: 14px; height: 14px;
+  background: #fff;
+  border-radius: 50%;
+  transition: transform 0.2s;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.4);
+}
+.toggle-switch.on::after { transform: translateX(16px); }
+
+/* ── AUTO-LOOP ── */
+.loop-controls {
+  display: flex;
+  gap: 0.4rem;
+  margin-top: 0.6rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.loop-meta {
+  font-family: var(--font-mono);
+  font-size: 0.5rem;
+  color: var(--mist);
+  margin-top: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.cycle-display {
+  margin-top: 0.6rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+.cycle-step {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-family: var(--font-mono);
+  font-size: 0.5rem;
+  color: var(--mist);
+  padding: 0.2rem 0.4rem;
+  border-radius: 3px;
+  transition: all 0.2s;
+}
+.cycle-step.active  { color: var(--spawn); background: rgba(74,222,128,0.06); }
+.cycle-step.done    { color: var(--soft); }
+.cycle-step.error   { color: var(--danger); background: rgba(248,113,113,0.06); }
+.cycle-step.skipped { color: var(--mist); opacity: 0.5; }
+
+/* ── TTS PANEL ── */
+.tts-meta {
+  font-family: var(--font-mono);
+  font-size: 0.5rem;
+  color: var(--mist);
+  margin-top: 0.4rem;
+  line-height: 1.7;
+}
+.tts-meta span { color: var(--soft); }
+
+/* ── INTEGRATIONS ── */
+.integration-list { display: flex; flex-direction: column; }
+.integration-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.4rem 0;
+  border-bottom: 1px solid rgba(30,40,64,0.5);
+}
+.integration-row:last-child { border-bottom: none; }
+.int-label {
+  font-family: var(--font-mono);
+  font-size: 0.55rem;
+  color: var(--soft);
+}
+.int-label .int-icon { margin-right: 0.3rem; }
+
+/* ── PREVIOUS TELOI ── */
+.prev-list {
+  font-family: var(--font-mono);
+  font-size: 0.5rem;
+  color: var(--mist);
+  max-height: 130px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--rim) transparent;
+}
+.prev-list::-webkit-scrollbar { width: 3px; }
+.prev-list::-webkit-scrollbar-thumb { background: var(--rim); border-radius: 2px; }
+.prev-item {
+  padding: 0.3rem 0;
+  border-bottom: 1px solid rgba(30,40,64,0.4);
+  opacity: 0.65;
+  transition: opacity 0.15s;
+  cursor: default;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.prev-item:hover { opacity: 1; }
+.prev-item::before { content: '╌ '; color: var(--hera-dim); }
+
+/* ── LOG ── */
+.log-panel {
+  background: rgba(6,8,16,0.6);
+  border: 1px solid var(--rim);
+  border-left: 2px solid var(--hera-dim);
+  border-radius: var(--radius);
+  padding: 0.6rem 0.8rem;
+  max-height: 130px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--rim) transparent;
+}
+.log-panel::-webkit-scrollbar { width: 3px; }
+.log-panel::-webkit-scrollbar-thumb { background: var(--rim); }
+.log-entry {
+  font-family: var(--font-mono);
+  font-size: 0.48rem;
+  color: var(--mist);
+  line-height: 1.8;
+  animation: fadein 0.3s ease;
+}
+.log-entry .ts { color: var(--hera-dim); margin-right: 0.4rem; }
+@keyframes fadein { from { opacity:0; transform:translateY(-2px); } to { opacity:1; transform:none; } }
+
+/* ── TASK LIST ── */
+.task-input-row {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 0.7rem;
+}
+.task-input-row input { flex: 1; }
+
+.task-list-container {
+  max-height: 260px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--rim) transparent;
+}
+.task-list-container::-webkit-scrollbar { width: 3px; }
+.task-list-container::-webkit-scrollbar-thumb { background: var(--rim); }
+
+.task-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.55rem;
+  padding: 0.45rem 0.2rem;
+  border-bottom: 1px solid rgba(30,40,64,0.4);
+  transition: background 0.15s;
+  border-radius: 3px;
+}
+.task-item:hover { background: rgba(90,122,170,0.04); }
+.task-item:last-child { border-bottom: none; }
+
+.task-check {
+  width: 15px;
+  height: 15px;
+  border: 1px solid var(--rim);
+  border-radius: 3px;
+  cursor: pointer;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.55rem;
+  margin-top: 1px;
+  transition: background 0.15s, border-color 0.15s;
+}
+.task-check:hover { border-color: var(--hera); }
+.task-check.done {
+  background: var(--hera);
+  border-color: var(--hera);
+  color: #fff;
+}
+
+.task-body {
+  flex: 1;
+  font-family: var(--font-body);
+  font-size: 0.75rem;
+  line-height: 1.4;
+  color: var(--pale);
+  word-break: break-word;
+}
+.task-body.done {
+  text-decoration: line-through;
+  color: var(--mist);
+}
+
+.task-del {
+  padding: 0.15rem 0.35rem !important;
+  font-size: 0.45rem !important;
+  opacity: 0;
+  border-color: transparent !important;
+  color: var(--mist) !important;
+  background: transparent !important;
+  transition: opacity 0.15s;
+}
+.task-item:hover .task-del { opacity: 1; }
+.task-del:hover { color: var(--danger) !important; border-color: var(--danger) !important; }
+
+.task-empty {
+  font-family: var(--font-body);
+  font-style: italic;
+  font-size: 0.75rem;
+  color: var(--mist);
+  padding: 0.5rem 0.2rem;
+}
+
+/* ── SYSTEM STATUS ── */
+.status-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 0.6rem;
+}
+.stat-block {
+  background: rgba(6,8,16,0.5);
+  border: 1px solid var(--rim);
+  border-radius: 4px;
+  padding: 0.5rem 0.6rem;
+  text-align: center;
+}
+.stat-block .stat-val {
+  font-family: var(--font-mono);
+  font-size: 1.1rem;
+  color: var(--pale);
+  display: block;
+  font-weight: 500;
+}
+.stat-block .stat-lbl {
+  font-family: var(--font-mono);
+  font-size: 0.44rem;
+  color: var(--mist);
+  letter-spacing: 1px;
+  margin-top: 0.15rem;
+}
+
+/* ── WORKSPACE ── */
+.workspace-links {
+  display: flex;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+.workspace-links button {
+  font-size: 0.55rem;
+}
+.workspace-links button:hover:not(:disabled) {
+  background: var(--surface);
+  border-color: var(--hera);
+  color: var(--pale);
+}
+
+/* ── SCROLLBARS (global) ── */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--rim); border-radius: 2px; }
+
+/* ── RESPONSIVE ── */
+@media (max-width: 860px) {
+  .main { grid-template-columns: 1fr; }
+  .status-grid { grid-template-columns: 1fr 1fr; }
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <span class="logo">👑 HERA</span>
+  <div class="topbar-divider"></div>
+  <span class="telos-display empty" id="topTelos">No active telos</span>
+  <div class="topbar-right">
+    <div class="status-pip">
+      <div class="dot inactive" id="statusDot"></div>
+      <span id="statusLabel">Idle</span>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+<div class="main">
+
+  <!-- ══ LEFT ══ -->
+  <div class="left">
+
+    <!-- Active Telos -->
+    <div class="panel">
+      <h2>🎯 Active Telos</h2>
+      <textarea id="telosInput" placeholder="What are we doing today?"></textarea>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:0.5rem;">
+        <button class="primary" onclick="setTelos()">👑 Set Telos</button>
+        <span class="telos-hint">Ctrl+Enter to set</span>
+      </div>
+    </div>
+
+    <!-- Pre-Telos Slots -->
+    <div class="panel">
+      <h2>🌙 Pre-Telos · 3 Slots</h2>
+      <div id="slotsContainer">
+        <div class="slot-row"><span class="slot-num">1</span><input id="p1" placeholder="Future intention..." /><div class="slot-actions"><button class="gold icon-btn" title="Promote to telos" onclick="promoteIdea(1)">👑</button><button class="icon-btn" title="Retire" onclick="toggleRetire(1)">✕</button></div></div>
+        <div class="slot-row"><span class="slot-num">2</span><input id="p2" placeholder="Future intention..." /><div class="slot-actions"><button class="gold icon-btn" title="Promote to telos" onclick="promoteIdea(2)">👑</button><button class="icon-btn" title="Retire" onclick="toggleRetire(2)">✕</button></div></div>
+        <div class="slot-row"><span class="slot-num">3</span><input id="p3" placeholder="Future intention..." /><div class="slot-actions"><button class="gold icon-btn" title="Promote to telos" onclick="promoteIdea(3)">👑</button><button class="icon-btn" title="Retire" onclick="toggleRetire(3)">✕</button></div></div>
+      </div>
+    </div>
+
+    <!-- Auto-Loop -->
+    <div class="panel">
+      <h2>🔄 Auto-Loop</h2>
+      <div class="toggle-row">
+        <span class="toggle-label">Auto-Cycle</span>
+        <div class="toggle-switch" id="toggleLoop" onclick="toggleAutoLoop()"></div>
+      </div>
+      <div class="loop-controls">
+        <button id="btnRunOnce" onclick="runSingleCycle()">▶ Run Once</button>
+        <button id="btnStopLoop" onclick="stopAutoLoop()" style="display:none;">⏹ Stop</button>
+      </div>
+      <div class="loop-meta">
+        <span>Cycles: <strong id="cycleCount" style="color:var(--pale);">0</strong></span>
+        <span>·</span>
+        <span>Interval:</span>
+        <select id="cycleInterval" onchange="updateInterval()">
+          <option value="30">30s</option>
+          <option value="60" selected>1 min</option>
+          <option value="120">2 min</option>
+          <option value="300">5 min</option>
+        </select>
+      </div>
+      <div class="cycle-display" id="cycleDisplay">
+        <div class="cycle-step">Waiting to start…</div>
+      </div>
+    </div>
+
+    <!-- Kitten TTS -->
+    <div class="panel">
+      <h2>🐱 Kitten TTS · Hera's Voice</h2>
+      <div class="toggle-row">
+        <span class="toggle-label">Idle Check-In</span>
+        <div class="toggle-switch on" id="toggleIdle" onclick="toggleIdleCheck()"></div>
+      </div>
+      <div class="tts-meta">
+        Threshold: <span>15 min</span> · Status: <span id="ttsStatus">Initializing…</span>
+      </div>
+      <button onclick="testHeraVoice()" style="margin-top:0.6rem;width:100%;">🔊 Test Hera's Voice</button>
+    </div>
+
+    <!-- Integrations -->
+    <div class="panel">
+      <h2>⚡ Integrations</h2>
+      <div class="integration-list">
+        <div class="integration-row"><span class="int-label"><span class="int-icon">☀️</span>Apollo · Synthesis</span><div class="toggle-switch on" id="toggleApollo" onclick="toggleIntegration('apollo')"></div></div>
+        <div class="integration-row"><span class="int-label"><span class="int-icon">🌾</span>Demeter · Cultivation</span><div class="toggle-switch on" id="toggleDemeter" onclick="toggleIntegration('demeter')"></div></div>
+        <div class="integration-row"><span class="int-label"><span class="int-icon">🌊</span>Poseidon · Extraction</span><div class="toggle-switch on" id="togglePoseidon" onclick="toggleIntegration('poseidon')"></div></div>
+      </div>
+    </div>
+
+    <!-- Previous Teloi -->
+    <div class="panel">
+      <h2>🕯️ Previous Teloi</h2>
+      <div class="prev-list" id="prevList">
+        <div class="prev-item" style="opacity:0.4;">Loading…</div>
+      </div>
+    </div>
+
+    <!-- Log -->
+    <div class="log-panel" id="log">
+      <div class="log-entry"><span class="ts">--:--:--</span>👑 Hera presides. The system is in order.</div>
+    </div>
+
+  </div>
+
+  <!-- ══ RIGHT ══ -->
+  <div class="right">
+
+    <!-- Task List -->
+    <div class="panel" style="flex:1;">
+      <h2>📋 Task List</h2>
+      <div class="task-input-row">
+        <input id="newTask" placeholder="New task… (Enter to add)" />
+        <button class="primary" onclick="addTask()">+ Add</button>
+      </div>
+      <div class="task-list-container" id="taskList">
+        <div class="task-empty">No tasks yet.</div>
+      </div>
+    </div>
+
+    <!-- System Status -->
+    <div class="panel">
+      <h2>📊 System Status</h2>
+      <div class="status-grid" id="systemStatus">
+        <div class="stat-block"><span class="stat-val" id="stat-tokens">—</span><span class="stat-lbl">TOKENS</span></div>
+        <div class="stat-block"><span class="stat-val" id="stat-pairs">—</span><span class="stat-lbl">PAIRS</span></div>
+        <div class="stat-block"><span class="stat-val" id="stat-triplets">—</span><span class="stat-lbl">TRIPLETS</span></div>
+        <div class="stat-block"><span class="stat-val" id="stat-prompts">—</span><span class="stat-lbl">PROMPTS</span></div>
+        <div class="stat-block"><span class="stat-val" id="stat-images">—</span><span class="stat-lbl">IMAGES</span></div>
+        <div class="stat-block"><span class="stat-val" id="stat-integrations">—</span><span class="stat-lbl">ACTIVE GODS</span></div>
+      </div>
+    </div>
+
+    <!-- Workspace Switcher -->
+    <div class="panel">
+      <h2>🏛️ Workspace</h2>
+      <div class="workspace-links">
+        <button onclick="window.open('https://kairos-coder.github.io/hermes','_blank')">⚡ Hermes</button>
+        <button onclick="window.open('https://kairos-coder.github.io/aphrodite','_blank')">💗 Aphrodite</button>
+        <button onclick="window.open('https://kairos-coder.github.io/apollo','_blank')">☀️ Apollo</button>
+        <button onclick="window.open('https://kairos-coder.github.io/demeter','_blank')">🌾 Demeter</button>
+        <button onclick="window.open('https://kairos-coder.github.io/poseidon','_blank')">🌊 Poseidon</button>
+        <button onclick="window.open('https://kairos-coder.github.io/hera','_blank')">👑 Hera</button>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+</div>
+
+<script type="module">
+const sb = window.supabase.createClient(
+  'https://kzcucjcyxybypncbdbws.supabase.co',
+  'sb_publishable_saeUHGocDah-T2_709M6Fg_g26JtLXw'
+);
+
+// ── STATE ──
+let activeTelos = null;
+let currentSlots = {1:null, 2:null, 3:null};
+let integrations = {apollo:true, demeter:true, poseidon:true};
+let autoLoopActive = false;
+let loopTimer = null;
+let cycleCount = 0;
+let idleCheckEnabled = true;
+let idleTimer = null;
+
+// ── LOG ──
+function log(msg) {
+  const el = document.getElementById('log');
+  const entry = document.createElement('div');
+  entry.className = 'log-entry';
+  const ts = new Date().toLocaleTimeString('en-GB', {hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  entry.innerHTML = `<span class="ts">${ts}</span>${esc(msg)}`;
+  el.insertBefore(entry, el.firstChild);
+  while (el.children.length > 60) el.removeChild(el.lastChild);
+}
+
+// ── UTILITIES ──
+function esc(s) {
+  return String(s||'').replace(/[&<>"']/g, c =>
+    ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]
+  );
+}
+
+function setStatusDot(state) {
+  const dot = document.getElementById('statusDot');
+  const lbl = document.getElementById('statusLabel');
+  dot.className = 'dot ' + state;
+  dot.classList.toggle('pulse', state === 'active');
+  lbl.textContent = state.charAt(0).toUpperCase() + state.slice(1);
+}
+
+// ── TELOS ──
+async function loadTelos() {
+  const {data} = await sb.from('telos').select('*').eq('is_active',true).maybeSingle();
+  activeTelos = data || null;
+  const topEl = document.getElementById('topTelos');
+  if (activeTelos) {
+    topEl.textContent = '🎯 ' + activeTelos.statement;
+    topEl.classList.remove('empty');
+    setStatusDot('active');
+  } else {
+    topEl.textContent = 'No active telos';
+    topEl.classList.add('empty');
+    setStatusDot('inactive');
+  }
+  const {data:prev} = await sb
+    .from('telos').select('statement')
+    .eq('is_active',false)
+    .order('created_at',{ascending:false})
+    .limit(15);
+  const prevEl = document.getElementById('prevList');
+  prevEl.innerHTML = (prev||[]).map(t =>
+    `<div class="prev-item" title="${esc(t.statement)}">${esc(t.statement.substring(0,65))}${t.statement.length>65?'…':''}</div>`
+  ).join('') || '<div class="prev-item" style="opacity:0.4;">None yet.</div>';
+}
+
+async function setTelos() {
+  const statement = document.getElementById('telosInput').value.trim();
+  if (!statement) return;
+  await sb.from('telos').update({is_active:false}).eq('is_active',true);
+  await sb.from('telos').insert({statement, is_active:true});
+  document.getElementById('telosInput').value = '';
+  await loadTelos();
+  log('👑 Telos set: ' + statement);
+}
+window.setTelos = setTelos;
+
+// ── PRE-TELOS ──
+async function loadSlots() {
+  const {data} = await sb.from('pre_telos').select('*').in('slot',[1,2,3]);
+  currentSlots = {1:null, 2:null, 3:null};
+  (data||[]).forEach(r => { currentSlots[r.slot] = r; });
+  for (let s = 1; s <= 3; s++) {
+    document.getElementById(`p${s}`).value = currentSlots[s]?.bullet || '';
+  }
+}
+
+async function saveSlot(slot, value) {
+  const bullet = value.trim();
+  if (!bullet) {
+    await sb.from('pre_telos').delete().eq('slot', slot);
+  } else {
+    await sb.from('pre_telos').upsert(
+      {slot, bullet, status:'active', updated_at:new Date().toISOString()},
+      {onConflict:'slot'}
+    );
+  }
+  await loadSlots();
+}
+
+const saveTimers = {};
+function debounceSave(slot, value) {
+  clearTimeout(saveTimers[slot]);
+  saveTimers[slot] = setTimeout(() => saveSlot(slot, value), 600);
+}
+document.getElementById('p1').oninput = e => debounceSave(1, e.target.value);
+document.getElementById('p2').oninput = e => debounceSave(2, e.target.value);
+document.getElementById('p3').oninput = e => debounceSave(3, e.target.value);
+
+async function promoteIdea(slot) {
+  const idea = currentSlots[slot];
+  if (!idea?.bullet) return;
+  document.getElementById('telosInput').value = idea.bullet;
+  await setTelos();
+}
+
+async function toggleRetire(slot) {
+  const idea = currentSlots[slot];
+  if (!idea) return;
+  const newStatus = idea.status === 'retired' ? 'active' : 'retired';
+  await sb.from('pre_telos').update({
+    status: newStatus,
+    updated_at: new Date().toISOString()
+  }).eq('slot', slot);
+  await loadSlots();
+  log(`Slot ${slot} ${newStatus === 'retired' ? 'retired' : 'restored'}.`);
+}
+window.promoteIdea = promoteIdea;
+window.toggleRetire = toggleRetire;
+
+// ── INTEGRATIONS ──
+function toggleIntegration(god) {
+  integrations[god] = !integrations[god];
+  const key = god.charAt(0).toUpperCase() + god.slice(1);
+  const el = document.getElementById(`toggle${key}`);
+  if (el) el.classList.toggle('on', integrations[god]);
+  log(`${key} ${integrations[god] ? 'enabled' : 'disabled'}.`);
+  localStorage.setItem('hera-integrations', JSON.stringify(integrations));
+  updateIntegrationStat();
+}
+window.toggleIntegration = toggleIntegration;
+
+function loadIntegrations() {
+  const saved = localStorage.getItem('hera-integrations');
+  if (saved) integrations = JSON.parse(saved);
+  for (const [god, state] of Object.entries(integrations)) {
+    const key = god.charAt(0).toUpperCase() + god.slice(1);
+    const el = document.getElementById(`toggle${key}`);
+    if (el) el.classList.toggle('on', state);
+  }
+  updateIntegrationStat();
+}
+
+function updateIntegrationStat() {
+  const el = document.getElementById('stat-integrations');
+  if (el) el.textContent = Object.values(integrations).filter(Boolean).length + '/3';
+}
+
+// ── TASKS ──
+async function loadTasks() {
+  const {data} = await sb.from('tasks').select('*').order('created_at', {ascending:true});
+  const container = document.getElementById('taskList');
+  if (!data?.length) {
+    container.innerHTML = '<div class="task-empty">No tasks yet.</div>';
+    return;
+  }
+  container.innerHTML = data.map(t => `
+    <div class="task-item">
+      <div class="task-check ${t.done?'done':''}" onclick="toggleTask('${t.id}',${!t.done})" title="${t.done?'Mark undone':'Mark done'}">${t.done?'✓':''}</div>
+      <span class="task-body ${t.done?'done':''}">${esc(t.body)}</span>
+      <button class="task-del icon-btn" onclick="deleteTask('${t.id}')" title="Delete">✕</button>
+    </div>
+  `).join('');
+}
+
+async function addTask() {
+  const input = document.getElementById('newTask');
+  const body = input.value.trim();
+  if (!body) return;
+  await sb.from('tasks').insert({body, done:false, created_at:new Date().toISOString()});
+  input.value = '';
+  await loadTasks();
+  log('📋 Task added: ' + body.substring(0,40));
+}
+
+async function toggleTask(id, done) {
+  await sb.from('tasks').update({done}).eq('id', id);
+  await loadTasks();
+}
+
+async function deleteTask(id) {
+  await sb.from('tasks').delete().eq('id', id);
+  await loadTasks();
+  log('🗑 Task removed.');
+}
+window.addTask = addTask;
+window.toggleTask = toggleTask;
+window.deleteTask = deleteTask;
+
+// ── SYSTEM STATUS ──
+async function loadStatus() {
+  try {
+    const [tokens, pairs, triplets, prompts, images] = await Promise.all([
+      sb.from('tokens').select('*',{count:'exact',head:true}),
+      sb.from('pairs').select('*',{count:'exact',head:true}),
+      sb.from('svo_triplets').select('*',{count:'exact',head:true}),
+      sb.from('prompts').select('*',{count:'exact',head:true}),
+      sb.from('images').select('*',{count:'exact',head:true})
+    ]);
+    const fmt = n => n >= 1000 ? (n/1000).toFixed(1)+'k' : String(n||0);
+    document.getElementById('stat-tokens').textContent    = fmt(tokens.count);
+    document.getElementById('stat-pairs').textContent     = fmt(pairs.count);
+    document.getElementById('stat-triplets').textContent  = fmt(triplets.count);
+    document.getElementById('stat-prompts').textContent   = fmt(prompts.count);
+    document.getElementById('stat-images').textContent    = fmt(images.count);
+    updateIntegrationStat();
+  } catch(e) {
+    log('⚠ Status load failed: ' + e.message);
+  }
+}
+
+// ── AUTO-LOOP ──
+function updateCycleDisplay(steps) {
+  const display = document.getElementById('cycleDisplay');
+  display.innerHTML = steps.map(s =>
+    `<div class="cycle-step ${s.status}">${s.icon} ${esc(s.label)}</div>`
+  ).join('');
+}
+
+async function runSingleCycle() {
+  if (!activeTelos) {
+    log('⚠ No active telos — set one before running a cycle.');
+    return;
+  }
+  cycleCount++;
+  document.getElementById('cycleCount').textContent = cycleCount;
+  log(`🔄 Cycle ${cycleCount} starting…`);
+  setStatusDot('active');
+
+  const steps = [
+    {icon:'☀️', label:'Apollo: Synthesizing…',  status:'active'},
+    {icon:'🌾', label:'Demeter: Pollinating…',  status:''},
+    {icon:'🌊', label:'Poseidon: Extracting…',  status:''}
+  ];
+  updateCycleDisplay(steps);
+
+  // ── Apollo ──
+  if (integrations.apollo) {
+    try {
+      const {data:apolloData, error:apolloErr} = await sb.functions.invoke('apollo-synthesize',{
+        body: {source:'hera-auto-loop', telos: activeTelos?.statement||''}
+      });
+      if (!apolloErr && apolloData?.success) {
+        steps[0].status = 'done';
+        steps[0].label  = `Apollo: ${apolloData.triplets_formed||0} triplets, ${apolloData.prompts_composed||0} prompts`;
+        log(`☀️ Apollo: ${apolloData.triplets_formed||0} triplets, ${apolloData.prompts_composed||0} prompts`);
+        if (apolloData.domain_drift) {
+          await sb.from('tasks').insert({
+            body:`Cycle ${cycleCount}: Domain drift — ${apolloData.domain_drift}`,
+            done:false, created_at:new Date().toISOString()
+          });
+        }
+      } else {
+        steps[0].status = 'error';
+        steps[0].label  = `Apollo: offline (${apolloErr?.message||'no response'})`;
+        log(`☀️ Apollo error: ${apolloErr?.message||'no response'}`);
+      }
+    } catch(e) {
+      steps[0].status = 'error';
+      steps[0].label  = 'Apollo: error';
+      log(`☀️ Apollo exception: ${e.message}`);
+    }
+  } else {
+    steps[0].status = 'skipped';
+    steps[0].label  = 'Apollo: Skipped';
+  }
+  updateCycleDisplay(steps);
+  steps[1].status = 'active';
+  updateCycleDisplay(steps);
+
+  // ── Demeter ──
+  if (integrations.demeter) {
+    try {
+      const {data:demData, error:demErr} = await sb.functions.invoke('demeter-cultivate',{
+        body: {source:'hera-auto-loop'}
+      });
+      if (!demErr && demData?.success) {
+        steps[1].status = 'done';
+        steps[1].label  = `Demeter: ${demData.images_forged||0} images harvested`;
+        log(`🌾 Demeter: ${demData.images_forged||0} images harvested`);
+      } else {
+        steps[1].status = 'error';
+        steps[1].label  = 'Demeter: offline';
+        log('🌾 Demeter: offline or error');
+      }
+    } catch(e) {
+      steps[1].status = 'error';
+      steps[1].label  = 'Demeter: error';
+      log(`🌾 Demeter exception: ${e.message}`);
+    }
+  } else {
+    steps[1].status = 'skipped';
+    steps[1].label  = 'Demeter: Skipped';
+  }
+  updateCycleDisplay(steps);
+  steps[2].status = 'active';
+  updateCycleDisplay(steps);
+
+  // ── Poseidon ──
+  if (integrations.poseidon) {
+    try {
+      const {data:posData, error:posErr} = await sb.functions.invoke('poseidon-extract',{
+        body: {source:'hera-auto-loop'}
+      });
+      if (!posErr && posData?.success) {
+        steps[2].status = 'done';
+        steps[2].label  = `Poseidon: ${posData.images_processed||0} images processed`;
+        log(`🌊 Poseidon: palette stored for ${posData.images_processed||0} images`);
+        if (posData.extracted_tokens?.length) {
+          await sb.from('tasks').insert({
+            body:`Cycle ${cycleCount}: Poseidon extracted — ${posData.extracted_tokens.slice(0,3).join(', ')}`,
+            done:false, created_at:new Date().toISOString()
+          });
+        }
+      } else {
+        steps[2].status = 'error';
+        steps[2].label  = 'Poseidon: offline';
+        log('🌊 Poseidon: offline or error');
+      }
+    } catch(e) {
+      steps[2].status = 'error';
+      steps[2].label  = 'Poseidon: error';
+      log(`🌊 Poseidon exception: ${e.message}`);
+    }
+  } else {
+    steps[2].status = 'skipped';
+    steps[2].label  = 'Poseidon: Skipped';
+  }
+  updateCycleDisplay(steps);
+
+  await loadTasks();
+  await loadStatus();
+  setStatusDot(activeTelos ? 'active' : 'inactive');
+  log(`✅ Cycle ${cycleCount} complete.`);
+}
+
+function startAutoLoop() {
+  if (loopTimer) clearInterval(loopTimer);
+  const interval = parseInt(document.getElementById('cycleInterval').value) * 1000;
+  runSingleCycle(); // run immediately on start
+  loopTimer = setInterval(runSingleCycle, interval);
+  autoLoopActive = true;
+  document.getElementById('toggleLoop').classList.add('on');
+  document.getElementById('btnRunOnce').style.display = 'none';
+  document.getElementById('btnStopLoop').style.display = 'inline-block';
+  log(`🔄 Auto-loop started (every ${interval/1000}s)`);
+}
+
+function stopAutoLoop() {
+  if (loopTimer) clearInterval(loopTimer);
+  loopTimer = null;
+  autoLoopActive = false;
+  document.getElementById('toggleLoop').classList.remove('on');
+  document.getElementById('btnRunOnce').style.display = 'inline-block';
+  document.getElementById('btnStopLoop').style.display = 'none';
+  log('⏹ Auto-loop stopped.');
+}
+
+function toggleAutoLoop() {
+  if (autoLoopActive) stopAutoLoop(); else startAutoLoop();
+}
+
+window.toggleAutoLoop = toggleAutoLoop;
+window.runSingleCycle = runSingleCycle;
+window.stopAutoLoop   = stopAutoLoop;
+window.updateInterval = function() {
+  if (autoLoopActive) { stopAutoLoop(); startAutoLoop(); }
+};
+
+// ── HERA TTS ──
+const HERA_LINES = [
+  "HEY. You forgot about me. It's been a while.",
+  "Oh, you're back. Great. Everything's fine. Totally fine. I definitely wasn't waiting.",
+  "There you are. Your telos still says the same thing, by the way.",
+  "I was starting to think you'd abandoned us. Dramatic? Me? Never.",
+  "The loop doesn't close itself, you know.",
+  "Fifteen minutes. That's a new record. The pantheon is literally still here."
+];
+
+function initKittenTTS() {
+  if (typeof speechSynthesis === 'undefined') {
+    document.getElementById('ttsStatus').textContent = 'Not supported';
+    return;
+  }
+  // Pre-load voices (Chrome loads them async)
+  speechSynthesis.getVoices();
+  speechSynthesis.addEventListener('voiceschanged', () => {}, {once:true});
+  document.getElementById('ttsStatus').textContent = 'Ready';
+}
+
+function synthesizeHeraSpeech(text) {
+  return new Promise(resolve => {
+    speechSynthesis.cancel();
+    const voices = speechSynthesis.getVoices();
+    const heraVoice = voices.find(v =>
+      v.name.includes('Samantha') ||
+      v.name.includes('Karen') ||
+      v.name.toLowerCase().includes('female')
+    ) || voices.find(v => v.lang.startsWith('en')) || voices[0];
+
+    const chunks = text
+      .split(/(?<=[.!?])\s+|(?<=,|;|—)\s*/)
+      .map(c => c.trim())
+      .filter(Boolean);
+
+    let i = 0;
+    function speakNext() {
+      if (i >= chunks.length) { resolve(); return; }
+      const u = new SpeechSynthesisUtterance(chunks[i]);
+      if (heraVoice) u.voice = heraVoice;
+      u.rate  = 0.87;
+      u.pitch = 0.92;
+      const pause = chunks[i].match(/[.!?]$/) ? 520 : chunks[i].match(/[,;—]$/) ? 280 : 180;
+      u.onend = () => { i++; setTimeout(speakNext, pause); };
+      u.onerror = () => { i++; speakNext(); };
+      speechSynthesis.speak(u);
+    }
+    if (voices.length === 0) {
+      speechSynthesis.addEventListener('voiceschanged', speakNext, {once:true});
+    } else {
+      speakNext();
+    }
+  });
+}
+
+async function heraCheckIn() {
+  if (!idleCheckEnabled) return;
+  const {data:telos} = await sb.from('telos').select('statement').eq('is_active',true).maybeSingle();
+  const {data:tasks} = await sb.from('tasks').select('body').eq('done',false).limit(3);
+  const greeting = HERA_LINES[Math.floor(Math.random() * HERA_LINES.length)];
+  let transcript = greeting + ' ';
+  if (telos)       transcript += `Your active telos is: ${telos.statement}. `;
+  if (tasks?.length) {
+    transcript += `You have ${tasks.length} open task${tasks.length>1?'s':''}. `;
+    if (tasks[0]) transcript += `First: ${tasks[0].body}. `;
+  }
+  transcript += 'The pantheon is still here. Come back when you\'re ready.';
+  log(`🗣 Hera: "${transcript.substring(0,90)}…"`);
+  setStatusDot('idle');
+  await synthesizeHeraSpeech(transcript);
+  resetIdleTimer();
+}
+
+function resetIdleTimer() {
+  clearTimeout(idleTimer);
+  if (idleCheckEnabled) {
+    idleTimer = setTimeout(heraCheckIn, 15 * 60 * 1000);
+  }
+  if (!autoLoopActive) setStatusDot(activeTelos ? 'active' : 'inactive');
+}
+
+function toggleIdleCheck() {
+  idleCheckEnabled = !idleCheckEnabled;
+  document.getElementById('toggleIdle').classList.toggle('on', idleCheckEnabled);
+  if (idleCheckEnabled) {
+    resetIdleTimer();
+    log('👑 Idle check-in enabled. Hera will stir in 15 minutes.');
+  } else {
+    clearTimeout(idleTimer);
+    log('👑 Idle check-in disabled.');
+  }
+}
+window.toggleIdleCheck = toggleIdleCheck;
+
+async function testHeraVoice() {
+  const line = HERA_LINES[Math.floor(Math.random() * HERA_LINES.length)];
+  log(`🔊 Testing: "${line}"`);
+  await synthesizeHeraSpeech(line);
+}
+window.testHeraVoice = testHeraVoice;
+
+// ── KEYBOARD SHORTCUTS ──
+document.getElementById('telosInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) setTelos();
+});
+document.getElementById('newTask').addEventListener('keydown', e => {
+  if (e.key === 'Enter') addTask();
+});
+
+// Idle reset on any user activity
+['mousemove','keydown','click','scroll','touchstart'].forEach(evt => {
+  document.addEventListener(evt, resetIdleTimer, {passive:true});
+});
+
+// ── INIT ──
+async function init() {
+  loadIntegrations();
+  await Promise.all([loadTelos(), loadSlots(), loadTasks(), loadStatus()]);
+  initKittenTTS();
+  resetIdleTimer();
+  setInterval(loadStatus, 30000);
+  log('👑 Hera presides. Auto-loop ready. Idle check-in armed.');
+}
+
+init();
+</script>
+</body>
+</html>
