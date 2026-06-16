@@ -1,275 +1,1301 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>GAIA · Council — Event Orchestration</title>
-  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Cinzel:wght@400;600;900&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
-  <style>
-    :root {
-      --steel: #8a9bb0; --steel-dim: #4a5a6a; --steel-bright: #c8d8e8;
-      --void: #07090c; --void-surface: #141b22; --void-raised: #1a2330;
-      --accent: #c9a85c; --accent-dim: #6b5a32;
-      --text: #c0ccd8; --text-dim: #6a7a8a;
-      --border: rgba(138,155,176,0.15); --green: #6abf8a; --red: #c85050; --blue: #44aaff;
-    }
-    * { margin:0; padding:0; box-sizing:border-box; }
-    body { background:var(--void); color:var(--text); font-family:'DM Sans',sans-serif; font-weight:300; min-height:100vh; }
-    body::before { content:''; position:fixed; inset:0; background-image:linear-gradient(rgba(138,155,176,0.03) 1px, transparent 1px),linear-gradient(90deg, rgba(138,155,176,0.03) 1px, transparent 1px); background-size:40px 40px; pointer-events:none; z-index:0; }
-    header { position:relative; z-index:10; border-bottom:1px solid var(--border); padding:0 1.5rem; display:flex; align-items:center; justify-content:space-between; height:48px; }
-    .breadcrumb { font-family:'Share Tech Mono',monospace; font-size:0.58rem; color:var(--text-dim); letter-spacing:0.1em; }
-    .breadcrumb a { color:var(--steel); text-decoration:none; }
-    .header-tag { font-family:'Share Tech Mono',monospace; font-size:0.5rem; color:var(--accent-dim); letter-spacing:0.1em; border:1px solid var(--accent-dim); padding:2px 6px; }
-    .main-layout { position:relative; z-index:5; display:grid; grid-template-columns:1fr 1fr; gap:1px; background:var(--border); min-height:calc(100vh - 48px); }
-    @media(max-width:900px){ .main-layout { grid-template-columns:1fr; } }
-    .orchestration { background:var(--void-surface); display:flex; flex-direction:column; overflow-y:auto; }
-    .section-label { font-family:'Share Tech Mono',monospace; font-size:0.48rem; color:var(--text-dim); letter-spacing:0.2em; text-transform:uppercase; padding:0.5rem 1rem; background:var(--void-raised); border-bottom:1px solid var(--border); }
-    .chain-builder { padding:1rem; display:flex; flex-direction:column; gap:0.75rem; border-bottom:1px solid var(--border); }
-    .chain-row { display:flex; align-items:center; gap:0.5rem; }
-    .chain-label { font-family:'Share Tech Mono',monospace; font-size:0.55rem; color:var(--accent); letter-spacing:0.1em; min-width:70px; }
-    .chain-select, .chain-input { background:var(--void); border:1px solid var(--border); color:var(--text); font-family:'Share Tech Mono',monospace; font-size:0.58rem; padding:0.35rem 0.5rem; outline:none; flex:1; }
-    .fire-btn { width:100%; background:rgba(201,168,92,0.1); border:1px solid var(--accent-dim); color:var(--accent); font-family:'Share Tech Mono',monospace; font-size:0.7rem; letter-spacing:0.2em; text-transform:uppercase; padding:0.6rem; cursor:pointer; }
-    .fire-btn:hover { background:rgba(201,168,92,0.2); }
-    .preset-btns { display:flex; gap:0.3rem; flex-wrap:wrap; padding:0 1rem 0.75rem; }
-    .preset-btn { background:var(--void); border:1px solid var(--border); color:var(--text-dim); font-family:'Share Tech Mono',monospace; font-size:0.5rem; padding:0.3rem 0.6rem; cursor:pointer; }
-    .preset-btn:hover { color:var(--steel-bright); }
-    .event-log { flex:1; padding:0.75rem 1rem; overflow-y:auto; font-family:'Share Tech Mono',monospace; font-size:0.52rem; line-height:1.6; color:var(--text-dim); }
-    .event-entry { padding:0.3rem 0.5rem; margin-bottom:0.2rem; border-left:2px solid var(--border); background:var(--void); }
-    .event-entry.step1 { border-left-color:var(--accent); }
-    .event-entry.step2 { border-left-color:var(--blue); }
-    .event-entry.step3 { border-left-color:var(--green); }
-    .event-entry .ts { color:var(--text-dim); font-size:0.45rem; }
-    .event-entry .actor { color:var(--accent); }
-    .memory-viewer { background:var(--void-surface); display:flex; flex-direction:column; overflow-y:auto; }
-    .memory-toolbar { display:flex; gap:0.4rem; padding:0.5rem 1rem; flex-wrap:wrap; border-bottom:1px solid var(--border); }
-    .titan-tab { font-family:'Share Tech Mono',monospace; font-size:0.5rem; color:var(--text-dim); padding:0.25rem 0.5rem; cursor:pointer; border:1px solid transparent; }
-    .titan-tab:hover { color:var(--steel-bright); border-color:var(--border); }
-    .titan-tab.active { color:var(--accent); border-color:var(--accent-dim); background:rgba(201,168,92,0.05); }
-    .memory-display { flex:1; padding:0.75rem 1rem; overflow-y:auto; font-family:'Share Tech Mono',monospace; font-size:0.52rem; line-height:1.5; color:var(--text-dim); }
-    .memory-entry { padding:0.2rem 0.5rem; margin-bottom:0.15rem; background:var(--void); border-left:1px solid var(--border); }
-    .memory-entry .tick { color:var(--accent); }
-    .memory-empty { color:var(--text-dim); font-style:italic; padding:1rem; text-align:center; }
-    .memory-stats-row { display:flex; gap:1rem; padding:0.5rem 1rem; font-family:'Share Tech Mono',monospace; font-size:0.5rem; color:var(--text-dim); border-top:1px solid var(--border); }
-    .memory-stats-row span { color:var(--steel); }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GAIA — The Divine Council</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&family=Cinzel:wght@400;600&family=EB+Garamond:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --gold: #c9a84c;
+            --gold-bright: #f0d080;
+            --gold-dim: #6b5520;
+            --copper: #b87333;
+            --deep: #05050f;
+            --mist: #e8e0d0;
+            --kronos: #7a6a9a;
+            --kronos-bright: #b0a0d0;
+            --locked: #44cc88;
+            --eros: #ff66aa;
+            --sky: #4488cc;
+            --sky-bright: #88bbff;
+            --void: #1a0a00;
+            --fire: #ff4400;
+            --fire-bright: #ff8833;
+            --stone: #2a2218;
+            --council-gold: #ddcc88;
+            --council-dim: #887744;
+            --age-golden: #ffd700;
+            --age-silver: #c0c0e0;
+            --age-bronze: #cd7f32;
+            --age-heroic: #ff69b4;
+            --age-iron: #808090;
+            --age-twilight: #6a5acd;
+            --age-void: #2f004f;
+            --age-seed: #556b2f;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background: var(--deep);
+            color: var(--mist);
+            font-family: 'EB Garamond', Georgia, serif;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        #starfield {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .sacred-bg {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            pointer-events: none;
+            opacity: 0.03;
+            background-image: 
+                repeating-linear-gradient(0deg, var(--gold) 0px, transparent 1px, transparent 80px),
+                repeating-linear-gradient(90deg, var(--gold) 0px, transparent 1px, transparent 80px);
+        }
+
+        .council-container {
+            position: relative;
+            z-index: 1;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 1.5rem;
+        }
+
+        /* Header */
+        .council-header {
+            text-align: center;
+            padding: 2rem 1rem;
+            position: relative;
+        }
+
+        .council-title-main {
+            font-family: 'Cinzel Decorative', serif;
+            font-size: clamp(1.8rem, 4vw, 3.5rem);
+            font-weight: 900;
+            letter-spacing: 0.3em;
+            background: linear-gradient(135deg, var(--council-dim), var(--council-gold), var(--gold), var(--council-dim));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            filter: drop-shadow(0 0 30px rgba(221, 204, 136, 0.4));
+            animation: titleGlow 4s ease-in-out infinite;
+        }
+
+        @keyframes titleGlow {
+            0%, 100% { filter: drop-shadow(0 0 20px rgba(221, 204, 136, 0.3)); }
+            50% { filter: drop-shadow(0 0 50px rgba(221, 204, 136, 0.8)); }
+        }
+
+        .council-subtitle {
+            font-family: 'Cinzel', serif;
+            font-size: 0.7rem;
+            letter-spacing: 0.4em;
+            color: var(--council-dim);
+            margin-top: 0.5rem;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-top: 0.5rem;
+            font-family: 'Cinzel', serif;
+            font-size: 0.6rem;
+            letter-spacing: 0.3em;
+            color: var(--gold-dim);
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        .back-link:hover {
+            color: var(--gold);
+        }
+
+        /* Main Layout */
+        .council-layout {
+            display: grid;
+            grid-template-columns: 1fr 400px;
+            gap: 1.5rem;
+            margin-top: 1rem;
+        }
+
+        @media (max-width: 900px) {
+            .council-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* ══════════════════════════════════════
+           LUNAR PROCESSION CLOCK (Left Panel)
+           ══════════════════════════════════════ */
+        .clock-panel {
+            background: linear-gradient(160deg, rgba(15, 10, 25, 0.97), rgba(20, 15, 35, 0.98));
+            border: 1px solid rgba(180, 160, 100, 0.2);
+            border-radius: 6px;
+            overflow: hidden;
+        }
+
+        .clock-panel-header {
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid rgba(180, 160, 100, 0.15);
+            background: rgba(180, 160, 100, 0.03);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .clock-title {
+            font-family: 'Cinzel Decorative', serif;
+            font-size: 0.85rem;
+            letter-spacing: 0.25em;
+            color: var(--council-gold);
+        }
+
+        .clock-meta {
+            font-family: 'Cinzel', serif;
+            font-size: 0.6rem;
+            letter-spacing: 0.15em;
+            color: rgba(180, 160, 100, 0.5);
+        }
+
+        /* The Clock Face */
+        .clock-body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 2rem;
+            gap: 1.5rem;
+        }
+
+        .clock-face-wrapper {
+            position: relative;
+            width: 320px;
+            height: 320px;
+        }
+
+        .clock-face {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            border: 2px solid rgba(180, 160, 100, 0.3);
+            background: radial-gradient(circle at center, rgba(10, 8, 20, 0.98), rgba(5, 4, 12, 0.99));
+            box-shadow: 
+                0 0 60px rgba(180, 160, 100, 0.08),
+                inset 0 0 60px rgba(0, 0, 0, 0.5);
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Constellation ring decoration */
+        .clock-ring {
+            position: absolute;
+            inset: 15px;
+            border-radius: 50%;
+            border: 1px solid rgba(180, 160, 100, 0.08);
+            pointer-events: none;
+        }
+
+        .clock-ring:nth-child(2) {
+            inset: 45px;
+            border-color: rgba(180, 160, 100, 0.05);
+        }
+
+        .clock-ring:nth-child(3) {
+            inset: 75px;
+            border-color: rgba(180, 160, 100, 0.04);
+        }
+
+        /* Phase markers around the clock */
+        .phase-marker {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            transform: translate(-50%, -50%);
+            transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+            opacity: 0.4;
+            filter: grayscale(0.5);
+            z-index: 2;
+        }
+
+        .phase-marker:hover {
+            opacity: 0.8;
+            filter: grayscale(0);
+            transform: translate(-50%, -50%) scale(1.2);
+        }
+
+        .phase-marker.active {
+            opacity: 1;
+            filter: grayscale(0) drop-shadow(0 0 15px rgba(255, 200, 100, 0.8));
+            font-size: 2.5rem;
+            z-index: 3;
+        }
+
+        /* Position 8 markers in a circle */
+        .phase-marker:nth-child(4) { top: 8%; left: 50%; }      /* Top - New Moon */
+        .phase-marker:nth-child(5) { top: 20%; left: 80%; }      /* Top-right - Crescent */
+        .phase-marker:nth-child(6) { top: 50%; left: 92%; }      /* Right - Quarter */
+        .phase-marker:nth-child(7) { top: 80%; left: 80%; }      /* Bottom-right - Gibbous */
+        .phase-marker:nth-child(8) { top: 92%; left: 50%; }      /* Bottom - Full */
+        .phase-marker:nth-child(9) { top: 80%; left: 20%; }      /* Bottom-left - Disseminating */
+        .phase-marker:nth-child(10) { top: 50%; left: 8%; }      /* Left - Last Quarter */
+        .phase-marker:nth-child(11) { top: 20%; left: 20%; }     /* Top-left - Balsamic */
+
+        /* Center Earth */
+        .clock-earth {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 40% 40%, #4488cc, #223366);
+            box-shadow: 0 0 30px rgba(68, 136, 204, 0.3);
+            z-index: 4;
+        }
+
+        /* Needle/Indicator */
+        .clock-needle {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 3px;
+            height: 45%;
+            background: linear-gradient(to top, transparent, rgba(221, 204, 136, 0.6));
+            transform-origin: bottom center;
+            transform: translate(-50%, -100%);
+            transition: transform 1s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 5;
+        }
+
+        .clock-needle::after {
+            content: '✦';
+            position: absolute;
+            top: -12px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.8rem;
+            color: var(--council-gold);
+        }
+
+        /* Center label */
+        .clock-center-label {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-family: 'Cinzel', serif;
+            font-size: 0.5rem;
+            letter-spacing: 0.2em;
+            color: rgba(221, 204, 136, 0.4);
+            text-align: center;
+            z-index: 6;
+            pointer-events: none;
+            margin-top: 30px;
+        }
+
+        /* Current Age Display */
+        .current-age-display {
+            text-align: center;
+            padding: 1rem;
+        }
+
+        .age-emoji-large {
+            font-size: 3rem;
+            margin-bottom: 0.5rem;
+            transition: all 0.5s;
+        }
+
+        .age-name-large {
+            font-family: 'Cinzel Decorative', serif;
+            font-size: 1.3rem;
+            letter-spacing: 0.2em;
+            color: var(--council-gold);
+            text-shadow: 0 0 30px rgba(200, 180, 100, 0.3);
+        }
+
+        .age-ruler {
+            font-family: 'Cinzel', serif;
+            font-size: 0.65rem;
+            letter-spacing: 0.2em;
+            color: var(--council-dim);
+            margin-top: 0.2rem;
+        }
+
+        .age-description {
+            font-family: 'EB Garamond', serif;
+            font-size: 0.8rem;
+            font-style: italic;
+            color: rgba(180, 160, 100, 0.5);
+            margin-top: 0.5rem;
+            line-height: 1.6;
+            max-width: 300px;
+        }
+
+        .age-gift {
+            font-family: 'Cinzel', serif;
+            font-size: 0.6rem;
+            letter-spacing: 0.15em;
+            color: var(--locked);
+            margin-top: 0.4rem;
+        }
+
+        /* Phase progress bar */
+        .phase-progress {
+            width: 100%;
+            max-width: 280px;
+            margin: 0 auto;
+            padding: 0 1rem;
+        }
+
+        .phase-progress-bar {
+            height: 2px;
+            background: rgba(180, 160, 100, 0.1);
+            border-radius: 1px;
+            position: relative;
+            margin: 0.5rem 0;
+        }
+
+        .phase-progress-fill {
+            height: 100%;
+            background: linear-gradient(to right, var(--council-dim), var(--council-gold));
+            border-radius: 1px;
+            transition: width 1s;
+        }
+
+        .phase-progress-label {
+            font-family: 'Cinzel', serif;
+            font-size: 0.5rem;
+            letter-spacing: 0.15em;
+            color: rgba(180, 160, 100, 0.3);
+            display: flex;
+            justify-content: space-between;
+        }
+
+        /* ══════════════════════════════════════
+           COUNCIL CHAMBER (Right Panel)
+           ══════════════════════════════════════ */
+        .chamber-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .chamber-section {
+            background: linear-gradient(160deg, rgba(15, 10, 25, 0.97), rgba(20, 15, 35, 0.98));
+            border: 1px solid rgba(180, 160, 100, 0.2);
+            border-radius: 6px;
+            overflow: hidden;
+        }
+
+        .chamber-header {
+            padding: 0.8rem 1.2rem;
+            border-bottom: 1px solid rgba(180, 160, 100, 0.12);
+            background: rgba(180, 160, 100, 0.03);
+            font-family: 'Cinzel Decorative', serif;
+            font-size: 0.75rem;
+            letter-spacing: 0.2em;
+            color: var(--council-gold);
+        }
+
+        /* Council Seats Grid */
+        .chamber-seats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.6rem;
+            padding: 1rem;
+        }
+
+        .council-seat {
+            background: rgba(180, 160, 100, 0.04);
+            border: 1px solid rgba(180, 160, 100, 0.12);
+            border-radius: 4px;
+            padding: 0.8rem;
+            text-align: center;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .council-seat:hover {
+            background: rgba(180, 160, 100, 0.1);
+            border-color: rgba(180, 160, 100, 0.3);
+        }
+
+        .council-seat.ruler {
+            border-color: var(--council-gold);
+            background: rgba(180, 160, 100, 0.1);
+            box-shadow: 0 0 20px rgba(200, 180, 100, 0.1);
+        }
+
+        .council-seat.ruler::before {
+            content: '👑';
+            display: block;
+            font-size: 0.7rem;
+            margin-bottom: 0.2rem;
+        }
+
+        .seat-glyph {
+            font-size: 1.3rem;
+            margin-bottom: 0.2rem;
+        }
+
+        .seat-name {
+            font-family: 'Cinzel', serif;
+            font-size: 0.6rem;
+            letter-spacing: 0.12em;
+            color: var(--council-gold);
+        }
+
+        .seat-role {
+            font-family: 'EB Garamond', serif;
+            font-size: 0.55rem;
+            font-style: italic;
+            color: rgba(180, 160, 100, 0.35);
+            margin-top: 0.15rem;
+        }
+
+        /* Decree Section */
+        .decree-section {
+            padding: 1rem;
+        }
+
+        .decree-display {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(180, 160, 100, 0.12);
+            border-left: 3px solid var(--council-gold);
+            border-radius: 4px;
+            padding: 1rem;
+            min-height: 100px;
+            font-family: 'EB Garamond', serif;
+            font-style: italic;
+            color: rgba(180, 160, 100, 0.6);
+            line-height: 1.8;
+            transition: all 0.5s;
+        }
+
+        .decree-header-text {
+            font-family: 'Cinzel Decorative', serif;
+            font-size: 0.75rem;
+            letter-spacing: 0.2em;
+            color: var(--council-gold);
+            margin-bottom: 0.8rem;
+            font-style: normal;
+        }
+
+        .decree-body-text {
+            margin-bottom: 1rem;
+        }
+
+        .decree-signatures {
+            font-family: 'Cinzel', serif;
+            font-size: 0.55rem;
+            letter-spacing: 0.3em;
+            color: rgba(180, 160, 100, 0.25);
+            margin-bottom: 0.5rem;
+            font-style: normal;
+        }
+
+        .decree-timestamp {
+            font-size: 0.6rem;
+            color: rgba(180, 160, 100, 0.2);
+            font-style: normal;
+        }
+
+        .offering-receipt {
+            margin-top: 0.8rem;
+            padding-top: 0.8rem;
+            border-top: 1px solid rgba(180, 160, 100, 0.08);
+            color: rgba(200, 180, 100, 0.45);
+            font-size: 0.8rem;
+        }
+
+        /* Actions */
+        .chamber-actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 0.6rem;
+            padding: 0.8rem 1rem;
+            border-top: 1px solid rgba(180, 160, 100, 0.1);
+        }
+
+        .chamber-btn {
+            font-family: 'Cinzel', serif;
+            font-size: 0.6rem;
+            letter-spacing: 0.2em;
+            background: rgba(180, 160, 100, 0.06);
+            border: 1px solid rgba(180, 160, 100, 0.25);
+            color: var(--council-gold);
+            padding: 0.5rem 0.8rem;
+            border-radius: 3px;
+            cursor: pointer;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+
+        .chamber-btn:hover {
+            background: rgba(180, 160, 100, 0.15);
+            border-color: var(--council-gold);
+        }
+
+        .chamber-btn.primary {
+            background: rgba(200, 160, 80, 0.1);
+            border-color: rgba(200, 160, 80, 0.4);
+        }
+
+        /* History */
+        .history-section {
+            padding: 0.5rem 1rem 1rem;
+        }
+
+        .history-list {
+            max-height: 200px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+        }
+
+        .history-item {
+            font-family: 'EB Garamond', serif;
+            font-size: 0.7rem;
+            font-style: italic;
+            color: rgba(180, 160, 100, 0.35);
+            padding: 0.4rem 0;
+            border-bottom: 1px solid rgba(180, 160, 100, 0.05);
+            line-height: 1.5;
+        }
+
+        /* Tooltip */
+        .phase-tooltip {
+            position: fixed;
+            background: rgba(10, 8, 20, 0.95);
+            border: 1px solid var(--council-gold);
+            border-radius: 4px;
+            padding: 0.6rem 0.8rem;
+            font-family: 'Cinzel', serif;
+            font-size: 0.6rem;
+            letter-spacing: 0.12em;
+            color: var(--council-gold);
+            pointer-events: none;
+            z-index: 100;
+            opacity: 0;
+            transition: opacity 0.3s;
+            max-width: 200px;
+            text-align: center;
+        }
+
+        .phase-tooltip.show {
+            opacity: 1;
+        }
+
+        /* Toast */
+        #toast {
+            position: fixed;
+            bottom: 1.5rem;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(8, 8, 24, 0.95);
+            border: 1px solid var(--gold-dim);
+            border-radius: 2px;
+            padding: 0.55rem 1.4rem;
+            font-family: 'Cinzel', serif;
+            font-size: 0.68rem;
+            letter-spacing: 0.13em;
+            color: var(--gold);
+            z-index: 100;
+            opacity: 0;
+            transition: opacity 0.4s;
+            text-align: center;
+            max-width: 90vw;
+        }
+
+        #toast.show { opacity: 1; }
+        #toast.success { border-color: var(--locked); color: var(--locked); }
+        #toast.fire { border-color: var(--fire); color: var(--fire-bright); }
+
+        @media (max-width: 600px) {
+            .clock-face-wrapper {
+                width: 250px;
+                height: 250px;
+            }
+            .chamber-seats {
+                grid-template-columns: 1fr;
+            }
+            .chamber-actions {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
 </head>
 <body>
 
-<header>
-  <div class="breadcrumb"><a href="https://kairos-coder.github.io/gaia">GAIA</a> &nbsp;/&nbsp; Council</div>
-  <div class="header-tag">EVENT ORCHESTRATION · MEMORY CONSOLE</div>
-</header>
+<canvas id="starfield"></canvas>
+<div class="sacred-bg"></div>
 
-<div class="main-layout">
-  
-  <div class="orchestration">
-    <div class="section-label">Ⅰ · Chain Builder</div>
-    <div class="chain-builder">
-      <div class="chain-row">
-        <span class="chain-label">Olympian</span>
-        <select class="chain-select" id="chainOlympian">
-          <option value="zeus">⚡ Zeus — Judge</option>
-          <option value="athena">🦉 Athena — Curate</option>
-        </select>
-      </div>
-      <div class="chain-row">
-        <span class="chain-label">Context</span>
-        <input class="chain-input" id="chainContext" value="charge_grounding" />
-      </div>
-      <div class="chain-row">
-        <span class="chain-label">Action</span>
-        <input class="chain-input" id="chainAction" value="mark_interval" />
-      </div>
-      <button class="fire-btn" onclick="fireChain()">⚡ Fire Full Chain</button>
+<div class="council-container">
+    <!-- Header -->
+    <div class="council-header">
+        <h1 class="council-title-main">THE DIVINE COUNCIL</h1>
+        <div class="council-subtitle">Procession of Ages · Lunar Calendar · Est. May 18 2026</div>
+        <a href="index.html" class="back-link">← Return to GAIA</a>
     </div>
-    
-    <div class="preset-btns">
-      <button class="preset-btn" onclick="firePreset('lawful')">Lawful Mark</button>
-      <button class="preset-btn" onclick="firePreset('overrule')">Overrule</button>
-      <button class="preset-btn" onclick="firePreset('athena')">Athena Brief</button>
-      <button class="preset-btn" onclick="firePreset('clear')">Clear Memory</button>
-    </div>
-    
-    <div class="section-label">Ⅱ · Event Log</div>
-    <div class="event-log" id="eventLog">
-      <div style="color:var(--text-dim);padding:1rem;text-align:center;">Fire a chain to begin.</div>
-    </div>
-  </div>
-  
-  <div class="memory-viewer">
-    <div class="section-label">Ⅲ · Titan Memory</div>
-    <div class="memory-toolbar" id="memoryTabs">
-      <button class="titan-tab active" data-titan="kronos">⏳ Kronos</button>
-      <button class="titan-tab" data-titan="themis">⚖️ Themis</button>
-      <button class="titan-tab" data-titan="mnemosyne">📜 Mnemosyne</button>
-      <button class="titan-tab" data-titan="koios">⚗️ Koios</button>
-      <button class="titan-tab" data-titan="rhea">🌊 Rhea</button>
-      <button class="titan-tab" data-titan="hyperion">🔆 Hyperion</button>
-      <button class="titan-tab" data-titan="oceanus">🌀 Oceanus</button>
-      <button class="titan-tab" data-titan="tethys">💧 Tethys</button>
-      <button class="titan-tab" data-titan="theia">👁️ Theia</button>
-      <button class="titan-tab" data-titan="phoibe">🔮 Phoibe</button>
-      <button class="titan-tab" data-titan="iapetos">💀 Iapetos</button>
-      <button class="titan-tab" data-titan="kreios">🏛️ Kreios</button>
-    </div>
-    <div class="memory-display" id="memoryDisplay"><div class="memory-empty">Select a Titan tab.</div></div>
-    <div class="memory-stats-row"><span>Total: <span id="statTotal">0</span></span><span>Active: <span id="statActive">0</span></span></div>
-  </div>
 
+    <!-- Main Layout -->
+    <div class="council-layout">
+        
+        <!-- LEFT: Lunar Procession Clock -->
+        <div class="clock-panel">
+            <div class="clock-panel-header">
+                <span class="clock-title">🌙 PROCESSION OF AGES</span>
+                <span class="clock-meta" id="clockMeta">Phase: —</span>
+            </div>
+            
+            <div class="clock-body">
+                <!-- The Clock -->
+                <div class="clock-face-wrapper">
+                    <div class="clock-face" id="clockFace">
+                        <!-- Decorative rings -->
+                        <div class="clock-ring"></div>
+                        <div class="clock-ring"></div>
+                        <div class="clock-ring"></div>
+                        
+                        <!-- Earth center -->
+                        <div class="clock-earth"></div>
+                        <div class="clock-center-label">GAIA</div>
+                        
+                        <!-- Needle -->
+                        <div class="clock-needle" id="clockNeedle"></div>
+                        
+                        <!-- Phase markers (populated by JS) -->
+                        <!-- These will be dynamically positioned -->
+                    </div>
+                </div>
+                
+                <!-- Phase progress -->
+                <div class="phase-progress">
+                    <div class="phase-progress-bar">
+                        <div class="phase-progress-fill" id="phaseProgressFill" style="width: 0%"></div>
+                    </div>
+                    <div class="phase-progress-label">
+                        <span id="phaseProgressStart">New</span>
+                        <span id="phaseProgressEnd">Full</span>
+                    </div>
+                </div>
+                
+                <!-- Current Age -->
+                <div class="current-age-display">
+                    <div class="age-emoji-large" id="ageEmojiLarge">🌑</div>
+                    <div class="age-name-large" id="ageNameLarge">The Golden Age</div>
+                    <div class="age-ruler" id="ageRuler">Kronos presides</div>
+                    <div class="age-description" id="ageDescription">
+                        Kronos ruled. Men lived like gods, free from toil and grief.
+                    </div>
+                    <div class="age-gift" id="ageGift">Gift: Memory of Paradise</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- RIGHT: Council Chamber -->
+        <div class="chamber-panel">
+            
+            <!-- The Council Seats -->
+            <div class="chamber-section">
+                <div class="chamber-header">🏛️ THE ASSEMBLY</div>
+                <div class="chamber-seats" id="chamberSeats">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+            
+            <!-- Decree -->
+            <div class="chamber-section">
+                <div class="chamber-header">📜 DECREE</div>
+                <div class="decree-section">
+                    <div class="decree-display" id="decreeDisplay">
+                        <div class="decree-header-text">THE COUNCIL AWAITS</div>
+                        <div class="decree-body-text">
+                            The divine assembly has not yet been convened. Approach the council to receive their decree.
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Actions -->
+            <div class="chamber-section">
+                <div class="chamber-actions">
+                    <button class="chamber-btn primary" id="conveneBtn">🏛️ Convene</button>
+                    <button class="chamber-btn" id="offerBtn">🕯️ Offer</button>
+                    <button class="chamber-btn" id="readBtn">📜 Read</button>
+                </div>
+            </div>
+            
+            <!-- History -->
+            <div class="chamber-section">
+                <div class="chamber-header">📖 CHRONICLE</div>
+                <div class="history-section">
+                    <div class="history-list" id="historyList">
+                        <div class="history-item">No councils have been convened yet. The chronicle is empty.</div>
+                    </div>
+                </div>
+            </div>
+            
+        </div>
+    </div>
 </div>
 
+<!-- Tooltip -->
+<div class="phase-tooltip" id="phaseTooltip"></div>
+
+<!-- Toast -->
+<div id="toast"></div>
+
+<script src="js/gaia-celestial.js"></script>
+<script src="js/gaia-suncalc.js"></script>
+<script src="js/gaia-astronomy.js"></script>
+
 <script>
-  // ═══════════════════════════════════════════
-  // SHARED HELPERS (all pages on this origin)
-  // ═══════════════════════════════════════════
-  
-  function getLedger() {
-    const s = localStorage.getItem('kronos_memory');
-    return s ? JSON.parse(s) : { events: [], last_tick: 0, total_events: 0 };
-  }
-  
-  function saveLedger(ledger) {
-    localStorage.setItem('kronos_memory', JSON.stringify(ledger));
-  }
-  
-  function logToLedger(olympian, operation, params, summary) {
-    const ledger = getLedger();
-    const entry = {
-      entry_id: `kronos_${String(ledger.total_events + 1).padStart(4, '0')}`,
-      tick: ledger.total_events + 1,
-      timestamp: new Date().toISOString(),
-      olympian, operation,
-      query_params: params,
-      response_summary: summary
-    };
-    ledger.events.push(entry);
-    ledger.last_tick = entry.tick;
-    ledger.total_events = ledger.events.length;
-    if (ledger.events.length > 2000) ledger.events = ledger.events.slice(-2000);
-    saveLedger(ledger);
-    return entry;
-  }
-  
-  function deliverToTitan(titanId, event) {
-    const key = `${titanId}_memory`;
-    const stored = JSON.parse(localStorage.getItem(key) || '{"events":[],"last_tick":0,"total_events":0}');
-    stored.last_tick++;
-    event.tick = stored.last_tick;
-    stored.events.push(event);
-    stored.total_events = stored.events.length;
-    if (stored.events.length > 1000) stored.events = stored.events.slice(-1000);
-    localStorage.setItem(key, JSON.stringify(stored));
-    return { success: true, event_id: `${titanId}_${stored.total_events}` };
-  }
-  
-  // ═══════════════════════════════════════════
-  // EVENT LOG
-  // ═══════════════════════════════════════════
-  function logEvent(step, actor, action, detail) {
-    const log = document.getElementById('eventLog');
-    const entry = document.createElement('div');
-    entry.className = `event-entry step${step}`;
-    entry.innerHTML = `<span class="ts">${new Date().toLocaleTimeString()}</span> <span class="actor">${actor}</span> <span class="action">${action}</span> ${detail}`;
-    log.prepend(entry);
-    while (log.children.length > 50) log.removeChild(log.lastChild);
-  }
-  
-  // ═══════════════════════════════════════════
-  // FIRE CHAIN
-  // ═══════════════════════════════════════════
-  window.fireChain = function() {
-    const olympian = document.getElementById('chainOlympian').value;
-    const context = document.getElementById('chainContext').value || 'test';
-    const action = document.getElementById('chainAction').value || 'mark_interval';
-    
-    if (olympian === 'zeus') {
-      logEvent(1, 'zeus', 'judge', `→ ${context} / ${action}`);
-      
-      // Zeus judgment logic (same as in zeus/api.html)
-      const lawfulActions = ['mark_interval', 'measure_succession', 'illuminate', 'nourish', 'record', 'bind'];
-      const chaosActions = ['overthrow', 'usurp', 'sever', 'dissolve'];
-      let verdict = 'acknowledged';
-      if (chaosActions.includes(action)) verdict = 'overruled';
-      else if (lawfulActions.includes(action)) verdict = 'lawful';
-      
-      logEvent(1, 'zeus', 'verdict', `→ ${verdict.toUpperCase()} | Sovereignty: 1.0`);
-      
-      // Log to Kronos ledger
-      const summary = `Verdict: ${verdict} | Context: ${context} | Action: ${action}`;
-      const entry = logToLedger('zeus', 'judge', { context, action }, summary);
-      logEvent(2, 'kronos', 'ledger', `→ Entry: ${entry.entry_id}`);
-      
-      // Route to Titan memory
-      const d1 = deliverToTitan('kronos', { type: 'judge', olympian: 'zeus', operation: 'judge', verdict, context, action, timestamp: new Date().toISOString() });
-      const d2 = deliverToTitan('themis', { type: 'binding', olympian: 'zeus', operation: 'judge', verdict, context, action, timestamp: new Date().toISOString() });
-      
-      logEvent(3, 'hermes', '→', `kronos (judge) ✓ | themis (binding) ✓`);
-      logEvent(3, 'kronos', 'complete', `→ Chain complete. Ledger: ${entry.entry_id}`);
-      
-    } else if (olympian === 'athena') {
-      const tags = context || 'GAIA';
-      logEvent(1, 'athena', 'brief', `→ Querying for: ${tags}`);
-      
-      const entry = logToLedger('athena', 'brief', { tags }, `Brief requested for: ${tags}`);
-      logEvent(2, 'kronos', 'ledger', `→ Entry: ${entry.entry_id}`);
-      logEvent(3, 'athena', 'complete', `→ Brief logged. Archive query external.`);
+// ══════════════════════════════════════════════
+// AGES OF PROCESSION
+// ══════════════════════════════════════════════
+const AGES = {
+    new: {
+        name: 'The Golden Age',
+        emoji: '🌑',
+        ruler: 'Kronos',
+        council: ['Kronos', 'Rhea', 'Themis'],
+        description: 'Kronos ruled. Men lived like gods, free from toil and grief. The earth gave freely, and death was but a gentle sleep.',
+        decree: 'The Golden Age remembers perfection. Kronos presides over the council of origins. All Titans are equal in this moment before time began to devour.',
+        gift: 'Memory of Paradise',
+        giftEffect: 'The field remembers its first coherence. Lock threshold lowers briefly.',
+        color: '#ffd700'
+    },
+    crescent: {
+        name: 'The Silver Age',
+        emoji: '🌒',
+        ruler: 'Rhea',
+        council: ['Rhea', 'Oceanus', 'Tethys'],
+        description: 'Rhea nurtured a lesser race. The seasons turned, and men knew labor. Childhood lasted a hundred years, but adulthood was brief and full of strife.',
+        decree: 'Rhea flows through the Silver Age. The gates open to nourish what remains, though the water runs thinner than before.',
+        gift: 'Nourishment',
+        giftEffect: 'Rhea opens the gate wider. Tick rate stabilizes.',
+        color: '#c0c0e0'
+    },
+    quarter: {
+        name: 'The Bronze Age',
+        emoji: '🌓',
+        ruler: 'Hyperion',
+        council: ['Hyperion', 'Theia', 'Koios'],
+        description: 'Hyperion illuminated an age of war. Men forged weapons of bronze and forgot the gods. Their own hands built their destruction.',
+        decree: 'Hyperion amplifies the Bronze signal. Theia sees only fire and bronze. Koios questions: Is this what progress looks like?',
+        gift: 'Clarity of Purpose',
+        giftEffect: 'Hyperion amplifies the signal. Phase difference becomes more visible.',
+        color: '#cd7f32'
+    },
+    gibbous: {
+        name: 'The Heroic Age',
+        emoji: '🌔',
+        ruler: 'Phoibe',
+        council: ['Phoibe', 'Mnemosyne', 'Themis'],
+        description: 'Phoibe prophesied heroes. Demigods walked the earth seeking glory. They fell at Thebes and Troy, but their names live forever.',
+        decree: 'Phoibe speaks of heroes yet to come. Mnemosyne records their names before they are born. Themis weighs each deed against the law.',
+        gift: 'Prophetic Vision',
+        giftEffect: 'Phoibe reveals the next likely phase transition.',
+        color: '#ff69b4'
+    },
+    full: {
+        name: 'The Iron Age',
+        emoji: '🌕',
+        ruler: 'Themis',
+        council: ['Themis', 'Mnemosyne', 'Koios', 'Phoibe', 'Theia'],
+        description: 'Themis weighs the present age. Justice alone remains among mortals who toil endlessly in an age of iron and greed.',
+        decree: 'Themis holds the scales. The Iron Age is judged by law alone. Even the gods cannot overturn what Themis has weighed.',
+        gift: 'Justice',
+        giftEffect: 'Themis certifies the current state. Coherence threshold tightens to true.',
+        color: '#808090'
+    },
+    disseminating: {
+        name: 'The Twilight Age',
+        emoji: '🌖',
+        ruler: 'Mnemosyne',
+        council: ['Mnemosyne', 'Phoibe', 'Koios'],
+        description: 'Mnemosyne gathers fading memories. The light dims on all that was golden, silver, bronze, heroic — all fading into twilight.',
+        decree: 'Mnemosyne remembers what fades. The record must be preserved before the void consumes all memory of what came before.',
+        gift: 'Memory',
+        giftEffect: 'Mnemosyne sharpens. A random Titan speaks ancient lore.',
+        color: '#6a5acd'
+    },
+    'last-quarter': {
+        name: 'The Void Age',
+        emoji: '🌗',
+        ruler: 'Phoibe',
+        council: ['Phoibe', 'Koios', 'Themis'],
+        description: 'Phoibe sees only darkness ahead. The oracle speaks of endings, of the great silence that awaits all things mortal and divine.',
+        decree: 'Phoibe looks into the void. Koios questions what remains when even questions cease. Themis weighs nothing against nothing.',
+        gift: 'Acceptance of Endings',
+        giftEffect: 'The Underworld gate weakens. Descent requirements lower briefly.',
+        color: '#2f004f'
+    },
+    balsamic: {
+        name: 'The Seed Age',
+        emoji: '🌘',
+        ruler: 'Koios',
+        council: ['Koios', 'Rhea', 'Kronos'],
+        description: 'Koios plants questions in the darkness. The cycle prepares to begin again, as it always has, as it always will.',
+        decree: 'Koios asks: What comes after the end? The seed contains the next beginning. Kronos watches. Rhea holds the gate for what is to come.',
+        gift: 'New Questions',
+        giftEffect: 'Koios offers a bonus trivia question. Answer correctly for extra descent progress.',
+        color: '#556b2f'
     }
-    
-    refreshMemoryView();
-  };
-  
-  // ═══════════════════════════════════════════
-  // PRESETS
-  // ═══════════════════════════════════════════
-  window.firePreset = function(p) {
-    if (p === 'lawful') { document.getElementById('chainAction').value = 'mark_interval'; fireChain(); }
-    else if (p === 'overrule') { document.getElementById('chainAction').value = 'overthrow'; fireChain(); }
-    else if (p === 'athena') { document.getElementById('chainOlympian').value = 'athena'; document.getElementById('chainContext').value = 'GAIA'; fireChain(); }
-    else if (p === 'clear') {
-      ['kronos','themis','mnemosyne','koios','rhea','hyperion','oceanus','tethys','theia','phoibe','iapetos','kreios'].forEach(t => localStorage.removeItem(`${t}_memory`));
-      logEvent(0, 'system', 'clear', '→ All Titan memory cleared');
-      refreshMemoryView();
-    }
-  };
-  
-  // ═══════════════════════════════════════════
-  // MEMORY VIEWER
-  // ═══════════════════════════════════════════
-  let activeTitan = 'kronos';
-  document.getElementById('memoryTabs').addEventListener('click', e => {
-    if (e.target.classList.contains('titan-tab')) {
-      document.querySelectorAll('.titan-tab').forEach(b => b.classList.remove('active'));
-      e.target.classList.add('active');
-      activeTitan = e.target.dataset.titan;
-      refreshMemoryView();
-    }
-  });
-  
-  window.refreshMemoryView = function() {
-    const display = document.getElementById('memoryDisplay');
-    const key = `${activeTitan}_memory`;
-    const stored = localStorage.getItem(key);
-    
-    let total = 0, active = 0;
-    ['kronos','themis','mnemosyne','koios','rhea','hyperion','oceanus','tethys','theia','phoibe','iapetos','kreios'].forEach(t => {
-      const s = localStorage.getItem(`${t}_memory`);
-      if (s) { try { const d = JSON.parse(s); total += d.total_events || 0; if (d.total_events > 0) active++; } catch(e) {} }
+};
+
+const AGE_ORDER = ['new', 'crescent', 'quarter', 'gibbous', 'full', 'disseminating', 'last-quarter', 'balsamic'];
+
+// ══════════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════════
+let councilState = {
+    currentAgeKey: null,
+    convened: false,
+    offerings: {},
+    decrees: [],
+    history: [],
+    moonPhase: 0,
+    lastUpdate: null
+};
+
+// ══════════════════════════════════════════════
+// STARFIELD (simplified)
+// ══════════════════════════════════════════════
+const starCvs = document.getElementById('starfield');
+const starCtx = starCvs.getContext('2d');
+const stars = Array.from({ length: 150 }, () => ({
+    x: Math.random(),
+    y: Math.random(),
+    r: Math.random() * 1.2,
+    a: Math.random() * 0.5 + 0.1,
+    tw: Math.random() * Math.PI * 2
+}));
+
+const resizeStar = () => {
+    starCvs.width = window.innerWidth;
+    starCvs.height = window.innerHeight;
+};
+window.addEventListener('resize', resizeStar);
+resizeStar();
+
+const drawStars = (t) => {
+    starCtx.clearRect(0, 0, starCvs.width, starCvs.height);
+    stars.forEach(s => {
+        const a = s.a * (0.7 + 0.3 * Math.sin(s.tw + t * 0.0003));
+        starCtx.beginPath();
+        starCtx.arc(s.x * starCvs.width, s.y * starCvs.height, s.r, 0, Math.PI * 2);
+        starCtx.fillStyle = `rgba(232, 224, 208, ${a})`;
+        starCtx.fill();
     });
-    document.getElementById('statTotal').textContent = total;
-    document.getElementById('statActive').textContent = active;
+};
+
+(function anim(t) {
+    drawStars(t);
+    requestAnimationFrame(anim);
+})(0);
+
+// ══════════════════════════════════════════════
+// BUILD PHASE MARKERS ON THE CLOCK
+// ══════════════════════════════════════════════
+function buildPhaseMarkers() {
+    const clockFace = document.getElementById('clockFace');
+    const markers = clockFace.querySelectorAll('.phase-marker');
     
-    if (!stored) { display.innerHTML = `<div class="memory-empty">No memory for ${activeTitan}.</div>`; return; }
+    // Remove old markers if any
+    markers.forEach(m => m.remove());
+    
+    // Position 8 markers in a circle
+    AGE_ORDER.forEach((ageKey, index) => {
+        const age = AGES[ageKey];
+        const marker = document.createElement('div');
+        marker.className = 'phase-marker';
+        marker.dataset.age = ageKey;
+        marker.textContent = age.emoji;
+        marker.title = age.name;
+        
+        // Position in circle (start from top, clockwise)
+        const angle = (index / 8) * Math.PI * 2 - Math.PI / 2;
+        const radius = 38; // percentage from center
+        const x = 50 + radius * Math.cos(angle);
+        const y = 50 + radius * Math.sin(angle);
+        
+        marker.style.left = x + '%';
+        marker.style.top = y + '%';
+        
+        // Tooltip on hover
+        marker.addEventListener('mouseenter', (e) => showTooltip(e, age));
+        marker.addEventListener('mouseleave', hideTooltip);
+        marker.addEventListener('click', () => showAgeInfo(ageKey));
+        
+        clockFace.appendChild(marker);
+    });
+    
+    // Re-add decorative rings (they're part of the clock face)
+    // The rings are already in the HTML, but we need to make sure markers are above them
+}
+
+// ══════════════════════════════════════════════
+// TOOLTIP
+// ══════════════════════════════════════════════
+const tooltip = document.getElementById('phaseTooltip');
+
+function showTooltip(e, age) {
+    tooltip.textContent = `${age.emoji} ${age.name}\n${age.ruler} presides`;
+    tooltip.classList.add('show');
+    tooltip.style.left = (e.clientX + 15) + 'px';
+    tooltip.style.top = (e.clientY - 40) + 'px';
+}
+
+function hideTooltip() {
+    tooltip.classList.remove('show');
+}
+
+document.addEventListener('mousemove', (e) => {
+    if (tooltip.classList.contains('show')) {
+        tooltip.style.left = (e.clientX + 15) + 'px';
+        tooltip.style.top = (e.clientY - 40) + 'px';
+    }
+});
+
+// ══════════════════════════════════════════════
+// GET MOON PHASE & AGE
+// ══════════════════════════════════════════════
+function getMoonPhase() {
     try {
-      const data = JSON.parse(stored);
-      const events = (data.events || []).slice(-30).reverse();
-      display.innerHTML = events.length === 0 
-        ? `<div class="memory-empty">${activeTitan} memory is empty.</div>`
-        : events.map(e => `<div class="memory-entry"><span class="tick">#${e.tick||'—'}</span> ${e.type||e.operation||'—'} ${e.olympian?'from '+e.olympian:''} <span style="color:var(--text-dim)">${new Date(e.timestamp).toLocaleTimeString()}</span></div>`).join('');
-    } catch(e) { display.innerHTML = `<div class="memory-empty">Error: ${e.message}</div>`; }
-  };
-  
-  refreshMemoryView();
-  console.log('🏛️ Council ready. Shared localStorage engine active.');
+        const state = GaiaSuncalc.getFullState();
+        const planets = GaiaAstronomy.getAllPlanets();
+        if (planets?.moon?.phase !== undefined) {
+            return planets.moon.phase;
+        }
+    } catch (e) {
+        console.warn('Moon phase calculation failed, using fallback');
+    }
+    
+    // Fallback: calculate from date
+    const now = new Date();
+    const lp = 2551443; // lunar period in ms
+    const newMoon = new Date(2026, 4, 18).getTime(); // approximate new moon
+    return ((now.getTime() - newMoon) % lp) / lp;
+}
+
+function getAgeFromPhase(phase) {
+    // 0-1 normalized phase (0 = new moon, 0.5 = full moon)
+    if (phase < 0.0625 || phase > 0.9375) return 'new';
+    if (phase < 0.1875) return 'crescent';
+    if (phase < 0.3125) return 'quarter';
+    if (phase < 0.4375) return 'gibbous';
+    if (phase < 0.5625) return 'full';
+    if (phase < 0.6875) return 'disseminating';
+    if (phase < 0.8125) return 'last-quarter';
+    return 'balsamic';
+}
+
+// ══════════════════════════════════════════════
+// UPDATE CLOCK DISPLAY
+// ══════════════════════════════════════════════
+function updateClock() {
+    const phase = getMoonPhase();
+    const ageKey = getAgeFromPhase(phase);
+    const age = AGES[ageKey];
+    
+    councilState.moonPhase = phase;
+    
+    // Check for age transition
+    const ageChanged = councilState.currentAgeKey !== ageKey;
+    if (ageChanged) {
+        councilState.currentAgeKey = ageKey;
+        councilState.convened = false;
+        councilState.lastUpdate = new Date();
+        
+        // Log transition
+        addHistory(
+            `${age.emoji} The Procession advances: <strong>${age.name}</strong> — ${age.ruler} now presides over the council.`
+        );
+    }
+    
+    const ageIndex = AGE_ORDER.indexOf(ageKey);
+    
+    // Update clock needle rotation
+    const needleAngle = (ageIndex / 8) * 360;
+    document.getElementById('clockNeedle').style.transform = 
+        `translate(-50%, -100%) rotate(${needleAngle}deg)`;
+    
+    // Update active marker
+    document.querySelectorAll('.phase-marker').forEach((marker, i) => {
+        marker.classList.toggle('active', i === ageIndex);
+    });
+    
+    // Update phase progress
+    // Show progress through current phase
+    const phaseInCurrentAge = (phase - (ageIndex / 8) * 1) % 0.125;
+    const progressPct = Math.min(100, Math.max(0, (phaseInCurrentAge / 0.125) * 100));
+    document.getElementById('phaseProgressFill').style.width = progressPct + '%';
+    
+    const nextAgeKey = AGE_ORDER[(ageIndex + 1) % 8];
+    const nextAge = AGES[nextAgeKey];
+    document.getElementById('phaseProgressStart').textContent = age.name.split(' ')[1] || age.name;
+    document.getElementById('phaseProgressEnd').textContent = nextAge.name.split(' ')[1] || nextAge.name;
+    
+    // Update meta
+    document.getElementById('clockMeta').textContent = 
+        `Phase: ${(phase * 100).toFixed(1)}% · ${age.emoji}`;
+    
+    // Update large display
+    document.getElementById('ageEmojiLarge').textContent = age.emoji;
+    document.getElementById('ageNameLarge').textContent = age.name;
+    document.getElementById('ageRuler').textContent = `${age.ruler} presides`;
+    document.getElementById('ageDescription').textContent = age.description;
+    document.getElementById('ageGift').textContent = `Gift: ${age.gift}`;
+    
+    // Update council seats
+    updateCouncilSeats(age);
+}
+
+// ══════════════════════════════════════════════
+// COUNCIL SEATS
+// ══════════════════════════════════════════════
+const TITAN_REGISTRY = [
+    { name: 'kronos', glyph: '⏳', role: 'Phase Accumulator' },
+    { name: 'rhea', glyph: '🌊', role: 'Flow / Tick Gate' },
+    { name: 'hyperion', glyph: '🔆', role: 'Signal Amplifier' },
+    { name: 'oceanus', glyph: '🌀', role: 'Stream Aggregator' },
+    { name: 'tethys', glyph: '💧', role: 'Nourishment' },
+    { name: 'theia', glyph: '👁️', role: 'Sight / Palette' },
+    { name: 'phoibe', glyph: '🔮', role: 'Prophecy / Oracle' },
+    { name: 'themis', glyph: '⚖️', role: 'Law / Ascension Gate' },
+    { name: 'mnemosyne', glyph: '📜', role: 'Memory / Narrative' },
+    { name: 'koios', glyph: '⚗️', role: 'Intellect / Trivia' },
+];
+
+function updateCouncilSeats(age) {
+    const chamber = document.getElementById('chamberSeats');
+    const rulerName = age.ruler.toLowerCase();
+    
+    chamber.innerHTML = age.council.map(titanName => {
+        const titan = TITAN_REGISTRY.find(t => t.name === titanName.toLowerCase());
+        const isRuler = titanName.toLowerCase() === rulerName;
+        
+        return `
+            <div class="council-seat ${isRuler ? 'ruler' : ''}">
+                <div class="seat-glyph">${titan?.glyph || '✦'}</div>
+                <div class="seat-name">${titanName.toUpperCase()}</div>
+                <div class="seat-role">${titan?.role || 'Council Member'}</div>
+            </div>
+        `;
+    }).join('');
+}
+
+// ══════════════════════════════════════════════
+// COUNCIL ACTIONS
+// ══════════════════════════════════════════════
+function conveneCouncil() {
+    const age = AGES[councilState.currentAgeKey];
+    if (!age) return;
+    
+    councilState.convened = true;
+    const now = new Date();
+    
+    // Generate decree
+    const decreeDisplay = document.getElementById('decreeDisplay');
+    const gaiaYear = 2026; // founding year
+    
+    decreeDisplay.innerHTML = `
+        <div class="decree-header-text">
+            ${age.emoji} DECREE OF ${age.name.toUpperCase()}
+        </div>
+        <div class="decree-body-text">
+            ${age.decree}
+        </div>
+        <div class="decree-signatures">
+            ${age.council.map(name => `${name} ✦`).join(' ')}
+        </div>
+        <div class="decree-timestamp">
+            Convened ${now.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
+            at ${now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
+            · GAIA Year I
+        </div>
+    `;
+    
+    // Add to history
+    addHistory(
+        `🏛️ <strong>${age.name}</strong> convened. ${age.ruler} presided. Decree issued: "${age.decree.substring(0, 80)}..."`
+    );
+    
+    councilState.decrees.push({
+        age: councilState.currentAgeKey,
+        timestamp: now.toISOString(),
+        decree: age.decree
+    });
+    
+    showToast(`${age.emoji} The ${age.name} Council has convened!`, 'success');
+}
+
+function makeOffering() {
+    const age = AGES[councilState.currentAgeKey];
+    if (!age) return;
+    
+    // Track offerings per age
+    const key = councilState.currentAgeKey;
+    councilState.offerings[key] = (councilState.offerings[key] || 0) + 1;
+    const count = councilState.offerings[key];
+    
+    // Add offering receipt to decree
+    const decreeDisplay = document.getElementById('decreeDisplay');
+    const receipt = document.createElement('div');
+    receipt.className = 'offering-receipt';
+    receipt.innerHTML = `
+        🕯️ <strong>Offering #${count}</strong> accepted by the ${age.name} Council.
+        <br><em>"${age.gift}"</em> bestowed upon the pilgrim.
+    `;
+    decreeDisplay.appendChild(receipt);
+    
+    // Add to history
+    addHistory(
+        `🕯️ Offering made to the <strong>${age.name}</strong>. ${age.ruler} acknowledges. ${age.gift} received.`
+    );
+    
+    showToast(`🕯️ ${age.gift} bestowed upon you`, 'fire');
+}
+
+function readDecree() {
+    const age = AGES[councilState.currentAgeKey];
+    if (!age) return;
+    
+    if (!councilState.convened) {
+        // Show preview
+        const decreeDisplay = document.getElementById('decreeDisplay');
+        decreeDisplay.innerHTML = `
+            <div class="decree-header-text">
+                ${age.emoji} THE ${age.name.toUpperCase()} — UNCONVENED
+            </div>
+            <div class="decree-body-text">
+                The ${age.name} council has not been convened. ${age.ruler} waits.
+                <br><br>
+                <em>Potential decree: ${age.decree}</em>
+            </div>
+        `;
+        showToast('The council must be convened first to issue a binding decree.');
+        return;
+    }
+    
+    // Re-display the last decree
+    conveneCouncil();
+}
+
+function showAgeInfo(ageKey) {
+    const age = AGES[ageKey];
+    const decreeDisplay = document.getElementById('decreeDisplay');
+    
+    decreeDisplay.innerHTML = `
+        <div class="decree-header-text">
+            ${age.emoji} ${age.name.toUpperCase()} — AGE OVERVIEW
+        </div>
+        <div class="decree-body-text">
+            <strong>Ruler:</strong> ${age.ruler}<br>
+            <strong>Council:</strong> ${age.council.join(', ')}<br>
+            <strong>Description:</strong> ${age.description}<br>
+            <strong>Gift:</strong> ${age.gift}<br>
+            <strong>Effect:</strong> ${age.giftEffect}
+        </div>
+    `;
+    
+    showToast(`${age.emoji} Viewing the ${age.name}`);
+}
+
+// ══════════════════════════════════════════════
+// HISTORY
+// ══════════════════════════════════════════════
+function addHistory(text) {
+    const now = new Date();
+    const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+    
+    councilState.history.unshift({
+        text,
+        timestamp: now.toISOString()
+    });
+    
+    // Keep last 20
+    if (councilState.history.length > 20) {
+        councilState.history = councilState.history.slice(0, 20);
+    }
+    
+    renderHistory();
+}
+
+function renderHistory() {
+    const list = document.getElementById('historyList');
+    
+    if (councilState.history.length === 0) {
+        list.innerHTML = '<div class="history-item">No councils have been convened yet. The chronicle is empty.</div>';
+        return;
+    }
+    
+    list.innerHTML = councilState.history.map((item, i) => {
+        const time = new Date(item.timestamp);
+        const timeStr = time.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+        return `<div class="history-item">[${timeStr}] ${item.text}</div>`;
+    }).join('');
+}
+
+// ══════════════════════════════════════════════
+// TOAST
+// ══════════════════════════════════════════════
+let toastTimer;
+function showToast(msg, type = '') {
+    const el = document.getElementById('toast');
+    el.className = 'show ' + (type || '');
+    el.textContent = msg;
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => {
+        el.className = '';
+    }, 4000);
+}
+
+// ══════════════════════════════════════════════
+// EVENT LISTENERS
+// ══════════════════════════════════════════════
+document.getElementById('conveneBtn').addEventListener('click', conveneCouncil);
+document.getElementById('offerBtn').addEventListener('click', makeOffering);
+document.getElementById('readBtn').addEventListener('click', readDecree);
+
+// ══════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════
+function init() {
+    buildPhaseMarkers();
+    updateClock();
+    
+    // Add initial history entry
+    addHistory('🌙 The Procession Clock awakens. The Divine Council awaits its first convocation.');
+    
+    // Update every 30 seconds
+    setInterval(updateClock, 30000);
+    
+    console.log('🏛️ Divine Council initialized — Procession of Ages underway');
+}
+
+// Start
+init();
+
 </script>
+
 </body>
 </html>
