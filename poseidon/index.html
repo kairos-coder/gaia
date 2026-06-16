@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>POSEIDON — The Earthquake Sea</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&family=Cinzel:wght@400;600&family=EB+Garamond:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --deep: #020810;
+            --abyss: #030d18;
+            --trench: #010508;
+            --teal: #0a3050;
+            --teal-bright: #0d4470;
+            --foam: #aaccee;
+            --foam-bright: #ccddff;
+            --magma: #ff4400;
+            --magma-bright: #ff6622;
+            --magma-glow: #ff8833;
+            --trident: #8899bb;
+            --trident-glow: #aabbdd;
+            --bubble: rgba(150,200,220,0.4);
+            --locked: #44cc88;
+        }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { 
+            background: var(--deep);
+            color: #aac0cc;
+            font-family:'EB Garamond',Georgia,serif;
+            min-height:100vh;
+            overflow-x:hidden;
+        }
+
+        .ocean-bg { position:fixed; inset:0; z-index:0; pointer-events:none; opacity:0.04;
+            background-image: radial-gradient(circle at 30% 30%, #0d4470 0px, transparent 80px),
+                              radial-gradient(circle at 70% 70%, #0a3050 0px, transparent 60px),
+                              radial-gradient(circle at 50% 50%, #ff4400 0px, transparent 40px);
+            background-size: 250px 250px, 200px 200px, 180px 180px;
+        }
+
+        .temple { position:relative; z-index:1; max-width:1500px; margin:0 auto; padding:1.5rem; display:flex; flex-direction:column; gap:1.5rem; }
+
+        /* HEADER */
+        .header { text-align:center; padding:2rem 1rem 0.5rem; position:relative; }
+        .header::before { content:''; position:absolute; top:0; left:50%; transform:translateX(-50%); width:1px; height:2rem; background:linear-gradient(to bottom,transparent,var(--teal-bright)); }
+        .temple-title { font-family:'Cinzel Decorative',serif; font-size:clamp(2rem,5vw,4rem); font-weight:900; letter-spacing:0.3em;
+            background:linear-gradient(135deg, #0a3050, #0d4470, #aaccee, #0a3050);
+            -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
+            filter:drop-shadow(0 0 30px rgba(13,68,112,0.5)); animation:titlePulse 4s ease-in-out infinite; }
+        @keyframes titlePulse { 0%,100%{filter:drop-shadow(0 0 20px rgba(13,68,112,0.3))} 50%{filter:drop-shadow(0 0 50px rgba(100,180,220,0.7))} }
+        .subtitle { font-family:'Cinzel',serif; font-size:0.7rem; letter-spacing:0.4em; color:#0d4470; margin-top:0.4rem; }
+        .back-link { display:inline-block; margin-top:0.5rem; font-family:'Cinzel',serif; font-size:0.6rem; letter-spacing:0.3em; color:#0d4470; text-decoration:none; transition:color 0.3s; }
+        .back-link:hover { color:var(--foam); }
+
+        /* STATUS STRIP */
+        .status-strip { display:flex; justify-content:center; gap:1.5rem; flex-wrap:wrap; font-family:'Cinzel',serif; font-size:0.62rem; letter-spacing:0.15em; color:#0d4470; padding:0.6rem 1rem; border:1px solid rgba(13,68,112,0.15); border-radius:2px; background:rgba(2,8,16,0.9); }
+        .si { display:flex; gap:0.4rem; align-items:center; }
+        .sd { width:6px; height:6px; border-radius:50%; background:#0a3050; transition:all 0.3s; }
+        .sd.calm { background:var(--locked); box-shadow:0 0 8px var(--locked); animation:calmPulse 2s infinite; }
+        .sd.tempest { background:var(--magma); box-shadow:0 0 8px var(--magma); animation:emberPulse 0.8s infinite; }
+        @keyframes calmPulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.5;transform:scale(1.5)} }
+        @keyframes emberPulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.4;transform:scale(2)} }
+
+        /* CANVAS ZONE */
+        .sea-zone { background:linear-gradient(180deg, #020810, #030d18, #010508); border:1px solid rgba(13,68,112,0.2); border-top:2px solid #0d4470; border-radius:4px; overflow:hidden; position:relative; }
+        .sea-header { display:flex; justify-content:space-between; align-items:center; padding:0.75rem 1.25rem; border-bottom:1px solid rgba(13,68,112,0.12); }
+        .sea-title { font-family:'Cinzel Decorative',serif; font-size:0.85rem; letter-spacing:0.2em; color:#88bbdd; }
+        .sea-meta { font-family:'Cinzel',serif; font-size:0.6rem; letter-spacing:0.15em; color:rgba(100,160,200,0.45); }
+        #seaCanvas { width:100%; height:500px; display:block; cursor:pointer; }
+        .sea-overlay { position:absolute; bottom:0; left:0; right:0; padding:0.8rem 1.5rem; background:linear-gradient(to top, rgba(2,8,16,0.95), transparent); pointer-events:none; }
+        .sea-verse { font-family:'EB Garamond',serif; font-size:0.85rem; font-style:italic; color:#557799; text-align:center; min-height:2rem; transition:opacity 0.6s; }
+
+        /* INFO PANELS */
+        .info-row { display:grid; grid-template-columns:1fr 1fr; gap:1rem; }
+        @media(max-width:900px) { .info-row { grid-template-columns:1fr; } }
+        
+        .info-panel { background:rgba(3,13,24,0.8); border:1px solid rgba(13,68,112,0.15); border-radius:4px; padding:1rem; }
+        .panel-title { font-family:'Cinzel',serif; font-size:0.6rem; letter-spacing:0.25em; color:#0d4470; margin-bottom:0.7rem; border-bottom:1px solid rgba(13,68,112,0.1); padding-bottom:0.4rem; }
+        
+        .quake-list { max-height:200px; overflow-y:auto; display:flex; flex-direction:column; gap:0.4rem; }
+        .quake-item { padding:0.5rem; border-left:2px solid rgba(13,68,112,0.2); font-size:0.72rem; color:#7799aa; line-height:1.5; transition:all 0.3s; }
+        .quake-item:hover { border-left-color:var(--teal-bright); color:#99bbcc; }
+        .quake-mag { font-family:'Cinzel',serif; font-size:0.65rem; color:var(--magma-bright); }
+        .quake-place { font-style:italic; font-size:0.68rem; color:#668899; }
+        .quake-time { font-size:0.6rem; color:#445566; }
+
+        .trident-info { text-align:center; }
+        .trident-glyph { font-size:3rem; margin-bottom:0.5rem; filter:drop-shadow(0 0 20px rgba(136,153,187,0.4)); cursor:pointer; transition:all 0.3s; animation:tridentFloat 3s ease-in-out infinite; }
+        @keyframes tridentFloat { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-6px)} }
+        .trident-glyph:hover { filter:drop-shadow(0 0 40px rgba(170,187,221,0.8)); transform:scale(1.1); }
+        .trident-glyph.shaking { animation:tridentShake 0.5s ease-out; }
+        @keyframes tridentShake { 0%,100%{transform:translateX(0)} 10%{transform:translateX(-8px)} 20%{transform:translateX(8px)} 30%{transform:translateX(-6px)} 40%{transform:translateX(6px)} 50%{transform:translateX(-3px)} 60%{transform:translateX(3px)} 70%{transform:translateX(-1px)} }
+        .trident-label { font-family:'Cinzel',serif; font-size:0.6rem; letter-spacing:0.2em; color:#557799; }
+        .trident-hint { font-size:0.65rem; font-style:italic; color:#446677; margin-top:0.3rem; }
+
+        /* LOG */
+        .log-zone { background:rgba(2,8,16,0.6); border:1px solid rgba(13,68,112,0.08); border-radius:4px; padding:0.8rem 1.25rem; }
+        .log-scroll { max-height:120px; overflow-y:auto; display:flex; flex-direction:column; gap:0.3rem; }
+        .log-line { font-size:0.7rem; font-style:italic; color:rgba(100,140,170,0.35); padding:0.2rem 0; border-bottom:1px solid rgba(13,68,112,0.05); line-height:1.5; }
+
+        /* TOAST */
+        #toast { position:fixed; bottom:1.5rem; left:50%; transform:translateX(-50%); background:rgba(2,8,16,0.97); border:1px solid #0d4470; border-radius:2px; padding:0.55rem 1.4rem; font-family:'Cinzel',serif; font-size:0.68rem; letter-spacing:0.13em; color:#88bbdd; z-index:100; opacity:0; transition:opacity 0.4s; text-align:center; max-width:90vw; }
+        #toast.show { opacity:1; }
+        #toast.success { border-color:var(--locked); color:var(--locked); }
+        #toast.quake { border-color:var(--magma); color:var(--magma-bright); }
+    </style>
+</head>
+<body>
+<div class="ocean-bg"></div>
+<div class="temple">
+
+    <!-- HEADER -->
+    <div class="header">
+        <h1 class="temple-title">🔱 POSEIDON</h1>
+        <div class="subtitle">The Earthquake Sea · Earth-Shaker · Lord of the Deep</div>
+        <a href="../index.html" class="back-link">← Return to GAIA</a>
+    </div>
+
+    <!-- STATUS -->
+    <div class="status-strip">
+        <div class="si"><div class="sd calm" id="seaDot"></div><span id="seaStatus">SEA: CALM</span></div>
+        <div class="si"><span id="swellHeight">🌊 Swell: —</span></div>
+        <div class="si"><span id="riftDepth">🕳️ Rift: —</span></div>
+        <div class="si"><span id="quakeCount">📡 Quakes: 0</span></div>
+        <div class="si"><span id="coherenceDisplay" style="color:rgba(100,160,200,0.45)">Coherence: —</span></div>
+    </div>
+
+    <!-- SEA CANVAS -->
+    <div class="sea-zone">
+        <div class="sea-header">
+            <span class="sea-title">🌊 THE EARTHQUAKE SEA</span>
+            <span class="sea-meta" id="seaMeta">Swell: — · Rift: — · Depth: 500m</span>
+        </div>
+        <canvas id="seaCanvas"></canvas>
+        <div class="sea-overlay">
+            <div class="sea-verse" id="seaVerse">Beneath the swell, the earth remembers every crack it has ever borne.</div>
+        </div>
+    </div>
+
+    <!-- INFO ROW -->
+    <div class="info-row">
+        <div class="info-panel">
+            <div class="panel-title">📡 RECENT QUAKES (USGS)</div>
+            <div class="quake-list" id="quakeList">
+                <div class="quake-item" style="color:#446677">Awaiting seismic data...</div>
+            </div>
+        </div>
+        <div class="info-panel">
+            <div class="panel-title">🔱 THE TRIDENT</div>
+            <div class="trident-info">
+                <div class="trident-glyph" id="tridentGlyph" title="Strike the earth">🔱</div>
+                <div class="trident-label">EARTH-SHAKER</div>
+                <div class="trident-hint">Click the Trident to strike the seafloor</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- LOG -->
+    <div class="log-zone">
+        <div class="log-scroll" id="logScroll">
+            <div class="log-line">🌊 Poseidon's temple awakens. The deep sea listens.</div>
+        </div>
+    </div>
+
+</div>
+
+<div id="toast"></div>
+
+<script src="../js/gaia-celestial.js"></script>
+<script src="../js/gaia-suncalc.js"></script>
+<script src="../js/gaia-astronomy.js"></script>
+
+<script>
+// ══════════════════════════════════════════════
+// POSEIDON — THE EARTHQUAKE SEA ENGINE
+// ══════════════════════════════════════════════
+
+const seaCvs = document.getElementById('seaCanvas');
+const seaCtx = seaCvs.getContext('2d');
+let W, H;
+
+let seaTime = 0;
+let coherenceLevel = 0.4;
+let isLocked = false;
+let swellHeight = 30;
+let riftDepth = 0;
+let targetRiftDepth = 0;
+let tridentCooldown = 0;
+let quakes = [];
+let bubbles = [];
+let seaCreatures = [];
+let biolumParticles = [];
+let foamParticles = [];
+
+// Wave harmonics for complex swells
+const WAVE_COUNT = 4;
+const wavePhases = Array.from({length: WAVE_COUNT}, () => Math.random() * Math.PI * 2);
+const waveAmps = Array.from({length: WAVE_COUNT}, () => 0.5 + Math.random() * 1.5);
+const waveFreqs = Array.from({length: WAVE_COUNT}, () => 0.3 + Math.random() * 0.7);
+
+// Seafloor terrain
+let seafloorPoints = [];
+const SEAFLOOR_SEGMENTS = 40;
+
+// ── RESIZE ──
+const resize = () => {
+    const parent = seaCvs.parentElement;
+    W = seaCvs.width = parent.clientWidth;
+    H = seaCvs.height = 500;
+    generateSeafloor();
+    initCreatures();
+};
+window.addEventListener('resize', resize);
+resize();
+
+// ── SEAFLOOR ──
+function generateSeafloor() {
+    seafloorPoints = [];
+    const baseY = H * 0.78;
+    for (let i = 0; i <= SEAFLOOR_SEGMENTS; i++) {
+        const x = (i / SEAFLOOR_SEGMENTS) * W;
+        const y = baseY + Math.sin(i * 0.4) * 25 + Math.sin(i * 0.13) * 15 + Math.sin(i * 0.7) * 10;
+        seafloorPoints.push({ x, y, baseY: y });
+    }
+}
+
+// ── CREATURES ──
+function initCreatures() {
+    seaCreatures = [
+        { type:'whale', x: W * 0.2, y: H * 0.3, vx: 0.15, size: 40, depth: 0.35 },
+        { type:'school', x: W * 0.6, y: H * 0.45, vx: -0.3, size: 8, count: 12, depth: 0.5 },
+        { type:'kraken', x: W * 0.8, y: H * 0.7, vx: -0.08, size: 50, depth: 0.8, armPhase: 0 },
+    ];
+}
+
+// ── BUBBLES ──
+function spawnBubble(x, y) {
+    bubbles.push({
+        x, y,
+        size: 1.5 + Math.random() * 4,
+        vy: -0.3 - Math.random() * 0.8,
+        vx: (Math.random() - 0.5) * 0.3,
+        life: 1.0,
+        wobble: Math.random() * Math.PI * 2
+    });
+}
+
+// ── FOAM ──
+function spawnFoam(x, y) {
+    foamParticles.push({
+        x, y,
+        size: 2 + Math.random() * 5,
+        life: 1.0,
+        vx: (Math.random() - 0.5) * 0.4,
+        vy: -Math.random() * 0.2
+    });
+}
+
+// ── COHERENCE ──
+function fetchCoherence() {
+    try {
+        const state = GaiaSuncalc.getFullState();
+        const planets = GaiaAstronomy.getAllPlanets();
+        if (planets?.moon?.phase !== undefined) {
+            const phase = planets.moon.phase;
+            coherenceLevel = 0.2 + 0.6 * (0.5 + 0.5 * Math.sin(phase * Math.PI * 2));
+        }
+    } catch(e) {
+        coherenceLevel = 0.4 + 0.3 * Math.sin(Date.now() / 3600000);
+    }
+    
+    const wasLocked = isLocked;
+    isLocked = coherenceLevel > 0.85;
+    
+    if (isLocked && !wasLocked) {
+        onPhaseLock();
+    }
+    if (!isLocked && wasLocked) {
+        onPhaseUnlock();
+    }
+    
+    // Swell height from coherence (inverse: high coherence = calm = low swell)
+    swellHeight = 15 + (1 - coherenceLevel) * 70;
+    
+    // Rift: grows when coherence drops
+    targetRiftDepth = (1 - coherenceLevel) * 60;
+    
+    document.getElementById('coherenceDisplay').textContent = `Coherence: ${coherenceLevel.toFixed(2)}`;
+    document.getElementById('swellHeight').textContent = `🌊 Swell: ${swellHeight.toFixed(0)}`;
+    document.getElementById('riftDepth').textContent = `🕳️ Rift: ${riftDepth.toFixed(0)}`;
+    document.getElementById('seaMeta').textContent = 
+        `Swell: ${swellHeight.toFixed(0)} · Rift: ${riftDepth.toFixed(0)} · Depth: ${(500 + riftDepth).toFixed(0)}m`;
+    
+    updateSeaStatus();
+}
+
+function onPhaseLock() {
+    showToast('🔒 KAIROS LOCKS! The sea grows still. The deep breathes.', 'success');
+    // Heal the rift
+    targetRiftDepth = 0;
+    // Bioluminescent bloom
+    for (let i = 0; i < 40; i++) {
+        biolumParticles.push({
+            x: Math.random() * W,
+            y: H * 0.3 + Math.random() * H * 0.5,
+            size: 1 + Math.random() * 3,
+            life: 1.0,
+            vx: (Math.random() - 0.5) * 0.2,
+            vy: (Math.random() - 0.5) * 0.2,
+            color: Math.random() < 0.5 ? '#44cc88' : '#88ffcc'
+        });
+    }
+}
+
+function onPhaseUnlock() {
+    // Spawn rift bubbles
+    if (riftDepth > 5) {
+        const riftX = W / 2 + (Math.random() - 0.5) * 100;
+        for (let i = 0; i < 10; i++) {
+            spawnBubble(riftX + (Math.random() - 0.5) * 30, H * 0.82);
+        }
+    }
+}
+
+function updateSeaStatus() {
+    const dot = document.getElementById('seaDot');
+    const status = document.getElementById('seaStatus');
+    
+    if (isLocked) {
+        dot.className = 'sd calm';
+        status.textContent = 'SEA: GLASS';
+    } else if (coherenceLevel < 0.35) {
+        dot.className = 'sd tempest';
+        status.textContent = 'SEA: TEMPEST';
+    } else if (coherenceLevel < 0.55) {
+        dot.className = 'sd';
+        dot.style.background = '#0d4470';
+        status.textContent = 'SEA: STIRRING';
+    } else {
+        dot.className = 'sd';
+        dot.style.background = '#0d4470';
+        status.textContent = 'SEA: SWELLING';
+    }
+}
+
+// ── STRIKE THE TRIDENT ──
+function strikeTrident() {
+    if (tridentCooldown > 0) return;
+    tridentCooldown = 2.0;
+    
+    // Earthquake effect
+    targetRiftDepth = Math.min(80, riftDepth + 15 + Math.random() * 20);
+    swellHeight = Math.min(100, swellHeight + 20 + Math.random() * 30);
+    
+    // Shake animation
+    const glyph = document.getElementById('tridentGlyph');
+    glyph.classList.add('shaking');
+    setTimeout(() => glyph.classList.remove('shaking'), 500);
+    
+    // Rift bubbles and magma
+    const riftX = W / 2;
+    for (let i = 0; i < 25; i++) {
+        spawnBubble(riftX + (Math.random() - 0.5) * 80, H * 0.8);
+    }
+    
+    // Foam at surface
+    for (let i = 0; i < 15; i++) {
+        spawnFoam(Math.random() * W, H * 0.12 + Math.random() * 20);
+    }
+    
+    addLog('🔱 POSEIDON STRIKES! The seafloor trembles. Waves surge outward.');
+    showToast('🔱 The Earth-Shaker strikes! The deep answers.', 'quake');
+}
+
+// ── USGS EARTHQUAKE DATA ──
+async function fetchQuakes() {
+    try {
+        const res = await fetch('https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_day.geojson');
+        if (!res.ok) throw new Error('USGS unavailable');
+        const data = await res.json();
+        quakes = data.features.slice(0, 15).map(f => ({
+            mag: f.properties.mag,
+            place: f.properties.place,
+            time: new Date(f.properties.time),
+            lat: f.geometry.coordinates[1],
+            lng: f.geometry.coordinates[0],
+            depth: f.geometry.coordinates[2]
+        }));
+        renderQuakeList();
+        
+        // If there's a significant quake (mag 5+), affect the sea
+        const bigOne = quakes.find(q => q.mag >= 5.0);
+        if (bigOne) {
+            addLog(`📡 M${bigOne.mag.toFixed(1)} earthquake detected: ${bigOne.place}`);
+            targetRiftDepth = Math.min(80, riftDepth + bigOne.mag * 3);
+        }
+    } catch(e) {
+        console.warn('USGS fetch failed:', e);
+        quakes = [];
+        document.getElementById('quakeList').innerHTML = 
+            '<div class="quake-item" style="color:#446677">Seismic data unavailable. The deep keeps its secrets.</div>';
+    }
+}
+
+function renderQuakeList() {
+    const list = document.getElementById('quakeList');
+    if (quakes.length === 0) {
+        list.innerHTML = '<div class="quake-item" style="color:#446677">No recent quakes detected.</div>';
+        return;
+    }
+    
+    list.innerHTML = quakes.slice(0, 8).map(q => {
+        const ago = Math.floor((Date.now() - q.time.getTime()) / 3600000);
+        const timeStr = ago < 1 ? 'just now' : ago < 24 ? `${ago}h ago` : `${Math.floor(ago/24)}d ago`;
+        return `
+            <div class="quake-item">
+                <span class="quake-mag">M${q.mag.toFixed(1)}</span>
+                <span class="quake-place">${q.place}</span>
+                <span class="quake-time">· ${timeStr} · ${q.depth.toFixed(0)}km deep</span>
+            </div>
+        `;
+    }).join('');
+    
+    document.getElementById('quakeCount').textContent = `📡 Quakes: ${quakes.length}`;
+}
+
+// ── DRAW SEA ──
+function drawSea() {
+    seaCtx.clearRect(0, 0, W, H);
+    
+    // Water column gradient
+    const waterGrad = seaCtx.createLinearGradient(0, 0, 0, H);
+    waterGrad.addColorStop(0, '#020a18');
+    waterGrad.addColorStop(0.3, '#030f20');
+    waterGrad.addColorStop(0.7, '#010a18');
+    waterGrad.addColorStop(1, '#010508');
+    seaCtx.fillStyle = waterGrad;
+    seaCtx.fillRect(0, 0, W, H);
+    
+    // Light rays from surface
+    for (let i = 0; i < 6; i++) {
+        const rx = W * (0.1 + i * 0.16);
+        const rayGrad = seaCtx.createLinearGradient(rx, 0, rx + (i - 2.5) * 80, H);
+        rayGrad.addColorStop(0, 'rgba(100,180,220,0.03)');
+        rayGrad.addColorStop(1, 'transparent');
+        seaCtx.fillStyle = rayGrad;
+        seaCtx.beginPath();
+        seaCtx.moveTo(rx - 15, 0);
+        seaCtx.lineTo(rx + 40, H);
+        seaCtx.lineTo(rx - 60, H);
+        seaCtx.closePath();
+        seaCtx.fill();
+    }
+    
+    // ── SEA CREATURES ──
+    seaCreatures.forEach(creature => {
+        creature.x += creature.vx * (0.5 + (1 - coherenceLevel) * 1.5);
+        if (creature.x > W + 80) creature.x = -80;
+        if (creature.x < -80) creature.x = W + 80;
+        
+        const cx = creature.x;
+        const cy = creature.y;
+        
+        if (creature.type === 'whale') {
+            seaCtx.fillStyle = 'rgba(40,60,80,0.25)';
+            seaCtx.beginPath();
+            seaCtx.ellipse(cx, cy, creature.size, creature.size * 0.4, 0, 0, Math.PI * 2);
+            seaCtx.fill();
+            // Tail
+            seaCtx.beginPath();
+            seaCtx.moveTo(cx - creature.size * 0.9, cy);
+            seaCtx.lineTo(cx - creature.size * 1.4, cy - creature.size * 0.3);
+            seaCtx.lineTo(cx - creature.size * 1.4, cy + creature.size * 0.3);
+            seaCtx.closePath();
+            seaCtx.fill();
+        } else if (creature.type === 'school') {
+            for (let s = 0; s < creature.count; s++) {
+                const sx = cx + Math.sin(seaTime * 2 + s) * 30;
+                const sy = cy + Math.cos(seaTime * 2 + s) * 15;
+                seaCtx.fillStyle = 'rgba(120,160,180,0.2)';
+                seaCtx.beginPath();
+                seaCtx.arc(sx, sy, creature.size * 0.15, 0, Math.PI * 2);
+                seaCtx.fill();
+            }
+        } else if (creature.type === 'kraken') {
+            creature.armPhase += 0.02;
+            seaCtx.strokeStyle = 'rgba(30,20,30,0.25)';
+            seaCtx.lineWidth = 3;
+            for (let a = 0; a < 3; a++) {
+                const angle = (a / 3) * Math.PI * 2 + creature.armPhase;
+                seaCtx.beginPath();
+                seaCtx.moveTo(cx, cy);
+                const ex = cx + Math.cos(angle) * creature.size * 0.8;
+                const ey = cy + Math.sin(angle) * creature.size * 0.6;
+                seaCtx.quadraticCurveTo(
+                    cx + Math.cos(angle + 0.5) * 20,
+                    cy + Math.sin(angle + 0.5) * 20,
+                    ex, ey
+                );
+                seaCtx.stroke();
+            }
+        }
+    });
+    
+    // ── SEAFLOOR ──
+    seaCtx.beginPath();
+    seaCtx.moveTo(seafloorPoints[0].x, seafloorPoints[0].y + riftDepth * 0.5);
+    for (let i = 1; i < seafloorPoints.length; i++) {
+        const pt = seafloorPoints[i];
+        const riftFactor = 1 - Math.abs(i - SEAFLOOR_SEGMENTS / 2) / (SEAFLOOR_SEGMENTS / 2);
+        const localRift = riftDepth * Math.max(0, riftFactor * riftFactor);
+        seaCtx.lineTo(pt.x, pt.y + localRift);
+    }
+    seaCtx.lineTo(W, H);
+    seaCtx.lineTo(0, H);
+    seaCtx.closePath();
+    
+    const floorGrad = seaCtx.createLinearGradient(0, H * 0.75, 0, H);
+    floorGrad.addColorStop(0, '#0a1520');
+    floorGrad.addColorStop(1, '#030810');
+    seaCtx.fillStyle = floorGrad;
+    seaCtx.fill();
+    
+    // Seafloor texture
+    for (let i = 0; i < seafloorPoints.length - 1; i++) {
+        const pt = seafloorPoints[i];
+        const riftFactor = 1 - Math.abs(i - SEAFLOOR_SEGMENTS / 2) / (SEAFLOOR_SEGMENTS / 2);
+        const localRift = riftDepth * Math.max(0, riftFactor * riftFactor);
+        seaCtx.strokeStyle = `rgba(20,40,60,${0.3 + riftFactor * 0.3})`;
+        seaCtx.lineWidth = 1;
+        seaCtx.beginPath();
+        seaCtx.moveTo(pt.x, pt.y + localRift);
+        seaCtx.lineTo(seafloorPoints[i + 1].x, seafloorPoints[i + 1].y + riftDepth * Math.max(0, (1 - Math.abs(i + 1 - SEAFLOOR_SEGMENTS / 2) / (SEAFLOOR_SEGMENTS / 2)) ** 2));
+        seaCtx.stroke();
+    }
+    
+    // ── RIFT MAGMA ──
+    if (riftDepth > 3) {
+        const riftCenterX = W / 2;
+        const riftCenterY = H * 0.78 + riftDepth * 0.5;
+        
+        const magmaGrad = seaCtx.createRadialGradient(riftCenterX, riftCenterY, 5, riftCenterX, riftCenterY, riftDepth * 1.5);
+        magmaGrad.addColorStop(0, `rgba(255,68,0,${riftDepth / 80 * 0.7})`);
+        magmaGrad.addColorStop(0.5, `rgba(255,100,30,${riftDepth / 80 * 0.3})`);
+        magmaGrad.addColorStop(1, 'transparent');
+        seaCtx.fillStyle = magmaGrad;
+        seaCtx.beginPath();
+        seaCtx.ellipse(riftCenterX, riftCenterY, riftDepth * 1.2, riftDepth * 0.4, 0, 0, Math.PI * 2);
+        seaCtx.fill();
+        
+        // Magma veins
+        for (let v = 0; v < 3; v++) {
+            seaCtx.strokeStyle = `rgba(255,80,20,${riftDepth / 80 * 0.4})`;
+            seaCtx.lineWidth = 1.5;
+            seaCtx.beginPath();
+            seaCtx.moveTo(riftCenterX, riftCenterY);
+            const vx = riftCenterX + (Math.random() - 0.5) * riftDepth * 2;
+            const vy = riftCenterY + Math.random() * riftDepth;
+            seaCtx.lineTo(vx, vy);
+            seaCtx.stroke();
+        }
+    }
+    
+    // ── THE WAVES ──
+    for (let w = WAVE_COUNT - 1; w >= 0; w--) {
+        const depth = 0.12 + w * 0.04;
+        const yBase = H * depth;
+        const amp = swellHeight * waveAmps[w] * (0.6 + coherenceLevel * 0.4);
+        const freq = waveFreqs[w] * 0.008;
+        const speed = 0.6 + w * 0.3;
+        const alpha = 0.15 + w * 0.08;
+        
+        seaCtx.beginPath();
+        seaCtx.moveTo(0, yBase);
+        
+        for (let x = 0; x <= W; x += 3) {
+            const y = yBase + 
+                Math.sin(x * freq + seaTime * speed * 0.02 + wavePhases[w]) * amp +
+                Math.sin(x * freq * 2.3 + seaTime * speed * 0.015 + wavePhases[w] * 1.7) * amp * 0.35 +
+                Math.sin(x * freq * 0.4 + seaTime * speed * 0.008) * amp * 0.2;
+            seaCtx.lineTo(x, y);
+        }
+        
+        seaCtx.lineTo(W, H);
+        seaCtx.lineTo(0, H);
+        seaCtx.closePath();
+        
+        const waveGrad = seaCtx.createLinearGradient(0, yBase - amp, 0, yBase + amp);
+        const hue = 200 + w * 10;
+        waveGrad.addColorStop(0, `rgba(${hue - 40},${180 + w * 10},220,${alpha + 0.05})`);
+        waveGrad.addColorStop(0.5, `rgba(${hue - 20},${160 + w * 10},200,${alpha})`);
+        waveGrad.addColorStop(1, `rgba(${hue},${140 + w * 10},180,${alpha * 0.5})`);
+        seaCtx.fillStyle = waveGrad;
+        seaCtx.fill();
+        
+        // Foam crests on highest wave
+        if (w === WAVE_COUNT - 1 && amp > 20) {
+            seaCtx.strokeStyle = `rgba(180,210,240,${amp / 100 * 0.4})`;
+            seaCtx.lineWidth = 2;
+            seaCtx.stroke();
+        }
+    }
+    
+    // ── BUBBLES ──
+    for (let i = bubbles.length - 1; i >= 0; i--) {
+        const b = bubbles[i];
+        b.y += b.vy;
+        b.x += b.vx + Math.sin(seaTime * 3 + b.wobble) * 0.3;
+        b.life -= 0.004;
+        
+        if (b.life <= 0 || b.y < 0) {
+            bubbles.splice(i, 1);
+            continue;
+        }
+        
+        seaCtx.beginPath();
+        seaCtx.arc(b.x, b.y, b.size, 0, Math.PI * 2);
+        seaCtx.strokeStyle = `rgba(150,200,220,${b.life * 0.5})`;
+        seaCtx.lineWidth = 0.7;
+        seaCtx.stroke();
+        
+        // Bubble highlight
+        seaCtx.beginPath();
+        seaCtx.arc(b.x - b.size * 0.3, b.y - b.size * 0.3, b.size * 0.25, 0, Math.PI * 2);
+        seaCtx.fillStyle = `rgba(200,230,255,${b.life * 0.4})`;
+        seaCtx.fill();
+    }
+    
+    // ── BIOLUMINESCENCE ──
+    for (let i = biolumParticles.length - 1; i >= 0; i--) {
+        const p = biolumParticles[i];
+        p.life -= 0.005;
+        p.x += p.vx;
+        p.y += p.vy;
+        
+        if (p.life <= 0) {
+            biolumParticles.splice(i, 1);
+            continue;
+        }
+        
+        seaCtx.beginPath();
+        seaCtx.arc(p.x, p.y, p.size * p.life, 0, Math.PI * 2);
+        seaCtx.fillStyle = p.color.replace(')', `,${p.life * 0.6})`).replace('rgb', 'rgba');
+        if (p.color.startsWith('#')) {
+            seaCtx.fillStyle = `rgba(68,204,136,${p.life * 0.5})`;
+        }
+        seaCtx.fill();
+        
+        // Glow halo
+        seaCtx.beginPath();
+        seaCtx.arc(p.x, p.y, p.size * p.life * 3, 0, Math.PI * 2);
+        seaCtx.fillStyle = `rgba(68,204,136,${p.life * 0.1})`;
+        seaCtx.fill();
+    }
+    
+    // ── FOAM ──
+    for (let i = foamParticles.length - 1; i >= 0; i--) {
+        const f = foamParticles[i];
+        f.life -= 0.01;
+        f.x += f.vx;
+        f.y += f.vy;
+        
+        if (f.life <= 0) {
+            foamParticles.splice(i, 1);
+            continue;
+        }
+        
+        seaCtx.beginPath();
+        seaCtx.arc(f.x, f.y, f.size * f.life, 0, Math.PI * 2);
+        seaCtx.fillStyle = `rgba(200,220,240,${f.life * 0.5})`;
+        seaCtx.fill();
+    }
+    
+    // ── TRIDENT SILHOUETTE ──
+    const tx = W / 2;
+    const ty = H * 0.5;
+    const tridentAlpha = 0.15 + Math.sin(seaTime * 0.03) * 0.05;
+    
+    seaCtx.strokeStyle = `rgba(136,153,187,${tridentAlpha})`;
+    seaCtx.lineWidth = 2;
+    
+    // Shaft
+    seaCtx.beginPath();
+    seaCtx.moveTo(tx, ty - 60);
+    seaCtx.lineTo(tx, ty + 50);
+    seaCtx.stroke();
+    
+    // Prongs
+    seaCtx.beginPath();
+    seaCtx.moveTo(tx - 20, ty - 60);
+    seaCtx.lineTo(tx - 5, ty - 20);
+    seaCtx.stroke();
+    
+    seaCtx.beginPath();
+    seaCtx.moveTo(tx, ty - 70);
+    seaCtx.lineTo(tx, ty - 20);
+    seaCtx.stroke();
+    
+    seaCtx.beginPath();
+    seaCtx.moveTo(tx + 20, ty - 60);
+    seaCtx.lineTo(tx + 5, ty - 20);
+    seaCtx.stroke();
+    
+    // Crossbar
+    seaCtx.beginPath();
+    seaCtx.moveTo(tx - 25, ty - 50);
+    seaCtx.lineTo(tx + 25, ty - 50);
+    seaCtx.stroke();
+}
+
+// ── SEA VERSE ──
+const SEA_VERSES = [
+    () => 'Beneath the swell, the earth remembers every crack it has ever borne.',
+    () => 'Poseidon does not rage. He simply shifts his weight.',
+    () => `The rift is ${riftDepth.toFixed(0)}m deep. The seafloor has not forgotten.`,
+    () => 'In the abyss, pressure turns bone to diamond. The Earth-Shaker waits.',
+    () => 'Pontus encircles. Poseidon shakes. The sea is both container and contained.',
+    () => 'When the trident strikes, even Olympus feels it.',
+    () => isLocked ? 'The sea is glass. Kronos has soothed the Earth-Shaker.' : 'The deep stirs. Somewhere, a fault line breathes.',
+];
+
+// ── LOG ──
+const logLines = [];
+function addLog(msg) {
+    const time = new Date().toLocaleTimeString('en-US', { hour:'2-digit', minute:'2-digit', second:'2-digit' });
+    logLines.unshift(`[${time}] ${msg}`);
+    if (logLines.length > 50) logLines.length = 50;
+    document.getElementById('logScroll').innerHTML = logLines.map(l => `<div class="log-line">${l}</div>`).join('');
+}
+
+// ── TOAST ──
+let toastTimer;
+function showToast(msg, type='') {
+    const el = document.getElementById('toast');
+    el.className = 'show ' + (type||'');
+    el.textContent = msg;
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => { el.className = ''; }, 3500);
+}
+
+// ── MAIN LOOP ──
+function tick() {
+    seaTime += 0.05;
+    
+    // Rift depth smooths toward target
+    riftDepth += (targetRiftDepth - riftDepth) * 0.03;
+    
+    // Trident cooldown
+    if (tridentCooldown > 0) tridentCooldown -= 0.05;
+    
+    // Occasional bubbles from rift
+    if (riftDepth > 10 && Math.random() < riftDepth / 100 * 0.3) {
+        const rx = W / 2 + (Math.random() - 0.5) * riftDepth * 2;
+        spawnBubble(rx, H * 0.8);
+    }
+    
+    drawSea();
+    
+    // Update verse
+    if (Math.floor(seaTime * 20) % 30 === 0) {
+        const verse = SEA_VERSES[Math.floor(seaTime / 8) % SEA_VERSES.length];
+        document.getElementById('seaVerse').textContent = typeof verse === 'function' ? verse() : verse;
+    }
+    
+    // Periodic coherence fetch
+    if (Math.floor(seaTime * 20) % 60 === 0) {
+        fetchCoherence();
+    }
+    
+    updateSeaStatus();
+    document.getElementById('swellHeight').textContent = `🌊 Swell: ${swellHeight.toFixed(0)}`;
+    document.getElementById('riftDepth').textContent = `🕳️ Rift: ${riftDepth.toFixed(0)}`;
+    document.getElementById('seaMeta').textContent = 
+        `Swell: ${swellHeight.toFixed(0)} · Rift: ${riftDepth.toFixed(0)} · Depth: ${(500 + riftDepth).toFixed(0)}m`;
+    
+    requestAnimationFrame(tick);
+}
+
+// ── TRIDENT CLICK ──
+document.getElementById('tridentGlyph').addEventListener('click', strikeTrident);
+
+// ── INIT ──
+function init() {
+    resize();
+    fetchCoherence();
+    fetchQuakes();
+    
+    document.getElementById('quakeCount').textContent = '📡 Quakes: 0';
+    
+    addLog('🌊 Poseidon\'s temple awakens. The deep sea listens.');
+    addLog('🔱 The Trident waits. Strike it to shake the earth.');
+    
+    // Fetch quakes every 5 minutes
+    setInterval(fetchQuakes, 5 * 60 * 1000);
+    
+    tick();
+}
+
+init();
+</script>
+</body>
+</html>
