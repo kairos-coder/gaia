@@ -25,11 +25,22 @@
                 radial-gradient(ellipse at 50% 0%, rgba(255,100,34,0.06), transparent 60%),
                 radial-gradient(ellipse at 50% 100%, rgba(136,136,136,0.03), transparent 40%),
                 repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255,100,34,0.01) 2px, rgba(255,100,34,0.01) 4px);
+            overflow-x: hidden;
+        }
+        
+        /* Spark canvas behind everything */
+        #sparkCanvas {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            pointer-events: none;
         }
         
         .forge-gate {
+            position: relative;
+            z-index: 1;
             text-align: center;
-            max-width: 640px;
+            max-width: 700px;
             padding: 3rem 2rem;
         }
         
@@ -38,6 +49,8 @@
             margin-bottom: 1.5rem;
             animation: hammerPulse 2.618s ease-in-out infinite;
             filter: drop-shadow(0 0 40px rgba(255,100,34,0.5));
+            position: relative;
+            z-index: 2;
         }
         @keyframes hammerPulse {
             0%,100% { transform: scale(1) rotate(-2deg); filter: drop-shadow(0 0 30px rgba(255,100,34,0.4)); }
@@ -66,7 +79,7 @@
             font-style: italic;
             line-height: 1.9;
             color: rgba(200,180,150,0.6);
-            margin-bottom: 3rem;
+            margin-bottom: 2rem;
         }
         .forge-description strong { color: var(--ember); font-style: normal; }
         .forge-description .highlight { color: var(--iron-bright); font-style: normal; }
@@ -76,7 +89,7 @@
             display: flex;
             gap: 2rem;
             justify-content: center;
-            margin-bottom: 3rem;
+            margin-bottom: 2.5rem;
             flex-wrap: wrap;
         }
         .forge-stat {
@@ -102,15 +115,23 @@
             text-transform: uppercase;
         }
         
+        .forge-nav {
+            display: flex;
+            gap: 1.2rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 2rem;
+        }
+        
         .enter-btn {
             display: inline-block;
             font-family: 'Cinzel Decorative', serif;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             letter-spacing: 0.3em;
             background: rgba(10,8,6,0.9);
             border: 2px solid rgba(255,100,34,0.4);
             color: var(--ember);
-            padding: 1rem 2.5rem;
+            padding: 1rem 2.2rem;
             border-radius: 3px;
             cursor: pointer;
             text-decoration: none;
@@ -126,8 +147,21 @@
             text-shadow: 0 0 30px rgba(255,153,68,0.7);
         }
         
+        .enter-btn.iron {
+            border-color: rgba(136,136,136,0.35);
+            color: var(--iron-bright);
+            text-shadow: 0 0 15px rgba(187,187,187,0.3);
+            box-shadow: 0 0 20px rgba(136,136,136,0.08), inset 0 0 15px rgba(136,136,136,0.02);
+        }
+        .enter-btn.iron:hover {
+            border-color: rgba(187,187,187,0.6);
+            color: #cccccc;
+            box-shadow: 0 0 40px rgba(136,136,136,0.2), inset 0 0 25px rgba(136,136,136,0.05);
+            text-shadow: 0 0 25px rgba(200,200,200,0.5);
+        }
+        
         .footer-note {
-            margin-top: 3rem;
+            margin-top: 2rem;
             font-family: 'Cinzel', serif;
             font-size: 0.5rem;
             letter-spacing: 0.3em;
@@ -137,6 +171,9 @@
     </style>
 </head>
 <body>
+
+<!-- SPARK CANVAS -->
+<canvas id="sparkCanvas"></canvas>
 
 <div class="forge-gate">
     
@@ -151,7 +188,6 @@
         <p>The <strong>3×3 crafting grid</strong> receives them. When materials align with an ancient recipe, <strong>the anvil rings.</strong></p>
         <p>Every <strong class="phi">2.618 seconds</strong> — the golden ratio — the forge <strong>glows</strong> and the HTML <strong>transforms.</strong></p>
         <p>Bronze ingots. Steel blades. Thunderbolt heads. <strong>Hephaestus does not command the forge. He tends it.</strong></p>
-        <p>You <strong>watch.</strong> The god builds. The zero-sum oracle speaks through <strong>what is made.</strong></p>
     </div>
     
     <div class="forge-stats">
@@ -177,15 +213,168 @@
         </div>
     </div>
     
-    <a href="forge.html" class="enter-btn">
-        🔨 &nbsp; ENTER THE FORGE &nbsp; 🔨
-    </a>
+    <div class="forge-nav">
+        <a href="volcano.html" class="enter-btn">
+            🌋 &nbsp; ENTER THE VOLCANO &nbsp; 🌋
+        </a>
+        <a href="forge.html" class="enter-btn iron">
+            🔨 &nbsp; THE OLD FORGE &nbsp; 🔨
+        </a>
+    </div>
     
     <div class="footer-note">
         GAIA · Hephaestus Engine · Order of Olympus · The God Builds What Others Rule From
     </div>
     
 </div>
+
+<script>
+// ══════════════════════════════════════════════
+// SPARK FIELD — Hephaestus Gate
+// ══════════════════════════════════════════════
+const sparkCvs = document.getElementById('sparkCanvas');
+const sparkCtx = sparkCvs.getContext('2d');
+let sparks = [];
+let embers = [];
+
+const resizeSpark = () => {
+    sparkCvs.width = window.innerWidth;
+    sparkCvs.height = window.innerHeight;
+};
+window.addEventListener('resize', resizeSpark);
+resizeSpark();
+
+// Spawn sparks from bottom center (the forge below)
+function spawnGateSpark() {
+    const cx = sparkCvs.width / 2;
+    const cy = sparkCvs.height * 0.85;
+    
+    sparks.push({
+        x: cx + (Math.random() - 0.5) * 300,
+        y: cy + Math.random() * 40,
+        vx: (Math.random() - 0.5) * 2.5,
+        vy: -Math.random() * 5 - 3,
+        life: 1.0,
+        size: 1 + Math.random() * 2.5,
+        color: Math.random() < 0.25 ? '#ffcc44' : Math.random() < 0.5 ? '#ff9944' : '#ff6622',
+        gravity: 0.03 + Math.random() * 0.04
+    });
+}
+
+function spawnGateEmber() {
+    const cx = sparkCvs.width / 2;
+    const cy = sparkCvs.height * 0.88;
+    
+    embers.push({
+        x: cx + (Math.random() - 0.5) * 400,
+        y: cy,
+        vx: (Math.random() - 0.5) * 1.2,
+        vy: -Math.random() * 2.5 - 1,
+        life: 1.0,
+        size: 2 + Math.random() * 5,
+        wobble: Math.random() * Math.PI * 2,
+        color: Math.random() < 0.3 ? '#ff8833' : '#ff4400'
+    });
+}
+
+// Spawn bursts periodically
+function burstSparks() {
+    for (let i = 0; i < 12; i++) {
+        spawnGateSpark();
+    }
+    for (let i = 0; i < 5; i++) {
+        spawnGateEmber();
+    }
+}
+
+// Regular spark emission
+setInterval(() => {
+    if (Math.random() < 0.7) spawnGateSpark();
+    if (Math.random() < 0.4) spawnGateEmber();
+}, 200);
+
+// Burst every few seconds
+setInterval(burstSparks, 3000 + Math.random() * 2000);
+
+// Initial burst
+burstSparks();
+
+function drawSparkField() {
+    sparkCtx.clearRect(0, 0, sparkCvs.width, sparkCvs.height);
+    
+    const W = sparkCvs.width;
+    const H = sparkCvs.height;
+    
+    // Subtle forge glow at bottom center
+    const glowGrad = sparkCtx.createRadialGradient(W / 2, H * 0.9, 20, W / 2, H * 0.85, 350);
+    glowGrad.addColorStop(0, 'rgba(255,68,0,0.06)');
+    glowGrad.addColorStop(0.5, 'rgba(255,68,0,0.02)');
+    glowGrad.addColorStop(1, 'transparent');
+    sparkCtx.fillStyle = glowGrad;
+    sparkCtx.beginPath();
+    sparkCtx.arc(W / 2, H * 0.9, 350, 0, Math.PI * 2);
+    sparkCtx.fill();
+    
+    // Draw sparks
+    for (let i = sparks.length - 1; i >= 0; i--) {
+        const s = sparks[i];
+        s.life -= 0.012;
+        s.x += s.vx;
+        s.y += s.vy;
+        s.vy += s.gravity;
+        s.vx *= 0.995;
+        
+        if (s.life <= 0 || s.y < -50 || s.y > H + 50) {
+            sparks.splice(i, 1);
+            continue;
+        }
+        
+        // Trail
+        sparkCtx.beginPath();
+        sparkCtx.moveTo(s.x, s.y);
+        sparkCtx.lineTo(s.x - s.vx * 4, s.y - s.vy * 4);
+        sparkCtx.strokeStyle = s.color + Math.floor(s.life * 0.6 * 255).toString(16).padStart(2, '0');
+        sparkCtx.lineWidth = s.size * s.life * 0.6;
+        sparkCtx.stroke();
+        
+        // Core
+        sparkCtx.beginPath();
+        sparkCtx.arc(s.x, s.y, Math.max(0.3, s.size * s.life), 0, Math.PI * 2);
+        sparkCtx.fillStyle = s.color + Math.floor(s.life * 255).toString(16).padStart(2, '0');
+        sparkCtx.fill();
+    }
+    
+    // Draw embers
+    for (let i = embers.length - 1; i >= 0; i--) {
+        const e = embers[i];
+        e.life -= 0.004;
+        e.y += e.vy;
+        e.x += e.vx + Math.sin(Date.now() * 0.003 + e.wobble) * 0.4;
+        e.vy -= 0.005;
+        
+        if (e.life <= 0 || e.y < -60) {
+            embers.splice(i, 1);
+            continue;
+        }
+        
+        const alpha = e.life * 0.7;
+        sparkCtx.beginPath();
+        sparkCtx.arc(e.x, e.y, e.size * e.life, 0, Math.PI * 2);
+        sparkCtx.fillStyle = `rgba(255,${80 + Math.floor(e.life * 80)},${20 + Math.floor(e.life * 30)},${alpha})`;
+        sparkCtx.fill();
+        
+        // Soft glow
+        sparkCtx.beginPath();
+        sparkCtx.arc(e.x, e.y, e.size * e.life * 2.5, 0, Math.PI * 2);
+        sparkCtx.fillStyle = `rgba(255,100,30,${alpha * 0.15})`;
+        sparkCtx.fill();
+    }
+    
+    requestAnimationFrame(drawSparkField);
+}
+
+drawSparkField();
+</script>
 
 </body>
 </html>
