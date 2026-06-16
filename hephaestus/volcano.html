@@ -1,0 +1,771 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HEPHAESTUS — The Forge</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&family=Cinzel:wght@400;600&family=EB+Garamond:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --forge-dark: #0a0604;
+            --forge-charcoal: #1a100a;
+            --forge-ember: #ff4400;
+            --forge-ember-bright: #ff6622;
+            --forge-molten: #ffaa00;
+            --forge-molten-bright: #ffcc44;
+            --forge-cool: #332222;
+            --forge-steam: rgba(180,160,150,0.15);
+            --forge-iron: #3a3030;
+            --forge-slag: #221818;
+            --gold: #c9a84c;
+            --gold-dim: #8b7332;
+            --locked: #44cc88;
+            --anvil: #2a2222;
+            --anvil-light: #4a3a3a;
+        }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { 
+            background: var(--forge-dark); 
+            color: #ccbbaa; 
+            font-family:'EB Garamond',Georgia,serif; 
+            min-height:100vh; 
+            overflow-x:hidden; 
+        }
+
+        .forge-bg { position:fixed; inset:0; z-index:0; pointer-events:none; opacity:0.03;
+            background-image: radial-gradient(circle at 50% 30%, #ff4400 0px, transparent 80px),
+                              radial-gradient(circle at 30% 70%, #ff8800 0px, transparent 60px),
+                              radial-gradient(circle at 70% 60%, #ff4400 0px, transparent 50px);
+            background-size: 250px 250px, 200px 200px, 180px 180px;
+        }
+
+        .forge { position:relative; z-index:1; max-width:1500px; margin:0 auto; padding:1.5rem; display:flex; flex-direction:column; gap:1.5rem; }
+
+        /* HEADER */
+        .header { text-align:center; padding:2rem 1rem 0.5rem; position:relative; }
+        .header::before { content:''; position:absolute; top:0; left:50%; transform:translateX(-50%); width:1px; height:2rem; background:linear-gradient(to bottom,transparent,var(--forge-ember)); }
+        .forge-title { font-family:'Cinzel Decorative',serif; font-size:clamp(2rem,5vw,4rem); font-weight:900; letter-spacing:0.3em;
+            background:linear-gradient(135deg, #ff4400, #ff8833, #ffcc44, #ff4400);
+            -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
+            filter:drop-shadow(0 0 30px rgba(255,68,0,0.5)); animation:forgeGlow 3s ease-in-out infinite; }
+        @keyframes forgeGlow { 0%,100%{filter:drop-shadow(0 0 15px rgba(255,68,0,0.3))} 50%{filter:drop-shadow(0 0 45px rgba(255,136,51,0.7))} }
+        .subtitle { font-family:'Cinzel',serif; font-size:0.7rem; letter-spacing:0.4em; color:#994422; margin-top:0.4rem; }
+        .back-link { display:inline-block; margin-top:0.5rem; font-family:'Cinzel',serif; font-size:0.6rem; letter-spacing:0.3em; color:#994422; text-decoration:none; transition:color 0.3s; }
+        .back-link:hover { color:var(--forge-ember-bright); }
+
+        /* STATUS STRIP */
+        .status-strip { display:flex; justify-content:center; gap:1.5rem; flex-wrap:wrap; font-family:'Cinzel',serif; font-size:0.62rem; letter-spacing:0.15em; color:#885533; padding:0.6rem 1rem; border:1px solid rgba(255,68,0,0.1); border-radius:2px; background:rgba(10,6,4,0.9); }
+        .si { display:flex; gap:0.4rem; align-items:center; }
+        .sd { width:6px; height:6px; border-radius:50%; background:#663322; transition:all 0.3s; }
+        .sd.burning { background:var(--forge-ember); box-shadow:0 0 8px var(--forge-ember); animation:emberPulse 1s infinite; }
+        .sd.forged { background:var(--locked); box-shadow:0 0 8px var(--locked); }
+        @keyframes emberPulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.4;transform:scale(1.8)} }
+
+        /* FORGE CANVAS */
+        .forge-zone { background:linear-gradient(180deg, #0a0604, #140a06, #0a0604); border:1px solid rgba(255,68,0,0.15); border-top:2px solid #883322; border-radius:4px; overflow:hidden; position:relative; }
+        .forge-header { display:flex; justify-content:space-between; align-items:center; padding:0.75rem 1.25rem; border-bottom:1px solid rgba(255,68,0,0.1); }
+        .forge-section-title { font-family:'Cinzel Decorative',serif; font-size:0.85rem; letter-spacing:0.2em; color:#ff8855; }
+        .forge-meta { font-family:'Cinzel',serif; font-size:0.6rem; letter-spacing:0.15em; color:rgba(255,136,85,0.4); }
+        #forgeCanvas { width:100%; height:500px; display:block; }
+        .forge-overlay { position:absolute; bottom:0; left:0; right:0; padding:0.8rem 1.5rem; background:linear-gradient(to top, rgba(10,6,4,0.95), transparent); pointer-events:none; }
+        .forge-chant { font-family:'EB Garamond',serif; font-size:0.85rem; font-style:italic; color:#996655; text-align:center; min-height:2rem; transition:opacity 0.6s; }
+
+        /* FORGE CONTROLS */
+        .controls-zone { display:grid; grid-template-columns:1fr 1fr; gap:1rem; }
+        @media(max-width:900px) { .controls-zone { grid-template-columns:1fr; } }
+        
+        .control-panel { background:linear-gradient(160deg, #0e0806, #140a06); border:1px solid rgba(255,68,0,0.12); border-radius:4px; padding:1rem; }
+        .panel-title { font-family:'Cinzel',serif; font-size:0.6rem; letter-spacing:0.25em; color:#994422; margin-bottom:0.8rem; border-bottom:1px solid rgba(255,68,0,0.08); padding-bottom:0.5rem; }
+        
+        .forge-actions { display:flex; gap:0.5rem; flex-wrap:wrap; }
+        .forge-btn { font-family:'Cinzel',serif; font-size:0.65rem; letter-spacing:0.2em; padding:0.55rem 1.1rem; border-radius:2px; cursor:pointer; transition:all 0.2s; border:1px solid; }
+        .forge-btn.strike { background:rgba(255,68,0,0.1); border-color:rgba(255,68,0,0.4); color:#ff8855; }
+        .forge-btn.strike:hover { background:rgba(255,68,0,0.25); border-color:#ff6622; }
+        .forge-btn.quench { background:rgba(100,150,200,0.08); border-color:rgba(100,150,200,0.3); color:#88aacc; }
+        .forge-btn.quench:hover { background:rgba(100,150,200,0.18); border-color:#6699bb; }
+        .forge-btn.claim { background:rgba(68,204,136,0.08); border-color:rgba(68,204,136,0.3); color:var(--locked); }
+        .forge-btn.claim:hover { background:rgba(68,204,136,0.18); border-color:var(--locked); }
+        .forge-btn:disabled { opacity:0.3; cursor:not-allowed; }
+
+        .heat-gauge { margin-top:0.8rem; }
+        .heat-label { font-family:'Cinzel',serif; font-size:0.55rem; letter-spacing:0.2em; color:#885533; display:flex; justify-content:space-between; margin-bottom:0.3rem; }
+        .heat-bar-wrap { height:4px; background:rgba(255,68,0,0.08); border-radius:2px; overflow:hidden; }
+        .heat-bar { height:100%; background:linear-gradient(to right, #662200, #ff4400, #ffaa00); border-radius:2px; transition:width 0.8s; }
+        .heat-bar.locked { background:linear-gradient(to right, var(--locked), #aaffaa); box-shadow:0 0 10px rgba(68,204,136,0.5); }
+
+        .project-info { margin-top:0.8rem; }
+        .project-name { font-family:'Cinzel Decorative',serif; font-size:0.8rem; letter-spacing:0.15em; color:#ff9955; }
+        .project-desc { font-size:0.72rem; font-style:italic; color:#886655; margin-top:0.3rem; line-height:1.5; }
+        .project-progress { margin-top:0.5rem; }
+        .progress-label { font-family:'Cinzel',serif; font-size:0.5rem; letter-spacing:0.2em; color:#885533; display:flex; justify-content:space-between; }
+        .progress-bar-wrap { height:3px; background:rgba(255,68,0,0.08); border-radius:2px; margin-top:0.2rem; overflow:hidden; }
+        .progress-bar { height:100%; background:linear-gradient(to right, #ff4400, #ffaa00); border-radius:2px; transition:width 0.4s; }
+
+        /* GALLERY */
+        .gallery-zone { background:linear-gradient(160deg, #0a0604, #100806); border:1px solid rgba(255,68,0,0.1); border-radius:4px; overflow:hidden; }
+        .gallery-header { padding:0.75rem 1.25rem; border-bottom:1px solid rgba(255,68,0,0.08); font-family:'Cinzel Decorative',serif; font-size:0.75rem; letter-spacing:0.2em; color:#996655; display:flex; justify-content:space-between; }
+        .gallery-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(200px, 1fr)); gap:0.6rem; padding:1rem; min-height:100px; }
+        .forged-item { background:rgba(20,10,6,0.6); border:1px solid rgba(255,68,0,0.1); border-radius:3px; padding:0.8rem; text-align:center; transition:all 0.3s; }
+        .forged-item:hover { border-color:rgba(255,68,0,0.3); background:rgba(30,12,6,0.8); }
+        .forged-item-icon { font-size:2rem; margin-bottom:0.4rem; }
+        .forged-item-name { font-family:'Cinzel',serif; font-size:0.6rem; letter-spacing:0.12em; color:#ff9955; }
+        .forged-item-meta { font-size:0.58rem; font-style:italic; color:#775544; margin-top:0.2rem; line-height:1.4; }
+        .forged-item-stamp { font-family:'Cinzel',serif; font-size:0.5rem; letter-spacing:0.15em; color:#553322; margin-top:0.3rem; }
+        .gallery-empty { grid-column:1/-1; text-align:center; padding:2rem; font-style:italic; color:#553322; font-size:0.8rem; }
+
+        /* TOAST */
+        #toast { position:fixed; bottom:1.5rem; left:50%; transform:translateX(-50%); background:rgba(10,6,4,0.97); border:1px solid #994422; border-radius:2px; padding:0.55rem 1.4rem; font-family:'Cinzel',serif; font-size:0.68rem; letter-spacing:0.13em; color:#ff8855; z-index:100; opacity:0; transition:opacity 0.4s; text-align:center; max-width:90vw; }
+        #toast.show { opacity:1; }
+        #toast.success { border-color:var(--locked); color:var(--locked); }
+        #toast.fire { border-color:var(--forge-ember-bright); color:var(--forge-molten); }
+    </style>
+</head>
+<body>
+<div class="forge-bg"></div>
+<div class="forge">
+
+    <!-- HEADER -->
+    <div class="header">
+        <h1 class="forge-title">🔨 HEPHAESTUS</h1>
+        <div class="subtitle">The Volcanic Forge · Hammer of the Gods · Anvil of Olympus</div>
+        <a href="../index.html" class="back-link">← Return to GAIA</a>
+    </div>
+
+    <!-- STATUS -->
+    <div class="status-strip">
+        <div class="si"><div class="sd burning"></div><span>FORGE ACTIVE</span></div>
+        <div class="si"><span id="heatDisplay">🔥 Heat: —</span></div>
+        <div class="si"><span id="strikeCount">⚒️ Strikes: 0</span></div>
+        <div class="si"><span id="itemsForged">🛡️ Forged: 0</span></div>
+        <div class="si"><span id="coherenceDisplay" style="color:rgba(255,136,85,0.45)">Coherence: —</span></div>
+    </div>
+
+    <!-- FORGE CANVAS -->
+    <div class="forge-zone">
+        <div class="forge-header">
+            <span class="forge-section-title">🔥 THE FORGE</span>
+            <span class="forge-meta" id="forgeMeta">Heat: — · Strikes: — · Phase: —</span>
+        </div>
+        <canvas id="forgeCanvas"></canvas>
+        <div class="forge-overlay">
+            <div class="forge-chant" id="forgeChant">The forge breathes. Hephaestus waits for the iron to glow.</div>
+        </div>
+    </div>
+
+    <!-- CONTROLS -->
+    <div class="controls-zone">
+        <div class="control-panel">
+            <div class="panel-title">⚒️ THE HAMMER</div>
+            <div class="forge-actions">
+                <button class="forge-btn strike" id="strikeBtn">⚒️ Strike the Iron</button>
+                <button class="forge-btn quench" id="quenchBtn">💧 Quench</button>
+                <button class="forge-btn claim" id="claimBtn" disabled>🛡️ Claim Item</button>
+            </div>
+            <div class="heat-gauge">
+                <div class="heat-label"><span>FORGE HEAT</span><span id="heatPct">0%</span></div>
+                <div class="heat-bar-wrap"><div class="heat-bar" id="heatBar" style="width:0%"></div></div>
+            </div>
+        </div>
+        <div class="control-panel">
+            <div class="panel-title">📜 CURRENT PROJECT</div>
+            <div class="project-info" id="projectInfo">
+                <div class="project-name" id="projectName">No project selected</div>
+                <div class="project-desc" id="projectDesc">Heat the forge to begin a new project.</div>
+                <div class="project-progress">
+                    <div class="progress-label"><span>Completion</span><span id="progressPct">0%</span></div>
+                    <div class="progress-bar-wrap"><div class="progress-bar" id="progressBar" style="width:0%"></div></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- GALLERY -->
+    <div class="gallery-zone">
+        <div class="gallery-header">
+            <span>🛡️ ARMORY — FORGED ITEMS</span>
+            <span style="font-size:0.55rem;color:#553322" id="galleryCount">0 items</span>
+        </div>
+        <div class="gallery-grid" id="galleryGrid">
+            <div class="gallery-empty">The armory is empty. Strike the iron to forge your first item.</div>
+        </div>
+    </div>
+
+</div>
+
+<div id="toast"></div>
+
+<script src="../js/gaia-celestial.js"></script>
+<script src="../js/gaia-suncalc.js"></script>
+<script src="../js/gaia-astronomy.js"></script>
+
+<script>
+// ══════════════════════════════════════════════
+// HEPHAESTUS — THE FORGE ENGINE
+// ══════════════════════════════════════════════
+
+// ── PROJECTS ──
+const PROJECTS = [
+    { name:'Bronze Sword', icon:'🗡️', desc:'A blade of tempered bronze. Forged when Mars dominates the sky.', strikes:8, planet:'mars', color:'#cc6644' },
+    { name:'Silver Shield', icon:'🛡️', desc:'A shield polished to mirror-brightness. Born under Saturn\'s watch.', strikes:10, planet:'saturn', color:'#aabbcc' },
+    { name:'Golden Crown', icon:'👑', desc:'A crown fit for Olympus. Venus guides the hammer.', strikes:6, planet:'venus', color:'#ffcc88' },
+    { name:'Iron Chain', icon:'⛓️', desc:'Links forged in the deepest heat. Kronos binds what this chain holds.', strikes:12, planet:'kronos', color:'#888888' },
+    { name:'Thunderbolt', icon:'⚡', desc:'A bolt for Zeus himself. Jupiter\'s fury in metal.', strikes:15, planet:'jupiter', color:'#ffdd44' },
+    { name:'Winged Sandals', icon:'🪽', desc:'Sandals for Hermes. Mercury lends speed to the forge.', strikes:7, planet:'mercury', color:'#ccccdd' },
+    { name:'Lunar Crescent', icon:'🌙', desc:'A silver crescent. The Moon whispers to the cooling metal.', strikes:5, planet:'moon', color:'#eeeeff' },
+    { name:'Solar Disk', icon:'☀️', desc:'A disk of captured sunlight. Apollo\'s fire made solid.', strikes:14, planet:'sun', color:'#ffcc44' },
+];
+
+// ── CHANTS ──
+const FORGE_CHANTS = [
+    () => 'The forge breathes. Hephaestus waits for the iron to glow.',
+    () => 'Each strike is a question. The metal answers with sparks.',
+    () => `Heat: ${forgeHeat.toFixed(0)}%. The anvil rings with ${strikeCount} strikes.`,
+    () => 'Hephaestus was cast from Olympus. He fell for a day and a night. The forge is his answer.',
+    () => 'The lame god works alone. But no throne on Olympus was made without him.',
+    () => 'Sparks remember the fire they came from. The iron remembers the mountain.',
+    () => 'When Kronos locks, even the forge holds its breath.',
+    () => `Current project: ${currentProject ? currentProject.name : 'none selected'}. The metal knows what it wants to become.`,
+];
+
+// ── STATE ──
+const forgeCvs = document.getElementById('forgeCanvas');
+const forgeCtx = forgeCvs.getContext('2d');
+let W, H;
+
+let forgeHeat = 0;
+let strikeCount = 0;
+let itemsForged = 0;
+let coherenceLevel = 0.4;
+let isLocked = false;
+let currentProject = null;
+let projectProgress = 0;
+let hammerAngle = 0;
+let hammerSwinging = false;
+let hammerReturnTime = 0;
+let sparks = [];
+let embers = [];
+let lavaVeins = [];
+let forgeTime = 0;
+let forgedItems = [];
+
+// ── RESIZE ──
+const resize = () => {
+    const parent = forgeCvs.parentElement;
+    W = forgeCvs.width = parent.clientWidth;
+    H = forgeCvs.height = 500;
+    generateLavaVeins();
+};
+window.addEventListener('resize', resize);
+resize();
+
+// ── LAVA VEINS ──
+function generateLavaVeins() {
+    lavaVeins = [];
+    for (let i = 0; i < 12; i++) {
+        const points = [];
+        let x = Math.random() * W;
+        let y = H * 0.7 + Math.random() * H * 0.3;
+        for (let j = 0; j < 6; j++) {
+            x += (Math.random() - 0.5) * 80;
+            y += (Math.random() - 0.7) * 40;
+            points.push({ x, y });
+        }
+        lavaVeins.push({
+            points,
+            brightness: 0.15 + Math.random() * 0.3,
+            speed: 0.5 + Math.random() * 1.5
+        });
+    }
+}
+
+// ── SPARKS ──
+function spawnSpark(x, y, count = 8) {
+    for (let i = 0; i < count; i++) {
+        sparks.push({
+            x, y,
+            vx: (Math.random() - 0.5) * 4,
+            vy: -Math.random() * 6 - 2,
+            life: 1.0,
+            size: 1 + Math.random() * 2.5,
+            color: Math.random() < 0.3 ? '#ffcc44' : Math.random() < 0.5 ? '#ff6622' : '#ffaa00'
+        });
+    }
+}
+
+function spawnEmber(x, y) {
+    embers.push({
+        x, y,
+        vy: -Math.random() * 1.5 - 0.5,
+        vx: (Math.random() - 0.5) * 0.8,
+        life: 1.0,
+        size: 2 + Math.random() * 4,
+        wobble: Math.random() * Math.PI * 2
+    });
+}
+
+// ── COHERENCE ──
+function fetchCoherence() {
+    try {
+        const state = GaiaSuncalc.getFullState();
+        const planets = GaiaAstronomy.getAllPlanets();
+        if (planets?.moon?.phase !== undefined) {
+            const phase = planets.moon.phase;
+            coherenceLevel = 0.2 + 0.6 * (0.5 + 0.5 * Math.sin(phase * Math.PI * 2));
+        }
+    } catch(e) {
+        coherenceLevel = 0.4 + 0.3 * Math.sin(Date.now() / 3600000);
+    }
+    
+    // Lock detection
+    const wasLocked = isLocked;
+    isLocked = coherenceLevel > 0.85;
+    
+    if (isLocked && !wasLocked) {
+        onPhaseLock();
+    }
+    
+    document.getElementById('coherenceDisplay').textContent = `Coherence: ${coherenceLevel.toFixed(2)}`;
+    document.getElementById('heatDisplay').textContent = `🔥 Heat: ${forgeHeat.toFixed(0)}%`;
+    
+    // Heat naturally decays
+    forgeHeat = Math.max(0, forgeHeat - 0.15);
+    
+    // But coherence feeds it
+    forgeHeat = Math.min(100, forgeHeat + coherenceLevel * 0.5);
+    
+    updateHeatDisplay();
+}
+
+function onPhaseLock() {
+    showToast('⚡ KAIROS LOCKS! The forge erupts with perfect heat!', 'fire');
+    forgeHeat = Math.min(100, forgeHeat + 30);
+    // Spawn massive sparks
+    const cx = W / 2;
+    const cy = H * 0.55;
+    spawnSpark(cx, cy, 30);
+    updateHeatDisplay();
+}
+
+function updateHeatDisplay() {
+    document.getElementById('heatPct').textContent = `${forgeHeat.toFixed(0)}%`;
+    const bar = document.getElementById('heatBar');
+    bar.style.width = forgeHeat + '%';
+    bar.className = 'heat-bar' + (isLocked ? ' locked' : '');
+}
+
+// ── PROJECT ──
+function selectProject() {
+    // Auto-select based on dominant planet
+    let pool = PROJECTS;
+    try {
+        const planets = GaiaAstronomy.getAllPlanets();
+        if (planets) {
+            // Find which project planet is closest to ascendant or most elevated
+            const candidates = PROJECTS.filter(p => planets[p.planet]);
+            if (candidates.length > 0) {
+                pool = candidates;
+            }
+        }
+    } catch(e) {}
+    
+    currentProject = pool[Math.floor(Math.random() * pool.length)];
+    projectProgress = 0;
+    
+    document.getElementById('projectName').textContent = `${currentProject.icon} ${currentProject.name}`;
+    document.getElementById('projectDesc').textContent = currentProject.desc;
+    document.getElementById('progressPct').textContent = '0%';
+    document.getElementById('progressBar').style.width = '0%';
+    document.getElementById('claimBtn').disabled = true;
+    
+    addLog(`📜 New project: ${currentProject.icon} ${currentProject.name}`);
+    showToast(`📜 Forging: ${currentProject.name}`, 'success');
+}
+
+// ── STRIKE ──
+function strike() {
+    if (!currentProject) selectProject();
+    if (!currentProject) return;
+    
+    const effectiveHeat = forgeHeat / 100;
+    if (effectiveHeat < 0.15) {
+        showToast('❄️ The forge is too cold. Wait for the heat to rise.');
+        return;
+    }
+    
+    // Trigger hammer swing
+    hammerSwinging = true;
+    hammerReturnTime = forgeTime + 0.3;
+    
+    // Progress based on heat
+    const progressGain = (5 + effectiveHeat * 15) / currentProject.strikes * 100;
+    projectProgress = Math.min(100, projectProgress + progressGain);
+    strikeCount++;
+    
+    // Sparks from anvil
+    const ax = W / 2;
+    const ay = H * 0.58;
+    spawnSpark(ax, ay, Math.floor(5 + effectiveHeat * 20));
+    
+    // Heat from striking
+    forgeHeat = Math.min(100, forgeHeat + 2 + effectiveHeat * 3);
+    
+    // Update display
+    document.getElementById('strikeCount').textContent = `⚒️ Strikes: ${strikeCount}`;
+    document.getElementById('progressPct').textContent = `${projectProgress.toFixed(0)}%`;
+    document.getElementById('progressBar').style.width = projectProgress + '%';
+    document.getElementById('forgeMeta').textContent = 
+        `Heat: ${forgeHeat.toFixed(0)}% · Strikes: ${strikeCount} · ${currentProject.name}`;
+    
+    updateHeatDisplay();
+    
+    // Check completion
+    if (projectProgress >= 100) {
+        document.getElementById('claimBtn').disabled = false;
+        showToast('🔥 The item is ready! Quench and claim it.', 'fire');
+        addLog(`🔥 ${currentProject.icon} ${currentProject.name} forging complete!`);
+    }
+}
+
+// ── QUENCH ──
+function quench() {
+    if (!currentProject) return;
+    
+    // Quenching resets heat but locks in some progress
+    forgeHeat = Math.max(0, forgeHeat - 40);
+    updateHeatDisplay();
+    
+    // Steam particles
+    const qx = W / 2;
+    const qy = H * 0.65;
+    for (let i = 0; i < 20; i++) {
+        embers.push({
+            x: qx + (Math.random() - 0.5) * 60,
+            y: qy,
+            vy: -Math.random() * 2 - 0.5,
+            vx: (Math.random() - 0.5) * 2,
+            life: 1.0,
+            size: 3 + Math.random() * 6,
+            wobble: Math.random() * Math.PI * 2,
+            steam: true
+        });
+    }
+    
+    addLog('💧 Metal hisses in the trough. Steam rises.');
+    showToast('💧 Quenched! The metal hardens.');
+}
+
+// ── CLAIM ──
+function claimItem() {
+    if (!currentProject || projectProgress < 100) return;
+    
+    const now = new Date();
+    const item = {
+        ...currentProject,
+        forgedAt: now.toISOString(),
+        heat: forgeHeat.toFixed(0),
+        strikes: strikeCount,
+        coherence: coherenceLevel.toFixed(2),
+        locked: isLocked
+    };
+    
+    forgedItems.unshift(item);
+    itemsForged++;
+    
+    document.getElementById('itemsForged').textContent = `🛡️ Forged: ${itemsForged}`;
+    document.getElementById('galleryCount').textContent = `${itemsForged} item${itemsForged !== 1 ? 's' : ''}`;
+    
+    renderGallery();
+    
+    currentProject = null;
+    projectProgress = 0;
+    document.getElementById('claimBtn').disabled = true;
+    document.getElementById('projectName').textContent = 'No project selected';
+    document.getElementById('projectDesc').textContent = 'Heat the forge to begin a new project.';
+    document.getElementById('progressPct').textContent = '0%';
+    document.getElementById('progressBar').style.width = '0%';
+    
+    addLog(`🛡️ CLAIMED: ${item.icon} ${item.name} — added to the armory!`);
+    showToast(`🛡️ ${item.name} claimed!`, 'success');
+}
+
+// ── GALLERY ──
+function renderGallery() {
+    const grid = document.getElementById('galleryGrid');
+    if (forgedItems.length === 0) {
+        grid.innerHTML = '<div class="gallery-empty">The armory is empty. Strike the iron to forge your first item.</div>';
+        return;
+    }
+    
+    grid.innerHTML = forgedItems.map(item => {
+        const date = new Date(item.forgedAt);
+        const dateStr = date.toLocaleDateString('en-US', { month:'short', day:'numeric' });
+        return `
+            <div class="forged-item">
+                <div class="forged-item-icon">${item.icon}</div>
+                <div class="forged-item-name">${item.name}</div>
+                <div class="forged-item-meta">
+                    Heat: ${item.heat}% · Strikes: ${item.strikes}<br>
+                    C: ${item.coherence} ${item.locked ? '🔒' : ''}
+                </div>
+                <div class="forged-item-stamp">Forged ${dateStr}</div>
+            </div>
+        `;
+    }).join('');
+}
+
+// ── LOG ──
+const logLines = [];
+function addLog(msg) {
+    const time = new Date().toLocaleTimeString('en-US', { hour:'2-digit', minute:'2-digit', second:'2-digit' });
+    logLines.unshift(`[${time}] ${msg}`);
+    if (logLines.length > 40) logLines.length = 40;
+}
+
+// ── TOAST ──
+let toastTimer;
+function showToast(msg, type='') {
+    const el = document.getElementById('toast');
+    el.className = 'show ' + (type||'');
+    el.textContent = msg;
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => { el.className = ''; }, 3500);
+}
+
+// ── DRAW FORGE ──
+function drawForge() {
+    forgeCtx.clearRect(0, 0, W, H);
+    
+    // Background
+    const bgGrad = forgeCtx.createLinearGradient(0, 0, 0, H);
+    bgGrad.addColorStop(0, '#0a0604');
+    bgGrad.addColorStop(0.5, '#100806');
+    bgGrad.addColorStop(1, '#0a0503');
+    forgeCtx.fillStyle = bgGrad;
+    forgeCtx.fillRect(0, 0, W, H);
+    
+    // Lava veins
+    lavaVeins.forEach(vein => {
+        const pulse = vein.brightness * (0.7 + 0.3 * Math.sin(forgeTime * vein.speed));
+        forgeCtx.strokeStyle = `rgba(255,68,0,${pulse})`;
+        forgeCtx.lineWidth = 2 + Math.random();
+        forgeCtx.beginPath();
+        forgeCtx.moveTo(vein.points[0].x, vein.points[0].y);
+        for (let i = 1; i < vein.points.length; i++) {
+            forgeCtx.lineTo(vein.points[i].x, vein.points[i].y);
+        }
+        forgeCtx.stroke();
+        
+        // Glow along vein
+        forgeCtx.strokeStyle = `rgba(255,136,51,${pulse * 0.3})`;
+        forgeCtx.lineWidth = 8;
+        forgeCtx.stroke();
+    });
+    
+    // Ambient embers rising
+    if (Math.random() < 0.3 + forgeHeat / 100 * 0.5) {
+        const ex = W * 0.4 + Math.random() * W * 0.4;
+        const ey = H * 0.7 + Math.random() * H * 0.3;
+        spawnEmber(ex, ey);
+    }
+    
+    // Forge glow (center)
+    const cx = W / 2;
+    const cy = H * 0.52;
+    const glowRadius = 80 + forgeHeat * 1.5;
+    const glowGrad = forgeCtx.createRadialGradient(cx, cy, 20, cx, cy, glowRadius);
+    const glowAlpha = 0.15 + forgeHeat / 100 * 0.5;
+    glowGrad.addColorStop(0, `rgba(255,136,51,${glowAlpha})`);
+    glowGrad.addColorStop(0.4, `rgba(255,68,0,${glowAlpha * 0.6})`);
+    glowGrad.addColorStop(1, 'transparent');
+    forgeCtx.fillStyle = glowGrad;
+    forgeCtx.beginPath();
+    forgeCtx.arc(cx, cy, glowRadius, 0, Math.PI * 2);
+    forgeCtx.fill();
+    
+    if (isLocked) {
+        const lockGlow = forgeCtx.createRadialGradient(cx, cy, 10, cx, cy, glowRadius * 1.5);
+        lockGlow.addColorStop(0, 'rgba(68,204,136,0.3)');
+        lockGlow.addColorStop(1, 'transparent');
+        forgeCtx.fillStyle = lockGlow;
+        forgeCtx.beginPath();
+        forgeCtx.arc(cx, cy, glowRadius * 1.5, 0, Math.PI * 2);
+        forgeCtx.fill();
+    }
+    
+    // Anvil
+    const ax = cx;
+    const ay = cy + 30;
+    
+    // Anvil base
+    forgeCtx.fillStyle = '#1a1111';
+    forgeCtx.beginPath();
+    forgeCtx.moveTo(ax - 60, ay + 40);
+    forgeCtx.lineTo(ax - 40, ay + 5);
+    forgeCtx.lineTo(ax + 40, ay + 5);
+    forgeCtx.lineTo(ax + 60, ay + 40);
+    forgeCtx.closePath();
+    forgeCtx.fill();
+    
+    // Anvil top
+    forgeCtx.fillStyle = '#2a2020';
+    forgeCtx.fillRect(ax - 45, ay - 8, 90, 16);
+    
+    // Anvil highlight
+    forgeCtx.fillStyle = 'rgba(255,136,51,0.1)';
+    forgeCtx.fillRect(ax - 40, ay - 5, 80, 3);
+    
+    // Current project on anvil
+    if (currentProject) {
+        forgeCtx.font = '22px serif';
+        forgeCtx.fillStyle = `rgba(255,200,100,${0.3 + projectProgress / 100 * 0.7})`;
+        forgeCtx.textAlign = 'center';
+        forgeCtx.fillText(currentProject.icon, ax, ay - 15);
+    }
+    
+    // Cooling trough
+    const tx = ax;
+    const ty = ay + 55;
+    forgeCtx.fillStyle = 'rgba(20,30,40,0.6)';
+    forgeCtx.fillRect(tx - 70, ty, 140, 18);
+    forgeCtx.strokeStyle = 'rgba(100,120,140,0.2)';
+    forgeCtx.lineWidth = 1;
+    forgeCtx.strokeRect(tx - 70, ty, 140, 18);
+    
+    // Water in trough
+    forgeCtx.fillStyle = 'rgba(40,60,80,0.3)';
+    forgeCtx.fillRect(tx - 68, ty + 2, 136, 14);
+    
+    // ── HAMMER ──
+    const hammerPivotX = ax;
+    const hammerPivotY = ay - 120;
+    const hammerLength = 110;
+    
+    // Update hammer animation
+    if (hammerSwinging) {
+        hammerAngle = Math.min(Math.PI * 0.7, hammerAngle + 0.12);
+        if (forgeTime >= hammerReturnTime) {
+            hammerSwinging = false;
+        }
+    } else {
+        hammerAngle *= 0.9;
+        if (hammerAngle < 0.01) hammerAngle = 0;
+    }
+    
+    // Hammer handle
+    forgeCtx.save();
+    forgeCtx.translate(hammerPivotX, hammerPivotY);
+    forgeCtx.rotate(hammerAngle);
+    
+    forgeCtx.strokeStyle = '#3a2820';
+    forgeCtx.lineWidth = 5;
+    forgeCtx.beginPath();
+    forgeCtx.moveTo(0, 0);
+    forgeCtx.lineTo(0, hammerLength);
+    forgeCtx.stroke();
+    
+    // Hammer head
+    const headY = hammerLength;
+    forgeCtx.fillStyle = '#4a3830';
+    forgeCtx.fillRect(-22, headY - 10, 44, 22);
+    
+    // Hammer face (the striking surface)
+    forgeCtx.fillStyle = '#5a4840';
+    forgeCtx.fillRect(-18, headY + 12, 36, 8);
+    
+    // Hammer glow when hot
+    if (forgeHeat > 30) {
+        const hammerGlow = forgeCtx.createRadialGradient(0, headY + 16, 5, 0, headY + 16, 30);
+        hammerGlow.addColorStop(0, `rgba(255,136,51,${forgeHeat / 100 * 0.5})`);
+        hammerGlow.addColorStop(1, 'transparent');
+        forgeCtx.fillStyle = hammerGlow;
+        forgeCtx.beginPath();
+        forgeCtx.arc(0, headY + 16, 30, 0, Math.PI * 2);
+        forgeCtx.fill();
+    }
+    
+    forgeCtx.restore();
+    
+    // ── SPARKS ──
+    for (let i = sparks.length - 1; i >= 0; i--) {
+        const s = sparks[i];
+        s.life -= 0.02;
+        s.x += s.vx;
+        s.y += s.vy;
+        s.vy += 0.05; // gravity
+        if (s.life <= 0) { sparks.splice(i, 1); continue; }
+        forgeCtx.beginPath();
+        forgeCtx.arc(s.x, s.y, Math.max(0.3, s.size * s.life), 0, Math.PI * 2);
+        forgeCtx.fillStyle = s.color + Math.floor(s.life * 0.8 * 255).toString(16).padStart(2, '0');
+        forgeCtx.fill();
+    }
+    
+    // ── EMBERS ──
+    for (let i = embers.length - 1; i >= 0; i--) {
+        const e = embers[i];
+        e.life -= 0.005;
+        e.y += e.vy;
+        e.x += e.vx + Math.sin(forgeTime * 2 + e.wobble) * 0.3;
+        if (e.life <= 0) { embers.splice(i, 1); continue; }
+        
+        const color = e.steam ? 
+            `rgba(180,200,210,${e.life * 0.25})` : 
+            `rgba(255,${100 + Math.floor(e.life * 100)},${20 + Math.floor(e.life * 40)},${e.life * 0.6})`;
+        
+        forgeCtx.beginPath();
+        forgeCtx.arc(e.x, e.y, e.size * e.life, 0, Math.PI * 2);
+        forgeCtx.fillStyle = color;
+        forgeCtx.fill();
+    }
+    
+    // ── FORGE CHANT ──
+    const chantIdx = Math.floor(forgeTime / 8) % FORGE_CHANTS.length;
+    const chant = FORGE_CHANTS[chantIdx];
+    document.getElementById('forgeChant').textContent = typeof chant === 'function' ? chant() : chant;
+}
+
+// ── MAIN LOOP ──
+function tick() {
+    forgeTime += 0.05;
+    
+    drawForge();
+    
+    if (Math.floor(forgeTime * 20) % 30 === 0) {
+        fetchCoherence();
+    }
+    
+    // Auto-spawn embers from forge center
+    if (forgeHeat > 20 && Math.random() < forgeHeat / 100 * 0.3) {
+        spawnEmber(W / 2 + (Math.random() - 0.5) * 40, H * 0.55 + Math.random() * 30);
+    }
+    
+    requestAnimationFrame(tick);
+}
+
+// ── BUTTONS ──
+document.getElementById('strikeBtn').addEventListener('click', strike);
+document.getElementById('quenchBtn').addEventListener('click', quench);
+document.getElementById('claimBtn').addEventListener('click', claimItem);
+
+// ── INIT ──
+function init() {
+    resize();
+    generateLavaVeins();
+    fetchCoherence();
+    
+    document.getElementById('strikeCount').textContent = '⚒️ Strikes: 0';
+    document.getElementById('itemsForged').textContent = '🛡️ Forged: 0';
+    
+    addLog('🔥 Hephaestus lights the forge. The volcano breathes.');
+    addLog('🔨 The hammer waits. The anvil is cold. The iron calls.');
+    
+    // Auto-select first project
+    selectProject();
+    
+    tick();
+}
+
+init();
+</script>
+</body>
+</html>
