@@ -8,25 +8,33 @@
     <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&family=Cinzel:wght@400;600&family=EB+Garamond:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
     <style>
         :root {
-            --gold: #c9a84c; --gold-bright: #f0d080; --gold-dim: #6b5520;
-            --deep: #0a0f06; --mist: #e8e0d0; --earth: #3d2b1f;
-            --earth-light: #5c4033; --wheat: #d4a853; --wheat-bright: #f0d080;
-            --wheat-dim: #8b7332; --honey: #e8a830; --honey-glow: #ffcc44;
-            --bee-gold: #ffbb33; --bee-dark: #2a1f0a;
+            --gold: #c9a84c; --gold-bright: #f0d080; --gold-dim: #8b7332;
+            --parchment: #f5f0e0; --parchment-dark: #e8dcc8;
+            --sage: #889966; --sage-light: #aabb88; --sage-dark: #667744;
+            --honey: #e8a830; --honey-glow: #ffcc44; --honey-light: #ffeebb;
+            --bee-gold: #eebb44; --bee-body: #cc9930;
+            --dawn: #ffe8cc; --dawn-gold: #ffd599;
+            --cream: #fffef5; --cream-dark: #f0ead5;
+            --earth: #8b7355; --earth-light: #a89070;
+            --locked: #55aa55;
+            --bloom-glow: #ffdd88;
+            --proteus-sea: #5599aa; --proteus-deep: #336677;
             --petal-pink: #ff8899; --petal-blue: #6688cc;
-            --petal-purple: #9966cc; --petal-white: #eeeedd;
-            --leaf-green: #558844; --leaf-dark: #334422;
-            --bloom-glow: #ffdd88; --locked: #44cc88;
-            --hive-wood: #8B6914; --hive-dark: #5C4A0E;
-            --smoke: rgba(200,180,150,0.15);
+            --petal-purple: #9966cc; --petal-white: #ffffee;
         }
         * { margin:0; padding:0; box-sizing:border-box; }
-        body { background:var(--deep); color:var(--mist); font-family:'EB Garamond',Georgia,serif; min-height:100vh; overflow-x:hidden; }
+        body { 
+            background: linear-gradient(180deg, #f5f0e0 0%, #ede4cc 40%, #e0d5b8 100%);
+            color: #3d3628; 
+            font-family:'EB Garamond',Georgia,serif; 
+            min-height:100vh; 
+            overflow-x:hidden; 
+        }
 
-        .temple-bg { position:fixed; inset:0; z-index:0; pointer-events:none; opacity:0.02;
-            background-image: radial-gradient(circle at 30% 40%, var(--wheat) 0px, transparent 60px),
-                              radial-gradient(circle at 70% 60%, var(--honey) 0px, transparent 50px),
-                              radial-gradient(circle at 50% 80%, var(--petal-pink) 0px, transparent 40px);
+        .temple-bg { position:fixed; inset:0; z-index:0; pointer-events:none; opacity:0.04;
+            background-image: radial-gradient(circle at 30% 40%, #c9a84c 0px, transparent 60px),
+                              radial-gradient(circle at 70% 60%, #e8a830 0px, transparent 50px),
+                              radial-gradient(circle at 50% 80%, #ff8899 0px, transparent 40px);
             background-size: 200px 200px, 180px 180px, 150px 150px;
         }
 
@@ -34,101 +42,92 @@
 
         /* HEADER */
         .header { text-align:center; padding:2rem 1rem 0.5rem; position:relative; }
-        .header::before { content:''; position:absolute; top:0; left:50%; transform:translateX(-50%); width:1px; height:2rem; background:linear-gradient(to bottom,transparent,var(--wheat)); }
+        .header::before { content:''; position:absolute; top:0; left:50%; transform:translateX(-50%); width:1px; height:2rem; background:linear-gradient(to bottom,transparent,var(--gold)); }
         .temple-title { font-family:'Cinzel Decorative',serif; font-size:clamp(2rem,5vw,4rem); font-weight:900; letter-spacing:0.3em;
-            background:linear-gradient(135deg, var(--wheat-dim), var(--wheat-bright), var(--honey-glow), var(--wheat-dim));
+            background:linear-gradient(135deg, #8b7332, #c9a84c, #e8a830, #8b7332);
             -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
-            filter:drop-shadow(0 0 30px rgba(212,168,83,0.5)); animation:titlePulse 4s ease-in-out infinite; }
-        @keyframes titlePulse { 0%,100%{filter:drop-shadow(0 0 20px rgba(212,168,83,0.3))} 50%{filter:drop-shadow(0 0 50px rgba(232,168,48,0.8))} }
-        .subtitle { font-family:'Cinzel',serif; font-size:0.7rem; letter-spacing:0.4em; color:var(--wheat-dim); margin-top:0.4rem; }
-        .back-link { display:inline-block; margin-top:0.5rem; font-family:'Cinzel',serif; font-size:0.6rem; letter-spacing:0.3em; color:var(--wheat-dim); text-decoration:none; transition:color 0.3s; }
-        .back-link:hover { color:var(--wheat-bright); }
+            filter:drop-shadow(0 0 30px rgba(200,168,76,0.4)); animation:titlePulse 4s ease-in-out infinite; }
+        @keyframes titlePulse { 0%,100%{filter:drop-shadow(0 0 20px rgba(200,168,76,0.2))} 50%{filter:drop-shadow(0 0 40px rgba(232,168,48,0.6))} }
+        .subtitle { font-family:'Cinzel',serif; font-size:0.7rem; letter-spacing:0.4em; color:#8b7332; margin-top:0.4rem; }
+        .back-link { display:inline-block; margin-top:0.5rem; font-family:'Cinzel',serif; font-size:0.6rem; letter-spacing:0.3em; color:#8b7332; text-decoration:none; transition:color 0.3s; }
+        .back-link:hover { color:#c9a84c; }
 
         /* STATUS STRIP */
-        .status-strip { display:flex; justify-content:center; gap:1.5rem; flex-wrap:wrap; font-family:'Cinzel',serif; font-size:0.62rem; letter-spacing:0.15em; color:var(--wheat-dim); padding:0.6rem 1rem; border:1px solid rgba(212,168,83,0.1); border-radius:2px; background:rgba(10,15,6,0.85); }
+        .status-strip { display:flex; justify-content:center; gap:1.5rem; flex-wrap:wrap; font-family:'Cinzel',serif; font-size:0.62rem; letter-spacing:0.15em; color:#6b5520; padding:0.6rem 1rem; border:1px solid rgba(180,150,80,0.2); border-radius:2px; background:rgba(255,254,245,0.85); }
         .si { display:flex; gap:0.4rem; align-items:center; }
-        .sd { width:6px; height:6px; border-radius:50%; background:var(--wheat-dim); transition:all 0.3s; }
+        .sd { width:6px; height:6px; border-radius:50%; background:#c9a84c; transition:all 0.3s; }
         .sd.blooming { background:var(--bloom-glow); box-shadow:0 0 8px var(--bloom-glow); animation:bloomPulse 1.5s infinite; }
         .sd.harvest { background:var(--locked); box-shadow:0 0 8px var(--locked); }
         @keyframes bloomPulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.5;transform:scale(1.5)} }
 
-        /* ═════════════════════════════════════
-           THE POLLINATION FIELD (Canvas)
-           ═════════════════════════════════════ */
-        .field-zone { background:linear-gradient(180deg, rgba(15,20,10,0.95), rgba(20,28,12,0.93)); border:1px solid rgba(120,140,80,0.2); border-top:2px solid #667733; border-radius:4px; overflow:hidden; position:relative; }
-        .field-header { display:flex; justify-content:space-between; align-items:center; padding:0.75rem 1.25rem; border-bottom:1px solid rgba(120,140,80,0.12); }
-        .field-title { font-family:'Cinzel Decorative',serif; font-size:0.85rem; letter-spacing:0.2em; color:#aacc88; }
-        .field-meta { font-family:'Cinzel',serif; font-size:0.6rem; letter-spacing:0.15em; color:rgba(150,180,120,0.45); }
+        /* FIELD ZONE */
+        .field-zone { background:linear-gradient(180deg, #faf7ed, #f0ead5); border:1px solid rgba(150,130,80,0.25); border-top:2px solid #889966; border-radius:4px; overflow:hidden; position:relative; }
+        .field-header { display:flex; justify-content:space-between; align-items:center; padding:0.75rem 1.25rem; border-bottom:1px solid rgba(150,130,80,0.15); }
+        .field-title { font-family:'Cinzel Decorative',serif; font-size:0.85rem; letter-spacing:0.2em; color:#667744; }
+        .field-meta { font-family:'Cinzel',serif; font-size:0.6rem; letter-spacing:0.15em; color:rgba(100,120,60,0.5); }
         #fieldCanvas { width:100%; height:450px; display:block; }
-        .field-overlay { position:absolute; bottom:0; left:0; right:0; padding:0.6rem 1.25rem; background:linear-gradient(to top, rgba(10,15,6,0.9), transparent); pointer-events:none; }
-        .field-poem { font-family:'EB Garamond',serif; font-size:0.8rem; font-style:italic; color:rgba(180,200,150,0.5); text-align:center; min-height:1.5rem; transition:opacity 0.5s; }
+        .field-overlay { position:absolute; bottom:0; left:0; right:0; padding:0.8rem 1.5rem; background:linear-gradient(to top, rgba(245,240,224,0.95), transparent); pointer-events:none; }
+        .field-poem { font-family:'EB Garamond',serif; font-size:0.85rem; font-style:italic; color:#6b5520; text-align:center; min-height:2rem; transition:opacity 0.8s; }
+        .field-act { font-family:'Cinzel',serif; font-size:0.6rem; letter-spacing:0.25em; color:#8b7332; text-align:center; margin-bottom:0.3rem; }
 
-        /* ═════════════════════════════════════
-           ARISTAEUS BEEKEEPING SECTION
-           ═════════════════════════════════════ */
-        .aristaeus-zone { background:linear-gradient(160deg, rgba(25,18,8,0.96), rgba(30,20,10,0.98)); border:1px solid rgba(200,160,80,0.2); border-top:2px solid #997733; border-radius:4px; overflow:hidden; }
-        .aristaeus-header { display:flex; justify-content:space-between; align-items:center; padding:0.75rem 1.25rem; border-bottom:1px solid rgba(200,160,80,0.15); background:rgba(200,160,80,0.03); }
-        .aristaeus-title { font-family:'Cinzel Decorative',serif; font-size:0.85rem; letter-spacing:0.2em; color:var(--honey-glow); }
-        .aristaeus-meta { font-family:'Cinzel',serif; font-size:0.6rem; letter-spacing:0.15em; color:rgba(200,160,80,0.5); }
+        /* ARISTAEUS ZONE */
+        .aristaeus-zone { background:linear-gradient(160deg, #faf7ed, #f5f0e0); border:1px solid rgba(180,150,80,0.25); border-top:2px solid #997733; border-radius:4px; overflow:hidden; }
+        .aristaeus-header { display:flex; justify-content:space-between; align-items:center; padding:0.75rem 1.25rem; border-bottom:1px solid rgba(180,150,80,0.15); background:rgba(200,170,80,0.06); }
+        .aristaeus-title { font-family:'Cinzel Decorative',serif; font-size:0.85rem; letter-spacing:0.2em; color:#997733; }
+        .aristaeus-meta { font-family:'Cinzel',serif; font-size:0.6rem; letter-spacing:0.15em; color:rgba(150,120,60,0.5); }
         
         .aristaeus-body { display:grid; grid-template-columns:1fr 340px; gap:1rem; padding:1.25rem; }
         @media(max-width:900px) { .aristaeus-body { grid-template-columns:1fr; } }
         
-        /* Hive visualization */
-        .hive-display { background:rgba(0,0,0,0.3); border:1px solid rgba(200,160,80,0.15); border-radius:4px; padding:1.25rem; display:flex; flex-direction:column; align-items:center; gap:1rem; }
+        .hive-display { background:rgba(255,254,245,0.5); border:1px solid rgba(180,150,80,0.2); border-radius:4px; padding:1.25rem; display:flex; flex-direction:column; align-items:center; gap:1rem; }
         .hive-hex-grid { display:flex; flex-wrap:wrap; gap:0.3rem; justify-content:center; max-width:400px; }
-        .hex-cell { width:38px; height:44px; background:var(--hive-dark); clip-path:polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%); display:flex; align-items:center; justify-content:center; font-size:0.9rem; transition:all 0.5s; cursor:pointer; }
-        .hex-cell.empty { background:rgba(30,20,8,0.5); border:1px solid rgba(200,160,80,0.08); }
-        .hex-cell.filled { background:linear-gradient(135deg, var(--honey), var(--hive-wood)); box-shadow:0 0 15px rgba(232,168,48,0.4); }
-        .hex-cell.capped { background:linear-gradient(135deg, #665522, #887744); box-shadow:0 0 8px rgba(200,160,80,0.3); }
+        .hex-cell { width:38px; height:44px; background:#d4c090; clip-path:polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%); display:flex; align-items:center; justify-content:center; font-size:0.9rem; transition:all 0.5s; cursor:pointer; }
+        .hex-cell.empty { background:rgba(220,200,160,0.5); border:1px solid rgba(180,150,80,0.15); }
+        .hex-cell.filled { background:linear-gradient(135deg, #eebb44, #d4a830); box-shadow:0 0 15px rgba(200,160,60,0.4); }
+        .hex-cell.capped { background:linear-gradient(135deg, #8b7332, #a89050); box-shadow:0 0 8px rgba(150,120,60,0.3); }
         .hex-cell:hover { transform:scale(1.1); z-index:2; }
         
-        .hive-stats { display:flex; gap:1.5rem; font-family:'Cinzel',serif; font-size:0.6rem; letter-spacing:0.15em; color:rgba(200,160,80,0.5); }
+        .hive-stats { display:flex; gap:1.5rem; font-family:'Cinzel',serif; font-size:0.6rem; letter-spacing:0.15em; color:rgba(120,100,50,0.6); }
         .hive-stat { text-align:center; }
-        .hive-stat-val { font-size:1.2rem; color:var(--honey-glow); }
+        .hive-stat-val { font-size:1.2rem; color:#997733; }
         
-        /* Beekeeping sidebar */
         .beekeeping-sidebar { display:flex; flex-direction:column; gap:0.8rem; }
         
-        .bee-journal { background:rgba(0,0,0,0.3); border:1px solid rgba(200,160,80,0.12); border-radius:4px; padding:1rem; }
-        .journal-title { font-family:'Cinzel',serif; font-size:0.6rem; letter-spacing:0.2em; color:var(--wheat-dim); margin-bottom:0.6rem; border-bottom:1px solid rgba(200,160,80,0.08); padding-bottom:0.4rem; }
-        .journal-entry { font-size:0.78rem; font-style:italic; color:rgba(200,160,80,0.55); line-height:1.7; min-height:2rem; transition:opacity 0.4s; }
+        .bee-journal { background:rgba(255,254,245,0.5); border:1px solid rgba(180,150,80,0.15); border-radius:4px; padding:1rem; }
+        .journal-title { font-family:'Cinzel',serif; font-size:0.6rem; letter-spacing:0.2em; color:#8b7332; margin-bottom:0.6rem; border-bottom:1px solid rgba(180,150,80,0.1); padding-bottom:0.4rem; }
+        .journal-entry { font-size:0.78rem; font-style:italic; color:#6b5520; line-height:1.7; min-height:2rem; transition:opacity 0.4s; }
         
         .bee-actions { display:flex; flex-direction:column; gap:0.4rem; }
-        .bee-btn { font-family:'Cinzel',serif; font-size:0.6rem; letter-spacing:0.18em; background:rgba(200,160,80,0.08); border:1px solid rgba(200,160,80,0.25); color:var(--honey-glow); padding:0.5rem 0.8rem; border-radius:2px; cursor:pointer; transition:all 0.2s; text-align:center; }
-        .bee-btn:hover { background:rgba(200,160,80,0.18); border-color:var(--honey-glow); }
-        .bee-btn.harvest { border-color:var(--locked); color:var(--locked); }
+        .bee-btn { font-family:'Cinzel',serif; font-size:0.6rem; letter-spacing:0.18em; background:rgba(200,170,100,0.1); border:1px solid rgba(180,150,80,0.35); color:#8b7332; padding:0.5rem 0.8rem; border-radius:2px; cursor:pointer; transition:all 0.2s; text-align:center; }
+        .bee-btn:hover { background:rgba(200,170,100,0.25); border-color:#997733; }
+        .bee-btn.harvest { border-color:#55aa55; color:#55aa55; }
         .bee-btn.harvest:hover { background:rgba(68,204,136,0.1); }
         
-        .bee-lore { background:rgba(0,0,0,0.3); border:1px solid rgba(200,160,80,0.1); border-left:2px solid rgba(200,160,80,0.3); border-radius:2px; padding:0.7rem 0.8rem; }
-        .bee-lore-text { font-size:0.72rem; font-style:italic; color:rgba(180,140,80,0.4); line-height:1.6; }
-        
-        /* ═════════════════════════════════════
-           HARVEST OFFERINGS
-           ═════════════════════════════════════ */
-        .offerings-zone { background:linear-gradient(160deg, rgba(18,22,14,0.95), rgba(22,28,16,0.97)); border:1px solid rgba(120,160,80,0.15); border-top:2px solid #557733; border-radius:4px; overflow:hidden; }
-        .offerings-header { padding:0.75rem 1.25rem; border-bottom:1px solid rgba(120,160,80,0.1); font-family:'Cinzel Decorative',serif; font-size:0.8rem; letter-spacing:0.2em; color:#99bb77; }
+        .bee-lore { background:rgba(255,254,245,0.4); border:1px solid rgba(180,150,80,0.12); border-left:2px solid rgba(180,150,80,0.4); border-radius:2px; padding:0.7rem 0.8rem; }
+        .bee-lore-text { font-size:0.72rem; font-style:italic; color:#8b7355; line-height:1.6; }
+
+        /* OFFERINGS */
+        .offerings-zone { background:linear-gradient(160deg, #faf7ed, #f5f0e0); border:1px solid rgba(150,130,80,0.2); border-top:2px solid #889966; border-radius:4px; overflow:hidden; }
+        .offerings-header { padding:0.75rem 1.25rem; border-bottom:1px solid rgba(150,130,80,0.12); font-family:'Cinzel Decorative',serif; font-size:0.8rem; letter-spacing:0.2em; color:#667744; }
         .offerings-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(180px, 1fr)); gap:0.8rem; padding:1.25rem; }
-        .offering-card { background:rgba(0,0,0,0.25); border:1px solid rgba(120,160,80,0.12); border-radius:4px; padding:0.9rem; text-align:center; cursor:pointer; transition:all 0.3s; }
-        .offering-card:hover { background:rgba(120,160,80,0.06); border-color:rgba(120,160,80,0.3); }
-        .offering-card.offered { border-color:var(--locked); background:rgba(68,204,136,0.05); }
+        .offering-card { background:rgba(255,254,245,0.5); border:1px solid rgba(150,130,80,0.15); border-radius:4px; padding:0.9rem; text-align:center; cursor:pointer; transition:all 0.3s; }
+        .offering-card:hover { background:rgba(200,180,130,0.1); border-color:rgba(150,130,80,0.4); }
+        .offering-card.offered { border-color:#55aa55; background:rgba(68,204,136,0.06); }
         .offering-icon { font-size:2rem; margin-bottom:0.4rem; }
-        .offering-name { font-family:'Cinzel',serif; font-size:0.65rem; letter-spacing:0.12em; color:var(--wheat-bright); }
-        .offering-desc { font-size:0.68rem; font-style:italic; color:rgba(180,200,150,0.4); margin-top:0.3rem; line-height:1.5; }
-        .offering-count { font-family:'Cinzel',serif; font-size:0.55rem; letter-spacing:0.15em; color:rgba(200,180,100,0.3); margin-top:0.3rem; }
-        
-        /* ═════════════════════════════════════
-           FIELD LOG
-           ═════════════════════════════════════ */
-        .log-zone { background:rgba(0,0,0,0.2); border:1px solid rgba(120,140,80,0.08); border-radius:4px; padding:0.8rem 1.25rem; }
+        .offering-name { font-family:'Cinzel',serif; font-size:0.65rem; letter-spacing:0.12em; color:#6b5520; }
+        .offering-desc { font-size:0.68rem; font-style:italic; color:rgba(100,80,40,0.45); margin-top:0.3rem; line-height:1.5; }
+        .offering-count { font-family:'Cinzel',serif; font-size:0.55rem; letter-spacing:0.15em; color:rgba(150,120,60,0.35); margin-top:0.3rem; }
+
+        /* LOG */
+        .log-zone { background:rgba(255,254,245,0.4); border:1px solid rgba(150,130,80,0.1); border-radius:4px; padding:0.8rem 1.25rem; }
         .log-scroll { max-height:120px; overflow-y:auto; display:flex; flex-direction:column; gap:0.3rem; }
-        .log-line { font-size:0.7rem; font-style:italic; color:rgba(160,180,140,0.35); padding:0.2rem 0; border-bottom:1px solid rgba(120,140,80,0.04); line-height:1.5; }
+        .log-line { font-size:0.7rem; font-style:italic; color:rgba(100,80,40,0.4); padding:0.2rem 0; border-bottom:1px solid rgba(150,130,80,0.06); line-height:1.5; }
 
         /* TOAST */
-        #toast { position:fixed; bottom:1.5rem; left:50%; transform:translateX(-50%); background:rgba(10,15,6,0.95); border:1px solid var(--wheat-dim); border-radius:2px; padding:0.55rem 1.4rem; font-family:'Cinzel',serif; font-size:0.68rem; letter-spacing:0.13em; color:var(--wheat); z-index:100; opacity:0; transition:opacity 0.4s; text-align:center; max-width:90vw; }
+        #toast { position:fixed; bottom:1.5rem; left:50%; transform:translateX(-50%); background:rgba(245,240,224,0.97); border:1px solid #8b7332; border-radius:2px; padding:0.55rem 1.4rem; font-family:'Cinzel',serif; font-size:0.68rem; letter-spacing:0.13em; color:#6b5520; z-index:100; opacity:0; transition:opacity 0.4s; text-align:center; max-width:90vw; }
         #toast.show { opacity:1; }
-        #toast.success { border-color:var(--locked); color:var(--locked); }
-        #toast.honey { border-color:var(--honey-glow); color:var(--honey-glow); }
+        #toast.success { border-color:#55aa55; color:#55aa55; }
+        #toast.honey { border-color:#e8a830; color:#997733; }
     </style>
 </head>
 <body>
@@ -148,60 +147,42 @@
         <div class="si"><span id="bloomCount">🌸 Blooms: 0</span></div>
         <div class="si"><span id="beeCount">🐝 Bees: 0</span></div>
         <div class="si"><span id="honeyTotal">🍯 Honey: 0</span></div>
-        <div class="si"><span id="fieldCoherence" style="color:rgba(180,200,150,0.45)">Coherence: —</span></div>
+        <div class="si"><span id="storyAct" style="color:#997733">Act I: The Apprentice</span></div>
+        <div class="si"><span id="fieldCoherence" style="color:rgba(100,120,60,0.5)">Coherence: —</span></div>
     </div>
 
-    <!-- ═════════════════════════════════════
-         THE POLLINATION FIELD
-         ═════════════════════════════════════ -->
+    <!-- POLLINATION FIELD -->
     <div class="field-zone">
         <div class="field-header">
             <span class="field-title">🌸 THE POLLINATION FIELD</span>
-            <span class="field-meta" id="fieldMeta">Bees: — · Blooms: — · Season: —</span>
+            <span class="field-meta" id="fieldMeta">Bees: — · Blooms: — · Honey: —</span>
         </div>
         <canvas id="fieldCanvas"></canvas>
         <div class="field-overlay">
-            <div class="field-poem" id="fieldPoem">The bees remember every flower they have ever touched.</div>
+            <div class="field-act" id="fieldAct">Act I — The Apprentice</div>
+            <div class="field-poem" id="fieldPoem">Aristaeus learned from the nymphs. The bees came willingly then, golden and eager in the morning light.</div>
         </div>
     </div>
 
-    <!-- ═════════════════════════════════════
-         ARISTAEUS BEEKEEPING
-         ═════════════════════════════════════ -->
+    <!-- ARISTAEUS BEEKEEPING -->
     <div class="aristaeus-zone">
         <div class="aristaeus-header">
             <span class="aristaeus-title">🍯 ARISTAEUS · THE BEEKEEPING</span>
             <span class="aristaeus-meta" id="aristaeusMeta">Hive: active · Frames: 12</span>
         </div>
         <div class="aristaeus-body">
-            <!-- HIVE -->
             <div class="hive-display">
-                <div class="hive-hex-grid" id="hiveGrid">
-                    <!-- Populated by JS -->
-                </div>
+                <div class="hive-hex-grid" id="hiveGrid"></div>
                 <div class="hive-stats">
-                    <div class="hive-stat">
-                        <div class="hive-stat-val" id="hiveFilled">0</div>
-                        <div>Filled</div>
-                    </div>
-                    <div class="hive-stat">
-                        <div class="hive-stat-val" id="hiveCapped">0</div>
-                        <div>Capped</div>
-                    </div>
-                    <div class="hive-stat">
-                        <div class="hive-stat-val" id="hiveEmpty">36</div>
-                        <div>Empty</div>
-                    </div>
+                    <div class="hive-stat"><div class="hive-stat-val" id="hiveFilled">0</div><div>Filled</div></div>
+                    <div class="hive-stat"><div class="hive-stat-val" id="hiveCapped">0</div><div>Capped</div></div>
+                    <div class="hive-stat"><div class="hive-stat-val" id="hiveEmpty">36</div><div>Empty</div></div>
                 </div>
             </div>
-            
-            <!-- SIDEBAR -->
             <div class="beekeeping-sidebar">
                 <div class="bee-journal">
                     <div class="journal-title">📖 ARISTAEUS' JOURNAL</div>
-                    <div class="journal-entry" id="journalEntry">
-                        Aristaeus watches the hive. The bees have not yet begun their work.
-                    </div>
+                    <div class="journal-entry" id="journalEntry">Aristaeus watches the hive. The bees have not yet begun their work.</div>
                 </div>
                 <div class="bee-actions">
                     <button class="bee-btn" id="tendHiveBtn">🐝 Tend the Hive</button>
@@ -217,19 +198,13 @@
         </div>
     </div>
 
-    <!-- ═════════════════════════════════════
-         HARVEST OFFERINGS
-         ═════════════════════════════════════ -->
+    <!-- HARVEST OFFERINGS -->
     <div class="offerings-zone">
         <div class="offerings-header">🕯️ HARVEST OFFERINGS TO DEMETER</div>
-        <div class="offerings-grid" id="offeringsGrid">
-            <!-- Populated by JS -->
-        </div>
+        <div class="offerings-grid" id="offeringsGrid"></div>
     </div>
 
-    <!-- ═════════════════════════════════════
-         FIELD LOG
-         ═════════════════════════════════════ -->
+    <!-- FIELD LOG -->
     <div class="log-zone">
         <div class="log-scroll" id="logScroll">
             <div class="log-line">🌾 Demeter's temple awakens. The field lies fallow, waiting for the first bee.</div>
@@ -249,30 +224,125 @@
 // DEMETER'S TEMPLE — THE POLLINATION ENGINE
 // ══════════════════════════════════════════════
 
-// ── FLOWERS ──
 const FLOWER_SPECIES = [
-    { name:'Wheat', emoji:'🌾', color:'#d4a853', petalColor:'#f0d080', size:1.0, season:'all', nectar:10 },
-    { name:'Poppy', emoji:'🌺', color:'#ff4466', petalColor:'#ff6688', size:0.8, season:'summer', nectar:8 },
-    { name:'Lavender', emoji:'💜', color:'#9966cc', petalColor:'#bb88ee', size:0.7, season:'summer', nectar:12 },
-    { name:'Sunflower', emoji:'🌻', color:'#ffbb33', petalColor:'#ffdd66', size:1.3, season:'summer', nectar:15 },
-    { name:'Crocus', emoji:'🌸', color:'#ee88aa', petalColor:'#ffaacc', size:0.6, season:'spring', nectar:5 },
-    { name:'Clover', emoji:'🍀', color:'#88cc88', petalColor:'#aaddaa', size:0.5, season:'spring', nectar:7 },
-    { name:'Thistle', emoji:'🌿', color:'#9966aa', petalColor:'#bb88cc', size:0.7, season:'autumn', nectar:9 },
-    { name:'Daisy', emoji:'🌼', color:'#eeeedd', petalColor:'#ffffff', size:0.6, season:'all', nectar:6 },
-    { name:'Lotus', emoji:'🪷', color:'#ff99aa', petalColor:'#ffbbcc', size:0.9, season:'summer', nectar:14 },
-    { name:'Barley', emoji:'🌾', color:'#ccaa55', petalColor:'#ddbb77', size:0.9, season:'all', nectar:8 },
+    { name:'Wheat', emoji:'🌾', color:'#d4a853', petalColor:'#f0d080', size:1.0, season:'all', nectar:12 },
+    { name:'Poppy', emoji:'🌺', color:'#ff4466', petalColor:'#ff8899', size:0.8, season:'summer', nectar:10 },
+    { name:'Lavender', emoji:'💜', color:'#9966cc', petalColor:'#ccaaee', size:0.7, season:'summer', nectar:14 },
+    { name:'Sunflower', emoji:'🌻', color:'#eebb44', petalColor:'#ffdd66', size:1.3, season:'summer', nectar:18 },
+    { name:'Crocus', emoji:'🌸', color:'#ee88aa', petalColor:'#ffbbcc', size:0.6, season:'spring', nectar:7 },
+    { name:'Clover', emoji:'🍀', color:'#88cc88', petalColor:'#bbddbb', size:0.5, season:'spring', nectar:9 },
+    { name:'Thistle', emoji:'🌿', color:'#9966aa', petalColor:'#cc99dd', size:0.7, season:'autumn', nectar:11 },
+    { name:'Daisy', emoji:'🌼', color:'#ffffee', petalColor:'#ffffff', size:0.6, season:'all', nectar:8 },
+    { name:'Lotus', emoji:'🪷', color:'#ff99aa', petalColor:'#ffccdd', size:0.9, season:'summer', nectar:16 },
+    { name:'Barley', emoji:'🌾', color:'#ccaa55', petalColor:'#eebb77', size:0.9, season:'all', nectar:10 },
 ];
 
-const DEMETER_POEMS = [
-    () => 'The bees remember every flower they have ever touched.',
-    () => 'Demeter walks the field at dawn. Where her foot falls, wheat rises.',
-    () => 'A single bee carries the memory of ten thousand blooms.',
-    () => `The field holds ${blooms.length} flowers in its keeping. Each one a prayer.`,
-    () => 'Aristaeus learned: to lose the hive is to learn the hive.',
-    () => 'Pollen is the gold of the underworld, carried upward by wings.',
-    () => 'When Persephone returns, the field erupts. The bees go mad with joy.',
-    () => 'The hive is a city. The field is a nation. The bee is a pilgrim.',
-];
+// ── ARISTAEUS STORY ──
+const STORY_ACTS = {
+    apprentice: {
+        name: 'Act I — The Apprentice',
+        threshold: 0,
+        bgGradient: ['#fffef5', '#faf3e0', '#f0e8d0'],
+        poem: () => 'Aristaeus learned from the nymphs. The bees came willingly then, golden and eager in the morning light.',
+        journal: 'He watches the hive with reverence. The nymphs taught him well, but knowledge without trial is fragile.',
+        lore: 'Son of Apollo and Cyrene. The nymphs raised him. They taught him beekeeping, olive cultivation, and the art of cheese-making. He was the gentle god of rustic crafts.',
+        beeSpawnRate: 0.4,
+        flowerSpawnRate: 0.015,
+        nectarMult: 1.0
+    },
+    loss: {
+        name: 'Act II — The Loss',
+        threshold: 50,
+        bgGradient: ['#e8dcc8', '#ddd0b8', '#c8b898'],
+        poem: () => 'He pursued Eurydice through the tall grass. She did not see the serpent. The bees died for his transgression.',
+        journal: 'The hive falls silent. Cell by cell, the bees abandon their work. Aristaeus weeps among the empty frames. He did not mean for her to die.',
+        lore: 'Aristaeus chased Eurydice through the fields. Fleeing, she stepped upon a serpent and died. The nymphs punished him. Every bee in his keeping perished. The hive was a tomb.',
+        beeSpawnRate: 0.1,
+        flowerSpawnRate: 0.005,
+        nectarMult: 0.5,
+        onEnter: function() {
+            // Kill half the bees
+            const killCount = Math.floor(bees.length * 0.6);
+            for (let i = 0; i < killCount; i++) {
+                if (bees.length > 3) bees.pop();
+            }
+            // Wither some blooms
+            blooms.forEach(b => {
+                if (Math.random() < 0.4) b.blooming = false;
+            });
+            beeCount = bees.length;
+            updateBeeCount();
+            updateBloomCount();
+            addLog('🌑 The bees die. The field withers. Aristaeus has lost everything.');
+            showToast('Act II: The Loss — The bees are dying...', 'honey');
+        }
+    },
+    proteus: {
+        name: 'Act III — Proteus',
+        threshold: 150,
+        bgGradient: ['#d0ddd8', '#c0d0d0', '#a8c0c0'],
+        poem: () => 'He found Proteus in the sea-cave, sleeping among seals. He bound the god with chains. Lion. Serpent. Fire. Water. He held on.',
+        journal: 'The sea-cave is cold. Proteus shifts beneath his grip — lion, serpent, fire, water. Aristaeus does not let go. Knowledge demands pain.',
+        lore: 'Proteus, the Old Man of the Sea, could see all things but would only speak if captured. Aristaeus chained him. Proteus became a lion. He held on. A serpent. He held on. Fire. Water. A tree. He held on until the god yielded.',
+        beeSpawnRate: 0.25,
+        flowerSpawnRate: 0.01,
+        nectarMult: 0.7,
+        onEnter: function() {
+            addLog('🌊 Aristaeus enters the sea-cave. Proteus sleeps among the seals.');
+            showToast('Act III: Proteus — Wrestle the shape-shifter', 'honey');
+        }
+    },
+    regeneration: {
+        name: 'Act IV — The Regeneration',
+        threshold: 300,
+        bgGradient: ['#fff8e8', '#ffeebb', '#ffd580'],
+        poem: () => `The ox lay upon the altar. Nine days passed. On the ninth day: the bees. The bougonia. ${honeyStored.toFixed(0)} honey gathered. The secret that cannot be unlearned.`,
+        journal: 'From the ox, a swarm. Golden. Humming. Alive. Aristaeus kneels in the meadow and laughs — the bees have returned, and this time he knows the price.',
+        lore: 'Proteus told him: sacrifice an ox. Leave it. Return in nine days. From the carcass, bees will rise — bougonia, the regeneration. Life from death. The eternal hive. Aristaeus never forgot.',
+        beeSpawnRate: 0.6,
+        flowerSpawnRate: 0.04,
+        nectarMult: 2.0,
+        onEnter: function() {
+            // Swarm!
+            for (let i = 0; i < 10; i++) {
+                bees.push({
+                    x: 0.5 + (Math.random() - 0.5) * 0.2,
+                    y: 0.85,
+                    vx: (Math.random() - 0.5) * 0.008,
+                    vy: -Math.random() * 0.02 - 0.01,
+                    target: null,
+                    carrying: 0,
+                    maxCarry: 8,
+                    energy: 1.5,
+                    phase: Math.random() * Math.PI * 2,
+                    size: 0.6 + Math.random() * 0.5
+                });
+            }
+            beeCount = bees.length;
+            updateBeeCount();
+            // Bloom explosion
+            for (let i = 0; i < 15; i++) {
+                const species = FLOWER_SPECIES[Math.floor(Math.random() * FLOWER_SPECIES.length)];
+                blooms.push({
+                    x: Math.random() * 0.85 + 0.075,
+                    y: Math.random() * 0.6 + 0.1,
+                    species,
+                    nectar: species.nectar * 2,
+                    maxNectar: species.nectar * 2,
+                    phase: Math.random() * Math.PI * 2,
+                    size: species.size * 1.2,
+                    blooming: true,
+                    lastVisited: 0
+                });
+            }
+            updateBloomCount();
+            addLog('🐝✨ THE BOUGONIA! Bees rise from the altar. The field erupts in golden swarm!');
+            showToast('✨ Act IV: The Regeneration — The bees return!', 'success');
+        }
+    }
+};
+
+const ACT_ORDER = ['apprentice', 'loss', 'proteus', 'regeneration'];
 
 // ── STATE ──
 const fieldCvs = document.getElementById('fieldCanvas');
@@ -289,7 +359,10 @@ let honeyStored = 0;
 let offerings = {};
 let fieldTime = 0;
 let beeCount = 12;
-let coherenceLevel = 0.3;
+let coherenceLevel = 0.4;
+let currentActKey = 'apprentice';
+let proteusForm = 0;
+let proteusTimer = 0;
 
 // ── RESIZE ──
 const resize = () => {
@@ -300,17 +373,38 @@ const resize = () => {
 window.addEventListener('resize', resize);
 resize();
 
-// ── INITIALIZE HIVE ──
+// ── STORY ENGINE ──
+function getCurrentAct() {
+    for (let i = ACT_ORDER.length - 1; i >= 0; i--) {
+        if (honeyStored >= STORY_ACTS[ACT_ORDER[i]].threshold) {
+            return ACT_ORDER[i];
+        }
+    }
+    return 'apprentice';
+}
+
+function updateStory() {
+    const newAct = getCurrentAct();
+    if (newAct !== currentActKey) {
+        currentActKey = newAct;
+        const act = STORY_ACTS[newAct];
+        document.getElementById('fieldAct').textContent = act.name;
+        document.getElementById('storyAct').textContent = act.name;
+        document.getElementById('beeLore').textContent = `"${act.lore}"`;
+        updateJournal('story');
+        if (act.onEnter) act.onEnter();
+    }
+    // Update poem each tick for dynamic honey count in Act IV
+    const act = STORY_ACTS[currentActKey];
+    document.getElementById('fieldPoem').textContent = typeof act.poem === 'function' ? act.poem() : act.poem;
+}
+
+// ── HIVE ──
 function initHive() {
     hiveCells = [];
     for (let r = 0; r < HIVE_ROWS; r++) {
         for (let c = 0; c < HIVE_COLS; c++) {
-            hiveCells.push({
-                row: r, col: c,
-                state: 'empty', // empty, filled, capped
-                nectar: 0,
-                cappedAt: null
-            });
+            hiveCells.push({ row: r, col: c, state: 'empty', nectar: 0, cappedAt: null });
         }
     }
     renderHive();
@@ -319,15 +413,11 @@ function initHive() {
 function renderHive() {
     const grid = document.getElementById('hiveGrid');
     grid.innerHTML = hiveCells.map(cell => {
-        const cls = cell.state === 'capped' ? 'capped' : 
-                    cell.state === 'filled' ? 'filled' : 'empty';
-        const icon = cell.state === 'capped' ? '🔒' :
-                     cell.state === 'filled' ? '🍯' : '';
+        const cls = cell.state === 'capped' ? 'capped' : cell.state === 'filled' ? 'filled' : 'empty';
+        const icon = cell.state === 'capped' ? '🔒' : cell.state === 'filled' ? '🍯' : '';
         return `<div class="hex-cell ${cls}" data-row="${cell.row}" data-col="${cell.col}"
                     onclick="clickCell(${cell.row},${cell.col})" 
-                    title="${cell.state}: ${cell.nectar.toFixed(0)} nectar">
-                    ${icon}
-                </div>`;
+                    title="${cell.state}: ${cell.nectar.toFixed(0)} nectar">${icon}</div>`;
     }).join('');
     
     const filled = hiveCells.filter(c => c.state === 'filled').length;
@@ -337,8 +427,7 @@ function renderHive() {
     document.getElementById('hiveFilled').textContent = filled;
     document.getElementById('hiveCapped').textContent = capped;
     document.getElementById('hiveEmpty').textContent = empty;
-    document.getElementById('aristaeusMeta').textContent = 
-        `Hive: active · Filled: ${filled} · Capped: ${capped} · Empty: ${empty}`;
+    document.getElementById('aristaeusMeta').textContent = `Hive: active · Filled: ${filled} · Capped: ${capped} · Empty: ${empty}`;
 }
 
 function clickCell(row, col) {
@@ -351,13 +440,11 @@ function clickCell(row, col) {
         cell.cappedAt = fieldTime;
         addLog(`🔒 Aristaeus caps cell [${row},${col}]. The honey is sealed.`);
         showToast('🔒 Cell capped! Ready for harvest.', 'success');
-    } else if (cell.state === 'capped') {
-        addLog(`🔒 Cell [${row},${col}] is already capped and waiting.`);
     }
     renderHive();
 }
 
-// ── INITIALIZE BLOOMS ──
+// ── BLOOMS ──
 function initBlooms(count = 25) {
     blooms = [];
     for (let i = 0; i < count; i++) {
@@ -377,8 +464,8 @@ function initBlooms(count = 25) {
     updateBloomCount();
 }
 
-// ── INITIALIZE BEES ──
-function initBees(count = 12) {
+// ── BEES ──
+function initBees(count = 14) {
     bees = [];
     for (let i = 0; i < count; i++) {
         bees.push({
@@ -388,7 +475,7 @@ function initBees(count = 12) {
             vy: (Math.random() - 0.5) * 0.003,
             target: null,
             carrying: 0,
-            maxCarry: 5,
+            maxCarry: 8,
             energy: 1,
             phase: Math.random() * Math.PI * 2,
             size: 0.7 + Math.random() * 0.6
@@ -398,72 +485,152 @@ function initBees(count = 12) {
     updateBeeCount();
 }
 
-// ── UPDATE COUNTS ──
 function updateBloomCount() {
     document.getElementById('bloomCount').textContent = `🌸 Blooms: ${blooms.length}`;
-    document.getElementById('fieldMeta').textContent = 
-        `Bees: ${bees.length} · Blooms: ${blooms.length} · Honey: ${honeyStored.toFixed(0)}`;
+    document.getElementById('fieldMeta').textContent = `Bees: ${bees.length} · Blooms: ${blooms.length} · Honey: ${honeyStored.toFixed(0)}`;
 }
 
 function updateBeeCount() {
     document.getElementById('beeCount').textContent = `🐝 Bees: ${bees.length}`;
 }
 
-// ── COHERENCE FROM PARENT ──
+// ── COHERENCE ──
 function fetchCoherence() {
     try {
         const state = GaiaSuncalc.getFullState();
         const planets = GaiaAstronomy.getAllPlanets();
         if (planets?.moon?.phase !== undefined) {
-            // Use moon phase to influence field coherence
             const phase = planets.moon.phase;
             coherenceLevel = 0.2 + 0.6 * (0.5 + 0.5 * Math.sin(phase * Math.PI * 2));
         }
     } catch(e) {
-        // Use time-based variation
-        coherenceLevel = 0.3 + 0.3 * Math.sin(Date.now() / 3600000);
+        coherenceLevel = 0.4 + 0.3 * Math.sin(Date.now() / 3600000);
     }
-    document.getElementById('fieldCoherence').textContent = 
-        `Coherence: ${coherenceLevel.toFixed(2)}`;
-}
-
-// ── FIELD POEM ──
-function updatePoem() {
-    const poem = DEMETER_POEMS[Math.floor(fieldTime / 10) % DEMETER_POEMS.length];
-    document.getElementById('fieldPoem').textContent = typeof poem === 'function' ? poem() : poem;
+    document.getElementById('fieldCoherence').textContent = `Coherence: ${coherenceLevel.toFixed(2)}`;
 }
 
 // ── DRAW FIELD ──
 function drawField() {
     fieldCtx.clearRect(0, 0, W, H);
     
-    // Earth gradient background
+    const act = STORY_ACTS[currentActKey];
+    
+    // Background based on story act
     const bgGrad = fieldCtx.createLinearGradient(0, 0, 0, H);
-    bgGrad.addColorStop(0, 'rgba(15,20,10,0.98)');
-    bgGrad.addColorStop(0.5, 'rgba(20,28,14,0.96)');
-    bgGrad.addColorStop(1, 'rgba(25,32,16,0.97)');
+    bgGrad.addColorStop(0, act.bgGradient[0]);
+    bgGrad.addColorStop(0.5, act.bgGradient[1]);
+    bgGrad.addColorStop(1, act.bgGradient[2]);
     fieldCtx.fillStyle = bgGrad;
     fieldCtx.fillRect(0, 0, W, H);
     
-    // Soil texture at bottom
+    // Soil texture
     for (let i = 0; i < 80; i++) {
         const sx = (i * 137.508) % W;
         const sy = H * 0.85 + (i * 97.3) % (H * 0.15);
         fieldCtx.beginPath();
         fieldCtx.arc(sx, sy, 0.5 + (i % 3) * 0.4, 0, Math.PI * 2);
-        fieldCtx.fillStyle = `rgba(60,40,25,${0.1 + (i % 5) * 0.03})`;
+        fieldCtx.fillStyle = `rgba(139,115,85,${0.08 + (i % 5) * 0.02})`;
         fieldCtx.fill();
     }
     
-    // Grass blades at bottom
+    // Grass
     for (let x = 0; x < W; x += 8) {
         const grassH = 15 + Math.sin(x * 0.05 + fieldTime * 0.02) * 8;
-        fieldCtx.strokeStyle = `rgba(80,130,60,${0.3 + Math.sin(x * 0.03) * 0.15})`;
+        fieldCtx.strokeStyle = `rgba(100,140,70,${0.25 + Math.sin(x * 0.03) * 0.1})`;
         fieldCtx.lineWidth = 0.7;
         fieldCtx.beginPath();
         fieldCtx.moveTo(x, H);
         fieldCtx.quadraticCurveTo(x + Math.sin(x * 0.1) * 3, H - grassH, x + Math.sin(x * 0.1 + 1) * 5, H - grassH - 5);
         fieldCtx.stroke();
+    }
+    
+    // ── PROTEUS (Act III) ──
+    if (currentActKey === 'proteus') {
+        proteusTimer += 0.02;
+        const px = W * 0.75 + Math.sin(proteusTimer * 0.3) * 60;
+        const py = H * 0.5 + Math.cos(proteusTimer * 0.4) * 40;
+        const pSize = 35 + Math.sin(proteusTimer * 0.5) * 15;
+        
+        // Shifting aura
+        const auraGrad = fieldCtx.createRadialGradient(px, py, 0, px, py, pSize * 2);
+        const hueShift = Math.sin(proteusTimer * 0.7) * 30;
+        auraGrad.addColorStop(0, `hsla(${200 + hueShift}, 50%, 60%, 0.3)`);
+        auraGrad.addColorStop(0.5, `hsla(${210 + hueShift}, 40%, 50%, 0.15)`);
+        auraGrad.addColorStop(1, 'transparent');
+        fieldCtx.fillStyle = auraGrad;
+        fieldCtx.beginPath();
+        fieldCtx.arc(px, py, pSize * 2, 0, Math.PI * 2);
+        fieldCtx.fill();
+        
+        // Shape-shifting form
+        fieldCtx.fillStyle = `rgba(85,153,170,0.4)`;
+        fieldCtx.beginPath();
+        const formType = Math.floor(proteusTimer / 3) % 4;
+        if (formType === 0) {
+            // Lion-like
+            fieldCtx.arc(px, py, pSize, 0, Math.PI * 2);
+        } else if (formType === 1) {
+            // Serpentine
+            for (let s = 0; s < 5; s++) {
+                const sx = px + Math.sin(proteusTimer + s) * pSize * 0.6;
+                const sy = py + Math.cos(proteusTimer + s) * pSize * 0.4;
+                fieldCtx.moveTo(sx, sy);
+                fieldCtx.arc(sx, sy, pSize * 0.25, 0, Math.PI * 2);
+            }
+        } else if (formType === 2) {
+            // Fire-like
+            for (let f = 0; f < 8; f++) {
+                const fx = px + Math.cos(f/8*Math.PI*2) * pSize * (0.5 + Math.random()*0.3);
+                const fy = py + Math.sin(f/8*Math.PI*2) * pSize * (0.5 + Math.random()*0.3) - 10;
+                fieldCtx.moveTo(fx, fy);
+                fieldCtx.arc(fx, fy, pSize * 0.2, 0, Math.PI * 2);
+            }
+        } else {
+            // Water-like
+            fieldCtx.ellipse(px, py, pSize * 1.2, pSize * 0.6, proteusTimer * 0.2, 0, Math.PI * 2);
+        }
+        fieldCtx.fill();
+        
+        // Chains
+        fieldCtx.strokeStyle = 'rgba(180,150,80,0.3)';
+        fieldCtx.lineWidth = 1;
+        fieldCtx.setLineDash([3, 5]);
+        for (let c = 0; c < 3; c++) {
+            const angle = (c / 3) * Math.PI * 2 + proteusTimer * 0.1;
+            fieldCtx.beginPath();
+            fieldCtx.moveTo(px, py);
+            fieldCtx.lineTo(px + Math.cos(angle) * pSize * 1.8, py + Math.sin(angle) * pSize * 1.8);
+            fieldCtx.stroke();
+        }
+        fieldCtx.setLineDash([]);
+        
+        // Label
+        fieldCtx.font = '10px Cinzel, serif';
+        fieldCtx.fillStyle = 'rgba(80,130,140,0.5)';
+        fieldCtx.textAlign = 'center';
+        fieldCtx.fillText('PROTEUS', px, py - pSize - 12);
+    }
+    
+    // ── BOUGONIA ALTAR (Act IV) ──
+    if (currentActKey === 'regeneration') {
+        const ax = W * 0.65;
+        const ay = H * 0.55;
+        const altarGrad = fieldCtx.createRadialGradient(ax, ay, 5, ax, ay, 30);
+        altarGrad.addColorStop(0, 'rgba(255,200,60,0.5)');
+        altarGrad.addColorStop(0.5, 'rgba(200,150,40,0.2)');
+        altarGrad.addColorStop(1, 'transparent');
+        fieldCtx.fillStyle = altarGrad;
+        fieldCtx.beginPath();
+        fieldCtx.arc(ax, ay, 35, 0, Math.PI * 2);
+        fieldCtx.fill();
+        
+        fieldCtx.fillStyle = 'rgba(139,115,85,0.3)';
+        fieldCtx.fillRect(ax - 25, ay - 5, 50, 15);
+        
+        fieldCtx.font = '9px Cinzel, serif';
+        fieldCtx.fillStyle = 'rgba(200,160,80,0.5)';
+        fieldCtx.textAlign = 'center';
+        fieldCtx.fillText('ALTAR', ax, ay - 20);
     }
     
     // Draw blooms
@@ -474,7 +641,6 @@ function drawField() {
         const pulseSize = bloom.size * (0.9 + 0.1 * Math.sin(fieldTime * 0.03 + bloom.phase));
         const r = 12 * pulseSize;
         
-        // Glow
         const glowGrad = fieldCtx.createRadialGradient(bx, by, 0, bx, by, r * 2);
         const glowAlpha = bloom.nectar / bloom.maxNectar * 0.3;
         glowGrad.addColorStop(0, bloom.species.petalColor + '44');
@@ -484,21 +650,18 @@ function drawField() {
         fieldCtx.arc(bx, by, r * 2, 0, Math.PI * 2);
         fieldCtx.fill();
         
-        // Petals
         const petalCount = 5 + (bloom.species.name.length % 3);
         for (let p = 0; p < petalCount; p++) {
             const angle = (p / petalCount) * Math.PI * 2 + bloom.phase * 0.5;
             const pr = r * 0.6;
             const px = bx + Math.cos(angle) * r * 0.5;
             const py = by + Math.sin(angle) * r * 0.5;
-            
             fieldCtx.beginPath();
             fieldCtx.ellipse(px, py, pr * 0.45, pr * 0.25, angle, 0, Math.PI * 2);
             fieldCtx.fillStyle = bloom.species.petalColor + '88';
             fieldCtx.fill();
         }
         
-        // Center
         const centerGrad = fieldCtx.createRadialGradient(bx, by, 0, bx, by, r * 0.35);
         centerGrad.addColorStop(0, bloom.species.color);
         centerGrad.addColorStop(1, bloom.species.color + '44');
@@ -507,7 +670,6 @@ function drawField() {
         fieldCtx.arc(bx, by, r * 0.35, 0, Math.PI * 2);
         fieldCtx.fill();
         
-        // Nectar indicator (bright center dot)
         if (bloom.nectar > bloom.maxNectar * 0.3) {
             fieldCtx.beginPath();
             fieldCtx.arc(bx, by, r * 0.12, 0, Math.PI * 2);
@@ -515,10 +677,9 @@ function drawField() {
             fieldCtx.fill();
         }
         
-        // Label
         if (bloom.size > 0.9) {
             fieldCtx.font = `${9 * pulseSize}px EB Garamond, serif`;
-            fieldCtx.fillStyle = 'rgba(200,180,150,0.3)';
+            fieldCtx.fillStyle = 'rgba(150,120,60,0.3)';
             fieldCtx.textAlign = 'center';
             fieldCtx.fillText(bloom.species.emoji, bx, by - r - 8);
         }
@@ -531,18 +692,16 @@ function drawField() {
         const buzz = Math.sin(fieldTime * 0.15 + bee.phase) * 2;
         const beeSize = 4 * bee.size;
         
-        // Trail
         if (bee.carrying > 0) {
             fieldCtx.beginPath();
             fieldCtx.arc(bx, by + buzz, beeSize * 0.6, 0, Math.PI * 2);
-            fieldCtx.fillStyle = `rgba(255,200,80,${bee.carrying / bee.maxCarry * 0.3})`;
+            fieldCtx.fillStyle = `rgba(255,220,80,${bee.carrying / bee.maxCarry * 0.3})`;
             fieldCtx.fill();
         }
         
-        // Wings
         const wingAngle = fieldTime * 0.3 + bee.phase;
         const wingFlap = Math.sin(wingAngle * 3) * 3;
-        fieldCtx.fillStyle = 'rgba(255,255,255,0.4)';
+        fieldCtx.fillStyle = 'rgba(255,255,255,0.5)';
         fieldCtx.beginPath();
         fieldCtx.ellipse(bx - beeSize * 0.5, by - beeSize * 0.8 + wingFlap, beeSize * 0.7, beeSize * 0.25, -0.5, 0, Math.PI * 2);
         fieldCtx.fill();
@@ -550,19 +709,17 @@ function drawField() {
         fieldCtx.ellipse(bx + beeSize * 0.3, by - beeSize * 0.6 - wingFlap, beeSize * 0.6, beeSize * 0.2, 0.3, 0, Math.PI * 2);
         fieldCtx.fill();
         
-        // Body
         const bodyGrad = fieldCtx.createLinearGradient(bx - beeSize, by, bx + beeSize, by);
-        bodyGrad.addColorStop(0, '#2a1f0a');
-        bodyGrad.addColorStop(0.4, '#ffbb33');
-        bodyGrad.addColorStop(0.6, '#ffbb33');
-        bodyGrad.addColorStop(1, '#1a1005');
+        bodyGrad.addColorStop(0, '#3d2b1f');
+        bodyGrad.addColorStop(0.4, '#eebb44');
+        bodyGrad.addColorStop(0.6, '#eebb44');
+        bodyGrad.addColorStop(1, '#2a1f0a');
         fieldCtx.fillStyle = bodyGrad;
         fieldCtx.beginPath();
         fieldCtx.ellipse(bx, by + buzz, beeSize * 0.8, beeSize * 0.35, 0, 0, Math.PI * 2);
         fieldCtx.fill();
         
-        // Stripes
-        fieldCtx.strokeStyle = 'rgba(0,0,0,0.5)';
+        fieldCtx.strokeStyle = 'rgba(0,0,0,0.4)';
         fieldCtx.lineWidth = 0.6;
         for (let s = -1; s <= 1; s += 2) {
             fieldCtx.beginPath();
@@ -571,44 +728,37 @@ function drawField() {
             fieldCtx.stroke();
         }
         
-        // Eyes
         fieldCtx.fillStyle = '#000';
         fieldCtx.beginPath();
         fieldCtx.arc(bx + beeSize * 0.5, by + buzz - beeSize * 0.1, beeSize * 0.15, 0, Math.PI * 2);
         fieldCtx.fill();
         
-        // Pollen load (if carrying)
         if (bee.carrying > 0) {
             fieldCtx.beginPath();
             fieldCtx.arc(bx - beeSize * 0.3, by + buzz - beeSize * 0.2, beeSize * 0.3 * (bee.carrying / bee.maxCarry), 0, Math.PI * 2);
-            fieldCtx.fillStyle = `rgba(255,220,80,${0.5 + bee.carrying / bee.maxCarry * 0.5})`;
+            fieldCtx.fillStyle = `rgba(255,230,120,${0.5 + bee.carrying / bee.maxCarry * 0.5})`;
             fieldCtx.fill();
         }
     });
     
-                // Particles
-        for (let i = particles.length - 1; i >= 0; i--) {
-            const p = particles[i];
-            p.life -= 0.008;
-            p.y -= p.vy;
-            p.x += p.vx;
-            
-            if (p.life <= 0) {
-                particles.splice(i, 1);
-                continue;
-            }
-            
-            const radius = Math.max(0.1, p.size * p.life);
-            fieldCtx.beginPath();
-            fieldCtx.arc(p.x, p.y, radius, 0, Math.PI * 2);
-            fieldCtx.fillStyle = p.color.replace('1)', `${Math.max(0, Math.min(1, p.life))})`);
-            fieldCtx.fill();
-        }
-    } // ← THIS CLOSING BRACE ENDS drawField()
+    // Particles
+    for (let i = particles.length - 1; i >= 0; i--) {
+        const p = particles[i];
+        p.life -= 0.008;
+        p.y -= p.vy;
+        p.x += p.vx;
+        if (p.life <= 0) { particles.splice(i, 1); continue; }
+        const radius = Math.max(0.1, p.size * p.life);
+        fieldCtx.beginPath();
+        fieldCtx.arc(p.x, p.y, radius, 0, Math.PI * 2);
+        fieldCtx.fillStyle = p.color.replace('1)', `${Math.max(0, Math.min(1, p.life))})`);
+        fieldCtx.fill();
+    }
+}
 
-    // ── SPAWN PARTICLE ──
+// ── SPAWN PARTICLE ──
 function spawnParticle(x, y, color = 'rgba(255,220,100,1)') {
-    for (let i = 0; i < 3; i++) {
+    for (let i = 0; i < 4; i++) {
         particles.push({
             x: Math.max(0, Math.min(W, x * W)),
             y: Math.max(0, Math.min(H, y * H)),
@@ -623,8 +773,9 @@ function spawnParticle(x, y, color = 'rgba(255,220,100,1)') {
 
 // ── BEE LOGIC ──
 function updateBees() {
+    const act = STORY_ACTS[currentActKey];
+    
     bees.forEach(bee => {
-        // Find nearest bloom
         if (!bee.target || bee.target.nectar <= 0 || !bee.target.blooming) {
             let nearest = null;
             let nearestDist = Infinity;
@@ -633,24 +784,19 @@ function updateBees() {
                 const dx = bloom.x - bee.x;
                 const dy = bloom.y - bee.y;
                 const dist = Math.sqrt(dx * dx + dy * dy);
-                if (dist < nearestDist) {
-                    nearestDist = dist;
-                    nearest = bloom;
-                }
+                if (dist < nearestDist) { nearestDist = dist; nearest = bloom; }
             });
             bee.target = nearest;
         }
         
         if (bee.target && bee.target.nectar > 0 && bee.target.blooming) {
-            // Fly toward target
             const dx = bee.target.x - bee.x;
             const dy = bee.target.y - bee.y;
             const dist = Math.sqrt(dx * dx + dy * dy);
             
             if (dist < 0.03) {
-                // At flower — collect nectar
                 if (bee.carrying < bee.maxCarry) {
-                    const collect = Math.min(1, bee.target.nectar, bee.maxCarry - bee.carrying);
+                    const collect = Math.min(2, bee.target.nectar * act.nectarMult, bee.maxCarry - bee.carrying);
                     bee.carrying += collect;
                     bee.target.nectar -= collect;
                     bee.target.lastVisited = fieldTime;
@@ -660,52 +806,42 @@ function updateBees() {
                 bee.vx += (Math.random() - 0.5) * 0.004;
                 bee.vy += (Math.random() - 0.5) * 0.004;
             } else {
-                const speed = 0.002 + coherenceLevel * 0.003;
+                const speed = 0.003 + coherenceLevel * 0.004;
                 bee.vx += (dx / dist) * speed * 0.1;
                 bee.vy += (dy / dist) * speed * 0.1;
             }
         } else {
-            // Wander
             bee.vx += (Math.random() - 0.5) * 0.001;
             bee.vy += (Math.random() - 0.5) * 0.001;
             
-            // Return to hive area if carrying full load
             if (bee.carrying >= bee.maxCarry) {
                 const hiveX = 0.5, hiveY = 0.85;
-                bee.vx += (hiveX - bee.x) * 0.002;
-                bee.vy += (hiveY - bee.y) * 0.002;
-                
+                bee.vx += (hiveX - bee.x) * 0.003;
+                bee.vy += (hiveY - bee.y) * 0.003;
                 if (Math.abs(bee.x - hiveX) < 0.04 && Math.abs(bee.y - hiveY) < 0.04) {
                     depositHoney(bee);
                 }
             }
         }
         
-        // Dampen velocity
         bee.vx *= 0.95;
         bee.vy *= 0.95;
-        
-        // Apply velocity
         bee.x += bee.vx;
         bee.y += bee.vy;
-        
-        // Boundaries
         bee.x = Math.max(0.05, Math.min(0.95, bee.x));
         bee.y = Math.max(0.05, Math.min(0.9, bee.y));
-        
-        // Buzz offset
         bee.phase += 0.1 + Math.random() * 0.05;
     });
     
     // Nectar regeneration
     blooms.forEach(bloom => {
-        if (bloom.nectar < bloom.maxNectar && fieldTime - bloom.lastVisited > 8) {
-            bloom.nectar = Math.min(bloom.maxNectar, bloom.nectar + 0.02 * coherenceLevel);
+        if (bloom.nectar < bloom.maxNectar && fieldTime - bloom.lastVisited > 6) {
+            bloom.nectar = Math.min(bloom.maxNectar, bloom.nectar + 0.05 * coherenceLevel);
         }
     });
     
-    // New blooms based on coherence
-    if (coherenceLevel > 0.6 && blooms.length < 50 && Math.random() < coherenceLevel * 0.02) {
+    // New blooms
+    if (blooms.length < 50 && Math.random() < act.flowerSpawnRate * (1 + coherenceLevel)) {
         const species = FLOWER_SPECIES[Math.floor(Math.random() * FLOWER_SPECIES.length)];
         blooms.push({
             x: Math.random() * 0.85 + 0.075,
@@ -718,7 +854,6 @@ function updateBees() {
             blooming: true,
             lastVisited: 0
         });
-        addLog(`🌸 A new ${species.emoji} ${species.name} blooms in the field.`);
     }
 }
 
@@ -732,13 +867,24 @@ function depositHoney(bee) {
         addLog(`🍯 A bee deposits honey. Cell [${emptyCell.row},${emptyCell.col}] fills.`);
         renderHive();
     } else {
-        // All cells full - honey overflows
         honeyStored += bee.carrying * 5;
         bee.carrying = 0;
         addLog(`🍯 The hive overflows! Honey drips into Demeter's store.`);
     }
     document.getElementById('honeyTotal').textContent = `🍯 Honey: ${honeyStored.toFixed(0)}`;
     updateBloomCount();
+    updateStory();
+}
+
+// ── PASSIVE HONEY TRICKLE ──
+function passiveHoney() {
+    const cappedCount = hiveCells.filter(c => c.state === 'capped').length;
+    if (cappedCount > 0) {
+        const trickle = cappedCount * 1.5;
+        honeyStored += trickle;
+        document.getElementById('honeyTotal').textContent = `🍯 Honey: ${honeyStored.toFixed(0)}`;
+        updateStory();
+    }
 }
 
 // ── HARVEST HONEY ──
@@ -754,81 +900,79 @@ function harvestHoney() {
     });
     if (harvested > 0) {
         honeyStored += harvested;
-        addLog(`🍯✨ HARVEST! ${harvested.toFixed(0)} honey collected from capped cells. Demeter blesses the harvest.`);
+        addLog(`🍯✨ HARVEST! ${harvested.toFixed(0)} honey collected. Demeter blesses the harvest.`);
         showToast(`🍯 Harvested ${harvested.toFixed(0)} honey!`, 'honey');
         updateJournal('harvest');
     } else {
-        addLog('🔒 No capped cells to harvest. Bees must fill and Aristaeus must cap them first.');
+        addLog('🔒 No capped cells to harvest.');
         showToast('No capped cells ready for harvest.');
     }
     document.getElementById('honeyTotal').textContent = `🍯 Honey: ${honeyStored.toFixed(0)}`;
     renderHive();
     updateBloomCount();
+    updateStory();
 }
 
 // ── TEND HIVE ──
 function tendHive() {
-    // Boost bee energy
-    bees.forEach(bee => {
-        bee.energy = Math.min(1, bee.energy + 0.3);
-    });
+    const act = STORY_ACTS[currentActKey];
+    bees.forEach(bee => { bee.energy = Math.min(1, bee.energy + 0.3); });
     
-    // Small chance to spawn new bee
-    if (bees.length < 24 && Math.random() < 0.3 + coherenceLevel * 0.3) {
+    if (bees.length < 30 && Math.random() < act.beeSpawnRate) {
         bees.push({
-            x: 0.5,
-            y: 0.85,
+            x: 0.5, y: 0.85,
             vx: (Math.random() - 0.5) * 0.005,
             vy: -Math.random() * 0.01,
-            target: null,
-            carrying: 0,
-            maxCarry: 5,
-            energy: 1,
-            phase: Math.random() * Math.PI * 2,
+            target: null, carrying: 0, maxCarry: 8,
+            energy: 1, phase: Math.random() * Math.PI * 2,
             size: 0.5 + Math.random() * 0.4
         });
         beeCount = bees.length;
-        addLog('🐝 A new bee emerges from the hive. The colony grows.');
+        addLog('🐝 A new bee emerges from the hive.');
     }
-    
     updateBeeCount();
     updateJournal('tend');
-    addLog('🐝 Aristaeus tends the hive. The bees buzz with renewed vigor.');
-    showToast('🐝 Hive tended. The bees are vigorous.', 'success');
+    addLog('🐝 Aristaeus tends the hive.');
+    showToast('🐝 Hive tended.', 'success');
 }
 
 // ── SMOKE HIVE ──
 function smokeHive() {
-    // Calms bees, increases nectar collection temporarily
     bees.forEach(bee => {
-        bee.maxCarry = Math.min(10, bee.maxCarry + 1);
-        setTimeout(() => { bee.maxCarry = Math.max(3, bee.maxCarry - 1); }, 30000);
+        bee.maxCarry = Math.min(12, bee.maxCarry + 2);
+        setTimeout(() => { bee.maxCarry = Math.max(4, bee.maxCarry - 2); }, 30000);
     });
-    addLog('💨 Smoke drifts through the hive. The bees grow calm and carry more.');
+    addLog('💨 Smoke calms the hive. Bees carry more.');
     updateJournal('smoke');
-    showToast('💨 Hive smoked. Bees are calm.');
+    showToast('💨 Hive smoked.');
 }
 
 // ── JOURNAL ──
 const JOURNAL_ENTRIES = {
     tend: [
-        'Aristaeus checks each frame. The brood pattern is strong. The queen is laying well.',
-        'The hive hums a steady song. Aristaeus recognizes it — the song of a healthy colony.',
-        'He brushes a bee gently from his sleeve. "Patience, little one. The clover is opening."',
+        'Aristaeus checks each frame. The brood pattern is strong.',
+        'The hive hums a steady song. A healthy colony.',
+        'He brushes a bee gently from his sleeve. "Patience, little one."',
     ],
     smoke: [
-        'The smoke curls into the entrance. The bees retreat downward, gorging on honey stores.',
-        'Aristaeus works the bellows slowly. The bees are calm enough now to inspect the frames.',
-        'Through the smoke, he counts the capped cells. A good season. Demeter has been generous.',
+        'The smoke curls into the entrance. The bees retreat, gorging on stores.',
+        'Through the smoke, he counts the capped cells. A good season.',
     ],
     harvest: [
-        'The honey flows golden into the jar. Aristaeus tastes it — clover, lavender, a hint of thistle.',
-        'He leaves an offering at Demeter\'s shrine. The first honey of the harvest always belongs to her.',
-        '"The bees have done their work," he whispers. "Now let this sweetness feed the pilgrims."',
+        'The honey flows golden into the jar — clover, lavender, a hint of thistle.',
+        'He leaves an offering at Demeter\'s shrine. The first honey belongs to her.',
+    ],
+    story: [
+        null // handled by lore
     ]
 };
 
 function updateJournal(action) {
+    if (action === 'story') {
+        const act = STORY_ACTS[currentActKey];
+        document.getElementById('journalEntry').textContent = act.journal;
+        return;
+    }
     const entries = JOURNAL_ENTRIES[action] || JOURNAL_ENTRIES.tend;
     const entry = entries[Math.floor(Math.random() * entries.length)];
     document.getElementById('journalEntry').textContent = entry;
@@ -859,75 +1003,63 @@ function initOfferings() {
 
 function makeOffering(id) {
     offerings[id] = (offerings[id] || 0) + 1;
-    
-    // Offerings boost the field
     if (id === 'firstfruits' || id === 'honeycake') {
-        // Spawn extra blooms
-        for (let i = 0; i < 3; i++) {
+        for (let i = 0; i < 4; i++) {
             const species = FLOWER_SPECIES[Math.floor(Math.random() * FLOWER_SPECIES.length)];
             blooms.push({
                 x: Math.random() * 0.85 + 0.075,
                 y: Math.random() * 0.6 + 0.1,
-                species,
-                nectar: species.nectar,
-                maxNectar: species.nectar,
+                species, nectar: species.nectar, maxNectar: species.nectar,
                 phase: Math.random() * Math.PI * 2,
                 size: species.size * (0.8 + Math.random() * 0.4),
-                blooming: true,
-                lastVisited: 0
+                blooming: true, lastVisited: 0
             });
         }
-        addLog(`🕯️ ${OFFERINGS_LIST.find(o => o.id === id)?.name} offered. Demeter blesses the field with new blooms.`);
+        addLog(`🕯️ ${OFFERINGS_LIST.find(o=>o.id===id)?.name} offered. New blooms appear.`);
     } else if (id === 'barleywater') {
-        // Boost bee speed temporarily
-        bees.forEach(bee => {
-            bee.energy = 1.5;
-            setTimeout(() => { bee.energy = Math.min(1, bee.energy); }, 20000);
-        });
+        bees.forEach(bee => { bee.energy = 1.5; setTimeout(() => { bee.energy = Math.min(1, bee.energy); }, 20000); });
         addLog('🏺 Kykeon offered. The bees fly with sacred vigor.');
     } else {
-        addLog(`🕯️ ${OFFERINGS_LIST.find(o => o.id === id)?.name} offered to Demeter.`);
+        addLog(`🕯️ ${OFFERINGS_LIST.find(o=>o.id===id)?.name} offered to Demeter.`);
     }
-    
     updateBloomCount();
     initOfferings();
-    showToast(`🕯️ Offering made to Demeter`, 'success');
+    showToast('🕯️ Offering made to Demeter', 'success');
 }
 
 // ── LOG ──
 const logLines = [];
 function addLog(msg) {
-    const time = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    const time = new Date().toLocaleTimeString('en-US', { hour:'2-digit', minute:'2-digit', second:'2-digit' });
     logLines.unshift(`[${time}] ${msg}`);
     if (logLines.length > 50) logLines.length = 50;
-    
-    const scroll = document.getElementById('logScroll');
-    scroll.innerHTML = logLines.map(l => `<div class="log-line">${l}</div>`).join('');
+    document.getElementById('logScroll').innerHTML = logLines.map(l => `<div class="log-line">${l}</div>`).join('');
 }
 
 // ── TOAST ──
 let toastTimer;
-function showToast(msg, type = '') {
+function showToast(msg, type='') {
     const el = document.getElementById('toast');
-    el.className = 'show ' + (type || '');
+    el.className = 'show ' + (type||'');
     el.textContent = msg;
     clearTimeout(toastTimer);
     toastTimer = setTimeout(() => { el.className = ''; }, 3500);
 }
 
 // ── MAIN LOOP ──
+let passiveTick = 0;
 function tick() {
     fieldTime += 0.1;
+    passiveTick++;
     
     updateBees();
     drawField();
     
     if (Math.floor(fieldTime) % 30 === 0) {
         fetchCoherence();
-        updatePoem();
     }
     
-    if (Math.floor(fieldTime) % 20 === 0 && Math.random() < coherenceLevel) {
+    if (Math.floor(fieldTime) % 20 === 0) {
         updateBloomCount();
     }
     
@@ -935,10 +1067,15 @@ function tick() {
         updateBeeCount();
     }
     
+    // Passive honey trickle every ~1 second
+    if (passiveTick % 10 === 0) {
+        passiveHoney();
+    }
+    
     requestAnimationFrame(tick);
 }
 
-// ── BUTTON HANDLERS ──
+// ── BUTTONS ──
 document.getElementById('tendHiveBtn').addEventListener('click', tendHive);
 document.getElementById('smokeHiveBtn').addEventListener('click', smokeHive);
 document.getElementById('harvestHoneyBtn').addEventListener('click', harvestHoney);
@@ -954,8 +1091,16 @@ function init() {
     updateBloomCount();
     updateBeeCount();
     document.getElementById('honeyTotal').textContent = '🍯 Honey: 0';
-    addLog('🌾 Demeter\'s temple awakens. The field lies fallow, waiting for the first bee.');
-    addLog('🐝 Aristaeus opens the hive. The colony stirs.');
+    document.getElementById('storyAct').textContent = 'Act I: The Apprentice';
+    document.getElementById('fieldAct').textContent = 'Act I — The Apprentice';
+    
+    // Set initial lore
+    const act = STORY_ACTS['apprentice'];
+    document.getElementById('beeLore').textContent = `"${act.lore}"`;
+    document.getElementById('journalEntry').textContent = act.journal;
+    
+    addLog('🌾 Demeter\'s temple awakens at dawn. The field waits for the first bee.');
+    addLog('🐝 Aristaeus opens the hive. The story begins.');
     
     tick();
 }
