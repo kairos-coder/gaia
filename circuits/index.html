@@ -1,238 +1,26 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Secret Message Decoder</title>
-    <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body {
-            font-family: 'Courier New', monospace;
-            background: #0a0a0a;
-            color: #e0e0e0;
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-        }
-        .container {
-            max-width: 800px;
-            width: 100%;
-            background: #1a1a1a;
-            border: 1px solid #333;
-            border-radius: 12px;
-            padding: 30px;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.6);
-        }
-        h1 {
-            font-family: 'Courier New', monospace;
-            font-size: 1.4rem;
-            color: #c9a84c;
-            text-align: center;
-            margin-bottom: 20px;
-            letter-spacing: 2px;
-        }
-        .url-input {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-        .url-input input {
-            flex: 1;
-            padding: 10px 14px;
-            background: #0a0a0a;
-            border: 1px solid #333;
-            border-radius: 6px;
-            color: #e0e0e0;
-            font-family: 'Courier New', monospace;
-            font-size: 0.8rem;
-        }
-        .url-input input:focus {
-            outline: none;
-            border-color: #c9a84c;
-        }
-        button {
-            padding: 10px 20px;
-            background: #c9a84c;
-            color: #0a0a0a;
-            border: none;
-            border-radius: 6px;
-            font-family: 'Courier New', monospace;
-            font-weight: bold;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-        button:hover {
-            background: #d4b85c;
-        }
-        button:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-        #output {
-            font-family: 'Courier New', monospace;
-            font-size: 1.1rem;
-            line-height: 1.4;
-            background: #0a0a0a;
-            border: 1px solid #222;
-            border-radius: 6px;
-            padding: 16px;
-            min-height: 80px;
-            white-space: pre-wrap;
-            word-break: break-all;
-            color: #c9a84c;
-        }
-        #status {
-            font-size: 0.8rem;
-            color: #666;
-            margin-top: 12px;
-            text-align: center;
-        }
-        .default-btn {
-            background: #2a2a2a;
-            color: #aaa;
-            border: 1px solid #444;
-        }
-        .default-btn:hover {
-            background: #3a3a3a;
-        }
-        .buttons {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TS Player</title>
 </head>
 <body>
-    <div class="container">
-        <h1>⬡ SECRET MESSAGE DECODER</h1>
-        
-        <div class="url-input">
-            <input type="text" id="urlInput" placeholder="Paste Google Doc URL here..." value="https://docs.google.com/document/d/e/2PACX-1vSvM5gDlNvt7npYHhp_XfsJvuntUhq184By5xO_pA4b_gCWeXb6dM6ZxwN8rE6S4ghUsCj2VKR21oEP/pub">
-            <button id="decodeBtn">Decode</button>
-        </div>
-        
-        <div class="buttons">
-            <button id="exampleBtn" class="default-btn">Use Example URL</button>
-        </div>
-        
-        <div id="output">Awaiting decode...</div>
-        <div id="status"></div>
-    </div>
 
-    <script>
-        async function decodeSecretMessage(url) {
-            try {
-                const response = await fetch(url);
-                if (!response.ok) throw new Error(`HTTP ${response.status}`);
-                const html = await response.text();
-                
-                const grid = {};
-                let maxX = 0;
-                let maxY = 0;
-                
-                // Try HTML table format
-                const tableRegex = /<td>(\d+)<\/td>\s*<td>(\d+)<\/td>\s*<td>([^<]+)<\/td>/g;
-                let match;
-                let found = false;
-                
-                while ((match = tableRegex.exec(html)) !== null) {
-                    found = true;
-                    const x = parseInt(match[1]);
-                    const y = parseInt(match[2]);
-                    const char = match[3].trim();
-                    grid[`${x},${y}`] = char;
-                    if (x > maxX) maxX = x;
-                    if (y > maxY) maxY = y;
-                }
-                
-                // If no table data, try plain text format
-                if (!found) {
-                    const textRegex = /(\d+)\s+(\d+)\s+([^\s]+)/g;
-                    while ((match = textRegex.exec(html)) !== null) {
-                        found = true;
-                        const x = parseInt(match[1]);
-                        const y = parseInt(match[2]);
-                        const char = match[3].trim();
-                        grid[`${x},${y}`] = char;
-                        if (x > maxX) maxX = x;
-                        if (y > maxY) maxY = y;
-                    }
-                }
-                
-                if (!found) {
-                    return { error: 'No coordinate data found in the document.' };
-                }
-                
-                // Build the grid
-                let result = '';
-                for (let y = 0; y <= maxY; y++) {
-                    let row = '';
-                    for (let x = 0; x <= maxX; x++) {
-                        row += grid[`${x},${y}`] || ' ';
-                    }
-                    result += row + '\n';
-                }
-                
-                // Extract just the letters for the secret message
-                const letters = result.replace(/[^A-Z]/g, '');
-                
-                return { grid: result, letters: letters };
-            } catch (error) {
-                return { error: error.message };
-            }
-        }
-        
-        const urlInput = document.getElementById('urlInput');
-        const decodeBtn = document.getElementById('decodeBtn');
-        const exampleBtn = document.getElementById('exampleBtn');
-        const output = document.getElementById('output');
-        const status = document.getElementById('status');
-        
-        const EXAMPLE_URL = 'https://docs.google.com/document/d/e/2PACX-1vSvM5gDlNvt7npYHhp_XfsJvuntUhq184By5xO_pA4b_gCWeXb6dM6ZxwN8rE6S4ghUsCj2VKR21oEP/pub';
-        
-        async function decode() {
-            const url = urlInput.value.trim();
-            if (!url) {
-                output.textContent = 'Please enter a URL.';
-                return;
-            }
-            
-            decodeBtn.disabled = true;
-            output.textContent = 'Decoding...';
-            status.textContent = '';
-            
-            const result = await decodeSecretMessage(url);
-            
-            if (result.error) {
-                output.textContent = `Error: ${result.error}`;
-                status.textContent = 'Try checking the URL or document format.';
-            } else {
-                output.textContent = result.grid;
-                status.textContent = `Secret message: "${result.letters}"`;
-            }
-            
-            decodeBtn.disabled = false;
-        }
-        
-        decodeBtn.addEventListener('click', decode);
-        
-        exampleBtn.addEventListener('click', () => {
-            urlInput.value = EXAMPLE_URL;
-            decode();
-        });
-        
-        // Enter key to decode
-        urlInput.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') decode();
-        });
-        
-        // Auto-decode on load with example URL
-        window.addEventListener('load', () => {
-            urlInput.value = EXAMPLE_URL;
-            decode();
-        });
-    </script>
+  <!-- 1. TypeScript compiler (required) -->
+  <script src="https://cdn.jsdelivr.net/npm/typescript@5.3.2/lib/typescript.min.js"></script>
+
+  <!-- 2. The shell -->
+  <script src="TS_player.js"></script>
+
+  <!-- 3. Mount -->
+  <script>
+    TSPlayer.mount({
+      // theme: { '--ts-accent': '#7c3aed' },   // override any CSS var
+      // url: 'https://raw.githubusercontent.com/kairos-coder/ealdforn/main/scripts/example.ts',
+      // run: true,                              // auto-run the pre-filled URL
+    });
+  </script>
+
 </body>
 </html>
