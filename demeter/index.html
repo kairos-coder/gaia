@@ -586,29 +586,36 @@ function drawField() {
         }
     });
     
-    // Particles
-    particles.forEach((p, i) => {
-        p.life -= 0.008;
-        p.y -= p.vy;
-        p.x += p.vx;
-        fieldCtx.beginPath();
-        fieldCtx.arc(p.x, p.y, p.size * p.life, 0, Math.PI * 2);
-        fieldCtx.fillStyle = p.color.replace('1)', `${p.life})`);
-        fieldCtx.fill();
-    });
-    particles = particles.filter(p => p.life > 0);
-}
+                // Particles
+        for (let i = particles.length - 1; i >= 0; i--) {
+            const p = particles[i];
+            p.life -= 0.008;
+            p.y -= p.vy;
+            p.x += p.vx;
+            
+            if (p.life <= 0) {
+                particles.splice(i, 1);
+                continue;
+            }
+            
+            const radius = Math.max(0.1, p.size * p.life);
+            fieldCtx.beginPath();
+            fieldCtx.arc(p.x, p.y, radius, 0, Math.PI * 2);
+            fieldCtx.fillStyle = p.color.replace('1)', `${Math.max(0, Math.min(1, p.life))})`);
+            fieldCtx.fill();
+        }
+    } // ← THIS CLOSING BRACE ENDS drawField()
 
-// ── SPAWN PARTICLE ──
+    // ── SPAWN PARTICLE ──
 function spawnParticle(x, y, color = 'rgba(255,220,100,1)') {
     for (let i = 0; i < 3; i++) {
         particles.push({
-            x: x * W,
-            y: y * H,
+            x: Math.max(0, Math.min(W, x * W)),
+            y: Math.max(0, Math.min(H, y * H)),
             vx: (Math.random() - 0.5) * 1.2,
             vy: Math.random() * 0.8 + 0.3,
-            size: 1.5 + Math.random() * 2,
-            life: 1,
+            size: Math.max(0.5, 1.5 + Math.random() * 2),
+            life: 1.0,
             color
         });
     }
