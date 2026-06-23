@@ -133,24 +133,6 @@ async _loadExternalMaterials() {
         } catch(e) { continue; }
     }
 }
-    
-    for (const path of paths) {
-        try {
-            const resp = await fetch(path);
-            if (resp.ok) {
-                const data = await resp.json();
-                for (const category of Object.values(data)) {
-                    if (typeof category === 'object' && !Array.isArray(category)) {
-                        Object.assign(this.materials, category);
-                    }
-                }
-                return; // Success — stop trying
-            }
-        } catch(e) {
-            continue;
-        }
-    }
-}
 
     // ═══════════════════════════════════
     // MATERIAL RESOLVER
