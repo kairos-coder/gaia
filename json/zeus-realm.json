@@ -1,7 +1,7 @@
 {
-  "name": "Thunder Peak · Realm of Zeus",
-  "description": "The throne room at the summit of Olympus. Storm clouds gather outside. The King of Gods holds court from a throne of storm-stone and gold. Eagles perch on the pillars. Lightning cracks the sky.",
-  "size": { "w": 860, "h": 600 },
+  "name": "Thunder Peak · Throne of Zeus",
+  "description": "The summit of Olympus. Storm clouds spiral overhead. The King of Gods sits upon a throne carved from the mountain itself. Eagles perch on shattered pillars. The Styx flows beneath. Oath-breakers' chains hang from the vault. Lightning is not decoration here — it is law.",
+  "size": { "w": 860, "h": 620 },
   "background": {
     "type": "ouranos"
   },
@@ -9,32 +9,38 @@
     "farWall": {
       "material": "storm_grey",
       "features": [
-        { "type": "throne", "position": { "x": 330, "y": 20 } },
-        { "type": "offering_bowl", "position": { "x": 240, "y": 200 } },
-        { "type": "offering_bowl", "position": { "x": 520, "y": 200 } }
+        { "type": "throne", "position": { "x": 290, "y": 10 } },
+        { "type": "eagle_perch_left", "position": { "x": 140, "y": 40 } },
+        { "type": "eagle_perch_right", "position": { "x": 560, "y": 40 } },
+        { "type": "chain_hanging", "position": { "x": 80, "y": -20 } },
+        { "type": "chain_hanging", "position": { "x": 620, "y": -20 } }
       ],
       "openings": [
-        { "type": "window", "x": 370, "y": -10, "width": 60, "height": 90, "arch": true }
+        { "type": "window", "x": 370, "y": -15, "width": 50, "height": 80, "arch": true }
       ]
     },
     "leftWall": {
       "material": "storm_grey",
       "width": 40,
       "features": [
-        { "type": "pillar", "position": { "x": 5, "y": 60 }, "material": "marble_veined", "width": 30, "height": 160, "capital": true }
+        { "type": "shattered_pillar", "position": { "x": 0, "y": 80 } },
+        { "type": "torch_sconce", "position": { "x": 10, "y": 200 } }
       ]
     },
     "rightWall": {
       "material": "storm_grey",
       "width": 40,
       "features": [
-        { "type": "pillar", "position": { "x": 5, "y": 60 }, "material": "marble_veined", "width": 30, "height": 160, "capital": true }
+        { "type": "shattered_pillar", "position": { "x": 0, "y": 80 } },
+        { "type": "torch_sconce", "position": { "x": 10, "y": 200 } }
       ]
     },
     "floor": {
       "material": "marble_dark",
       "features": [
-        { "type": "glyph_circle", "position": { "x": 280, "y": 60 } }
+        { "type": "styx_river", "position": { "x": 200, "y": 160 } },
+        { "type": "glyph_circle", "position": { "x": 260, "y": 70 } },
+        { "type": "cracked_floor", "position": { "x": 340, "y": 100 } }
       ]
     },
     "ceiling": {
@@ -42,31 +48,35 @@
     }
   },
   "objects": [
-    { "type": "throne", "x": 385, "y": 130 },
-    { "type": "thunderbolt", "x": 415, "y": 100 },
-    { "type": "offering_bowl", "x": 280, "y": 320 },
-    { "type": "offering_bowl", "x": 530, "y": 320 },
-    { "type": "brazier_gold", "x": 180, "y": 340 },
-    { "type": "brazier_gold", "x": 630, "y": 340 }
+    { "type": "throne", "x": 370, "y": 110 },
+    { "type": "thunderbolt", "x": 408, "y": 85 },
+    { "type": "offering_bowl", "x": 280, "y": 340 },
+    { "type": "offering_bowl", "x": 500, "y": 340 },
+    { "type": "brazier_gold", "x": 160, "y": 360 },
+    { "type": "brazier_gold", "x": 640, "y": 360 },
+    { "type": "eagle", "x": 175, "y": 175 },
+    { "type": "eagle", "x": 610, "y": 175 }
   ],
   "inscriptions": [
     {
-      "text": "ZEUS · KING OF OLYMPUS",
-      "x": 310,
-      "y": 520,
-      "fontSize": 10,
+      "text": "ZEUS · KING OF OLYMPUS · KEEPER OF THE STYX",
+      "x": 240,
+      "y": 530,
+      "fontSize": 9,
       "color": "rgba(255,215,0,0.5)",
       "fontFamily": "'Cinzel',serif",
-      "z": 8
+      "z": 8,
+      "animation": "inscriptionGlow 4s ease-in-out infinite"
     },
     {
-      "text": "THE THUNDERER · KEEPER OF OATHS",
-      "x": 290,
-      "y": 540,
+      "text": "I BOUND THE TITANS. I BOUND THE GODS. WHAT HAVE YOU BOUND YOURSELF TO?",
+      "x": 145,
+      "y": 555,
       "fontSize": 7,
       "color": "rgba(200,180,150,0.3)",
-      "fontFamily": "'Cinzel',serif",
-      "z": 8
+      "fontFamily": "'EB Garamond',serif",
+      "z": 8,
+      "fontStyle": "italic"
     }
   ],
   "exits": [
@@ -74,14 +84,18 @@
       "direction": "south",
       "target": "../gwalenn.html",
       "param": "zeus",
-      "label": "Return to the Olympian Ring"
+      "label": "Descend from Thunder Peak"
     }
   ],
   "atmosphere": {
     "lights": [
-      { "color": "#ffd700", "radius": 200, "x": "50%", "y": "40%", "pulse": true, "z": 0 },
-      { "color": "#c9a84c", "radius": 100, "x": "22%", "y": "60%", "pulse": false, "z": 0 },
-      { "color": "#c9a84c", "radius": 100, "x": "78%", "y": "60%", "pulse": false, "z": 0 }
+      { "color": "#ffd700", "radius": 220, "x": "50%", "y": "35%", "pulse": true, "z": 0 },
+      { "color": "#c9a84c", "radius": 120, "x": "20%", "y": "58%", "pulse": false, "z": 0 },
+      { "color": "#c9a84c", "radius": 120, "x": "80%", "y": "58%", "pulse": false, "z": 0 },
+      { "color": "#8899cc", "radius": 80, "x": "50%", "y": "75%", "pulse": true, "z": 0 }
+    ],
+    "particles": [
+      { "type": "storm_dust", "count": 20, "color": "rgba(180,180,200,0.12)", "minSize": 1, "maxSize": 2, "zone": { "x": 0, "y": 0, "w": 860, "h": 400 } }
     ]
   },
   "materials": {
@@ -89,31 +103,110 @@
       "chars": ["▓","▒","░","█","▓"],
       "textColor": "#3a3540",
       "mortarColor": "#1a1520",
-      "fontSize": 42,
+      "fontSize": 44,
       "lineHeight": 0.5,
       "letterSpacing": -2,
+      "fontFamily": "monospace"
+    },
+    "styx_water": {
+      "chars": ["~","≈","≋","~","≈"],
+      "textColor": "#1a1a30",
+      "mortarColor": "#0a0a18",
+      "fontSize": 18,
+      "lineHeight": 0.45,
+      "letterSpacing": 1,
+      "fontFamily": "'Georgia',serif"
+    },
+    "chain_iron": {
+      "chars": ["○","○","○","○","○"],
+      "textColor": "#4a4040",
+      "mortarColor": "#2a2020",
+      "fontSize": 12,
+      "lineHeight": 0.5,
+      "letterSpacing": 2,
       "fontFamily": "monospace"
     }
   },
   "objectDefinitions": {
     "throne": {
-      "bounds": { "width": 100, "height": 140 },
+      "bounds": { "width": 120, "height": 160 },
       "layers": [
-        { "type": "wall", "material": "throne_stone", "position": { "x": 10, "y": 50, "z": 10 }, "dimensions": { "width": 80, "height": 90 } },
-        { "type": "wall", "material": "throne_stone", "position": { "x": 0, "y": 35, "z": 11 }, "dimensions": { "width": 100, "height": 20 } },
-        { "type": "pillar", "material": "gold_leaf", "position": { "x": 5, "y": 20, "z": 12 }, "dimensions": { "width": 14, "height": 70 } },
-        { "type": "pillar", "material": "gold_leaf", "position": { "x": 81, "y": 20, "z": 12 }, "dimensions": { "width": 14, "height": 70 } },
-        { "type": "inscription", "content": "⚡", "position": { "x": 35, "y": 5, "z": 13 }, "style": { "fontSize": 28, "color": "#ffd700", "fontFamily": "'Georgia',serif" } }
+        { "type": "wall", "material": "throne_stone", "position": { "x": 15, "y": 50, "z": 10 }, "dimensions": { "width": 90, "height": 110 } },
+        { "type": "wall", "material": "throne_stone", "position": { "x": 0, "y": 30, "z": 11 }, "dimensions": { "width": 120, "height": 25 } },
+        { "type": "pillar", "material": "gold_leaf", "position": { "x": 8, "y": 15, "z": 12 }, "dimensions": { "width": 16, "height": 80 } },
+        { "type": "pillar", "material": "gold_leaf", "position": { "x": 96, "y": 15, "z": 12 }, "dimensions": { "width": 16, "height": 80 } },
+        { "type": "inscription", "content": "⚡", "position": { "x": 42, "y": -5, "z": 13 }, "style": { "fontSize": 32, "color": "#ffd700", "fontFamily": "'Georgia',serif", "animation": "throneGlow 2s ease-in-out infinite" } }
       ],
       "interaction": {
-        "zone": { "x": -10, "y": -10, "width": 120, "height": 160 },
+        "zone": { "x": -15, "y": -15, "width": 150, "height": 180 },
         "action": "approach_throne",
         "label": "Approach the Throne of Zeus"
       }
     },
+    "eagle_perch_left": {
+      "bounds": { "width": 60, "height": 100 },
+      "layers": [
+        { "type": "pillar", "material": "marble_veined", "position": { "x": 15, "y": 30, "z": 9 }, "dimensions": { "width": 30, "height": 70 } },
+        { "type": "wall", "material": "marble_veined", "position": { "x": 5, "y": 20, "z": 10 }, "dimensions": { "width": 50, "height": 15 } },
+        { "type": "inscription", "content": "🦅", "position": { "x": 12, "y": -5, "z": 11 }, "style": { "fontSize": 22, "color": "#8b7d6b", "fontFamily": "'Georgia',serif" } }
+      ]
+    },
+    "eagle_perch_right": {
+      "bounds": { "width": 60, "height": 100 },
+      "layers": [
+        { "type": "pillar", "material": "marble_veined", "position": { "x": 15, "y": 30, "z": 9 }, "dimensions": { "width": 30, "height": 70 } },
+        { "type": "wall", "material": "marble_veined", "position": { "x": 5, "y": 20, "z": 10 }, "dimensions": { "width": 50, "height": 15 } },
+        { "type": "inscription", "content": "🦅", "position": { "x": 12, "y": -5, "z": 11 }, "style": { "fontSize": 22, "color": "#8b7d6b", "fontFamily": "'Georgia',serif" } }
+      ]
+    },
+    "chain_hanging": {
+      "bounds": { "width": 30, "height": 120 },
+      "layers": [
+        { "type": "wall", "material": "chain_iron", "position": { "x": 8, "y": 0, "z": 6 }, "dimensions": { "width": 14, "height": 120 } },
+        { "type": "inscription", "content": "◉", "position": { "x": 5, "y": 100, "z": 7 }, "style": { "fontSize": 14, "color": "#6b4040", "fontFamily": "'Georgia',serif" } }
+      ]
+    },
+    "shattered_pillar": {
+      "bounds": { "width": 40, "height": 120 },
+      "layers": [
+        { "type": "pillar", "material": "marble_veined", "position": { "x": 5, "y": 40, "z": 6 }, "dimensions": { "width": 28, "height": 80 } },
+        { "type": "wall", "material": "marble_veined", "position": { "x": 0, "y": 20, "z": 7 }, "dimensions": { "width": 35, "height": 25 } },
+        { "type": "inscription", "content": "⚡", "position": { "x": 8, "y": 0, "z": 8 }, "style": { "fontSize": 16, "color": "rgba(255,215,0,0.3)", "fontFamily": "'Georgia',serif" } }
+      ]
+    },
+    "styx_river": {
+      "bounds": { "width": 460, "height": 40 },
+      "layers": [
+        { "type": "wall", "material": "styx_water", "position": { "x": 0, "y": 10, "z": 3 }, "dimensions": { "width": 460, "height": 30 } },
+        { "type": "inscription", "content": "~  ≋  ~  ≈  ~  ≋  ~  ≈  ~  ≋  ~", "position": { "x": 40, "y": 16, "z": 4 }, "style": { "fontSize": 12, "color": "rgba(100,120,180,0.3)", "fontFamily": "'Georgia',serif", "letterSpacing": "4px" } }
+      ],
+      "interaction": {
+        "zone": { "x": 0, "y": 0, "width": 460, "height": 40 },
+        "action": "approach_styx",
+        "label": "Approach the River Styx"
+      }
+    },
     "glyph_circle": {
       "layers": [
-        { "type": "inscription", "content": "⚡  𐤆  ⚡  𐤆  ⚡", "position": { "x": 0, "y": 0, "z": 4 }, "style": { "fontSize": 16, "color": "rgba(255,215,0,0.08)", "fontFamily": "'Georgia',serif", "letterSpacing": "10px" } }
+        { "type": "inscription", "content": "⚡  𐤆  ⚡  𐤆  ⚡  𐤆  ⚡", "position": { "x": 0, "y": 0, "z": 4 }, "style": { "fontSize": 14, "color": "rgba(255,215,0,0.06)", "fontFamily": "'Georgia',serif", "letterSpacing": "8px" } }
+      ]
+    },
+    "cracked_floor": {
+      "layers": [
+        { "type": "inscription", "content": "╱  ╲  ╱  ╲", "position": { "x": 0, "y": 0, "z": 5 }, "style": { "fontSize": 18, "color": "rgba(0,0,0,0.2)", "fontFamily": "monospace", "letterSpacing": "10px" } }
+      ]
+    },
+    "eagle": {
+      "bounds": { "width": 40, "height": 50 },
+      "layers": [
+        { "type": "inscription", "content": "🦅", "position": { "x": 0, "y": 0, "z": 12 }, "style": { "fontSize": 30, "color": "#5a5040", "fontFamily": "'Georgia',serif" } }
+      ]
+    },
+    "torch_sconce": {
+      "bounds": { "width": 16, "height": 40 },
+      "layers": [
+        { "type": "pillar", "material": "iron_dark", "position": { "x": 4, "y": 12, "z": 7 }, "dimensions": { "width": 6, "height": 28 } },
+        { "type": "wall", "material": "flame_gold", "position": { "x": 1, "y": 0, "z": 8 }, "dimensions": { "width": 12, "height": 16 } }
       ]
     }
   }
