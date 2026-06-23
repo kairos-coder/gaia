@@ -1,0 +1,312 @@
+{
+  "name": "Mount Olympus · The Divine Mountain",
+  "description": "The mountain beneath Thunder Peak. Four levels descending from the storm belt to the foundation. Shattered pillars, the Pantheon ledge with twelve doorways, the great hall of assembly, and the worn path of ascent carved by centuries of pilgrims.",
+  "levels": [
+    {
+      "id": "storm-belt",
+      "name": "The Storm Belt",
+      "description": "Clouds spiral around the upper peak. Lightning cracks the air. The wind carries the voices of oaths sworn and broken.",
+      "height": 140,
+      "walls": {
+        "material": "storm_grey"
+      },
+      "floor": {
+        "material": "marble_dark"
+      },
+      "objects": [
+        { "type": "shattered_pillar", "x": 120, "y": 30 },
+        { "type": "shattered_pillar", "x": 620, "y": 30 },
+        { "type": "offering_bowl", "x": 360, "y": 60 }
+      ],
+      "inscriptions": [
+        {
+          "text": "THE STORM REMEMBERS EVERY OATH",
+          "x": 230,
+          "y": 100,
+          "fontSize": 7,
+          "color": "rgba(180,190,220,0.35)",
+          "fontFamily": "'Cinzel',serif",
+          "z": 6
+        }
+      ],
+      "atmosphere": {
+        "canvas": "storm_clouds",
+        "particles": [
+          { "type": "wind", "count": 15, "color": "rgba(180,190,210,0.1)", "minSize": 1, "maxSize": 2 }
+        ]
+      }
+    },
+    {
+      "id": "pantheon-ledge",
+      "name": "The Pantheon Ledge",
+      "description": "Twelve doorways carved into the mountainside. Each leads to a god's realm. The doors are always open — the gods expect visitors.",
+      "height": 260,
+      "walls": {
+        "material": "marble_white"
+      },
+      "floor": {
+        "material": "marble_veined"
+      },
+      "objects": [
+        { "type": "doorway_zeus", "x": 30, "y": 20, "label": "ZEUS", "glyph": "⚡", "link": "realm.html" },
+        { "type": "doorway_hera", "x": 160, "y": 20, "label": "HERA", "glyph": "🦚", "link": "../hera/realm.html" },
+        { "type": "doorway_poseidon", "x": 290, "y": 20, "label": "POSEIDON", "glyph": "🌊", "link": "../poseidon/realm.html" },
+        { "type": "doorway_demeter", "x": 420, "y": 20, "label": "DEMETER", "glyph": "🌾", "link": "../demeter/realm.html" },
+        { "type": "doorway_apollo", "x": 550, "y": 20, "label": "APOLLO", "glyph": "☀️", "link": "../apollo/realm.html" },
+        { "type": "doorway_artemis", "x": 680, "y": 20, "label": "ARTEMIS", "glyph": "🌙", "link": "../artemis/realm.html" },
+        { "type": "doorway_ares", "x": 30, "y": 130, "label": "ARES", "glyph": "⚔️", "link": "../ares/realm.html" },
+        { "type": "doorway_aphrodite", "x": 160, "y": 130, "label": "APHRODITE", "glyph": "💋", "link": "../aphrodite/realm.html" },
+        { "type": "doorway_athena", "x": 290, "y": 130, "label": "ATHENA", "glyph": "🦉", "link": "../athena/realm.html" },
+        { "type": "doorway_hephaestus", "x": 420, "y": 130, "label": "HEPHAESTUS", "glyph": "🔨", "link": "../hephaestus/realm.html" },
+        { "type": "doorway_hermes", "x": 550, "y": 130, "label": "HERMES", "glyph": "🪄", "link": "../hermes/realm.html" },
+        { "type": "doorway_hestia", "x": 680, "y": 130, "label": "HESTIA", "glyph": "🔥", "link": "../hestia/realm.html" }
+      ],
+      "inscriptions": [
+        {
+          "text": "THE PANTHEON · ALL DOORS ARE OPEN",
+          "x": 240,
+          "y": 230,
+          "fontSize": 8,
+          "color": "rgba(201,168,76,0.4)",
+          "fontFamily": "'Cinzel',serif",
+          "z": 8
+        }
+      ],
+      "atmosphere": {
+        "lights": [
+          { "color": "#c9a84c", "radius": 300, "x": "50%", "y": "50%", "pulse": false, "z": 0 }
+        ]
+      }
+    },
+    {
+      "id": "great-hall",
+      "name": "The Hall of Assembly",
+      "description": "Where the gods convene. Twelve stone seats in a circle. A central hearth that has burned since the Titanomachy. The walls are carved with the laws of Olympus.",
+      "height": 200,
+      "walls": {
+        "material": "marble_veined"
+      },
+      "floor": {
+        "material": "marble_dark",
+        "features": [
+          { "type": "glyph_circle", "position": { "x": 200, "y": 50 } }
+        ]
+      },
+      "objects": [
+        { "type": "council_seat", "x": 180, "y": 30 },
+        { "type": "council_seat", "x": 280, "y": 30 },
+        { "type": "council_seat", "x": 380, "y": 30 },
+        { "type": "council_seat", "x": 480, "y": 30 },
+        { "type": "council_seat", "x": 580, "y": 30 },
+        { "type": "central_hearth", "x": 370, "y": 80 },
+        { "type": "torch_sconce", "x": 80, "y": 60 },
+        { "type": "torch_sconce", "x": 720, "y": 60 }
+      ],
+      "inscriptions": [
+        {
+          "text": "THE GODS CONVENE · THE LAWS ARE WRITTEN · THE FIRE NEVER DIES",
+          "x": 130,
+          "y": 170,
+          "fontSize": 7,
+          "color": "rgba(201,168,76,0.35)",
+          "fontFamily": "'Cinzel',serif",
+          "z": 8
+        }
+      ],
+      "atmosphere": {
+        "lights": [
+          { "color": "#ff8833", "radius": 120, "x": "50%", "y": "55%", "pulse": true, "z": 0 }
+        ]
+      }
+    },
+    {
+      "id": "lower-peak",
+      "name": "The Ascent",
+      "description": "The worn path up the mountain. Votive stones line the way — offerings left by those who climbed before. The foundation of Pontus is visible below.",
+      "height": 120,
+      "walls": {
+        "material": "marble_dark"
+      },
+      "floor": {
+        "material": "marble_dark"
+      },
+      "objects": [
+        { "type": "votive_stone", "x": 200, "y": 30 },
+        { "type": "votive_stone", "x": 350, "y": 40 },
+        { "type": "votive_stone", "x": 500, "y": 30 },
+        { "type": "torch_sconce", "x": 400, "y": 20 }
+      ],
+      "inscriptions": [
+        {
+          "text": "THE PATH OF ASCENT · MANY HAVE CLIMBED · ALL ARE REMEMBERED",
+          "x": 160,
+          "y": 90,
+          "fontSize": 7,
+          "color": "rgba(150,140,120,0.3)",
+          "fontFamily": "'Cinzel',serif",
+          "z": 6
+        },
+        {
+          "text": "·  ·  ·  ·  ·  ·  ·  ·  ·  ·  ·  ·  ·  ·  ·  ·  ·",
+          "x": 180,
+          "y": 70,
+          "fontSize": 8,
+          "color": "rgba(0,0,0,0.2)",
+          "fontFamily": "'Georgia',serif",
+          "z": 5
+        }
+      ]
+    }
+  ],
+  "objectDefinitions": {
+    "shattered_pillar": {
+      "bounds": { "width": 50, "height": 90 },
+      "layers": [
+        { "type": "pillar", "material": "marble_veined", "position": { "x": 10, "y": 25, "z": 6 }, "dimensions": { "width": 28, "height": 65 } },
+        { "type": "wall", "material": "marble_veined", "position": { "x": 5, "y": 10, "z": 7 }, "dimensions": { "width": 38, "height": 20 } }
+      ]
+    },
+    "doorway_zeus": {
+      "bounds": { "width": 100, "height": 90 },
+      "layers": [
+        { "type": "wall", "material": "storm_grey", "position": { "x": 10, "y": 10, "z": 6 }, "dimensions": { "width": 80, "height": 80 } },
+        { "type": "arch", "material": "gold_leaf", "position": { "x": 30, "y": 12, "z": 8 }, "dimensions": { "width": 40, "height": 60 }, "stoneCount": 9, "stoneDepth": 12 },
+        { "type": "wall", "material": "void_black", "position": { "x": 32, "y": 22, "z": 5 }, "dimensions": { "width": 36, "height": 50 } },
+        { "type": "inscription", "content": "⚡", "position": { "x": 38, "y": 2, "z": 9 }, "style": { "fontSize": 18, "color": "#ffd700", "fontFamily": "'Georgia',serif" } }
+      ]
+    },
+    "doorway_hera": {
+      "bounds": { "width": 100, "height": 90 },
+      "layers": [
+        { "type": "wall", "material": "peacock_blue", "position": { "x": 10, "y": 10, "z": 6 }, "dimensions": { "width": 80, "height": 80 } },
+        { "type": "arch", "material": "silver_frost", "position": { "x": 30, "y": 12, "z": 8 }, "dimensions": { "width": 40, "height": 60 }, "stoneCount": 9, "stoneDepth": 12 },
+        { "type": "wall", "material": "void_black", "position": { "x": 32, "y": 22, "z": 5 }, "dimensions": { "width": 36, "height": 50 } },
+        { "type": "inscription", "content": "🦚", "position": { "x": 38, "y": 2, "z": 9 }, "style": { "fontSize": 18, "color": "#4a8aaa", "fontFamily": "'Georgia',serif" } }
+      ]
+    },
+    "doorway_poseidon": {
+      "bounds": { "width": 100, "height": 90 },
+      "layers": [
+        { "type": "wall", "material": "water_pontus", "position": { "x": 10, "y": 10, "z": 6 }, "dimensions": { "width": 80, "height": 80 } },
+        { "type": "arch", "material": "silver_frost", "position": { "x": 30, "y": 12, "z": 8 }, "dimensions": { "width": 40, "height": 60 }, "stoneCount": 9, "stoneDepth": 12 },
+        { "type": "wall", "material": "void_black", "position": { "x": 32, "y": 22, "z": 5 }, "dimensions": { "width": 36, "height": 50 } },
+        { "type": "inscription", "content": "🌊", "position": { "x": 38, "y": 2, "z": 9 }, "style": { "fontSize": 18, "color": "#3a6b8c", "fontFamily": "'Georgia',serif" } }
+      ]
+    },
+    "doorway_demeter": {
+      "bounds": { "width": 100, "height": 90 },
+      "layers": [
+        { "type": "wall", "material": "wheat_gold", "position": { "x": 10, "y": 10, "z": 6 }, "dimensions": { "width": 80, "height": 80 } },
+        { "type": "arch", "material": "bronze_weathered", "position": { "x": 30, "y": 12, "z": 8 }, "dimensions": { "width": 40, "height": 60 }, "stoneCount": 9, "stoneDepth": 12 },
+        { "type": "wall", "material": "void_black", "position": { "x": 32, "y": 22, "z": 5 }, "dimensions": { "width": 36, "height": 50 } },
+        { "type": "inscription", "content": "🌾", "position": { "x": 38, "y": 2, "z": 9 }, "style": { "fontSize": 18, "color": "#c8a848", "fontFamily": "'Georgia',serif" } }
+      ]
+    },
+    "doorway_apollo": {
+      "bounds": { "width": 100, "height": 90 },
+      "layers": [
+        { "type": "wall", "material": "gold_leaf", "position": { "x": 10, "y": 10, "z": 6 }, "dimensions": { "width": 80, "height": 80 } },
+        { "type": "arch", "material": "gold_bright", "position": { "x": 30, "y": 12, "z": 8 }, "dimensions": { "width": 40, "height": 60 }, "stoneCount": 9, "stoneDepth": 12 },
+        { "type": "wall", "material": "void_black", "position": { "x": 32, "y": 22, "z": 5 }, "dimensions": { "width": 36, "height": 50 } },
+        { "type": "inscription", "content": "☀️", "position": { "x": 38, "y": 2, "z": 9 }, "style": { "fontSize": 18, "color": "#ffcc44", "fontFamily": "'Georgia',serif" } }
+      ]
+    },
+    "doorway_artemis": {
+      "bounds": { "width": 100, "height": 90 },
+      "layers": [
+        { "type": "wall", "material": "silver_frost", "position": { "x": 10, "y": 10, "z": 6 }, "dimensions": { "width": 80, "height": 80 } },
+        { "type": "arch", "material": "silver_frost", "position": { "x": 30, "y": 12, "z": 8 }, "dimensions": { "width": 40, "height": 60 }, "stoneCount": 9, "stoneDepth": 12 },
+        { "type": "wall", "material": "void_black", "position": { "x": 32, "y": 22, "z": 5 }, "dimensions": { "width": 36, "height": 50 } },
+        { "type": "inscription", "content": "🌙", "position": { "x": 38, "y": 2, "z": 9 }, "style": { "fontSize": 18, "color": "#c8d8e8", "fontFamily": "'Georgia',serif" } }
+      ]
+    },
+    "doorway_ares": {
+      "bounds": { "width": 100, "height": 90 },
+      "layers": [
+        { "type": "wall", "material": "iron_dark", "position": { "x": 10, "y": 10, "z": 6 }, "dimensions": { "width": 80, "height": 80 } },
+        { "type": "arch", "material": "bronze_weathered", "position": { "x": 30, "y": 12, "z": 8 }, "dimensions": { "width": 40, "height": 60 }, "stoneCount": 9, "stoneDepth": 12 },
+        { "type": "wall", "material": "void_black", "position": { "x": 32, "y": 22, "z": 5 }, "dimensions": { "width": 36, "height": 50 } },
+        { "type": "inscription", "content": "⚔️", "position": { "x": 38, "y": 2, "z": 9 }, "style": { "fontSize": 18, "color": "#cc6644", "fontFamily": "'Georgia',serif" } }
+      ]
+    },
+    "doorway_aphrodite": {
+      "bounds": { "width": 100, "height": 90 },
+      "layers": [
+        { "type": "wall", "material": "rose_quartz", "position": { "x": 10, "y": 10, "z": 6 }, "dimensions": { "width": 80, "height": 80 } },
+        { "type": "arch", "material": "gold_leaf", "position": { "x": 30, "y": 12, "z": 8 }, "dimensions": { "width": 40, "height": 60 }, "stoneCount": 9, "stoneDepth": 12 },
+        { "type": "wall", "material": "void_black", "position": { "x": 32, "y": 22, "z": 5 }, "dimensions": { "width": 36, "height": 50 } },
+        { "type": "inscription", "content": "💋", "position": { "x": 38, "y": 2, "z": 9 }, "style": { "fontSize": 18, "color": "#d8a0b8", "fontFamily": "'Georgia',serif" } }
+      ]
+    },
+    "doorway_athena": {
+      "bounds": { "width": 100, "height": 90 },
+      "layers": [
+        { "type": "wall", "material": "marble_white", "position": { "x": 10, "y": 10, "z": 6 }, "dimensions": { "width": 80, "height": 80 } },
+        { "type": "arch", "material": "gold_leaf", "position": { "x": 30, "y": 12, "z": 8 }, "dimensions": { "width": 40, "height": 60 }, "stoneCount": 9, "stoneDepth": 12 },
+        { "type": "wall", "material": "void_black", "position": { "x": 32, "y": 22, "z": 5 }, "dimensions": { "width": 36, "height": 50 } },
+        { "type": "inscription", "content": "🦉", "position": { "x": 38, "y": 2, "z": 9 }, "style": { "fontSize": 18, "color": "#d8d0c8", "fontFamily": "'Georgia',serif" } }
+      ]
+    },
+    "doorway_hephaestus": {
+      "bounds": { "width": 100, "height": 90 },
+      "layers": [
+        { "type": "wall", "material": "bronze_weathered", "position": { "x": 10, "y": 10, "z": 6 }, "dimensions": { "width": 80, "height": 80 } },
+        { "type": "arch", "material": "iron_dark", "position": { "x": 30, "y": 12, "z": 8 }, "dimensions": { "width": 40, "height": 60 }, "stoneCount": 9, "stoneDepth": 12 },
+        { "type": "wall", "material": "void_black", "position": { "x": 32, "y": 22, "z": 5 }, "dimensions": { "width": 36, "height": 50 } },
+        { "type": "inscription", "content": "🔨", "position": { "x": 38, "y": 2, "z": 9 }, "style": { "fontSize": 18, "color": "#ff8833", "fontFamily": "'Georgia',serif" } }
+      ]
+    },
+    "doorway_hermes": {
+      "bounds": { "width": 100, "height": 90 },
+      "layers": [
+        { "type": "wall", "material": "quicksilver", "position": { "x": 10, "y": 10, "z": 6 }, "dimensions": { "width": 80, "height": 80 } },
+        { "type": "arch", "material": "silver_frost", "position": { "x": 30, "y": 12, "z": 8 }, "dimensions": { "width": 40, "height": 60 }, "stoneCount": 9, "stoneDepth": 12 },
+        { "type": "wall", "material": "void_black", "position": { "x": 32, "y": 22, "z": 5 }, "dimensions": { "width": 36, "height": 50 } },
+        { "type": "inscription", "content": "🪄", "position": { "x": 38, "y": 2, "z": 9 }, "style": { "fontSize": 18, "color": "#a8b8c8", "fontFamily": "'Georgia',serif" } }
+      ]
+    },
+    "doorway_hestia": {
+      "bounds": { "width": 100, "height": 90 },
+      "layers": [
+        { "type": "wall", "material": "marble_veined", "position": { "x": 10, "y": 10, "z": 6 }, "dimensions": { "width": 80, "height": 80 } },
+        { "type": "arch", "material": "gold_leaf", "position": { "x": 30, "y": 12, "z": 8 }, "dimensions": { "width": 40, "height": 60 }, "stoneCount": 9, "stoneDepth": 12 },
+        { "type": "wall", "material": "void_black", "position": { "x": 32, "y": 22, "z": 5 }, "dimensions": { "width": 36, "height": 50 } },
+        { "type": "inscription", "content": "🔥", "position": { "x": 38, "y": 2, "z": 9 }, "style": { "fontSize": 18, "color": "#ffaa44", "fontFamily": "'Georgia',serif" } }
+      ]
+    },
+    "council_seat": {
+      "bounds": { "width": 60, "height": 50 },
+      "layers": [
+        { "type": "wall", "material": "marble_white", "position": { "x": 10, "y": 20, "z": 7 }, "dimensions": { "width": 40, "height": 30 } },
+        { "type": "wall", "material": "marble_white", "position": { "x": 5, "y": 12, "z": 8 }, "dimensions": { "width": 50, "height": 12 } }
+      ]
+    },
+    "central_hearth": {
+      "bounds": { "width": 70, "height": 60 },
+      "layers": [
+        { "type": "wall", "material": "marble_veined", "position": { "x": 5, "y": 25, "z": 8 }, "dimensions": { "width": 60, "height": 35 } },
+        { "type": "wall", "material": "iron_dark", "position": { "x": 15, "y": 15, "z": 9 }, "dimensions": { "width": 40, "height": 20 } },
+        { "type": "wall", "material": "flame_gold", "position": { "x": 20, "y": 5, "z": 10 }, "dimensions": { "width": 30, "height": 18 } }
+      ]
+    },
+    "votive_stone": {
+      "bounds": { "width": 40, "height": 50 },
+      "layers": [
+        { "type": "wall", "material": "marble_dark", "position": { "x": 8, "y": 20, "z": 6 }, "dimensions": { "width": 24, "height": 30 } },
+        { "type": "inscription", "content": "🙏", "position": { "x": 10, "y": 5, "z": 7 }, "style": { "fontSize": 14, "color": "rgba(200,180,150,0.4)", "fontFamily": "'Georgia',serif" } }
+      ]
+    },
+    "torch_sconce": {
+      "bounds": { "width": 16, "height": 40 },
+      "layers": [
+        { "type": "pillar", "material": "iron_dark", "position": { "x": 4, "y": 12, "z": 7 }, "dimensions": { "width": 6, "height": 28 } },
+        { "type": "wall", "material": "flame_gold", "position": { "x": 1, "y": 0, "z": 8 }, "dimensions": { "width": 12, "height": 16 } }
+      ]
+    },
+    "glyph_circle": {
+      "layers": [
+        { "type": "inscription", "content": "⚡  𐤆  🌊  𐤐  ☀️  𐤀", "position": { "x": 0, "y": 0, "z": 4 }, "style": { "fontSize": 14, "color": "rgba(201,168,76,0.06)", "fontFamily": "'Georgia',serif", "letterSpacing": "8px" } }
+      ]
+    }
+  }
+}
