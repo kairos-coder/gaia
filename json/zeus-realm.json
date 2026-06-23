@@ -1,0 +1,120 @@
+{
+  "name": "Thunder Peak · Realm of Zeus",
+  "description": "The throne room at the summit of Olympus. Storm clouds gather outside. The King of Gods holds court from a throne of storm-stone and gold. Eagles perch on the pillars. Lightning cracks the sky.",
+  "size": { "w": 860, "h": 600 },
+  "background": {
+    "type": "ouranos"
+  },
+  "room": {
+    "farWall": {
+      "material": "storm_grey",
+      "features": [
+        { "type": "throne", "position": { "x": 330, "y": 20 } },
+        { "type": "offering_bowl", "position": { "x": 240, "y": 200 } },
+        { "type": "offering_bowl", "position": { "x": 520, "y": 200 } }
+      ],
+      "openings": [
+        { "type": "window", "x": 370, "y": -10, "width": 60, "height": 90, "arch": true }
+      ]
+    },
+    "leftWall": {
+      "material": "storm_grey",
+      "width": 40,
+      "features": [
+        { "type": "pillar", "position": { "x": 5, "y": 60 }, "material": "marble_veined", "width": 30, "height": 160, "capital": true }
+      ]
+    },
+    "rightWall": {
+      "material": "storm_grey",
+      "width": 40,
+      "features": [
+        { "type": "pillar", "position": { "x": 5, "y": 60 }, "material": "marble_veined", "width": 30, "height": 160, "capital": true }
+      ]
+    },
+    "floor": {
+      "material": "marble_dark",
+      "features": [
+        { "type": "glyph_circle", "position": { "x": 280, "y": 60 } }
+      ]
+    },
+    "ceiling": {
+      "material": "cloud_stone"
+    }
+  },
+  "objects": [
+    { "type": "throne", "x": 385, "y": 130 },
+    { "type": "thunderbolt", "x": 415, "y": 100 },
+    { "type": "offering_bowl", "x": 280, "y": 320 },
+    { "type": "offering_bowl", "x": 530, "y": 320 },
+    { "type": "brazier_gold", "x": 180, "y": 340 },
+    { "type": "brazier_gold", "x": 630, "y": 340 }
+  ],
+  "inscriptions": [
+    {
+      "text": "ZEUS · KING OF OLYMPUS",
+      "x": 310,
+      "y": 520,
+      "fontSize": 10,
+      "color": "rgba(255,215,0,0.5)",
+      "fontFamily": "'Cinzel',serif",
+      "z": 8
+    },
+    {
+      "text": "THE THUNDERER · KEEPER OF OATHS",
+      "x": 290,
+      "y": 540,
+      "fontSize": 7,
+      "color": "rgba(200,180,150,0.3)",
+      "fontFamily": "'Cinzel',serif",
+      "z": 8
+    }
+  ],
+  "exits": [
+    {
+      "direction": "south",
+      "target": "../gwalenn.html",
+      "param": "zeus",
+      "label": "Return to the Olympian Ring"
+    }
+  ],
+  "atmosphere": {
+    "lights": [
+      { "color": "#ffd700", "radius": 200, "x": "50%", "y": "40%", "pulse": true, "z": 0 },
+      { "color": "#c9a84c", "radius": 100, "x": "22%", "y": "60%", "pulse": false, "z": 0 },
+      { "color": "#c9a84c", "radius": 100, "x": "78%", "y": "60%", "pulse": false, "z": 0 }
+    ]
+  },
+  "materials": {
+    "throne_stone": {
+      "chars": ["▓","▒","░","█","▓"],
+      "textColor": "#3a3540",
+      "mortarColor": "#1a1520",
+      "fontSize": 42,
+      "lineHeight": 0.5,
+      "letterSpacing": -2,
+      "fontFamily": "monospace"
+    }
+  },
+  "objectDefinitions": {
+    "throne": {
+      "bounds": { "width": 100, "height": 140 },
+      "layers": [
+        { "type": "wall", "material": "throne_stone", "position": { "x": 10, "y": 50, "z": 10 }, "dimensions": { "width": 80, "height": 90 } },
+        { "type": "wall", "material": "throne_stone", "position": { "x": 0, "y": 35, "z": 11 }, "dimensions": { "width": 100, "height": 20 } },
+        { "type": "pillar", "material": "gold_leaf", "position": { "x": 5, "y": 20, "z": 12 }, "dimensions": { "width": 14, "height": 70 } },
+        { "type": "pillar", "material": "gold_leaf", "position": { "x": 81, "y": 20, "z": 12 }, "dimensions": { "width": 14, "height": 70 } },
+        { "type": "inscription", "content": "⚡", "position": { "x": 35, "y": 5, "z": 13 }, "style": { "fontSize": 28, "color": "#ffd700", "fontFamily": "'Georgia',serif" } }
+      ],
+      "interaction": {
+        "zone": { "x": -10, "y": -10, "width": 120, "height": 160 },
+        "action": "approach_throne",
+        "label": "Approach the Throne of Zeus"
+      }
+    },
+    "glyph_circle": {
+      "layers": [
+        { "type": "inscription", "content": "⚡  𐤆  ⚡  𐤆  ⚡", "position": { "x": 0, "y": 0, "z": 4 }, "style": { "fontSize": 16, "color": "rgba(255,215,0,0.08)", "fontFamily": "'Georgia',serif", "letterSpacing": "10px" } }
+      ]
+    }
+  }
+}
