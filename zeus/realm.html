@@ -5,27 +5,30 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mount Olympus · Realm of Zeus</title>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&family=Cinzel:wght@400;600&family=EB+Garamond:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=UnifrakturMaguntia&display=swap" rel="stylesheet">
     <style>
-        :root { --gold: #c9a84c; --void: #0a0806; --lightning: #8899dd; --pontus: #2a4a6a; }
+        :root {
+            --gold: #c9a84c; --void: #0a0806; --lightning: #8899dd;
+            --pontus: #2a4a6a; --marble: #d8d0c8;
+        }
         * { margin:0; padding:0; box-sizing:border-box; }
         body {
             background: var(--void);
             display: flex; flex-direction: column; align-items: center;
             min-height: 100vh; overflow-x: hidden;
-            background-image: radial-gradient(ellipse at 50% 15%, rgba(120,140,200,0.05) 0%, transparent 60%);
+            background-image: radial-gradient(ellipse at 50% 15%, rgba(120,140,200,0.06) 0%, transparent 60%);
+            font-family: 'EB Garamond','Georgia',serif;
+            color: var(--marble);
         }
 
+        /* ── ORRERY ── */
         #celestial-orrery {
             width: 860px; max-width: 98vw;
             height: 130px; margin: 0.3rem auto 0;
             position: relative; z-index: 5;
         }
-        #pontus-foundation {
-            width: 860px; max-width: 98vw;
-            height: 80px; margin: 0 auto;
-            position: relative; z-index: 2;
-            border-top: 2px solid rgba(42,74,106,0.3);
-        }
+
+        /* ── MOUNTAIN ── */
         #olympus-container {
             width: 860px; max-width: 98vw;
             height: 720px; margin: 0 auto; overflow-y: auto; overflow-x: hidden;
@@ -39,6 +42,7 @@
         #olympus-container::-webkit-scrollbar-track { background: var(--void); }
         #olympus-container::-webkit-scrollbar-thumb { background: rgba(201,168,76,0.2); border-radius: 3px; }
 
+        /* ── LEVELS ── */
         .mountain-level {
             position: relative;
             border-bottom: 1px solid rgba(201,168,76,0.08);
@@ -49,24 +53,40 @@
             color: rgba(201,168,76,0.3); letter-spacing: 0.2em;
             z-index: 20; pointer-events: none;
         }
+        .level-scene {
+            width: 100%; height: 100%; position: relative;
+        }
         #summit-level { height: 540px; }
         #storm-belt-level { height: 140px; }
         #pantheon-ledge-level { height: 260px; }
         #great-hall-level { height: 200px; }
         #lower-peak-level { height: 140px; }
 
-        @media (max-width: 880px) {
-            #celestial-orrery, #pontus-foundation, #olympus-container { width: 98vw; }
-            #olympus-container { height: calc(98vw * 0.84); }
-            #summit-level { height: calc(98vw * 0.63); }
-            #storm-belt-level { height: calc(98vw * 0.16); }
-            #pantheon-ledge-level { height: calc(98vw * 0.30); }
-            #great-hall-level { height: calc(98vw * 0.23); }
-            #lower-peak-level { height: calc(98vw * 0.16); }
-            #pontus-foundation { height: calc(98vw * 0.09); }
-            #celestial-orrery { height: calc(98vw * 0.15); }
+        /* ── PONTUS ── */
+        #pontus-foundation {
+            width: 860px; max-width: 98vw;
+            height: 80px; margin: 0 auto;
+            position: relative; z-index: 2;
+            border-top: 2px solid rgba(42,74,106,0.3);
         }
 
+        /* ── NAVIGATION ── */
+        .mountain-nav {
+            display: flex; gap: 0.4rem; justify-content: center;
+            padding: 0.4rem; flex-wrap: wrap;
+        }
+        .nav-btn {
+            font-family: 'Cinzel',serif; font-size: 0.55rem;
+            letter-spacing: 0.15em;
+            background: rgba(26,20,16,0.7);
+            border: 1px solid rgba(201,168,76,0.25);
+            color: var(--gold); padding: 0.3rem 0.8rem;
+            border-radius: 3px; cursor: pointer;
+            transition: all 0.2s;
+        }
+        .nav-btn:hover { background: rgba(201,168,76,0.1); border-color: var(--gold); }
+
+        /* ── TOAST ── */
         #toast {
             position: fixed; bottom: 1.5rem; left: 50%; transform: translateX(-50%);
             background: rgba(10,8,6,0.95); border: 1px solid var(--gold);
@@ -80,6 +100,7 @@
         .zone, .altar-zone, .altar-object-zone, .doorway-zone { cursor: pointer; transition: filter 0.25s, transform 0.25s; }
         .zone:hover, .altar-zone:hover, .altar-object-zone:hover, .doorway-zone:hover { filter: brightness(1.35); z-index: 50 !important; }
 
+        /* ── ANIMATIONS ── */
         @keyframes sparkFade { 0%{transform:scale(0.5);opacity:1} 100%{transform:scale(2.5);opacity:0} }
         @keyframes thunderFlash { 0%{opacity:0} 30%{opacity:0.35} 100%{opacity:0} }
         @keyframes lightningBolt { 0%{opacity:0;transform:scaleY(0)} 10%{opacity:1;transform:scaleY(1)} 20%{opacity:0;transform:scaleY(1)} 100%{opacity:0;transform:scaleY(1)} }
@@ -88,6 +109,18 @@
         @keyframes inscriptionGlow { 0%,100%{text-shadow:0 0 6px rgba(201,168,76,0.2)} 50%{text-shadow:0 0 16px rgba(201,168,76,0.5)} }
         @keyframes styxShimmer { 0%,100%{opacity:0.2} 50%{opacity:0.4} }
         @keyframes hearthPulse { 0%,100%{transform:scaleY(1);opacity:0.85} 50%{transform:scaleY(1.1);opacity:1} }
+
+        @media (max-width: 880px) {
+            #celestial-orrery, #pontus-foundation, #olympus-container { width: 98vw; }
+            #olympus-container { height: calc(98vw * 0.84); }
+            #summit-level { height: calc(98vw * 0.63); }
+            #storm-belt-level { height: calc(98vw * 0.16); }
+            #pantheon-ledge-level { height: calc(98vw * 0.30); }
+            #great-hall-level { height: calc(98vw * 0.23); }
+            #lower-peak-level { height: calc(98vw * 0.16); }
+            #pontus-foundation { height: calc(98vw * 0.09); }
+            #celestial-orrery { height: calc(98vw * 0.15); }
+        }
     </style>
 </head>
 <body>
@@ -95,36 +128,37 @@
     <!-- CELESTIAL ORRERY -->
     <div id="celestial-orrery"></div>
 
-    <!-- MOUNT OLYMPUS (scrollable container) -->
+    <!-- NAVIGATION -->
+    <nav class="mountain-nav">
+        <button class="nav-btn" onclick="scrollToLevel('summit-level')">⚡ Summit</button>
+        <button class="nav-btn" onclick="scrollToLevel('storm-belt-level')">🌪️ Storm Belt</button>
+        <button class="nav-btn" onclick="scrollToLevel('pantheon-ledge-level')">🏛️ Pantheon</button>
+        <button class="nav-btn" onclick="scrollToLevel('great-hall-level')">🔥 Great Hall</button>
+        <button class="nav-btn" onclick="scrollToLevel('lower-peak-level')">🪜 The Ascent</button>
+        <button class="nav-btn" onclick="window.location.href='../gwalenn.html'" style="border-color:rgba(201,168,76,0.4);">🔮 Return to Ring</button>
+    </nav>
+
+    <!-- MOUNT OLYMPUS -->
     <div id="olympus-container">
-        <!-- SUMMIT (Zeus throne room) -->
         <div class="mountain-level" id="summit-level">
             <div class="level-label">SUMMIT · THUNDER PEAK</div>
-            <div id="summit-scene" style="width:100%;height:100%;position:relative;"></div>
+            <div class="level-scene" id="summit-scene"></div>
         </div>
-
-        <!-- STORM BELT -->
         <div class="mountain-level" id="storm-belt-level">
             <div class="level-label">STORM BELT</div>
-            <div id="storm-scene" style="width:100%;height:100%;position:relative;"></div>
+            <div class="level-scene" id="storm-scene"></div>
         </div>
-
-        <!-- PANTHEON LEDGE -->
         <div class="mountain-level" id="pantheon-ledge-level">
             <div class="level-label">PANTHEON LEDGE</div>
-            <div id="pantheon-scene" style="width:100%;height:100%;position:relative;"></div>
+            <div class="level-scene" id="pantheon-scene"></div>
         </div>
-
-        <!-- GREAT HALL -->
         <div class="mountain-level" id="great-hall-level">
             <div class="level-label">HALL OF ASSEMBLY</div>
-            <div id="hall-scene" style="width:100%;height:100%;position:relative;"></div>
+            <div class="level-scene" id="hall-scene"></div>
         </div>
-
-        <!-- LOWER PEAK -->
         <div class="mountain-level" id="lower-peak-level">
             <div class="level-label">THE ASCENT</div>
-            <div id="lower-scene" style="width:100%;height:100%;position:relative;"></div>
+            <div class="level-scene" id="lower-scene"></div>
         </div>
     </div>
 
@@ -147,10 +181,21 @@
      * gaia/zeus/realm.html
      *
      * Ouranos above. Pontus below. Olympus between.
-     * Summit → Storm Belt → Pantheon Ledge → Great Hall → Lower Peak
+     * Five levels. Index-driven scene loading.
      * ═══════════════════════════════════════════════════════
      */
 
+    // ── CONFIG ──
+    const INDEX_PATH = '../json/index.json';
+    const LEVELS = [
+        { id: 'summit', sceneId: 'summit-scene', jsonName: 'zeus-realm.json', height: 540, special: true },
+        { id: 'storm', sceneId: 'storm-scene', jsonName: 'olympus-storm.json', height: 140 },
+        { id: 'pantheon', sceneId: 'pantheon-scene', jsonName: 'olympus-pantheon.json', height: 260, hasDoorways: true },
+        { id: 'hall', sceneId: 'hall-scene', jsonName: 'olympus-hall.json', height: 200 },
+        { id: 'lower', sceneId: 'lower-scene', jsonName: 'olympus-lower.json', height: 140 },
+    ];
+
+    // ── TOAST ──
     const toastEl = document.getElementById('toast');
     let toastTimer;
     function toast(msg, d = 3500) {
@@ -158,7 +203,12 @@
         clearTimeout(toastTimer); toastTimer = setTimeout(() => toastEl.classList.remove('show'), d);
     }
 
-    // ── PONTUS FOUNDATION ──
+    // ── SCROLL ──
+    window.scrollToLevel = (levelId) => {
+        document.getElementById(levelId)?.scrollIntoView({ behavior: 'smooth' });
+    };
+
+    // ── PONTUS ──
     function buildPontusFoundation() {
         const container = document.getElementById('pontus-foundation');
         const canvas = document.createElement('canvas');
@@ -167,20 +217,20 @@
         container.appendChild(canvas);
         const ctx = canvas.getContext('2d');
 
-        const WAVE_TITANS = [
+        const waveTitans = [
             { freq: 0.6, amp: 0.8, color: [25, 80, 140] },
             { freq: 0.75, amp: 0.6, color: [35, 95, 155] },
             { freq: 0.9, amp: 0.5, color: [30, 85, 145] },
             { freq: 0.55, amp: 0.7, color: [20, 75, 135] },
         ];
-        const offsets = WAVE_TITANS.map(() => Math.random() * Math.PI * 2);
+        const offsets = waveTitans.map(() => Math.random() * Math.PI * 2);
 
-        function draw() {
+        (function draw() {
             ctx.clearRect(0, 0, 860, 80);
             const bg = ctx.createLinearGradient(0, 0, 0, 80);
             bg.addColorStop(0, '#0a1828'); bg.addColorStop(0.5, '#102030'); bg.addColorStop(1, '#152838');
             ctx.fillStyle = bg; ctx.fillRect(0, 0, 860, 80);
-            WAVE_TITANS.forEach((t, i) => {
+            waveTitans.forEach((t, i) => {
                 offsets[i] += 0.008 * t.freq;
                 const yC = 18 + i * 18;
                 const amp = 4 + t.amp * 8;
@@ -198,12 +248,12 @@
             ctx.textAlign = 'center';
             ctx.fillText('~  THE ENCIRCLING SEA  ·  PONTUS  ·  FOUNDATION OF OLYMPUS  ~', 430, 65);
             requestAnimationFrame(draw);
-        }
-        draw();
+        })();
     }
 
-    // ── CELESTIAL STATE ──
-    let sunPos = null, moonPos = null, skyState = null, period = 'SUN';
+    // ── CELESTIAL ──
+    let sunPos = null, moonPos = null, skyState = null, period = 'SUN', orrery = null;
+
     function loadCelestial() {
         try {
             if (typeof GaiaSuncalc !== 'undefined') {
@@ -221,24 +271,42 @@
         try { if (typeof Observe !== 'undefined' && Observe.getSkyState) Observe.getSkyState().then(s => { skyState = s; orrery?.updateState(sunPos, moonPos, skyState, period); }).catch(() => {}); } catch(e) {}
     }
 
-    let orrery = null;
-
     // ── BUILD LEVEL ──
-    async function buildLevel(containerId, jsonPath, levelWidth, levelHeight) {
-        const container = document.getElementById(containerId);
-        container.style.width = levelWidth + 'px';
-        container.style.height = levelHeight + 'px';
+    async function buildLevel(config) {
+        const container = document.getElementById(config.sceneId);
+        container.style.width = '860px';
+        container.style.height = config.height + 'px';
 
-        const loader = new GaiaSceneLoader(containerId);
-        await loader.load(jsonPath);
-        return { loader, container };
+        const loader = new GaiaSceneLoader(config.sceneId);
+        
+        // Load materials from index first
+        try {
+            const idxResp = await fetch(INDEX_PATH);
+            if (idxResp.ok) {
+                const idx = await idxResp.json();
+                const matFile = idx.files?.materials?.['olympian-materials.json'];
+                if (matFile) {
+                    const matResp = await fetch(matFile.path);
+                    if (matResp.ok) {
+                        const extMats = await matResp.json();
+                        loader.materials = { ...GaiaMason.MATERIALS };
+                        for (const category of Object.values(extMats)) {
+                            if (typeof category === 'object') Object.assign(loader.materials, category);
+                        }
+                    }
+                }
+            }
+        } catch(e) { console.warn('Materials load failed, using built-ins'); }
+
+        await loader.load(`../json/${config.jsonName}`);
+        return { loader, container, config };
     }
 
-    // ── BUILD SUMMIT (special: has storm canvas, lightning, styx, eagles) ──
-    async function buildSummit() {
-        const { loader, container } = await buildLevel('summit-scene', '../json/zeus-realm.json', 860, 540);
+    // ── SUMMIT (special: lightning, styx, eagles, storm clouds) ──
+    async function buildSummit(levelData) {
+        const { loader, container } = levelData;
 
-        const objRenderer = new GaiaObjectRenderer('summit-scene');
+        const objRenderer = new GaiaObjectRenderer(container.id);
         objRenderer.setMason(loader.mason);
         await objRenderer.loadObjects('../json/altar-objects.json');
 
@@ -291,35 +359,22 @@
             if (action === 'leave_offering') { toast('🙏 An oath sworn before Zeus cannot be broken.'); spawnSparks(x+25, y+25, '#ffd700', 6, container); }
             if (action === 'tend_flame') { toast('🔥 The sacred flame burns brighter.'); spawnSparks(x+25, y+10, '#ff8833', 10, container); }
         });
-
-        return loader;
     }
 
-    // ── BUILD MOUNTAIN LEVELS ──
-    async function buildMountainLevels() {
-    await buildLevel('storm-scene', '../json/olympus-storm.json', 860, 140);
-    await buildLevel('pantheon-scene', '../json/olympus-pantheon.json', 860, 260);
-    await buildLevel('hall-scene', '../json/olympus-hall.json', 860, 200);
-    await buildLevel('lower-scene', '../json/olympus-lower.json', 860, 140);
-
-    // Wire doorway clicks on Pantheon level
-    setTimeout(() => {
-        const pantheonContainer = document.getElementById('pantheon-scene');
-        if (pantheonContainer) {
-            pantheonContainer.addEventListener('click', (e) => {
-                const doorway = e.target.closest('[data-doorway]');
-                if (doorway) {
-                    const link = doorway.dataset.link;
-                    const god = doorway.dataset.god;
-                    if (link) {
-                        toast(`🏛️ Entering the realm of ${god}...`);
-                        setTimeout(() => { window.location.href = link; }, 800);
-                    }
+    // ── DOORWAYS ──
+    function wireDoorways(container) {
+        container.addEventListener('click', (e) => {
+            const doorway = e.target.closest('[data-doorway]');
+            if (doorway) {
+                const link = doorway.dataset.link;
+                const god = doorway.dataset.god;
+                if (link) {
+                    toast(`🏛️ Entering the realm of ${god}...`);
+                    setTimeout(() => { window.location.href = link; }, 800);
                 }
-            });
-        }
-    }, 1000);
-}
+            }
+        });
+    }
 
     // ── SPARKS ──
     function spawnSparks(x, y, color, count, container) {
@@ -343,18 +398,27 @@
         orrery.init(860, 130);
         orrery.updateState(sunPos, moonPos, skyState, period);
 
-        await buildSummit();
-        await buildMountainLevels();
+        // Build all levels
+        for (const levelCfg of LEVELS) {
+            const levelData = await buildLevel(levelCfg);
+            if (levelCfg.special) await buildSummit(levelData);
+            if (levelCfg.hasDoorways) setTimeout(() => wireDoorways(levelData.container), 1000);
+        }
 
+        // Refresh orrery
         setInterval(() => { loadCelestial(); orrery.updateState(sunPos, moonPos, skyState, period); }, 60000);
 
-        toast('⚡ MOUNT OLYMPUS\n\nOuranos above. Pontus below. The divine mountain rises between.\nScroll to explore all five levels.');
-        setTimeout(() => { document.getElementById('olympus-container').scrollTo({ top: 0, behavior: 'smooth' }); }, 1000);
+        toast('⚡ MOUNT OLYMPUS\n\nSummit · Storm Belt · Pantheon Ledge · Great Hall · The Ascent\nScroll to explore. Click doorways to enter realms.');
     }
 
     init().catch(err => {
         console.error('Mount Olympus failed:', err);
-        document.getElementById('olympus-container').innerHTML = `<div style="color:#c9a84c;text-align:center;padding:3rem;font-family:'Cinzel',serif;">⚡ Olympus could not rise.<br><span style="font-size:0.7rem;color:#6b5520;">${err.message}</span></div>`;
+        document.getElementById('olympus-container').innerHTML = `
+            <div style="color:#c9a84c;text-align:center;padding:3rem;font-family:'Cinzel',serif;line-height:1.6;">
+                <span style="font-size:2rem;">⚡</span><br>
+                Olympus could not rise.<br>
+                <span style="font-size:0.7rem;color:#6b5520;">${err.message}</span>
+            </div>`;
     });
     </script>
 </body>
