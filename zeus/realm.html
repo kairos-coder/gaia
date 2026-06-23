@@ -297,33 +297,29 @@
 
     // ── BUILD MOUNTAIN LEVELS ──
     async function buildMountainLevels() {
-        // Storm Belt
-        const stormLoader = await buildLevel('storm-scene', '../json/olympus-mountain.json', 860, 140);
-        // Pantheon Ledge
-        const pantheonLoader = await buildLevel('pantheon-scene', '../json/olympus-mountain.json', 860, 260);
-        // Great Hall
-        const hallLoader = await buildLevel('hall-scene', '../json/olympus-mountain.json', 860, 200);
-        // Lower Peak
-        const lowerLoader = await buildLevel('lower-scene', '../json/olympus-mountain.json', 860, 140);
+    await buildLevel('storm-scene', '../json/olympus-storm.json', 860, 140);
+    await buildLevel('pantheon-scene', '../json/olympus-pantheon.json', 860, 260);
+    await buildLevel('hall-scene', '../json/olympus-hall.json', 860, 200);
+    await buildLevel('lower-scene', '../json/olympus-lower.json', 860, 140);
 
-        // Wire doorway clicks on Pantheon level
-        setTimeout(() => {
-            const pantheonContainer = document.getElementById('pantheon-scene');
-            if (pantheonContainer) {
-                pantheonContainer.addEventListener('click', (e) => {
-                    const doorway = e.target.closest('[data-doorway]');
-                    if (doorway) {
-                        const link = doorway.dataset.link;
-                        const god = doorway.dataset.god;
-                        if (link) {
-                            toast(`🏛️ Entering the realm of ${god}...`);
-                            setTimeout(() => { window.location.href = link; }, 800);
-                        }
+    // Wire doorway clicks on Pantheon level
+    setTimeout(() => {
+        const pantheonContainer = document.getElementById('pantheon-scene');
+        if (pantheonContainer) {
+            pantheonContainer.addEventListener('click', (e) => {
+                const doorway = e.target.closest('[data-doorway]');
+                if (doorway) {
+                    const link = doorway.dataset.link;
+                    const god = doorway.dataset.god;
+                    if (link) {
+                        toast(`🏛️ Entering the realm of ${god}...`);
+                        setTimeout(() => { window.location.href = link; }, 800);
                     }
-                });
-            }
-        }, 1000);
-    }
+                }
+            });
+        }
+    }, 1000);
+}
 
     // ── SPARKS ──
     function spawnSparks(x, y, color, count, container) {
