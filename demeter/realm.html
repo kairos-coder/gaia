@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Sacred Grove · Demeter's Realm · GAIA</title>
+    <link href="https://fonts.googleapis.com/css2?family=UnifrakturMaguntia&family=Cinzel:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --gold: #c9a84c; --gold-bright: #f0d080; --gold-dim: #8b7332;
+            --parchment: #f5f0e0; --parchment-dark: #e8dcc8;
+            --sage: #889966; --sage-light: #aabb88; --sage-dark: #667744;
+            --earth: #5a4a35; --earth-dark: #3d2f1f;
+            --bloom-pink: #d8a8b8; --bloom-white: #fffef5;
+            --honey: #e8a830;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #2d2a1f;
+            color: #f5f0e0;
+            font-family: 'Georgia','Times New Roman',serif;
+            display: flex; flex-direction: column; align-items: center;
+            min-height: 100vh; overflow-x: hidden;
+            background-image:
+                radial-gradient(ellipse at 50% 0%, rgba(200,168,76,0.08) 0%, transparent 55%),
+                radial-gradient(ellipse at 50% 100%, rgba(45,42,31,0.98) 0%, transparent 50%),
+                radial-gradient(ellipse at 30% 60%, rgba(136,153,102,0.04) 0%, transparent 40%);
+        }
+
+        #sacred-grove {
+            position: relative; width: 820px; max-width: 98vw;
+            height: 1200px; margin: 0 auto 1rem; overflow: hidden;
+            background: linear-gradient(180deg, #f5f0e0 0%, #ede4cc 30%, #e0d5b8 100%);
+            border-left: 4px solid #5a4a35;
+            border-right: 4px solid #5a4a35;
+            box-shadow: 0 0 120px rgba(0,0,0,0.5), 0 0 240px rgba(200,168,76,0.1);
+        }
+        @media (max-width: 840px) {
+            #sacred-grove { width: 98vw; height: calc(98vw * 1.46); }
+        }
+
+        .zone { cursor: pointer; transition: filter 0.3s, transform 0.3s; }
+        .zone:hover { filter: brightness(1.3); z-index: 50 !important; }
+        .zone:active { transform: scale(0.94); transition: transform 0.1s; }
+
+        #toast {
+            position: fixed; bottom: 1.5rem; left: 50%; transform: translateX(-50%);
+            background: rgba(245,240,224,0.96); border: 1px solid #8b7332;
+            border-radius: 4px; padding: 0.5rem 1.2rem;
+            font-family: 'Georgia',serif; font-size: 0.78rem;
+            z-index: 200; opacity: 0; transition: opacity 0.35s;
+            pointer-events: none; text-align: center; max-width: 420px; line-height: 1.4;
+            box-shadow: 0 6px 24px rgba(0,0,0,0.4); white-space: pre-line;
+            color: #5a4a35;
+        }
+        #toast.show { opacity: 1; }
+
+        @keyframes petalDrift {
+            0% { transform: translateY(-20px) translateX(0) rotate(0deg); opacity: 0.7; }
+            100% { transform: translateY(100px) translateX(var(--px)) rotate(var(--pr)); opacity: 0; }
+        }
+        @keyframes groveSway {
+            0%,100% { transform: translateX(0); }
+            50% { transform: translateX(3px); }
+        }
+        @keyframes blossomGlow {
+            0%,100% { text-shadow: 0 0 6px rgba(216,168,184,0.2); }
+            50% { text-shadow: 0 0 18px rgba(216,168,184,0.5), 0 0 30px rgba(255,200,210,0.3); }
+        }
+        @keyframes lightShaft {
+            0%,100% { opacity: 0.4; }
+            50% { opacity: 0.8; }
+        }
+        @keyframes inscriptionShimmer {
+            0%,100% { text-shadow: 0 0 6px rgba(200,168,76,0.15); }
+            50% { text-shadow: 0 0 16px rgba(200,168,76,0.45); }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="sacred-grove"></div>
+    <div id="toast"></div>
+
+    <script src="../js/gaia-mason.js"></script>
+    <script>
+    /*
+     * ═══════════════════════════════════════════════════════════════
+     * THE SACRED GROVE · Demeter's Realm
+     * Ancient trees. Blooming canopy. Hollow doorways.
+     * Harvest altar. Petal fall. The goddess of the growing.
+     * All built from typography. GaiaMason v2.1.
+     * ═══════════════════════════════════════════════════════════════
+     */
+
+    const DEFAULT_STATE = {
+        groveVisits: 0,
+        offeringsMade: 0,
+        treesTouched: [],
+        ancientWhispersHeard: 0,
+    };
+    let state = JSON.parse(JSON.stringify(DEFAULT_STATE));
+
+    function loadState() {
+        const raw = localStorage.getItem('gaia_demeter');
+        if (!raw) return false;
+        try { state = { ...DEFAULT_STATE, ...JSON.parse(raw) }; return true; } catch(e) { return false; }
+    }
+    function saveState() { localStorage.setItem('gaia_demeter', JSON.stringify(state)); }
+
+    const toastEl = document.getElementById('toast');
+    let toastTimer;
+    function toast(msg, d = 3200) {
+        toastEl.textContent = msg; toastEl.classList.add('show');
+        clearTimeout(toastTimer); toastTimer = setTimeout(() => toastEl.classList.remove('show'), d);
+    }
+
+    function spawnPetals(x, y, count = 10) {
+        const c = document.getElementById('sacred-grove');
+        if (!c) return;
+        for (let i = 0; i < count; i++) {
+            const petal = document.createElement('div');
+            const px = (Math.random() - 0.5) * 80;
+            const pr = Math.random() * 360;
+            const size = 3 + Math.random() * 6;
+            const dur = 2 + Math.random() * 4;
+            petal.style.cssText = `
+                position:absolute; left:${x}px; top:${y}px;
+                width:${size}px; height:${size * 1.4}px;
+                background:radial-gradient(ellipse, rgba(255,200,210,0.8), rgba(216,168,184,0.3));
+                border-radius:50% 50% 50% 0;
+                pointer-events:none; z-index:50;
+                --px:${px}px; --pr:${pr}deg;
+                animation:petalDrift ${dur}s ease-out ${Math.random() * 0.5}s forwards;
+            `;
+            c.appendChild(petal);
+            setTimeout(() => { if (petal.parentNode) petal.remove(); }, dur * 1000 + 600);
+        }
+    }
+
+    // ═══════════════════════════════════
+    // TREE JSON (embedded)
+    // ═══════════════════════════════════
+
+    const TREE = {
+        sapling: {
+            textColor:'#4a7a3a', mortarColor:'#2d3a1f',
+            fontSize:12, lineHeight:0.45, width:22, height:50,
+            trunkChars:['╎'], trunkTextColor:'#3d5a2a', trunkFontSize:10, trunkWidth:8, trunkHeight:40,
+            whisper:'Barely a season old. The bark is still smooth.'
+        },
+        mature: {
+            textColor:'#3d5a2a', mortarColor:'#1a2a0f',
+            fontSize:20, lineHeight:0.4, width:70, height:140,
+            canopyChars:['▲','◆','▲','▼','▲'], canopyTextColor:'#4a7a3a', canopyMortarColor:'#2d3a1f',
+            canopyFontSize:22, canopyWidth:90, canopyHeight:50, canopyOffsetX:-10, canopyOffsetY:-40,
+            trunkChars:['║','║','║'], trunkTextColor:'#3d2b1f', trunkMortarColor:'#2a1f15',
+            trunkFontSize:16, trunkWidth:18, trunkHeight:90, trunkOffsetX:26, trunkOffsetY:50,
+            whisper:'The shade is cool. A bird calls. The grove is listening.'
+        },
+        ancient: {
+            textColor:'#2d4a1a', mortarColor:'#0f1a08',
+            fontSize:30, lineHeight:0.38, width:120, height:240, weathering:0.15,
+            canopyChars:['▲','▲','◆','▲','▲'], canopyTextColor:'#3d5a2a', canopyMortarColor:'#2d3a1f',
+            canopyFontSize:32, canopyWidth:140, canopyHeight:70, canopyOffsetX:-10, canopyOffsetY:-55,
+            trunkChars:['║','╫','║','╫','║'], trunkTextColor:'#4a3525', trunkMortarColor:'#2a1f15',
+            trunkFontSize:24, trunkWidth:34, trunkHeight:160, trunkOffsetX:43, trunkOffsetY:70,
+            roots:['╽','╿','╽','╿','╽'], rootsColor:'#3d2b1f', rootsFontSize:12, rootsY:220,
+            whisper:'The bark is warm. Your hand fits a groove worn by a thousand others.'
+        },
+        blooming: {
+            textColor:'#2d4a1a', mortarColor:'#0f1a08',
+            fontSize:32, lineHeight:0.38, width:140, height:260,
+            canopyChars:['▲','◆','▲','▼','▲'], canopyTextColor:'#5a8a4a', canopyMortarColor:'#3a6a2a',
+            canopyFontSize:36, canopyWidth:160, canopyHeight:80, canopyOffsetX:-10, canopyOffsetY:-60,
+            trunkChars:['║','╫','║','╫','║'], trunkTextColor:'#4a3525', trunkMortarColor:'#2a1f15',
+            trunkFontSize:26, trunkWidth:38, trunkHeight:170, trunkOffsetX:51, trunkOffsetY:80,
+            roots:['╽','╿','╽','╿','╽'], rootsColor:'#3d2b1f', rootsFontSize:14, rootsY:235,
+            blossomChars:['❀','✿','❁','✾','❋'], blossomColor:'#d8a8b8', blossomFontSize:18,
+            blossomWidth:150, blossomHeight:35, blossomOffsetX:-5, blossomOffsetY:-52,
+            whisper:'Petals fall on your shoulders. They smell like honey and something older.'
+        },
+        hollow: {
+            textColor:'#2d4a1a', mortarColor:'#0f1a08',
+            fontSize:28, lineHeight:0.4, width:100, height:210, weathering:0.2,
+            canopyChars:['▲','◆','▲','▼'], canopyTextColor:'#3d5a2a', canopyMortarColor:'#2d3a1f',
+            canopyFontSize:26, canopyWidth:110, canopyHeight:55, canopyOffsetX:-5, canopyOffsetY:-45,
+            trunkChars:['║','╫','║','╫','║'], trunkTextColor:'#4a3525', trunkMortarColor:'#2a1f15',
+            trunkFontSize:20, trunkWidth:30, trunkHeight:130, trunkOffsetX:35, trunkOffsetY:60,
+            opening:{x:25,y:75,width:50,height:80,arch:true},
+            whisper:'The hollow breathes. Something inside shifts. A doorway.'
+        },
+        charred: {
+            textColor:'#1a1410', mortarColor:'#0a0806',
+            fontSize:22, lineHeight:0.44, width:70, height:130, weathering:0.5,
+            canopyChars:['▲','▲','◆','▲'], canopyTextColor:'#0f0c08', canopyMortarColor:'#050505',
+            canopyFontSize:18, canopyWidth:80, canopyHeight:28, canopyOffsetX:-5, canopyOffsetY:-28,
+            trunkChars:['║','║','║'], trunkTextColor:'#1a1410', trunkMortarColor:'#0a0806',
+            trunkFontSize:16, trunkWidth:20, trunkHeight:80, trunkOffsetX:25, trunkOffsetY:50,
+            whisper:'Still warm. The fire was recent. Or the tree has never stopped burning inside.'
+        }
+    };
+
+    // ═══════════════════════════════════
+    // BUILD TREE FROM VARIANT
+    // ═══════════════════════════════════
+
+    function buildTree(mason, variant, tx, ty, overrides = {}) {
+        const v = { ...variant, ...overrides };
+        const elements = [];
+
+        // Trunk
+        if (v.trunkChars) {
+            const trunk = mason.buildPillar({
+                chars: v.trunkChars,
+                textColor: v.trunkTextColor || v.textColor,
+                mortarColor: v.trunkMortarColor || v.mortarColor,
+                fontSize: v.trunkFontSize || v.fontSize,
+                fontFamily: 'monospace',
+                x: tx + (v.trunkOffsetX || 0),
+                y: ty + (v.trunkOffsetY || 0),
+                width: v.trunkWidth || 18,
+                height: v.trunkHeight || 100,
+                z: 4
+            });
+            if (trunk) {
+                trunk.style.animation = `groveSway ${5 + Math.random() * 4}s ease-in-out infinite`;
+                elements.push(trunk);
+            }
+        }
+
+        // Canopy
+        if (v.canopyChars) {
+            const canopy = mason.buildWall({
+                chars: v.canopyChars,
+                textColor: v.canopyTextColor || v.textColor,
+                mortarColor: v.canopyMortarColor || v.mortarColor,
+                fontSize: v.canopyFontSize || v.fontSize,
+                lineHeight: v.lineHeight || 0.4,
+                letterSpacing: -2,
+                fontFamily: 'monospace',
+                x: tx + (v.canopyOffsetX || 0),
+                y: ty + (v.canopyOffsetY || 0),
+                width: v.canopyWidth || 100,
+                height: v.canopyHeight || 60,
+                z: 5,
+                weathering: v.weathering || 0.05
+            });
+            if (canopy) {
+                canopy.style.animation = `groveSway ${4 + Math.random() * 3}s ease-in-out infinite`;
+                elements.push(canopy);
+            }
+        }
+
+        // Blossom overlay
+        if (v.blossomChars) {
+            const blossom = mason.buildWall({
+                chars: v.blossomChars,
+                textColor: v.blossomColor,
+                mortarColor: 'transparent',
+                fontSize: v.blossomFontSize,
+                lineHeight: 0.45,
+                letterSpacing: 0,
+                fontFamily: "'Georgia',serif",
+                x: tx + (v.blossomOffsetX || 0),
+                y: ty + (v.blossomOffsetY || 0),
+                width: v.blossomWidth || 120,
+                height: v.blossomHeight || 30,
+                z: 6,
+                weathering: 0
+            });
+            if (blossom) {
+                blossom.style.background = 'transparent';
+                blossom.style.pointerEvents = 'none';
+                blossom.style.animation = 'blossomGlow 4s ease-in-out infinite';
+                elements.push(blossom);
+            }
+        }
+
+        // Roots
+        if (v.roots) {
+            const roots = mason.buildInscription({
+                text: v.roots.join(' '),
+                x: tx + 10,
+                y: ty + (v.rootsY || 220),
+                fontSize: v.rootsFontSize || 12,
+                color: v.rootsColor,
+                fontFamily: 'monospace',
+                z: 3
+            });
+            if (roots) elements.push(roots);
+        }
+
+        // Opening for hollow trees
+        if (v.opening) {
+            const op = v.opening;
+            const void_el = mason.buildWall({
+                chars: [' '],
+                textColor: '#0a0806', mortarColor: '#0a0806',
+                fontSize: 10, lineHeight: 0.5, letterSpacing: 0,
+                fontFamily: 'monospace',
+                x: tx + op.x, y: ty + op.y,
+                width: op.width, height: op.height,
+                z: 7
+            });
+            if (void_el) {
+                void_el.style.borderRadius = op.arch ? `${op.width/2}px ${op.width/2}px 0 0` : '2px';
+                void_el.style.boxShadow = 'inset 0 0 25px rgba(0,0,0,0.8)';
+                elements.push(void_el);
+            }
+        }
+
+        return elements;
+    }
+
+    // ═══════════════════════════════════
+    // BUILD THE SACRED GROVE
+    // ═══════════════════════════════════
+
+    function buildGrove() {
+        const container = document.getElementById('sacred-grove');
+        container.innerHTML = '';
+        const m = new GaiaMason('sacred-grove');
+
+        // Register grove materials
+        GaiaMason.MATERIALS['earth_loam'] = {
+            chars: ['▓','░','▒','▓','░'], textColor:'#6a5a45', mortarColor:'#4a3a2a',
+            fontSize:32, lineHeight:0.47, letterSpacing:-2, fontFamily:'monospace', weathering:0.08
+        };
+        GaiaMason.MATERIALS['wheat_field'] = {
+            chars: ['╎','╎','╎','╎','╎'], textColor:'#c8a848', mortarColor:'#a88828',
+            fontSize:18, lineHeight:0.45, letterSpacing:1, fontFamily:'monospace', weathering:0.1
+        };
+        GaiaMason.MATERIALS['sage_moss'] = {
+            chars: ['░','▒','░','▒','░'], textColor:'#889966', mortarColor:'#667744',
+            fontSize:14, lineHeight:0.5, letterSpacing:0, fontFamily:'monospace', weathering:0.15
+        };
+        GaiaMason.MATERIALS['sky_dawn'] = {
+            chars: ['⌒','⌣','~','⋅','⌒'], textColor:'#ffe8cc', mortarColor:'#ffd599',
+            fontSize:16, lineHeight:0.6, letterSpacing:3, fontFamily:"'Georgia',serif", weathering:0.05
+        };
+
+        // ═══════════════════════════════════
+        // SKY (y: -60 to 30)
+        // ═══════════════════════════════════
+
+        m.buildWall({
+            ...GaiaMason.mat('sky_dawn'),
+            x: 0, y: -60, width: 820, height: 80, z: -2
+        });
+
+        m.buildLight({ color: '#ffd599', radius: 80, x: 410, y: 20, pulse: true, z: 0 });
+
+        // ═══════════════════════════════════
+        // THE BLOOMING ANCIENT (center, y: 30-290)
+        // ═══════════════════════════════════
+
+        buildTree(m, TREE.blooming, 340, 30);
+
+        // Glyph on the ancient trunk
+        m.buildInscription({
+            text: '❀  ✿  ❁  ✾  ❋',
+            x: 375, y: 170,
+            fontSize: 14, color: 'rgba(216,168,184,0.35)',
+            fontFamily: "'Georgia',serif", z: 6,
+            animation: 'inscriptionShimmer 5s ease-in-out infinite'
+        });
+
+        // Name the sacred tree
+        m.buildInscription({
+            text: 'THE SACRED TREE',
+            x: 360, y: 10,
+            fontSize: 7, color: 'rgba(200,168,76,0.5)',
+            fontFamily: "'Cinzel',serif", z: 8
+        });
+
+        // Zone: stand beneath the blooming ancient
+        const ancientZone = makeZone(340, 80, 140, 200, 'Stand beneath the Sacred Tree', () => {
+            state.ancientWhispersHeard++;
+            const whispers = [
+                'Petals fall on your shoulders. They smell like honey and something older.',
+                'The tree is celebrating. A wedding? A birth? A century of survival? All of them.',
+                'One blossom lands in your palm. It\'s warm. It pulses, once. Then it\'s just a flower.',
+                'A bee the size of your thumb drifts past. It\'s not interested in you. It\'s on pilgrimage.',
+                'You feel it breathing. Slow. In. Out. One breath per season.'
+            ];
+            toast('🌸 ' + whispers[state.ancientWhispersHeard % whispers.length]);
+            spawnPetals(410, 120, 12);
+            saveState();
+        });
+        container.appendChild(ancientZone);
+
+        // ═══════════════════════════════════
+        // HOLLOW TREE — LEFT EXIT (y: 300-510)
+        // ═══════════════════════════════════
+
+        buildTree(m, TREE.hollow, 40, 300);
+
+        m.buildInscription({
+            text: 'TO THE DEEP',
+            x: 55, y: 470,
+            fontSize: 6, color: 'rgba(58,107,140,0.5)',
+            fontFamily: "'Cinzel',serif", z: 9
+        });
+
+        const hollowLeftZone = makeZone(65, 375, 50, 80, 'Enter the hollow — descend to Poseidon\'s realm', () => {
+            toast('🌊 You step into the hollow. Salt air rises. The deep calls.');
+            saveState();
+            setTimeout(() => { window.location.href = '../poseidon/realm.html?from=demeter'; }, 1000);
+        });
+        container.appendChild(hollowLeftZone);
+
+        // ═══════════════════════════════════
+        // HOLLOW TREE — RIGHT EXIT (y: 280-490)
+        // ═══════════════════════════════════
+
+        buildTree(m, TREE.hollow, 690, 280);
+
+        m.buildInscription({
+            text: 'TO THE HAVEN',
+            x: 700, y: 450,
+            fontSize: 6, color: 'rgba(184,134,11,0.5)',
+            fontFamily: "'Cinzel',serif", z: 9
+        });
+
+        const hollowRightZone = makeZone(715, 355, 50, 80, 'Enter the hollow — rise to Gwalenn', () => {
+            toast('🏛️ You step through. The Olympian Haven awaits.');
+            saveState();
+            setTimeout(() => { window.location.href = '../gwalenn.html?from=demeter'; }, 1000);
+        });
+        container.appendChild(hollowRightZone);
+
+        // ═══════════════════════════════════
+        // MATURE TREES — framing the grove
+        // ═══════════════════════════════════
+
+        buildTree(m, TREE.mature, 160, 340, { width:60, height:120, canopyWidth:80, canopyHeight:45, trunkWidth:16, trunkHeight:80, trunkOffsetX:22, trunkOffsetY:50 });
+        buildTree(m, TREE.mature, 600, 320, { width:60, height:120, canopyWidth:80, canopyHeight:45, trunkWidth:16, trunkHeight:80, trunkOffsetX:22, trunkOffsetY:50 });
+
+        // Zone on left mature
+        const matureLeftZone = makeZone(160, 350, 70, 110, 'Rest beneath the tree', () => {
+            toast('🌳 ' + TREE.mature.whisper);
+            saveState();
+        });
+        container.appendChild(matureLeftZone);
+
+        // ═══════════════════════════════════
+        // CHARRED STUMP — left edge (y: 520-650)
+        // ═══════════════════════════════════
+
+        buildTree(m, TREE.charred, 20, 520, { width:60, height:110, trunkWidth:18, trunkHeight:70, trunkOffsetX:21, trunkOffsetY:40, canopyWidth:70, canopyHeight:25, canopyOffsetX:-5, canopyOffsetY:-20 });
+
+        m.buildInscription({
+            text: 'B U R N E D   B U T   N O T   G O N E',
+            x: 8, y: 620,
+            fontSize: 5, color: 'rgba(196,79,28,0.35)',
+            fontFamily: "'Cinzel',serif", z: 6
+        });
+
+        const charredZone = makeZone(20, 540, 60, 90, 'Touch the charred stump', () => {
+            toast('🔥 ' + TREE.charred.whisper);
+            m.spawnParticles({ x: 50, y: 560, count: 6, color: '#ff6b2b', minSize: 2, maxSize: 4, riseDistance: 50, spreadX: 30, durationMin: 1.5, durationMax: 3, z: 50 });
+            saveState();
+        });
+        container.appendChild(charredZone);
+
+        // ═══════════════════════════════════
+        // SAPLINGS — bottom right (y: 500-560)
+        // ═══════════════════════════════════
+
+        for (let i = 0; i < 4; i++) {
+            const sx = 640 + i * 35;
+            const sy = 510 + Math.random() * 30;
+            buildTree(m, TREE.sapling, sx, sy);
+        }
+
+        m.buildInscription({
+            text: 'NEW GROWTH',
+            x: 680, y: 498,
+            fontSize: 5, color: 'rgba(74,122,58,0.4)',
+            fontFamily: "'Cinzel',serif", z: 5
+        });
+
+        // ═══════════════════════════════════
+        // HARVEST ALTAR (center, y: 550-700)
+        // ═══════════════════════════════════
+
+        // Altar base
+        m.buildWall({
+            ...GaiaMason.mat('marble_white'),
+            x: 340, y: 580, width: 140, height: 90, z: 8,
+            weathering: 0.08
+        });
+
+        // Altar top
+        m.buildWall({
+            ...GaiaMason.mat('wheat_gold'),
+            x: 335, y: 570, width: 150, height: 18, z: 9
+        });
+
+        // Offering bowl on altar
+        m.buildOfferingBowl({ x: 375, y: 540, z: 12, material: 'gold_leaf' });
+
+        // Wheat sheaf glyph
+        m.buildInscription({
+            text: '🌾',
+            x: 400, y: 555,
+            fontSize: 24, color: 'rgba(200,168,76,0.6)',
+            fontFamily: "'Georgia',serif", z: 13
+        });
+
+        m.buildInscription({
+            text: 'HARVEST ALTAR',
+            x: 365, y: 675,
+            fontSize: 7, color: 'rgba(200,168,76,0.45)',
+            fontFamily: "'Cinzel',serif", z: 10,
+            animation: 'inscriptionShimmer 4s ease-in-out infinite'
+        });
+
+        // Zone: make offering
+        const altarZone = makeZone(340, 540, 140, 130, 'Make an offering at the Harvest Altar', () => {
+            state.offeringsMade++;
+            const offerings = [
+                'You offer a sheaf of wheat. The altar warms beneath your hands.',
+                'You offer honey. It sinks into the stone. Accepted.',
+                'You offer a poppy bloom. Demeter\'s tears. The air sweetens.',
+                'You offer nothing but your presence. The altar accepts anyway. "The grove knows you."',
+            ];
+            toast('🕯️ ' + offerings[state.offeringsMade % offerings.length]);
+            spawnPetals(410, 570, 8);
+            saveState();
+        });
+        container.appendChild(altarZone);
+
+        // ═══════════════════════════════════
+        // FLOOR (y: 720-900)
+        // ═══════════════════════════════════
+
+        m.buildFloor({
+            ...GaiaMason.mat('earth_loam'),
+            x: 20, y: 730, width: 780, height: 170, z: 0,
+            perspectiveStrength: 8,
+            glyphCarving: {
+                text: '🌾  🌸  🍯  🌿  🌾  🌸  🍯  🌿',
+                x: 100, y: 60,
+                size: 16, spacing: 32,
+                color: 'rgba(200,168,76,0.1)'
+            }
+        });
+
+        // Moss patches
+        m.buildWall({
+            ...GaiaMason.mat('sage_moss'),
+            x: 60, y: 760, width: 120, height: 40, z: 1, weathering: 0.2
+        });
+        m.buildWall({
+            ...GaiaMason.mat('sage_moss'),
+            x: 600, y: 780, width: 150, height: 35, z: 1, weathering: 0.25
+        });
+
+        // ═══════════════════════════════════
+        // INSCRIPTIONS
+        // ═══════════════════════════════════
+
+        m.buildInscription({
+            text: 'THE GROVE REMEMBERS EVERY SEED',
+            x: 270, y: 850,
+            fontSize: 8, color: 'rgba(200,168,76,0.3)',
+            fontFamily: "'Cinzel',serif", z: 5
+        });
+
+        m.buildInscription({
+            text: 'DEMETER  ·  PERSEPHONE  ·  ARISTAEUS',
+            x: 245, y: 870,
+            fontSize: 6, color: 'rgba(136,153,102,0.4)',
+            fontFamily: "'Cinzel',serif", z: 5
+        });
+
+        // ═══════════════════════════════════
+        // EXIT — SOUTH
+        // ═══════════════════════════════════
+
+        m.buildArch({
+            chars: ['H','N','M','W'],
+            textColor: '#889966', fontSize: 20,
+            fontFamily: "'Cinzel','Georgia',serif",
+            cx: 410, cy: 920, innerRadius: 50,
+            stoneCount: 13, stoneDepth: 18, z: 10,
+            keystoneChar: '🌾', keystoneOversize: 1.5
+        });
+
+        m.buildInscription({
+            text: 'RETURN TO GAIA',
+            x: 365, y: 985,
+            fontSize: 7, color: 'rgba(136,153,102,0.5)',
+            fontFamily: "'Cinzel',serif", z: 11
+        });
+
+        const exitZone = makeZone(360, 895, 100, 75, 'Leave the Sacred Grove', () => {
+            saveState();
+            toast('🌾 You bow to the Sacred Tree and step back through the wheat fields...');
+            setTimeout(() => { window.location.href = '../index.html?from=demeter'; }, 1200);
+        });
+        exitZone.innerHTML = `
+            <div style="width:100px;height:75px;background:radial-gradient(ellipse at center, rgba(136,153,102,0.12), transparent 70%);border-radius:50px 50px 0 0;"></div>
+        `;
+        container.appendChild(exitZone);
+
+        // ═══════════════════════════════════
+        // AMBIENT PETAL FALL
+        // ═══════════════════════════════════
+
+        m.spawnAmbientFall({
+            count: 10,
+            color: 'rgba(255,200,210,0.35)',
+            minSize: 2, maxSize: 5,
+            speedMin: 10, speedMax: 22,
+            z: 20
+        });
+
+        // ═══════════════════════════════════
+        // LIGHT SHAFTS
+        // ═══════════════════════════════════
+
+        m.buildLight({ color: '#ffd599', radius: 50, x: 300, y: 50, pulse: true, z: 0 });
+        m.buildLight({ color: '#ffd599', radius: 45, x: 520, y: 60, pulse: true, z: 0 });
+
+        return m;
+    }
+
+    function makeZone(x, y, w, h, title, action) {
+        const el = document.createElement('div');
+        el.className = 'zone';
+        el.title = title;
+        el.style.cssText = `position:absolute;left:${x}px;top:${y}px;width:${w}px;height:${h}px;z-index:25;`;
+        el.addEventListener('click', action);
+        return el;
+    }
+
+    // ═══════════════════════════════════
+    // INIT
+    // ═══════════════════════════════════
+
+    function init() {
+        const loaded = loadState();
+        if (!loaded) saveState();
+
+        state.groveVisits++;
+        saveState();
+
+        const params = new URLSearchParams(window.location.search);
+        if (params.get('from')) {
+            toast(`🌳 You enter the Sacred Grove from the ${params.get('from')}. The ancient trees welcome you.`);
+            window.history.replaceState({}, '', 'realm.html');
+        } else {
+            const welcome = state.groveVisits > 1
+                ? '🌳 The Sacred Grove remembers you. The trees have missed your steps.'
+                : '🌳 You step into the Sacred Grove. The ancient trees watch. The air smells of honey and earth.';
+            toast(welcome);
+        }
+
+        buildGrove();
+
+        // Occasional petal burst from the ancient tree
+        setInterval(() => {
+            spawnPetals(410, 100, 4 + Math.floor(Math.random() * 6));
+        }, 6000 + Math.random() * 8000);
+
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Space' && !e.target.closest('input,textarea')) {
+                e.preventDefault();
+                const altar = document.querySelector('[title="Make an offering at the Harvest Altar"]');
+                if (altar) altar.click();
+            }
+        });
+    }
+
+    init();
+    </script>
+</body>
+</html>
