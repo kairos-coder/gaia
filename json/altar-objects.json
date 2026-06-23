@@ -1,0 +1,105 @@
+{
+  "name": "Olympian Altar Objects",
+  "description": "Sacred objects for the altars and ritual spaces of Olympus.",
+  "offering_bowl": {
+    "bounds": { "width": 60, "height": 60 },
+    "layers": [
+      { "type": "pillar", "material": "marble_white", "position": { "x": 20, "y": 25, "z": 8 }, "dimensions": { "width": 20, "height": 35 } },
+      { "type": "wall", "material": "gold_leaf", "position": { "x": 5, "y": 0, "z": 9 }, "dimensions": { "width": 50, "height": 28 } },
+      { "type": "wall", "material": "void_black", "position": { "x": 12, "y": 5, "z": 10 }, "dimensions": { "width": 36, "height": 18 } }
+    ],
+    "interaction": {
+      "zone": { "x": 0, "y": 0, "width": 60, "height": 60 },
+      "action": "leave_offering",
+      "label": "Leave an offering"
+    }
+  },
+  "brazier_gold": {
+    "bounds": { "width": 80, "height": 70 },
+    "layers": [
+      { "type": "wall", "material": "marble_white", "position": { "x": 10, "y": 40, "z": 6 }, "dimensions": { "width": 60, "height": 25 } },
+      { "type": "wall", "material": "gold_leaf", "position": { "x": 15, "y": 20, "z": 7 }, "dimensions": { "width": 50, "height": 30 } },
+      { "type": "wall", "material": "flame_gold", "position": { "x": 22, "y": 5, "z": 8 }, "dimensions": { "width": 36, "height": 20 } }
+    ],
+    "interaction": {
+      "zone": { "x": 5, "y": 0, "width": 70, "height": 65 },
+      "action": "tend_flame",
+      "label": "Tend the sacred flame"
+    }
+  },
+  "tripod": {
+    "bounds": { "width": 60, "height": 80 },
+    "layers": [
+      { "type": "pillar", "material": "bronze_weathered", "position": { "x": 5, "y": 30, "z": 6 }, "dimensions": { "width": 6, "height": 50 } },
+      { "type": "pillar", "material": "bronze_weathered", "position": { "x": 25, "y": 30, "z": 6 }, "dimensions": { "width": 6, "height": 50 } },
+      { "type": "pillar", "material": "bronze_weathered", "position": { "x": 45, "y": 30, "z": 6 }, "dimensions": { "width": 6, "height": 50 } },
+      { "type": "wall", "material": "bronze_weathered", "position": { "x": 10, "y": 20, "z": 7 }, "dimensions": { "width": 40, "height": 15 } }
+    ]
+  },
+  "thunderbolt": {
+    "bounds": { "width": 20, "height": 70 },
+    "layers": [
+      { "type": "inscription", "content": "⚡", "position": { "x": 0, "y": 0, "z": 10 }, "style": { "fontSize": 40, "color": "#ffd700", "fontFamily": "'Georgia',serif", "animation": "gaiaLightPulse 1s ease-in-out infinite" } }
+    ]
+  },
+  "trident": {
+    "bounds": { "width": 30, "height": 80 },
+    "layers": [
+      { "type": "pillar", "material": "silver_frost", "position": { "x": 10, "y": 30, "z": 6 }, "dimensions": { "width": 8, "height": 50 } },
+      { "type": "inscription", "content": "Ψ", "position": { "x": 2, "y": 5, "z": 7 }, "style": { "fontSize": 24, "color": "#c8d8e8", "fontFamily": "'Georgia',serif" } }
+    ]
+  },
+  "lyre": {
+    "bounds": { "width": 50, "height": 60 },
+    "layers": [
+      { "type": "wall", "material": "gold_leaf", "position": { "x": 15, "y": 20, "z": 6 }, "dimensions": { "width": 20, "height": 35 } },
+      { "type": "inscription", "content": "🎵", "position": { "x": 10, "y": 10, "z": 7 }, "style": { "fontSize": 18, "color": "#d4af37", "fontFamily": "'Georgia',serif" } }
+    ]
+  },
+  "owl_statue": {
+    "bounds": { "width": 30, "height": 40 },
+    "layers": [
+      { "type": "wall", "material": "marble_white", "position": { "x": 5, "y": 15, "z": 6 }, "dimensions": { "width": 20, "height": 25 } },
+      { "type": "inscription", "content": "🦉", "position": { "x": 5, "y": 0, "z": 7 }, "style": { "fontSize": 18, "color": "#d8d0c8", "fontFamily": "'Georgia',serif" } }
+    ]
+  },
+  "caduceus": {
+    "bounds": { "width": 16, "height": 70 },
+    "layers": [
+      { "type": "pillar", "material": "quicksilver", "position": { "x": 5, "y": 20, "z": 6 }, "dimensions": { "width": 6, "height": 50 } },
+      { "type": "inscription", "content": "☤", "position": { "x": 0, "y": 0, "z": 7 }, "style": { "fontSize": 16, "color": "#a8b8c8", "fontFamily": "'Georgia',serif" } }
+    ]
+  },
+  "mirror_silver": {
+    "bounds": { "width": 40, "height": 50 },
+    "layers": [
+      { "type": "wall", "material": "silver_frost", "position": { "x": 5, "y": 5, "z": 6 }, "dimensions": { "width": 30, "height": 40 } },
+      { "type": "inscription", "content": "🪞", "position": { "x": 8, "y": 10, "z": 7 }, "style": { "fontSize": 20, "color": "#c8d8e8", "fontFamily": "'Georgia',serif" } }
+    ]
+  },
+  "anvil": {
+    "bounds": { "width": 70, "height": 50 },
+    "layers": [
+      { "type": "wall", "material": "iron_dark", "position": { "x": 10, "y": 20, "z": 6 }, "dimensions": { "width": 50, "height": 20 } },
+      { "type": "wall", "material": "iron_dark", "position": { "x": 20, "y": 10, "z": 7 }, "dimensions": { "width": 30, "height": 15 } }
+    ]
+  },
+  "bow_silver": {
+    "bounds": { "width": 50, "height": 30 },
+    "layers": [
+      { "type": "inscription", "content": "🏹", "position": { "x": 5, "y": 0, "z": 7 }, "style": { "fontSize": 22, "color": "#c8d8e8", "fontFamily": "'Georgia',serif" } }
+    ]
+  },
+  "laurel_wreath": {
+    "bounds": { "width": 50, "height": 25 },
+    "layers": [
+      { "type": "inscription", "content": "🌿", "position": { "x": 5, "y": 0, "z": 7 }, "style": { "fontSize": 18, "color": "#4a7a3a", "fontFamily": "'Georgia',serif" } }
+    ]
+  },
+  "grain_sheaf": {
+    "bounds": { "width": 30, "height": 50 },
+    "layers": [
+      { "type": "inscription", "content": "🌾", "position": { "x": 0, "y": 0, "z": 7 }, "style": { "fontSize": 24, "color": "#c8a848", "fontFamily": "'Georgia',serif" } }
+    ]
+  }
+}
