@@ -6,22 +6,43 @@
     <title>Thunder Peak · Realm of Zeus</title>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&family=Cinzel:wght@400;600&family=EB+Garamond:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
     <style>
-        :root { --gold: #c9a84c; --void: #0a0806; --lightning: #8899dd; }
+        :root { --gold: #c9a84c; --void: #0a0806; --lightning: #8899dd; --pontus: #2a4a6a; }
         * { margin:0; padding:0; box-sizing:border-box; }
         body {
             background: var(--void);
             display: flex; flex-direction: column; align-items: center;
             min-height: 100vh; overflow-x: hidden;
-            background-image: radial-gradient(ellipse at 50% 30%, rgba(120,140,200,0.04) 0%, transparent 60%);
+            background-image: radial-gradient(ellipse at 50% 20%, rgba(120,140,200,0.05) 0%, transparent 60%);
+        }
+
+        #celestial-orrery {
+            width: 860px; max-width: 98vw;
+            height: 130px; margin: 0.3rem auto 0;
+            position: relative; z-index: 5;
+        }
+        #pontus-foundation {
+            width: 860px; max-width: 98vw;
+            height: 80px; margin: 0 auto;
+            position: relative; z-index: 2;
+            border-bottom: 2px solid rgba(42,74,106,0.3);
         }
         #realm-scene {
             position: relative; width: 860px; max-width: 98vw;
-            height: 620px; margin: 1rem auto; overflow: hidden;
+            height: 540px; margin: 0 auto 1rem; overflow: hidden;
             background: transparent;
-            border: 3px solid rgba(201,168,76,0.12); border-radius: 4px;
+            border-left: 3px solid rgba(201,168,76,0.12);
+            border-right: 3px solid rgba(201,168,76,0.12);
+            border-bottom: 3px solid rgba(201,168,76,0.12);
+            border-radius: 0 0 4px 4px;
             box-shadow: 0 0 100px rgba(0,0,0,0.6), 0 0 200px rgba(0,0,0,0.3);
         }
-        @media (max-width: 880px) { #realm-scene { width: 98vw; height: calc(98vw * 0.72); } }
+        @media (max-width: 880px) {
+            #celestial-orrery, #pontus-foundation, #realm-scene { width: 98vw; }
+            #realm-scene { height: calc(98vw * 0.63); }
+            #pontus-foundation { height: calc(98vw * 0.09); }
+            #celestial-orrery { height: calc(98vw * 0.15); }
+        }
+
         #toast {
             position: fixed; bottom: 1.5rem; left: 50%; transform: translateX(-50%);
             background: rgba(10,8,6,0.95); border: 1px solid var(--gold);
@@ -45,12 +66,22 @@
     </style>
 </head>
 <body>
+
+    <!-- CELESTIAL ORRERY — the heavens above -->
+    <div id="celestial-orrery"></div>
+
+    <!-- PONTUS FOUNDATION — the encircling sea around Olympus -->
+    <div id="pontus-foundation"></div>
+
+    <!-- THUNDER PEAK — the throne room -->
     <div id="realm-scene"></div>
+
     <div id="toast"></div>
 
     <script src="../js/gaia-mason.js"></script>
     <script src="../js/gaia-scene-loader.js"></script>
     <script src="../js/gaia-object-renderer.js"></script>
+    <script src="../js/gaia-orrery.js"></script>
     <script src="../js/gaia-suncalc.js"></script>
     <script src="../js/gaia-celestial.js"></script>
     <script src="../js/gaia-deck.js"></script>
@@ -60,6 +91,7 @@
      * THUNDER PEAK · Throne of Zeus
      * gaia/zeus/realm.html
      *
+     * Ouranos above. Pontus below. Olympus between.
      * Storm clouds. Eagles. The Styx. Oath-breaker chains.
      * Lightning is not decoration here — it is law.
      * ═══════════════════════════════════════════════════════
@@ -72,7 +104,111 @@
         clearTimeout(toastTimer); toastTimer = setTimeout(() => toastEl.classList.remove('show'), d);
     }
 
+    // ── PONTUS FOUNDATION ──
+    function buildPontusFoundation() {
+        const container = document.getElementById('pontus-foundation');
+        const canvas = document.createElement('canvas');
+        canvas.width = 860; canvas.height = 80;
+        canvas.style.cssText = 'display:block;width:100%;height:100%;';
+        container.appendChild(canvas);
+        const ctx = canvas.getContext('2d');
+
+        const WAVE_TITANS = [
+            { freq: 0.6, amp: 0.8, color: [25, 80, 140] },
+            { freq: 0.75, amp: 0.6, color: [35, 95, 155] },
+            { freq: 0.9, amp: 0.5, color: [30, 85, 145] },
+            { freq: 0.55, amp: 0.7, color: [20, 75, 135] },
+        ];
+        const offsets = WAVE_TITANS.map(() => Math.random() * Math.PI * 2);
+
+        function draw() {
+            ctx.clearRect(0, 0, 860, 80);
+            
+            // Deep water base
+            const bg = ctx.createLinearGradient(0, 0, 0, 80);
+            bg.addColorStop(0, '#0a1828');
+            bg.addColorStop(0.5, '#102030');
+            bg.addColorStop(1, '#152838');
+            ctx.fillStyle = bg;
+            ctx.fillRect(0, 0, 860, 80);
+
+            // Titan waves
+            WAVE_TITANS.forEach((t, i) => {
+                offsets[i] += 0.008 * t.freq;
+                const yC = 18 + i * 18;
+                const amp = 4 + t.amp * 8;
+                ctx.beginPath();
+                ctx.strokeStyle = `rgba(${t.color[0]},${t.color[1]},${t.color[2]},0.4)`;
+                ctx.lineWidth = 1;
+                for (let x = 0; x <= 860; x += 3) {
+                    const y = yC + Math.sin(x * 0.008 + offsets[i]) * amp
+                            + Math.sin(x * 0.02 + offsets[i] * 0.6) * (amp * 0.25);
+                    x === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+                }
+                ctx.stroke();
+            });
+
+            // Olympus label
+            ctx.font = '7px Cinzel, serif';
+            ctx.fillStyle = 'rgba(100,150,200,0.35)';
+            ctx.textAlign = 'center';
+            ctx.fillText('~  THE ENCIRCLING SEA  ·  PONTUS  ·  FOUNDATION OF OLYMPUS  ~', 430, 65);
+
+            requestAnimationFrame(draw);
+        }
+        draw();
+    }
+
+    // ── CELESTIAL STATE ──
+    let sunPos = null, moonPos = null, skyState = null, period = 'SUN';
+
+    function loadCelestial() {
+        try {
+            if (typeof GaiaSuncalc !== 'undefined') {
+                sunPos = GaiaSuncalc.getSunPosition();
+                moonPos = GaiaSuncalc.getMoonPosition();
+            }
+            if (typeof Observe !== 'undefined' && Observe.getCurrentPeriod) {
+                period = Observe.getCurrentPeriod();
+            }
+            if (!skyState && typeof GaiaSuncalc !== 'undefined') {
+                skyState = {
+                    ascendant: GaiaSuncalc.getAscendant(),
+                    planets: {},
+                    period: period,
+                    moonPhase: {
+                        name: moonPos?.phaseName || 'Unknown',
+                        illumination: moonPos?.illumination || 50,
+                        phase: moonPos?.phase || 0.5
+                    }
+                };
+            }
+        } catch(e) { console.warn('Celestial unavailable:', e.message); }
+
+        // Try Observe async
+        try {
+            if (typeof Observe !== 'undefined' && Observe.getSkyState) {
+                Observe.getSkyState().then(s => { skyState = s; orrery?.updateState(sunPos, moonPos, skyState, period); }).catch(() => {});
+            }
+        } catch(e) {}
+    }
+
+    let orrery = null;
+
+    // ── BUILD REALM ──
     async function buildRealm() {
+        // Build Pontus foundation
+        buildPontusFoundation();
+
+        // Load celestial
+        loadCelestial();
+
+        // Start orrery
+        orrery = new GaiaOrrery('celestial-orrery');
+        orrery.init(860, 130);
+        orrery.updateState(sunPos, moonPos, skyState, period);
+
+        // Build the throne room
         const loader = new GaiaSceneLoader('realm-scene');
         await loader.load('../json/zeus-realm.json');
 
@@ -81,17 +217,17 @@
         objRenderer.setMason(loader.mason);
         await objRenderer.loadObjects('../json/altar-objects.json');
 
-        // Place objects
+        // Place sacred objects
         objRenderer.place('thunderbolt', 412, 82);
         objRenderer.place('offering_bowl', 275, 338);
         objRenderer.place('offering_bowl', 498, 338);
         objRenderer.place('brazier_gold', 155, 358);
         objRenderer.place('brazier_gold', 638, 358);
 
-        // ── STYX SHIMMER OVERLAY ──
+        // ── STYX SHIMMER ──
         const styxShimmer = document.createElement('div');
         styxShimmer.style.cssText = `
-            position: absolute; left: 200px; top: 535px;
+            position: absolute; left: 200px; top: 465px;
             width: 460px; height: 22px; z-index: 5;
             color: rgba(120,140,200,0.3); font-size: 11px;
             font-family: Georgia,serif; letter-spacing: 4px;
@@ -101,24 +237,22 @@
         styxShimmer.textContent = '~  ≋  ~  ≈  ~  ≋  ~  ≈  ~  ≋  ~  ≈  ~  ≋';
         container.appendChild(styxShimmer);
 
-        // ── STORM CLOUDS (overlay canvas) ──
+        // ── STORM CLOUDS ──
         const stormCanvas = document.createElement('canvas');
-        stormCanvas.width = 860; stormCanvas.height = 200;
+        stormCanvas.width = 860; stormCanvas.height = 180;
         stormCanvas.style.cssText = 'position:absolute;left:0;top:0;z-index:15;pointer-events:none;';
         container.appendChild(stormCanvas);
         const stormCtx = stormCanvas.getContext('2d');
         
         const clouds = Array.from({length: 12}, () => ({
-            x: Math.random() * 900,
-            y: Math.random() * 160,
-            w: 60 + Math.random() * 180,
-            h: 20 + Math.random() * 45,
+            x: Math.random() * 900, y: Math.random() * 140,
+            w: 60 + Math.random() * 180, h: 20 + Math.random() * 45,
             speed: 0.1 + Math.random() * 0.3,
             opacity: 0.06 + Math.random() * 0.1,
         }));
 
         function drawStorm() {
-            stormCtx.clearRect(0, 0, 860, 200);
+            stormCtx.clearRect(0, 0, 860, 180);
             clouds.forEach(c => {
                 c.x += c.speed;
                 if (c.x > 900) c.x = -c.w;
@@ -131,13 +265,12 @@
         }
         drawStorm();
 
-        // ── LIGHTNING BOLTS ──
+        // ── LIGHTNING ──
         function spawnLightning() {
             const bolt = document.createElement('div');
             const x = 200 + Math.random() * 460;
             bolt.style.cssText = `
-                position: absolute;
-                left: ${x}px; top: 0;
+                position: absolute; left: ${x}px; top: 0;
                 width: 2px; height: ${80 + Math.random() * 120}px;
                 background: linear-gradient(to bottom, rgba(200,210,255,0.9), rgba(150,170,240,0.4), transparent);
                 z-index: 20; pointer-events: none;
@@ -148,7 +281,6 @@
             container.appendChild(bolt);
             setTimeout(() => bolt.remove(), 700);
 
-            // Flash the scene
             const flash = document.createElement('div');
             flash.style.cssText = `
                 position: absolute; inset: 0;
@@ -159,14 +291,12 @@
             container.appendChild(flash);
             setTimeout(() => flash.remove(), 500);
 
-            // Thunder sound timing (visual rumble via screen shake)
             container.style.transform = 'translateX(-2px)';
             setTimeout(() => { container.style.transform = 'translateX(2px)'; }, 80);
             setTimeout(() => { container.style.transform = 'translateX(-1px)'; }, 160);
             setTimeout(() => { container.style.transform = 'translateX(0)'; }, 240);
         }
 
-        // Lightning strikes randomly
         function scheduleLightning() {
             const delay = 4000 + Math.random() * 15000;
             setTimeout(() => {
@@ -177,11 +307,13 @@
         }
         scheduleLightning();
 
-        // ── EAGLE ANIMATION ──
-        const eagles = container.querySelectorAll('[style*="font-size: 30px"]');
-        eagles.forEach(eagle => {
-            eagle.style.animation = 'eagleShift 4s ease-in-out infinite';
-        });
+        // ── EAGLES ──
+        setTimeout(() => {
+            const eagles = container.querySelectorAll('[style*="font-size: 30px"]');
+            eagles.forEach(eagle => {
+                eagle.style.animation = 'eagleShift 4s ease-in-out infinite';
+            });
+        }, 500);
 
         // ── INTERACTIONS ──
         container.addEventListener('object-interact', (e) => {
@@ -189,16 +321,16 @@
             
             if (object === 'thunderbolt' || action === 'approach_throne') {
                 const card = GaiaDeck.getCard('zeus');
-                toast(`⚡ THE THRONE OF ZEUS\n\n"${card?.whisper || 'I bound the Titans. I bound the gods.'}"\n\n${card?.intervention?.message || 'The King of Olympus regards you. The sky above still holds your name.'}`);
+                toast(`⚡ THE THRONE OF ZEUS\n\n"${card?.whisper || 'I bound the Titans. I bound the gods.'}"\n\n${card?.intervention?.message || 'The King of Olympus regards you.'}`);
                 spawnSparks(x + 50, y + 70, '#ffd700', 18);
                 spawnLightning();
             }
             if (action === 'approach_styx') {
-                toast('🌊 THE RIVER STYX\n\n"Oaths sworn upon the Styx bind even the gods. What promise have you made that you cannot unmake?"\n\nThe water is cold. It remembers every oath ever sworn.');
+                toast('🌊 THE RIVER STYX\n\n"Oaths sworn upon the Styx bind even the gods. What promise have you made that you cannot unmake?"\n\nThe water remembers every oath ever sworn.');
                 spawnSparks(x + 230, y + 15, '#8899cc', 8);
             }
             if (action === 'leave_offering') {
-                toast('🙏 An oath sworn before Zeus cannot be broken.\n\n"The Styx remembers. So does the Thunderer. So will you."');
+                toast('🙏 An oath sworn before Zeus cannot be broken.\n\n"The Styx remembers. So does the Thunderer."');
                 spawnSparks(x + 25, y + 25, '#ffd700', 6);
             }
             if (action === 'tend_flame') {
@@ -212,9 +344,15 @@
             toast('⚡ Descending from Thunder Peak... the sky watches you leave.');
         };
 
+        // ── REFRESH ORRERY ──
+        setInterval(() => {
+            loadCelestial();
+            orrery.updateState(sunPos, moonPos, skyState, period);
+        }, 60000);
+
         // ── WELCOME ──
         setTimeout(() => {
-            toast('⚡ THUNDER PEAK\n\nThe throne of Zeus awaits. Eagles watch. The Styx flows beneath. Lightning is law here.');
+            toast('⚡ THUNDER PEAK\n\nOuranos above. Pontus below. Olympus between.\nThe throne of Zeus awaits.');
         }, 600);
         setTimeout(() => spawnLightning(), 1500);
     }
