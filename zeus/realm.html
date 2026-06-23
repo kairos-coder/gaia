@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thunder Peak · Realm of Zeus</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&family=Cinzel:wght@400;600&family=EB+Garamond:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
+    <style>
+        :root { --gold: #c9a84c; --void: #0a0806; }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { background:var(--void); display:flex; flex-direction:column; align-items:center; min-height:100vh; }
+        #realm-scene { position:relative; width:860px; max-width:98vw; height:600px; margin:1rem auto; overflow:hidden; background:transparent; border:3px solid rgba(201,168,76,0.12); border-radius:4px; box-shadow:0 0 100px rgba(0,0,0,0.6); }
+        #toast { position:fixed; bottom:1.5rem; left:50%; transform:translateX(-50%); background:rgba(10,8,6,0.95); border:1px solid var(--gold); border-radius:6px; padding:0.5rem 1.2rem; font-family:'EB Garamond',serif; font-size:0.8rem; z-index:200; opacity:0; transition:opacity 0.4s; pointer-events:none; text-align:center; max-width:440px; white-space:pre-line; }
+        #toast.show { opacity:1; }
+        @keyframes sparkFade { 0%{transform:scale(0.5);opacity:1} 100%{transform:scale(2.5);opacity:0} }
+        @keyframes thunderFlash { 0%,100%{opacity:0} 50%{opacity:0.4} }
+    </style>
+</head>
+<body>
+    <div id="realm-scene"></div>
+    <div id="toast"></div>
+
+    <script src="../js/gaia-mason.js"></script>
+    <script src="../js/gaia-scene-loader.js"></script>
+    <script src="../js/gaia-object-renderer.js"></script>
+    <script src="../js/gaia-suncalc.js"></script>
+    <script src="../js/gaia-celestial.js"></script>
+    <script src="../js/gaia-deck.js"></script>
+    <script>
+    /*
+     * ═══════════════════════════════════════════════
+     * THUNDER PEAK · Realm of Zeus
+     * gaia/zeus/realm.html
+     * ═══════════════════════════════════════════════
+     */
+
+    const toastEl = document.getElementById('toast');
+    let toastTimer;
+    function toast(msg, d = 3200) {
+        toastEl.textContent = msg; toastEl.classList.add('show');
+        clearTimeout(toastTimer); toastTimer = setTimeout(() => toastEl.classList.remove('show'), d);
+    }
+
+    async function buildRealm() {
+        const loader = new GaiaSceneLoader('realm-scene');
+        await loader.load('../json/zeus-realm.json');
+
+        // Place sacred objects
+        const objRenderer = new GaiaObjectRenderer('realm-scene');
+        objRenderer.setMason(loader.mason);
+        await objRenderer.loadObjects('../json/altar-objects.json');
+
+        // Place thunderbolt on the throne
+        objRenderer.place('thunderbolt', 420, 100);
+
+        // Place offering bowls at the pillars
+        objRenderer.place('offering_bowl', 275, 318);
+        objRenderer.place('offering_bowl', 525, 318);
+
+        // Place braziers
+        objRenderer.place('brazier_gold', 175, 338);
+        objRenderer.place('brazier_gold', 625, 338);
+
+        // ── Interactions ──
+        loader.onAltarInteract = (god, altar) => {
+            const card = GaiaDeck.getCard('zeus');
+            toast(`⚡ ${altar.name}: "${card?.whisper || 'The Thunderer watches.'}"`);
+        };
+
+        // Throne interaction via event listener
+        document.getElementById('realm-scene').addEventListener('object-interact', (e) => {
+            const { object, action } = e.detail;
+            if (object === 'thunderbolt' || action === 'approach_throne') {
+                const card = GaiaDeck.getCard('zeus');
+                toast(`⚡ The Throne of Zeus\n\n"${card?.whisper || 'I bound the Titans. I bound the gods. What have YOU bound yourself to?'}"\n\n${card?.intervention?.message || ''}`);
+                spawnSparks(e.detail.x + 40, e.detail.y + 60, '#ffd700', 15);
+            }
+            if (action === 'leave_offering') {
+                toast('🙏 An oath sworn before Zeus cannot be broken.\n\n"The Styx remembers. So does the Thunderer."');
+                spawnSparks(e.detail.x + 25, e.detail.y + 25, '#ffd700', 6);
+            }
+            if (action === 'tend_flame') {
+                toast('🔥 The sacred flame burns brighter.\n\n"Zeus sees the fire. The oath is witnessed."');
+                spawnSparks(e.detail.x + 25, e.detail.y + 10, '#ff8833', 10);
+            }
+        });
+
+        // Exit
+        loader.onExit = (exit) => {
+            toast('⚡ Returning to the Olympian Ring...');
+        };
+
+        // Thunder effect
+        setInterval(() => {
+            if (Math.random() < 0.15) {
+                const flash = document.createElement('div');
+                flash.style.cssText = `
+                    position: absolute; inset: 0;
+                    background: rgba(255,255,255,0.06);
+                    z-index: 50; pointer-events: none;
+                    animation: thunderFlash 0.3s ease-out forwards;
+                `;
+                document.getElementById('realm-scene').appendChild(flash);
+                setTimeout(() => flash.remove(), 400);
+            }
+        }, 8000);
+
+        toast('⚡ Thunder Peak · The Throne of Zeus awaits.');
+    }
+
+    function spawnSparks(x, y, color, count) {
+        const container = document.getElementById('realm-scene');
+        for (let i = 0; i < count; i++) {
+            const spark = document.createElement('div');
+            spark.style.cssText = `
+                position: absolute;
+                left: ${x + (Math.random()-0.5)*50}px;
+                top: ${y + (Math.random()-0.5)*30}px;
+                width: 3px; height: 3px;
+                background: ${color};
+                border-radius: 50%;
+                box-shadow: 0 0 10px ${color};
+                pointer-events: none;
+                z-index: 60;
+                animation: sparkFade ${1+Math.random()}s ease-out forwards;
+            `;
+            container.appendChild(spark);
+            setTimeout(() => spark.remove(), 1500);
+        }
+    }
+
+    buildRealm().catch(err => {
+        console.error('Realm failed:', err);
+        document.getElementById('realm-scene').innerHTML = `
+            <div style="color:#c9a84c;text-align:center;padding:3rem;font-family:'Cinzel',serif;">
+                ⚡ Thunder Peak could not be opened.<br>
+                <span style="font-size:0.7rem;color:#6b5520;">${err.message}</span>
+            </div>`;
+    });
+    </script>
+</body>
+</html>
