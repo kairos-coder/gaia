@@ -121,15 +121,16 @@ class GaiaMason {
                     z-index: 30; cursor: pointer;
                 `;
                 zone.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    if (altar.interaction.action) {
-                        altar.interaction.action(altar);
-                    }
-                    zone.dispatchEvent(new CustomEvent('altar-interact', {
-                        detail: { god: altar.god, altar },
-                        bubbles: true,
-                    }));
-                });
+    e.stopPropagation();
+    if (typeof altar.interaction.action === 'function') {
+        altar.interaction.action(altar);
+    }
+    // Always dispatch the custom event — the scene loader handles string actions
+    zone.dispatchEvent(new CustomEvent('altar-interact', {
+        detail: { god: altar.god, altar },
+        bubbles: true,
+    }));
+});
                 this.container.appendChild(zone);
             }
         });
