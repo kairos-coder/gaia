@@ -1,0 +1,66 @@
+{
+  "name": "The Ascent",
+  "description": "The worn path up the mountain. Votive stones line the way — offerings left by those who climbed before.",
+  "size": { "w": 860, "h": 140 },
+  "room": {
+    "farWall": { "material": "marble_dark" },
+    "leftWall": { "material": "marble_dark", "width": 20 },
+    "rightWall": { "material": "marble_dark", "width": 20 },
+    "floor": { "material": "marble_dark", "y": 100, "height": 40, "perspective": 6 }
+  },
+  "objects": [
+    { "type": "votive_stone", "x": 200, "y": 35 },
+    { "type": "votive_stone", "x": 350, "y": 45 },
+    { "type": "votive_stone", "x": 500, "y": 35 },
+    { "type": "torch_sconce", "x": 400, "y": 25 }
+  ],
+  "inscriptions": [
+    {
+      "text": "THE PATH OF ASCENT · MANY HAVE CLIMBED · ALL ARE REMEMBERED",
+      "x": 160,
+      "y": 110,
+      "fontSize": 7,
+      "color": "rgba(150,140,120,0.3)",
+      "fontFamily": "'Cinzel',serif",
+      "z": 6
+    },
+    {
+      "text": "·  ·  ·  ·  ·  ·  ·  ·  ·  ·  ·  ·  ·  ·  ·  ·  ·",
+      "x": 180,
+      "y": 90,
+      "fontSize": 8,
+      "color": "rgba(0,0,0,0.2)",
+      "fontFamily": "'Georgia',serif",
+      "z": 5
+    }
+  ],
+  "atmosphere": {
+    "lights": [
+      { "color": "#c9a84c", "radius": 80, "x": "50%", "y": "50%", "pulse": false, "z": 0 }
+    ]
+  },
+  "exits": [
+    {
+      "direction": "south",
+      "target": "../gwalenn.html",
+      "param": "olympus",
+      "label": "Descend to the Olympian Ring"
+    }
+  ],
+  "objectDefinitions": {
+    "votive_stone": {
+      "bounds": { "width": 35, "height": 45 },
+      "layers": [
+        { "type": "wall", "material": "marble_dark", "position": { "x": 6, "y": 18, "z": 6 }, "dimensions": { "width": 22, "height": 27 } },
+        { "type": "inscription", "content": "🙏", "position": { "x": 7, "y": 3, "z": 7 }, "style": { "fontSize": 12, "color": "rgba(200,180,150,0.35)", "fontFamily": "'Georgia',serif" } }
+      ]
+    },
+    "torch_sconce": {
+      "bounds": { "width": 16, "height": 40 },
+      "layers": [
+        { "type": "pillar", "material": "iron_dark", "position": { "x": 4, "y": 12, "z": 7 }, "dimensions": { "width": 6, "height": 28 } },
+        { "type": "wall", "material": "flame_gold", "position": { "x": 1, "y": 0, "z": 8 }, "dimensions": { "width": 12, "height": 16 } }
+      ]
+    }
+  }
+}
