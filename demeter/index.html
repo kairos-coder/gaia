@@ -71,7 +71,15 @@
         .field-act { font-family:'Cinzel',serif; font-size:0.6rem; letter-spacing:0.25em; color:#8b7332; text-align:center; margin-bottom:0.3rem; }
 
         /* GROVE LAYER — Mason-built trees behind/beside canvas */
-        #grove-layer { position:absolute; inset:0; z-index:2; pointer-events:none; }
+        #grove-layer { 
+    position:absolute; 
+    top:0; left:0; 
+    width:100%; 
+    height:450px;       /* Match canvas height */
+    z-index:2; 
+    pointer-events:none;
+    overflow:visible;    /* Allow trees to extend above */
+}
         #grove-layer .zone { pointer-events:auto; cursor:pointer; transition:filter 0.25s, transform 0.25s; }
         #grove-layer .zone:hover { filter:brightness(1.25); z-index:50 !important; }
         #grove-layer .zone:active { transform:scale(0.94); transition:transform 0.1s; }
