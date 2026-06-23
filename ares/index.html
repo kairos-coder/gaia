@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>⚔️ Ares · War Engine</title>
+    <title>⚔️ ARES · War Engine</title>
+    <link href="https://fonts.googleapis.com/css2?family=UnifrakturMaguntia&family=Cinzel:wght@400;600;900&family=Crimson+Pro:ital,wght@0,300;0,400;1,300&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script type="importmap">
         { "imports": { "@xenova/transformers": "https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.2/dist/transformers.min.js" } }
     </script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;900&family=Crimson+Pro:ital,wght@0,300;0,400;1,300&family=JetBrains+Mono:wght@300;400;500&display=swap');
         :root {
             --void: #080a0f; --deep: #0b0e16; --surface: #1e2535;
             --gold: #c8943a; --ares: #c0382a; --mist: #6a7a8a; --pale: #d4e0ed;
@@ -17,7 +17,17 @@
             --font-display: 'Cinzel', serif; --font-body: 'Crimson Pro', serif; --font-mono: 'JetBrains Mono', monospace;
         }
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { background: var(--void); font-family: var(--font-body); color: var(--pale); min-height: 100vh; }
+        body {
+            background: var(--void);
+            font-family: var(--font-body);
+            color: var(--pale);
+            min-height: 100vh;
+            display: flex; flex-direction: column; align-items: center;
+            background-image:
+                radial-gradient(ellipse at 50% 0%, rgba(192,56,42,0.08) 0%, transparent 55%),
+                radial-gradient(ellipse at 50% 100%, rgba(8,10,15,0.98) 0%, transparent 50%);
+            overflow-x: hidden;
+        }
 
         body::after {
             content: ''; position: fixed; top: 0; left: 0; right: 0; height: 3px;
@@ -25,34 +35,63 @@
             z-index: 100;
         }
 
-        /* ── HERO ── */
-        .shrine-hero {
-            position: relative; width: 100%; height: 280px; overflow: hidden;
-            border-radius: 6px; margin-bottom: 1rem;
-        }
-        .shrine-hero img {
-            width: 100%; height: 100%; object-fit: cover; object-position: center 30%;
-            display: block; transition: transform 8s ease; filter: brightness(0.8) saturate(1.1);
-        }
-        .shrine-hero:hover img { transform: scale(1.04); }
-        .shrine-hero-overlay {
-            position: absolute; inset: 0;
-            background: linear-gradient(to bottom, rgba(8,10,15,0.1) 0%, rgba(8,10,15,0.7) 75%, rgba(8,10,15,1) 100%);
-        }
-        .shrine-hero-label {
-            position: absolute; bottom: 1rem; left: 50%; transform: translateX(-50%);
-            font-family: var(--font-mono); font-size: 0.45rem; letter-spacing: 4px;
-            color: var(--ember); opacity: 0.7; text-transform: uppercase; white-space: nowrap;
+        #ares-forge {
+            position: relative; width: 100%; max-width: 1300px; margin: 0 auto;
         }
 
-        .container { max-width: 1300px; margin: 0 auto; padding: 1.5rem; }
+        #mason-layer {
+            position: relative; width: 100%; min-height: 100vh;
+            background: linear-gradient(180deg, #0b0e16 0%, #1a1410 50%, #0b0e16 100%);
+            border-left: 4px solid #3a2018;
+            border-right: 4px solid #3a2018;
+            box-shadow: 0 0 140px rgba(192,56,42,0.06), 0 0 280px rgba(0,0,0,0.5);
+            overflow: hidden;
+        }
 
-        /* ── HEADER ── */
+        #ouranos-canvas {
+            position: absolute; top: 0; left: 0;
+            width: 100%; height: 260px; z-index: 1; pointer-events: none;
+        }
+        #pontus-canvas {
+            position: absolute; bottom: 0; left: 0;
+            width: 100%; height: 160px; z-index: 1; pointer-events: none;
+        }
+
+        .content-layer { position: relative; z-index: 10; padding: 2rem 1.5rem; }
+
+        .zone { cursor: pointer; transition: filter 0.3s, transform 0.3s; }
+        .zone:hover { filter: brightness(1.3); z-index: 50 !important; }
+        .zone:active { transform: scale(0.94); transition: transform 0.1s; }
+
+        #toast {
+            position: fixed; bottom: 1.5rem; left: 50%; transform: translateX(-50%);
+            background: rgba(8,10,15,0.96); border: 1px solid var(--war);
+            border-radius: 6px; padding: 0.5rem 1.2rem;
+            font-family: 'Georgia',serif; font-size: 0.78rem;
+            z-index: 200; opacity: 0; transition: opacity 0.35s;
+            pointer-events: none; text-align: center; max-width: 420px; line-height: 1.4;
+            box-shadow: 0 6px 24px rgba(0,0,0,0.6); white-space: pre-line;
+            color: #f0c0a0;
+        }
+        #toast.show { opacity: 1; }
+
+        @keyframes emberRise {
+            0% { transform: translateY(0) translateX(0) scale(1); opacity: 0.8; }
+            100% { transform: translateY(-80px) translateX(var(--dx)) scale(0); opacity: 0; }
+        }
+        @keyframes forgeGlow {
+            0%,100% { box-shadow: 0 0 10px rgba(192,56,42,0.2), inset 0 0 20px rgba(192,56,42,0.1); }
+            50% { box-shadow: 0 0 35px rgba(192,56,42,0.6), inset 0 0 50px rgba(212,120,74,0.3); }
+        }
+        @keyframes ironShimmer {
+            0%,100% { text-shadow: 0 0 4px rgba(192,56,42,0.2); }
+            50% { text-shadow: 0 0 18px rgba(192,56,42,0.5); }
+        }
+
         .header { text-align: center; margin-bottom: 1rem; }
         .header h1 { font-family: var(--font-display); font-size: 2.5rem; color: var(--war); letter-spacing: 6px; text-shadow: 0 0 30px rgba(192,56,42,0.3); }
         .header-sub { font-family: var(--font-mono); font-size: 0.5rem; color: var(--mist); letter-spacing: 3px; }
 
-        /* ── TELOS ── */
         .telos-bar {
             background: rgba(192,56,42,0.06); border: 1px solid rgba(192,56,42,0.3);
             border-left: 3px solid var(--war); border-radius: 4px;
@@ -63,14 +102,10 @@
         .telos-bar .telos-text { font-family: var(--font-body); font-size: 0.8rem; color: var(--pale); font-style: italic; flex: 1; }
         .telos-bar .telos-text.empty { color: var(--mist); }
 
-        /* ── STATS ── */
         .stats-bar { display: flex; gap: 2rem; justify-content: center; flex-wrap: wrap; margin-bottom: 1rem; font-family: var(--font-mono); font-size: 0.45rem; color: var(--mist); }
         .stats-bar span { color: var(--pale); font-size: 0.55rem; }
 
-        /* ── MAIN ── */
         .main { display: flex; gap: 1rem; }
-
-        /* ── LEFT: TRIPLETS ── */
         .left { flex: 1; display: flex; flex-direction: column; gap: 0.6rem; }
         .left h2 { font-family: var(--font-display); font-size: 0.8rem; color: var(--war); letter-spacing: 2px; }
         .triplet-card {
@@ -90,7 +125,6 @@
         .tension-med  { color: var(--ember); }
         .empty-state { color: var(--mist); font-style: italic; font-size: 0.55rem; text-align: center; padding: 3rem; }
 
-        /* ── RIGHT: QUEUE ── */
         .right { width: 420px; flex-shrink: 0; display: flex; flex-direction: column; gap: 0.6rem; }
         .right h2 { font-family: var(--font-display); font-size: 0.8rem; color: var(--war); letter-spacing: 2px; }
         .right .hint { font-family: var(--font-mono); font-size: 0.4rem; color: var(--mist); margin-bottom: 0.5rem; }
@@ -118,7 +152,6 @@
         .queue-item button.skip { border-color: var(--mist); }
         .queue-item button.skip:hover { background: var(--mist); color: #000; }
 
-        /* ── BUTTONS ── */
         button.btn {
             padding: 0.4rem 0.8rem; border: 1px solid var(--surface);
             background: var(--deep); color: var(--pale); border-radius: 4px;
@@ -131,7 +164,6 @@
         .spin { display: inline-block; animation: spin 0.8s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
 
-        /* ── SHRINE STRIP ── */
         .shrine-strip { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; margin-top: 1.5rem; }
         .shrine-strip-item {
             border: 1px solid var(--surface); border-radius: 4px; overflow: hidden;
@@ -153,33 +185,29 @@
 
         .log { background: #060810; border: 1px solid var(--surface); border-radius: 4px; padding: 0.5rem; max-height: 80px; overflow-y: auto; font-family: var(--font-mono); font-size: 0.4rem; color: var(--mist); margin-top: 1rem; }
 
+        .doorway-container { display: flex; justify-content: center; margin: 1rem 0 0.5rem; }
+
         @media (max-width: 800px) { .main { flex-direction: column; } .right { width: 100%; } }
     </style>
 </head>
 <body>
 
-<div class="container">
+<div id="ares-forge">
+    <div id="mason-layer">
+        <canvas id="ouranos-canvas"></canvas>
+        <canvas id="pontus-canvas"></canvas>
+        <div class="content-layer">
 
-    <!-- ══ HERO ══ -->
-    <div class="shrine-hero">
-        <img src="assets/ares-hero.jpg" alt="Ares · War Engine" />
-        <div class="shrine-hero-overlay"></div>
-        <div class="shrine-hero-label">⚔️ the stress-tester · forge of conflict · breaker of bonds</div>
-    </div>
-
-    <!-- ══ HEADER ══ -->
     <div class="header">
         <h1>⚔️ ARES</h1>
         <div class="header-sub">WAR ENGINE · TRIPLET FORGE · PYTHAGOREAN #3</div>
     </div>
 
-    <!-- ══ TELOS ══ -->
     <div class="telos-bar">
         <span class="telos-label">🎯 ACTIVE TELOS</span>
         <span class="telos-text empty" id="telosText">Loading...</span>
     </div>
 
-    <!-- ══ STATS ══ -->
     <div class="stats-bar">
         <div>Pairs in Queue: <span id="queueCount">—</span></div>
         <div>Triplets Forged: <span id="tripletCount">—</span></div>
@@ -187,10 +215,7 @@
         <div>Dispatched: <span id="dispatchedCount">—</span></div>
     </div>
 
-    <!-- ══ MAIN ══ -->
     <div class="main">
-
-        <!-- LEFT: TRIPLETS -->
         <div class="left">
             <h2>⚔️ FORGED TRIPLETS</h2>
             <button class="btn primary" id="dispatchBtn" disabled>⚔ Dispatch All to Apollo</button>
@@ -198,8 +223,6 @@
                 <div class="empty-state">No triplets forged yet. Load pairs and assign verbs.</div>
             </div>
         </div>
-
-        <!-- RIGHT: QUEUE -->
         <div class="right">
             <h2>📋 PAIR QUEUE</h2>
             <div class="hint">Pairs from Aphrodite. Assign a verb to forge a triplet.</div>
@@ -209,10 +232,8 @@
                 <div class="empty-state">Load pairs from Aphrodite to begin.</div>
             </div>
         </div>
-
     </div>
 
-    <!-- ══ SHRINE STRIP ══ -->
     <div class="shrine-strip">
         <div class="shrine-strip-item">
             <img src="assets/ares-chthonic.jpg" alt="Ares · Chthonic" />
@@ -228,11 +249,22 @@
         </div>
     </div>
 
+    <div class="doorway-container" id="doorwayContainer"></div>
+
     <div class="log" id="log"><div>⚔️ Ares stands ready. The forge is lit.</div></div>
 
+        </div>
+    </div>
 </div>
 
+<div id="toast"></div>
+
+<script src="../js/gaia-mason.js"></script>
 <script type="module">
+// ═══════════════════════════════════════
+// ARES · War Engine
+// ═══════════════════════════════════════
+
 const sb = window.supabase.createClient(
   'https://kzcucjcyxybypncbdbws.supabase.co',
   'sb_publishable_saeUHGocDah-T2_709M6Fg_g26JtLXw'
@@ -242,249 +274,296 @@ import { pipeline, env } from '@xenova/transformers';
 env.allowLocalModels = true;
 env.useBrowserCache = true;
 
+const DEFAULT_STATE = { visits: 0 };
+let state = JSON.parse(JSON.stringify(DEFAULT_STATE));
+
+function loadState() {
+    const raw = localStorage.getItem('gaia_ares');
+    if (!raw) return false;
+    try { state = { ...DEFAULT_STATE, ...JSON.parse(raw) }; return true; } catch(e) { return false; }
+}
+function saveState() { localStorage.setItem('gaia_ares', JSON.stringify(state)); }
+
+const toastEl = document.getElementById('toast');
+let toastTimer;
+function toast(msg, d = 2800) {
+    toastEl.textContent = msg; toastEl.classList.add('show');
+    clearTimeout(toastTimer); toastTimer = setTimeout(() => toastEl.classList.remove('show'), d);
+}
+
+// ═══════════════════════════════════
+// MASON FRAME
+// ═══════════════════════════════════
+
+function buildMasonFrame() {
+    const container = document.getElementById('mason-layer');
+    const m = new GaiaMason('mason-layer');
+
+    GaiaMason.MATERIALS['iron_dark'] = {
+        chars: ['▬','▬','▬','▬','▬'], textColor:'#3d362f', mortarColor:'#2a2520',
+        fontSize:20, lineHeight:0.5, letterSpacing:-1, fontFamily:'monospace', weathering:0.12
+    };
+    GaiaMason.MATERIALS['forge_stone'] = {
+        chars: ['▓','▒','░','█','▓'], textColor:'#5a3a2a', mortarColor:'#3a1a10',
+        fontSize:34, lineHeight:0.5, letterSpacing:-2, fontFamily:"'Cinzel','Georgia',serif", weathering:0.15
+    };
+    GaiaMason.MATERIALS['ember_stone'] = {
+        chars: ['◆','◇','◆','◇','◆'], textColor:'#d4784a', mortarColor:'#8b3a1a',
+        fontSize:22, lineHeight:0.5, letterSpacing:0, fontFamily:"'Georgia',serif", weathering:0.05
+    };
+
+    const W = container.clientWidth;
+
+    m.buildPillar({ ...GaiaMason.mat('iron_dark'), x:10, y:20, width:28, height:950, z:3, capital:true, capitalHeight:22 });
+    m.buildPillar({ ...GaiaMason.mat('iron_dark'), x:W-38, y:20, width:28, height:950, z:3, capital:true, capitalHeight:22 });
+
+    m.buildArch({
+        chars: ['◆','◇','◆','◇','◆'], textColor:'#d4784a', fontSize:22,
+        fontFamily:"'Georgia',serif", cx:W/2, cy:15, innerRadius:W/2-50,
+        stoneCount:29, stoneDepth:22, z:5, keystoneChar:'⚔️', keystoneOversize:2.0
+    });
+
+    m.buildFloor({ ...GaiaMason.mat('forge_stone'), x:20, y:920, width:W-40, height:50, z:0, perspectiveStrength:4 });
+
+    m.buildInscription({ text:'ARES', x:1, y:460, fontSize:8, color:'rgba(192,56,42,0.3)', fontFamily:"'Cinzel',serif", z:8, rotation:-90 });
+    m.buildInscription({ text:'ENYALIOS', x:W-20, y:440, fontSize:8, color:'rgba(192,56,42,0.3)', fontFamily:"'Cinzel',serif", z:8, rotation:90 });
+
+    m.buildLight({ color:'#d4784a', radius:90, x:W/2, y:500, pulse:true, z:0 });
+
+    // Doorway
+    const doorwayCx = W/2, doorwayCy = 880;
+    m.buildArch({
+        chars:['◆','◇','◆','◇'], textColor:'#d4784a', fontSize:20,
+        fontFamily:"'Georgia',serif", cx:doorwayCx, cy:doorwayCy, innerRadius:50,
+        stoneCount:13, stoneDepth:18, z:10, keystoneChar:'⚔️', keystoneOversize:1.8
+    });
+
+    const doorVoid = m.buildWall({
+        chars:[' '], textColor:'#0a0400', mortarColor:'#0a0400',
+        fontSize:10, lineHeight:0.5, letterSpacing:0, fontFamily:'monospace',
+        x:doorwayCx-48, y:doorwayCy-5, width:96, height:65, z:9
+    });
+    if (doorVoid) {
+        doorVoid.style.borderRadius = '50px 50px 0 0';
+        doorVoid.style.boxShadow = 'inset 0 0 40px rgba(212,120,74,0.5)';
+        doorVoid.style.animation = 'forgeGlow 2.5s ease-in-out infinite';
+    }
+
+    m.buildInscription({ text:'ENTER THE', x:doorwayCx-40, y:doorwayCy-28, fontSize:7, color:'rgba(240,192,160,0.5)', fontFamily:"'Cinzel',serif", z:12 });
+    m.buildInscription({ text:'FORGE TEMPLE', x:doorwayCx-48, y:doorwayCy-16, fontSize:7, color:'rgba(212,120,74,0.5)', fontFamily:"'Cinzel',serif", z:12, animation:'ironShimmer 3s ease-in-out infinite' });
+
+    const doorwayZone = document.createElement('div');
+    doorwayZone.className = 'zone';
+    doorwayZone.title = 'Enter the Forge Temple';
+    doorwayZone.style.cssText = `position:absolute;left:${doorwayCx-48}px;top:${doorwayCy-5}px;width:96px;height:65px;z-index:30;cursor:pointer;`;
+    doorwayZone.addEventListener('click', () => {
+        saveState();
+        toast('⚔️ You step through the furnace mouth into the Forge Temple...');
+        setTimeout(() => { window.location.href = 'realm.html?from=index'; }, 1000);
+    });
+    container.appendChild(doorwayZone);
+
+    m.buildInscription({ text:'WAR  ·  STRIFE  ·  COURAGE  ·  BLOOD', x:W/2-120, y:935, fontSize:6, color:'rgba(212,120,74,0.2)', fontFamily:"'Cinzel',serif", z:5 });
+
+    return m;
+}
+
+// ═══════════════════════════════════
+// OURANOS
+// ═══════════════════════════════════
+
+function setupOuranos() {
+    const canvas = document.getElementById('ouranos-canvas');
+    canvas.width = canvas.parentElement.clientWidth;
+    canvas.height = 260;
+    const ctx = canvas.getContext('2d');
+    const W = canvas.width, H = canvas.height;
+
+    const embers = Array.from({ length: 35 }, () => ({
+        x: Math.random() * W, y: Math.random() * H * 0.6,
+        r: Math.random() * 1.5 + 0.3,
+        phase: Math.random() * Math.PI * 2,
+        speed: 0.5 + Math.random() * 2
+    }));
+
+    function draw() {
+        ctx.clearRect(0, 0, W, H);
+        const grad = ctx.createLinearGradient(0, 0, 0, H);
+        grad.addColorStop(0, 'rgba(8,4,2,0.95)');
+        grad.addColorStop(0.5, 'rgba(20,8,4,0.8)');
+        grad.addColorStop(1, 'rgba(30,15,10,0.3)');
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, W, H);
+
+        ctx.strokeStyle = 'rgba(192,56,42,0.2)'; ctx.lineWidth = 1; ctx.setLineDash([2,6]);
+        ctx.beginPath();
+        ctx.moveTo(W/2, H*0.1); ctx.lineTo(W/2, H*0.35);
+        ctx.moveTo(W*0.35, H*0.28); ctx.quadraticCurveTo(W/2, H*0.42, W*0.65, H*0.28);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        const now = Date.now() * 0.001;
+        embers.forEach(e => {
+            const pulse = 0.3 + 0.5 * Math.sin(now * e.speed + e.phase);
+            ctx.beginPath(); ctx.arc(e.x, e.y, e.r, 0, Math.PI*2);
+            ctx.fillStyle = `rgba(240,140,80,${pulse})`; ctx.fill();
+        });
+        requestAnimationFrame(draw);
+    }
+    draw();
+}
+
+// ═══════════════════════════════════
+// PONTUS
+// ═══════════════════════════════════
+
+function setupPontus() {
+    const canvas = document.getElementById('pontus-canvas');
+    canvas.width = canvas.parentElement.clientWidth;
+    canvas.height = 160;
+    const ctx = canvas.getContext('2d');
+    const W = canvas.width, H = canvas.height;
+
+    const layers = [
+        { speed:0.01, amp:8, color:'rgba(180,80,30,0.4)', offset:0 },
+        { speed:0.014, amp:5, color:'rgba(200,100,40,0.3)', offset:1 },
+        { speed:0.007, amp:12, color:'rgba(140,50,20,0.25)', offset:2 },
+    ];
+
+    function draw() {
+        ctx.clearRect(0, 0, W, H);
+        const grad = ctx.createLinearGradient(0, 0, 0, H);
+        grad.addColorStop(0, 'rgba(20,10,5,0.5)');
+        grad.addColorStop(1, 'rgba(5,2,1,0.95)');
+        ctx.fillStyle = grad; ctx.fillRect(0, 0, W, H);
+
+        const now = Date.now() * 0.001;
+        layers.forEach(layer => {
+            ctx.beginPath(); ctx.strokeStyle = layer.color; ctx.lineWidth = 1.2;
+            const yBase = 15 + layer.offset * 30;
+            for (let x = 0; x <= W; x += 2) {
+                const y = yBase + Math.sin(x*0.01+now*layer.speed)*layer.amp + Math.sin(x*0.02+now*layer.speed*0.4)*layer.amp*0.3;
+                if (x===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+            }
+            ctx.stroke();
+        });
+        requestAnimationFrame(draw);
+    }
+    draw();
+}
+
+// ═══════════════════════════════════
+// RITUAL ENGINE
+// ═══════════════════════════════════
+
 let embedder = null;
-let pairsQueue = [];      // { id, token_a_body, token_b_body, domain_a, domain_b, ... }
-let forgedTriplets = [];  // { subject, verb, object, tension, domain, ... }
+let pairsQueue = [];
+let forgedTriplets = [];
 
 const WAR_VERBS = [
-  'strikes', 'clashes', 'crushes', 'breaks', 'shatters', 'destroys', 'burns',
-  'hunts', 'tracks', 'seizes', 'conquers', 'resists', 'fights', 'defends',
-  'forges', 'tempers', 'hardens', 'wields', 'commands', 'dominates', 'overthrows',
-  'assaults', 'invades', 'raids', 'ambushes', 'counters', 'parries', 'thrusts',
-  'bleeds', 'wounds', 'scars', 'rages', 'howls', 'roars', 'storms', 'devastates',
-  'cleaves', 'rends', 'grinds', 'pounds', 'batters', 'rampages'
+  'strikes','clashes','crushes','breaks','shatters','destroys','burns',
+  'hunts','tracks','seizes','conquers','resists','fights','defends',
+  'forges','tempers','hardens','wields','commands','dominates','overthrows',
+  'assaults','invades','raids','ambushes','counters','parries','thrusts',
+  'bleeds','wounds','scars','rages','howls','roars','storms','devastates',
+  'cleaves','rends','grinds','pounds','batters','rampages'
 ];
 
-// ── MODEL ──────────────────────────────────────────
 async function loadModel() {
-    try {
-        embedder = await pipeline('feature-extraction', 'Xenova/all-MiniLM-L6-v2');
-        log('MiniLM loaded — tension scoring active.', 'success');
-    } catch {
-        log('MiniLM offline — using random tension.', 'warn');
-    }
+    try { embedder = await pipeline('feature-extraction','Xenova/all-MiniLM-L6-v2'); log('MiniLM loaded.','success'); }
+    catch { log('MiniLM offline.','warn'); }
 }
+async function getEmbedding(text) { if(!embedder)return null; const r=await embedder(text,{pooling:'mean',normalize:true}); return Array.from(r.data); }
+function cosineSim(a,b){ if(!a||!b||a.length!==b.length)return 0; let dot=0,na=0,nb=0; for(let i=0;i<a.length;i++){dot+=a[i]*b[i];na+=a[i]*a[i];nb+=b[i]*b[i];} return (na&&nb)?dot/(Math.sqrt(na)*Math.sqrt(nb)):0; }
 
-async function getEmbedding(text) {
-    if (!embedder) return null;
-    const r = await embedder(text, { pooling: 'mean', normalize: true });
-    return Array.from(r.data);
-}
-
-function cosineSim(a, b) {
-    if (!a || !b || a.length !== b.length) return 0;
-    let dot = 0, na = 0, nb = 0;
-    for (let i = 0; i < a.length; i++) { dot += a[i] * b[i]; na += a[i] * a[i]; nb += b[i] * b[i]; }
-    return (na && nb) ? dot / (Math.sqrt(na) * Math.sqrt(nb)) : 0;
-}
-
-// ── TELOS ──────────────────────────────────────────
 async function loadTelos() {
-    const { data } = await sb.from('telos').select('statement').eq('is_active', true).maybeSingle();
-    const el = document.getElementById('telosText');
-    if (el) {
-        el.textContent = data?.statement || 'No active telos — set one in Apollo';
-        el.classList.toggle('empty', !data?.statement);
-    }
+    const {data}=await sb.from('telos').select('statement').eq('is_active',true).maybeSingle();
+    const el=document.getElementById('telosText');
+    if(el){el.textContent=data?.statement||'No active telos';el.classList.toggle('empty',!data?.statement);}
 }
 
-// ── LOAD PAIRS FROM APHRODITE ──────────────────────
 async function loadPairs() {
-    const btn = document.getElementById('loadPairsBtn');
-    btn.disabled = true; btn.innerHTML = '<span class="spin">⟳</span> Loading...';
-    log('Loading pairs from Aphrodite...');
-
-    const { data: pairs, error } = await sb
-        .from('pairs')
-        .select('*')
-        .eq('consumed', false)
-        .order('tension_score', { ascending: false })
-        .limit(40);
-
-    if (error || !pairs?.length) {
-        log('No pairs available from Aphrodite.', 'warn');
-        btn.disabled = false; btn.textContent = '📥 Load Pairs from Aphrodite';
-        return;
-    }
-
-    pairsQueue = pairs;
-    log(`Loaded ${pairs.length} pairs.`, 'success');
-    updateStats();
-    renderQueue();
-    document.getElementById('forgeAllBtn').disabled = false;
-    btn.disabled = false; btn.textContent = '📥 Load Pairs from Aphrodite';
+    const btn=document.getElementById('loadPairsBtn'); btn.disabled=true; btn.innerHTML='<span class="spin">⟳</span> Loading...'; log('Loading pairs...');
+    const {data:pairs,error}=await sb.from('pairs').select('*').eq('consumed',false).order('tension_score',{ascending:false}).limit(40);
+    if(error||!pairs?.length){log('No pairs available.','warn');btn.disabled=false;btn.textContent='📥 Load Pairs';return;}
+    pairsQueue=pairs; log(`Loaded ${pairs.length} pairs.`,'success'); updateStats(); renderQueue();
+    document.getElementById('forgeAllBtn').disabled=false; btn.disabled=false; btn.textContent='📥 Load Pairs';
 }
 
-// ── SUGGEST VERB ────────────────────────────────────
-function suggestVerb(subject, object) {
-    // Pick a war verb that sounds right with the subject
-    const hash = (subject + object).split('').reduce((a, c) => a + c.charCodeAt(0), 0);
-    return WAR_VERBS[hash % WAR_VERBS.length];
+function suggestVerb(subject,object){ const hash=(subject+object).split('').reduce((a,c)=>a+c.charCodeAt(0),0); return WAR_VERBS[hash%WAR_VERBS.length]; }
+
+async function forgeTriplet(index){
+    const pair=pairsQueue[index]; if(!pair)return;
+    const verbInput=document.getElementById(`verb-${index}`); const verb=verbInput?.value?.trim()||suggestVerb(pair.token_a_body,pair.token_b_body);
+    let tension=0.5;
+    if(embedder){const embA=await getEmbedding(pair.token_a_body),embB=await getEmbedding(pair.token_b_body); if(embA&&embB){const sim=cosineSim(embA,embB);tension=1-sim;}}
+    if(pair.counter_domain_pair||pair.domain_a!==pair.domain_b)tension=Math.min(1,tension+0.2);
+    forgedTriplets.push({subject:pair.token_a_body,verb:verb.toLowerCase(),object:pair.token_b_body,source:'ares-forge',state:'raw',created_at:new Date().toISOString()});
+    pairsQueue.splice(index,1); updateStats(); renderQueue(); renderTriplets();
+    log(`Forged: ${pair.token_a_body} ${verb.toUpperCase()} ${pair.token_b_body}`,'success');
+    document.getElementById('dispatchBtn').disabled=!forgedTriplets.length;
+    document.getElementById('forgeAllBtn').disabled=!pairsQueue.length;
 }
 
-// ── FORGE SINGLE TRIPLET ────────────────────────────
-async function forgeTriplet(index) {
-    const pair = pairsQueue[index];
-    if (!pair) return;
+async function forgeAll(){ for(let i=pairsQueue.length-1;i>=0;i--)await forgeTriplet(i); }
 
-    const verbInput = document.getElementById(`verb-${index}`);
-    const verb = verbInput?.value?.trim() || suggestVerb(pair.token_a_body, pair.token_b_body);
-
-    // Compute tension via semantic distance
-    let tension = 0.5;
-    if (embedder) {
-        const embA = await getEmbedding(pair.token_a_body);
-        const embB = await getEmbedding(pair.token_b_body);
-        if (embA && embB) {
-            const sim = cosineSim(embA, embB);
-            tension = 1 - sim; // Distance = tension. Counter-domain pairs get high tension.
-        }
-    }
-    // Boost tension for counter-domain pairs
-    if (pair.counter_domain_pair || pair.domain_a !== pair.domain_b) {
-        tension = Math.min(1, tension + 0.2);
-    }
-
-// NEW (matches actual schema):
-forgedTriplets.push({
-  subject: pair.token_a_body,
-  verb: verb.toLowerCase(),
-  object: pair.token_b_body,
-  source: 'ares-forge',
-  state: 'raw',
-  created_at: new Date().toISOString()
-});
-
-    // Remove from queue
-    pairsQueue.splice(index, 1);
-
-    updateStats();
-    renderQueue();
-    renderTriplets();
-    log(`Forged: ${pair.token_a_body} ${verb.toUpperCase()} ${pair.token_b_body} (tension: ${(tension * 100).toFixed(0)}%)`, 'success');
-
-    // Enable dispatch if we have triplets
-    document.getElementById('dispatchBtn').disabled = !forgedTriplets.length;
-    document.getElementById('forgeAllBtn').disabled = !pairsQueue.length;
+async function dispatchToApollo(){
+    if(!forgedTriplets.length)return;
+    const btn=document.getElementById('dispatchBtn'); btn.disabled=true; btn.innerHTML='<span class="spin">⟳</span> Dispatching...'; log('Dispatching...');
+    const {error}=await sb.from('svo_triplets').insert(forgedTriplets);
+    if(error){log(`Dispatch failed: ${error.message}`,'err');btn.disabled=false;btn.textContent='⚔ Dispatch All';return;}
+    document.getElementById('dispatchedCount').textContent=(parseInt(document.getElementById('dispatchedCount').textContent)||0)+forgedTriplets.length;
+    log(`${forgedTriplets.length} triplets dispatched.`,'success');
+    forgedTriplets=[]; renderTriplets(); updateStats(); btn.disabled=true; btn.textContent='⚔ Dispatch All';
 }
 
-// ── FORGE ALL ────────────────────────────────────────
-async function forgeAll() {
-    for (let i = pairsQueue.length - 1; i >= 0; i--) {
-        await forgeTriplet(i);
-    }
+function renderQueue(){
+    const c=document.getElementById('queueContainer');
+    if(!pairsQueue.length){c.innerHTML='<div class="empty-state">Queue empty.</div>';return;}
+    c.innerHTML=pairsQueue.map((p,i)=>{const sug=suggestVerb(p.token_a_body,p.token_b_body); return`
+        <div class="queue-item"><span class="pair-words">${esc(p.token_a_body)} ↔ ${esc(p.token_b_body)}</span><span class="suggested-verb">sugg: ${sug}</span>
+        <input id="verb-${i}" placeholder="${sug}" maxlength="14" /><button class="forge" onclick="window._forge(${i})">⚔</button><button class="skip" onclick="window._skip(${i})">✕</button></div>`;}).join('');
 }
 
-// ── DISPATCH TO APOLLO ──────────────────────────────
-async function dispatchToApollo() {
-    if (!forgedTriplets.length) return;
-
-    const btn = document.getElementById('dispatchBtn');
-    btn.disabled = true; btn.innerHTML = '<span class="spin">⟳</span> Dispatching...';
-    log('Dispatching triplets to Apollo...');
-
-    const { error } = await sb.from('svo_triplets').insert(forgedTriplets);
-
-    if (error) {
-        log(`Dispatch failed: ${error.message}`, 'err');
-        btn.disabled = false; btn.textContent = '⚔ Dispatch All to Apollo';
-        return;
-    }
-
-    // Mark pairs as consumed
-    const pairIds = forgedTriplets.map(t => t.pair_id).filter(Boolean);
-    if (pairIds.length) {
-        await sb.from('pairs').update({ consumed: true }).in('id', pairIds);
-    }
-
-    document.getElementById('dispatchedCount').textContent = 
-        (parseInt(document.getElementById('dispatchedCount').textContent) || 0) + forgedTriplets.length;
-
-    log(`${forgedTriplets.length} triplets dispatched to svo_triplets.`, 'success');
-
-    forgedTriplets = [];
-    renderTriplets();
-    updateStats();
-    btn.disabled = true; btn.textContent = '⚔ Dispatch All to Apollo';
+function renderTriplets(){
+    const c=document.getElementById('tripletsContainer');
+    if(!forgedTriplets.length){c.innerHTML='<div class="empty-state">No triplets forged yet.</div>';return;}
+    c.innerHTML=forgedTriplets.map(t=>`<div class="triplet-card"><div class="triplet-svo"><span class="s">${esc(t.subject)}</span><span class="v">${esc(t.verb.toUpperCase())}</span><span class="o">${esc(t.object)}</span></div></div>`).join('');
 }
 
-// ── RENDER ──────────────────────────────────────────
-function renderQueue() {
-    const container = document.getElementById('queueContainer');
-    if (!pairsQueue.length) {
-        container.innerHTML = '<div class="empty-state">Queue empty. Load more pairs.</div>';
-        return;
-    }
-    container.innerHTML = pairsQueue.map((p, i) => {
-        const suggested = suggestVerb(p.token_a_body, p.token_b_body);
-        return `
-            <div class="queue-item">
-                <span class="pair-words">${esc(p.token_a_body)} ↔ ${esc(p.token_b_body)}</span>
-                <span class="suggested-verb">sugg: ${suggested}</span>
-                <input id="verb-${i}" type="text" placeholder="${suggested}" maxlength="14" />
-                <button class="forge" onclick="window._forge(${i})">⚔</button>
-                <button class="skip" onclick="window._skip(${i})">✕</button>
-            </div>
-        `;
-    }).join('');
+function updateStats(){
+    document.getElementById('queueCount').textContent=pairsQueue.length;
+    document.getElementById('tripletCount').textContent=forgedTriplets.length;
+    if(forgedTriplets.length){const avg=forgedTriplets.reduce((s,t)=>s+(t.tension||0.5),0)/forgedTriplets.length; document.getElementById('avgTension').textContent=Math.round(avg*100)+'%';}
 }
 
-function renderTriplets() {
-    const container = document.getElementById('tripletsContainer');
-    if (!forgedTriplets.length) {
-        container.innerHTML = '<div class="empty-state">No triplets forged yet.</div>';
-        return;
-    }
-    container.innerHTML = forgedTriplets.map((t, i) => {
-        const tensionClass = t.tension >= 0.8 ? 'tension-high' : t.tension >= 0.5 ? 'tension-med' : '';
-        return `
-            <div class="triplet-card">
-                <div class="triplet-svo">
-                    <span class="s">${esc(t.subject)}</span>
-                    <span class="v">${esc(t.verb.toUpperCase())}</span>
-                    <span class="o">${esc(t.object)}</span>
-                </div>
-                <div class="triplet-meta">
-                    <span class="${tensionClass}">Tension: ${Math.round(t.tension * 100)}%</span>
-                    <span>${esc(t.domain_a || '?')}/${esc(t.domain_b || '?')}</span>
-                </div>
-            </div>
-        `;
-    }).join('');
-}
+function log(msg,type=''){const el=document.getElementById('log');const div=document.createElement('div');div.textContent=`[${new Date().toLocaleTimeString()}] ${msg}`;div.style.color=type==='success'?'#4ade80':type==='warn'?'#d4a850':type==='err'?'#f87171':'';el.prepend(div);while(el.children.length>40)el.removeChild(el.lastChild);}
+function esc(s){return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]);}
 
-function updateStats() {
-    document.getElementById('queueCount').textContent = pairsQueue.length;
-    document.getElementById('tripletCount').textContent = forgedTriplets.length;
-    if (forgedTriplets.length) {
-        const avg = forgedTriplets.reduce((s, t) => s + t.tension, 0) / forgedTriplets.length;
-        document.getElementById('avgTension').textContent = Math.round(avg * 100) + '%';
-    }
-}
+window._forge=(i)=>forgeTriplet(i);
+window._skip=(i)=>{pairsQueue.splice(i,1);updateStats();renderQueue();};
 
-// ── UTILITIES ───────────────────────────────────────
-function log(msg, type = '') {
-    const el = document.getElementById('log');
-    const div = document.createElement('div');
-    div.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
-    div.style.color = type === 'success' ? '#4ade80' : type === 'warn' ? '#d4a850' : type === 'err' ? '#f87171' : '';
-    el.prepend(div);
-    while (el.children.length > 40) el.removeChild(el.lastChild);
-}
+// ═══════════════════════════════════
+// INIT
+// ═══════════════════════════════════
 
-function esc(s) { return String(s || '').replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' })[c]); }
-
-// Global references for onclick handlers
-window._forge = (i) => forgeTriplet(i);
-window._skip = (i) => { pairsQueue.splice(i, 1); updateStats(); renderQueue(); };
-
-// ── INIT ────────────────────────────────────────────
 function init() {
+    const loaded = loadState();
+    if (!loaded) saveState();
+    state.visits++;
+    saveState();
+
+    setupOuranos();
+    setupPontus();
+    buildMasonFrame();
+
     document.getElementById('loadPairsBtn').onclick = loadPairs;
     document.getElementById('forgeAllBtn').onclick = forgeAll;
     document.getElementById('dispatchBtn').onclick = dispatchToApollo;
     loadModel();
     loadTelos();
+
+    toast(state.visits>1?'⚔️ The Forge remembers you. Ready for war.':'⚔️ You enter the Forge. Iron awaits. Pairs await.');
 }
 
 init();
