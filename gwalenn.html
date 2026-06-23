@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gwalenn de Olympia · The Olympian Haven</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&family=Cinzel:wght@400;600&family=EB+Garamond:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --gold: #c9a84c; --gold-bright: #f0d080; --gold-dim: #6b5520;
+            --marble: #d8d0c8; --marble-dark: #b0a8a0;
+            --void: #0a0806; --deep: #1a1410;
+            --flame: #ffcc44; --flame-core: #ffaa00;
+            --sky: #4488cc; --sky-bright: #88bbff;
+            --kronos: #7a6a9a; --kronos-bright: #b0a0d0;
+        }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body {
+            background: var(--void);
+            color: var(--marble);
+            font-family: 'EB Garamond','Georgia',serif;
+            display: flex; flex-direction: column; align-items: center;
+            min-height: 100vh; overflow-x: hidden;
+            background-image:
+                radial-gradient(ellipse at 50% 30%, rgba(201,168,76,0.06) 0%, transparent 60%),
+                radial-gradient(ellipse at 50% 100%, rgba(10,8,6,0.95) 0%, transparent 50%);
+        }
+
+        .gwalenn-header {
+            text-align: center; padding: 1.2rem 1rem 0.2rem; width: 100%; z-index: 10;
+        }
+        .gwalenn-header h1 {
+            font-family: 'Cinzel Decorative',serif;
+            font-size: clamp(1.8rem,4.5vw,2.8rem);
+            font-weight: 900;
+            background: linear-gradient(135deg, var(--gold-dim), var(--gold-bright), var(--gold), var(--gold-dim));
+            -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
+            filter: drop-shadow(0 0 20px rgba(201,168,76,0.5));
+            letter-spacing: 0.2em;
+        }
+        .gwalenn-header .subtitle {
+            font-family: 'Cinzel',serif; font-size: 0.7rem; color: var(--gold-dim);
+            letter-spacing: 0.3em; text-transform: uppercase;
+        }
+
+        #gwalenn-scene {
+            position: relative; width: 860px; max-width: 98vw;
+            height: 600px; margin: 0.3rem auto 1rem; overflow: hidden;
+            background: var(--void);
+            border: 3px solid rgba(201,168,76,0.15); border-radius: 4px;
+            box-shadow: 0 0 100px rgba(0,0,0,0.6), 0 0 200px rgba(0,0,0,0.3);
+        }
+        @media (max-width: 880px) {
+            #gwalenn-scene { width: 98vw; height: calc(98vw * 0.7); }
+        }
+
+        .zone, .altar-zone, .altar-object-zone { cursor: pointer; transition: filter 0.25s, transform 0.25s; }
+        .zone:hover, .altar-zone:hover, .altar-object-zone:hover { filter: brightness(1.35); z-index: 50 !important; }
+        .zone:active, .altar-zone:active { transform: scale(0.94); }
+
+        #toast {
+            position: fixed; bottom: 1.5rem; left: 50%; transform: translateX(-50%);
+            background: rgba(10,8,6,0.95); border: 1px solid var(--gold);
+            border-radius: 6px; padding: 0.5rem 1.2rem;
+            font-family: 'EB Garamond','Georgia',serif; font-size: 0.82rem;
+            z-index: 200; opacity: 0; transition: opacity 0.4s;
+            pointer-events: none; text-align: center; max-width: 440px;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.5); white-space: pre-line;
+        }
+        #toast.show { opacity: 1; }
+
+        @keyframes hearthPulse {
+            0%,100% { transform: scaleY(1); opacity: 0.85; }
+            25% { transform: scaleY(1.12); opacity: 1; }
+            50% { transform: scaleY(0.92); opacity: 0.8; }
+            75% { transform: scaleY(1.08); opacity: 0.95; }
+        }
+        @keyframes altarGlow {
+            0%,100% { box-shadow: 0 0 8px var(--glow-color, #d4af37); }
+            50% { box-shadow: 0 0 20px var(--glow-color, #d4af37), 0 0 35px var(--glow-color, #d4af37); }
+        }
+        @keyframes sparkFade {
+            0% { transform: scale(0.5); opacity: 1; }
+            100% { transform: scale(2.5); opacity: 0; }
+        }
+        @keyframes inscriptionGlow {
+            0%,100% { text-shadow: 0 0 6px rgba(201,168,76,0.2); }
+            50% { text-shadow: 0 0 16px rgba(201,168,76,0.5); }
+        }
+    </style>
+</head>
+<body>
+
+    <header class="gwalenn-header">
+        <h1>ΓΒΑΛΕΝΝ ΔΕ ΟΛΨΜΠΙΑ</h1>
+        <div class="subtitle">The Olympian Haven · Ring of the Twelve</div>
+    </header>
+
+    <div id="gwalenn-scene"></div>
+    <div id="toast"></div>
+
+    <script src="js/gaia-mason.js"></script>
+    <script src="js/gaia-scene-loader.js"></script>
+    <script src="js/gaia-object-renderer.js"></script>
+    <script src="js/gaia-suncalc.js"></script>
+    <script src="js/gaia-celestial.js"></script>
+    <script src="js/observe.js"></script>
+    <script src="js/gaia-deck.js"></script>
+    <script>
+    /*
+     * ═══════════════════════════════════════════════════════
+     * GWALENN DE OLYMPIA · The Olympian Haven
+     * gaia/gwalenn.html
+     *
+     * Twelve altars in a ring. Central hearth. Ouranos sky.
+     * Living celestial bindings. Every god has a place.
+     * ═══════════════════════════════════════════════════════
+     */
+
+    // ── TOAST ──
+    const toastEl = document.getElementById('toast');
+    let toastTimer;
+    function toast(msg, d = 3200) {
+        toastEl.textContent = msg; toastEl.classList.add('show');
+        clearTimeout(toastTimer); toastTimer = setTimeout(() => toastEl.classList.remove('show'), d);
+    }
+
+    // ── CELESTIAL STATE ──
+    let skyState = null;
+    let sunPos = null;
+    let moonPos = null;
+    let period = 'SUN';
+    let moonAspect = 'Artemis';
+
+    async function loadCelestialState() {
+        try {
+            skyState = await Observe.getSkyState();
+            sunPos = GaiaSuncalc.getSunPosition();
+            moonPos = GaiaSuncalc.getMoonPosition();
+            period = Observe.getCurrentPeriod();
+            moonAspect = Observe.getMoonAspect();
+        } catch (e) {
+            console.warn('Celestial state unavailable, using defaults:', e.message);
+        }
+    }
+
+    // ── GOD DATA ──
+    const GOD_DATA = {
+        zeus:      { planet: 'jupiter', signRuler: ['Sagittarius','Pisces'], link: 'zeus/index.html' },
+        hera:      { planet: null, signRuler: [], link: 'hera/index.html' },
+        poseidon:  { planet: 'neptune', signRuler: ['Pisces'], link: 'poseidon/index.html' },
+        demeter:   { planet: null, signRuler: [], link: 'demeter/index.html' },
+        apollo:    { planet: 'sun', signRuler: ['Leo'], link: 'apollo/apolloTable.html' },
+        artemis:   { planet: 'moon', signRuler: ['Cancer'], link: 'artemis/index.html' },
+        ares:      { planet: 'mars', signRuler: ['Aries','Scorpio'], link: 'ares/index.html' },
+        aphrodite: { planet: 'venus', signRuler: ['Taurus','Libra'], link: 'aphrodite/index.html' },
+        athena:    { planet: null, signRuler: [], link: 'athena/index.html' },
+        hephaestus:{ planet: null, signRuler: [], link: 'hephaestus/index.html' },
+        hermes:    { planet: 'mercury', signRuler: ['Gemini','Virgo'], link: 'hermes/index.html' },
+        hestia:    { planet: null, signRuler: [], link: 'index.html' },
+    };
+
+    // ── BUILD GWALENN ──
+    async function buildGwalenn() {
+        const container = document.getElementById('gwalenn-scene');
+        const loader = new GaiaSceneLoader('gwalenn-scene');
+
+        // Load celestial state
+        await loadCelestialState();
+
+        // Load the scene
+        await loader.load('json/scenes/gwalenn.json');
+
+        // Load sacred objects
+        const objRenderer = new GaiaObjectRenderer('gwalenn-scene');
+        objRenderer.setMason(loader.mason);
+        await objRenderer.loadObjects('json/altar-objects.json');
+
+        // Place objects on each altar
+        const altars = loader.scene.altarRing.altars;
+        const centerX = loader.scene.altarRing.centerX;
+        const centerY = loader.scene.altarRing.centerY;
+        const radius = loader.scene.altarRing.radius;
+
+        const altarObjects = {
+            zeus: 'thunderbolt',
+            hera: 'offering_bowl',
+            poseidon: 'trident',
+            demeter: 'grain_sheaf',
+            apollo: 'lyre',
+            artemis: 'bow_silver',
+            ares: 'offering_bowl',
+            aphrodite: 'mirror_silver',
+            athena: 'owl_statue',
+            hephaestus: 'anvil',
+            hermes: 'caduceus',
+            hestia: 'brazier_gold',
+        };
+
+        altars.forEach((altar, i) => {
+            const angle = (i / altars.length) * Math.PI * 2 - Math.PI / 2;
+            const ax = centerX + Math.cos(angle) * radius - 50;
+            const ay = centerY + Math.sin(angle) * radius - 60;
+            const objectName = altarObjects[altar.god];
+            if (objectName) {
+                objRenderer.placeOnAltar(objectName, ax, ay);
+            }
+        });
+
+        // ── Celestial Bindings ──
+        applyCelestialBindings(container, altars, centerX, centerY, radius, objRenderer);
+
+        // ── Altar Interactions ──
+        loader.onAltarInteract = (god, altar) => {
+            const card = GaiaDeck.getCard(god);
+            const whisper = card?.whisper || `The Altar of ${altar.name} awaits.`;
+            const data = GOD_DATA[god];
+            
+            let msg = `${altar.glyph} Altar of ${altar.name}\n\n"${whisper}"\n\n`;
+            
+            if (data?.planet && skyState?.planets?.[data.planet]) {
+                const planet = skyState.planets[data.planet];
+                msg += `${data.planet.toUpperCase()} is in ${planet.sign} ${planet.glyph} · `;
+                msg += planet.aboveHorizon ? 'Above the horizon.' : 'Below the horizon.';
+            }
+
+            toast(msg);
+
+            // Click again to visit
+            const zone = container.querySelector(`[title*="Altar of ${altar.name}"]`);
+            if (zone && zone._clicked) {
+                if (data?.link) {
+                    setTimeout(() => { window.location.href = data.link; }, 800);
+                }
+            }
+            if (zone) zone._clicked = true;
+        };
+
+        // ── Object Interactions ──
+        container.addEventListener('object-interact', (e) => {
+            const { object, action, label } = e.detail;
+            switch (action) {
+                case 'leave_offering':
+                    toast(`🙏 You leave an offering.\n\n"The gods do not need your gift. But they notice the gesture."`);
+                    spawnSparks(e.detail.x + 25, e.detail.y + 25, '#ffd700', 8);
+                    break;
+                case 'tend_flame':
+                    toast(`🔥 You tend the sacred flame.\n\n"The fire holds. It has always held."`);
+                    spawnSparks(e.detail.x + 25, e.detail.y + 10, '#ff8833', 12);
+                    break;
+            }
+        });
+
+        // ── Return toast ──
+        toast(`🏛️ Gwalenn de Olympia · ${altars.length} altars · ${period === 'SUN' ? '☀️ Apollo reigns' : '🌙 Artemis watches'}`);
+    }
+
+    // ── CELESTIAL BINDINGS ──
+    function applyCelestialBindings(container, altars, centerX, centerY, radius, objRenderer) {
+        if (!skyState) return;
+
+        // Determine which god's altar is "featured" based on ascendant
+        const ascSign = skyState.ascendant?.sign;
+        
+        altars.forEach((altar, i) => {
+            const data = GOD_DATA[altar.god];
+            if (!data) return;
+
+            const angle = (i / altars.length) * Math.PI * 2 - Math.PI / 2;
+            const ax = centerX + Math.cos(angle) * radius - 50;
+            const ay = centerY + Math.sin(angle) * radius - 60;
+
+            let glowIntensity = 0.3;
+            let glowColor = altar.glowColor || '#d4af37';
+
+            // Sun-ruled gods brighten during the day
+            if (data.planet === 'sun' && period === 'SUN') glowIntensity = 0.8;
+            
+            // Moon-ruled gods brighten at night, pulse with moon phase
+            if (data.planet === 'moon' && moonPos) {
+                glowIntensity = moonPos.illumination / 100;
+                if (period === 'MOON') glowIntensity = Math.max(glowIntensity, 0.5);
+            }
+
+            // Planet in its ruling sign = brighter altar
+            if (data.planet && skyState.planets?.[data.planet]) {
+                const planet = skyState.planets[data.planet];
+                if (data.signRuler?.includes(planet.sign)) {
+                    glowIntensity = Math.max(glowIntensity, 0.7);
+                }
+            }
+
+            // Ascendant sign ruler gets featured glow
+            if (data.signRuler?.includes(ascSign)) {
+                glowIntensity = 1.0;
+                glowColor = '#ffd700';
+            }
+
+            // Apply glow overlay
+            if (glowIntensity > 0.2) {
+                const glow = document.createElement('div');
+                glow.style.cssText = `
+                    position: absolute;
+                    left: ${ax - 20}px; top: ${ay + 15}px;
+                    width: 140px; height: 120px;
+                    background: radial-gradient(ellipse, ${glowColor}${Math.round(glowIntensity * 40).toString(16).padStart(2,'0')} 0%, transparent 70%);
+                    border-radius: 50%;
+                    z-index: 5;
+                    pointer-events: none;
+                    animation: altarGlow ${2 + Math.random() * 2}s ease-in-out infinite;
+                    --glow-color: ${glowColor};
+                `;
+                container.appendChild(glow);
+            }
+        });
+
+        // Central hearth flame intensity
+        const hearthFlame = container.querySelector('[style*="hearthFlame"]');
+        if (hearthFlame && moonPos) {
+            const intensity = 0.6 + (moonPos.illumination / 200);
+            hearthFlame.style.opacity = intensity;
+        }
+    }
+
+    // ── SPARKS ──
+    function spawnSparks(x, y, color, count) {
+        for (let i = 0; i < count; i++) {
+            const spark = document.createElement('div');
+            spark.style.cssText = `
+                position: absolute;
+                left: ${x + (Math.random()-0.5)*40}px;
+                top: ${y + (Math.random()-0.5)*30}px;
+                width: 3px; height: 3px;
+                background: ${color};
+                border-radius: 50%;
+                box-shadow: 0 0 8px ${color};
+                pointer-events: none;
+                z-index: 60;
+                animation: sparkFade ${1 + Math.random()}s ease-out forwards;
+            `;
+            document.getElementById('gwalenn-scene').appendChild(spark);
+            setTimeout(() => spark.remove(), 1500);
+        }
+    }
+
+    // ═══════════════════════════════════
+    // INIT
+    // ═══════════════════════════════════
+
+    async function init() {
+        await buildGwalenn();
+
+        document.addEventListener('click', (e) => {
+            if (Math.random() > 0.75 && !e.target.closest('.zone') && !e.target.closest('.altar-zone') && !e.target.closest('.altar-object-zone')) {
+                const spark = document.createElement('div');
+                spark.style.cssText = `
+                    position: fixed;
+                    left: ${e.clientX}px; top: ${e.clientY}px;
+                    width: 3px; height: 3px;
+                    background: #d4af37;
+                    border-radius: 50%;
+                    box-shadow: 0 0 10px #d4af37;
+                    pointer-events: none;
+                    z-index: 150;
+                    animation: sparkFade 1.4s ease-out forwards;
+                `;
+                document.body.appendChild(spark);
+                setTimeout(() => spark.remove(), 1500);
+            }
+        });
+    }
+
+    init();
+    </script>
+</body>
+</html>
