@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Deep Hold · Poseidon's Realm · GAIA</title>
+    <link href="https://fonts.googleapis.com/css2?family=UnifrakturMaguntia&family=Cinzel:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --abyss: #050510; --deep: #0a1520; --water: #2a4a6a;
+            --coral: #c87070; --pearl: #e8e0d8; --bronze: #8a7a5a;
+            --quicksilver: #a8b8c8; --flame-blue: #6688dd;
+            --gold: #d4af37; --foam: #c8d8e0;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: var(--abyss);
+            color: var(--foam);
+            font-family: 'Georgia','Times New Roman',serif;
+            display: flex; flex-direction: column; align-items: center;
+            min-height: 100vh; overflow-x: hidden;
+            background-image:
+                radial-gradient(ellipse at 50% 0%, rgba(58,107,140,0.08) 0%, transparent 55%),
+                radial-gradient(ellipse at 50% 100%, rgba(5,5,16,0.98) 0%, transparent 50%),
+                radial-gradient(ellipse at 30% 60%, rgba(102,136,221,0.03) 0%, transparent 40%);
+        }
+
+        #deep-hold {
+            position: relative; width: 820px; max-width: 98vw;
+            height: 1400px; margin: 0 auto 1rem; overflow: hidden;
+            background: var(--abyss);
+            border-left: 4px solid #0a1520;
+            border-right: 4px solid #0a1520;
+            box-shadow: 0 0 120px rgba(0,10,30,0.8), 0 0 240px rgba(0,0,0,0.5);
+        }
+        @media (max-width: 840px) {
+            #deep-hold { width: 98vw; height: calc(98vw * 1.7); }
+        }
+
+        .zone { cursor: pointer; transition: filter 0.3s, transform 0.3s; }
+        .zone:hover { filter: brightness(1.4); z-index: 50 !important; }
+        .zone:active { transform: scale(0.94); transition: transform 0.1s; }
+
+        #toast {
+            position: fixed; bottom: 1.5rem; left: 50%; transform: translateX(-50%);
+            background: rgba(5,5,20,0.95); border: 1px solid var(--quicksilver);
+            border-radius: 6px; padding: 0.5rem 1.2rem;
+            font-family: 'Georgia',serif; font-size: 0.78rem;
+            z-index: 200; opacity: 0; transition: opacity 0.35s;
+            pointer-events: none; text-align: center; max-width: 420px; line-height: 1.4;
+            box-shadow: 0 6px 24px rgba(0,0,0,0.6); white-space: pre-line;
+            color: #c8d8e0;
+        }
+        #toast.show { opacity: 1; }
+
+        @keyframes waterCaustic {
+            0%,100% { opacity: 0.25; }
+            50% { opacity: 0.55; }
+        }
+        @keyframes mirrorPulse {
+            0%,100% { box-shadow: 0 0 18px rgba(168,184,200,0.2), 0 0 40px rgba(102,136,221,0.1); }
+            50% { box-shadow: 0 0 30px rgba(168,184,200,0.5), 0 0 65px rgba(102,136,221,0.25); }
+        }
+        @keyframes tridentGlow {
+            0%,100% { text-shadow: 0 0 6px rgba(138,122,90,0.3); }
+            50% { text-shadow: 0 0 18px rgba(138,122,90,0.7), 0 0 30px rgba(212,175,55,0.2); }
+        }
+        @keyframes bubbleRise {
+            0% { transform: translateY(0) translateX(0) scale(1); opacity: 0.7; }
+            100% { transform: translateY(-220px) translateX(var(--bx)) scale(0); opacity: 0; }
+        }
+        @keyframes kelpSway {
+            0%,100% { transform: translateX(0); }
+            50% { transform: translateX(4px); }
+        }
+        @keyframes flameFlickerBlue {
+            0%,100% { transform: scaleY(1) translateY(0); opacity: 0.85; }
+            25% { transform: scaleY(1.12) translateY(-4px); opacity: 1; }
+            50% { transform: scaleY(0.92) translateY(3px); opacity: 0.8; }
+            75% { transform: scaleY(1.08) translateY(-2px); opacity: 0.95; }
+        }
+        @keyframes depthPulse {
+            0%,100% { opacity: 0.4; }
+            50% { opacity: 0.7; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="deep-hold"></div>
+    <div id="toast"></div>
+
+    <script src="../js/gaia-mason.js"></script>
+    <script>
+    /*
+     * ═══════════════════════════════════════════════════════════════
+     * THE DEEP HOLD · Poseidon's Realm
+     * Coral Throne · Trident · Abyssal Mirror · Trench Brazier
+     * Pressure Steps · Shell Grottos · Kelp Forest
+     * All built from typography. GaiaMason v2.1.
+     * ═══════════════════════════════════════════════════════════════
+     */
+
+    const DEFAULT_STATE = {
+        tridentTaken: false,
+        deepSpokeCount: 0,
+        shipwrecksHeard: [],
+        descentLevel: 0,
+        mirrorGazedCount: 0,
+        offeringsMade: 0,
+    };
+    let state = JSON.parse(JSON.stringify(DEFAULT_STATE));
+
+    function loadState() {
+        const raw = localStorage.getItem('gaia_poseidon');
+        if (!raw) return false;
+        try { state = { ...DEFAULT_STATE, ...JSON.parse(raw) }; return true; } catch(e) { return false; }
+    }
+    function saveState() { localStorage.setItem('gaia_poseidon', JSON.stringify(state)); }
+
+    const toastEl = document.getElementById('toast');
+    let toastTimer;
+    function toast(msg, d = 3200) {
+        toastEl.textContent = msg; toastEl.classList.add('show');
+        clearTimeout(toastTimer); toastTimer = setTimeout(() => toastEl.classList.remove('show'), d);
+    }
+
+    function spawnBubbles(x, y, count = 12) {
+        const c = document.getElementById('deep-hold');
+        if (!c) return;
+        for (let i = 0; i < count; i++) {
+            const bubble = document.createElement('div');
+            const bx = (Math.random() - 0.5) * 40;
+            const size = 2 + Math.random() * 5;
+            bubble.style.cssText = `
+                position:absolute; left:${x - size/2}px; top:${y}px;
+                width:${size}px; height:${size}px;
+                background:radial-gradient(circle,rgba(200,220,240,0.7),rgba(58,107,140,0.2));
+                border-radius:50%; pointer-events:none; z-index:85;
+                --bx:${bx}px; animation:bubbleRise ${1.8+Math.random()*3}s ease-out ${Math.random()*0.4}s forwards;
+            `;
+            c.appendChild(bubble);
+            setTimeout(() => { if (bubble.parentNode) bubble.remove(); }, 5000);
+        }
+    }
+
+    function getMoonPhase() {
+        // Approximate moon phase (0=new, 0.5=full)
+        const now = new Date();
+        const lp = 2551443; // lunar period in seconds
+        const newMoon = new Date(2000, 0, 6, 18, 14).getTime() / 1000;
+        const phase = ((now.getTime() / 1000 - newMoon) % lp) / lp;
+        return phase;
+    }
+
+    // ═══════════════════════════════════
+    // BUILD THE DEEP HOLD
+    // ═══════════════════════════════════
+
+    function buildDeepHold() {
+        const container = document.getElementById('deep-hold');
+        container.innerHTML = '';
+        const m = new GaiaMason('deep-hold');
+
+        // ── Register Poseidon-specific materials ──
+        GaiaMason.MATERIALS['coral_rough'] = {
+            chars:['❀','✿','❁','✾','❋'], textColor:'#c87070', mortarColor:'#8a4040',
+            fontSize:18, lineHeight:0.5, letterSpacing:0, fontFamily:"'Georgia',serif", weathering:0.1
+        };
+        GaiaMason.MATERIALS['coral_pale'] = {
+            chars:['❀','✿','❁','✾','❋'], textColor:'#d8a8a8', mortarColor:'#b87878',
+            fontSize:16, lineHeight:0.5, letterSpacing:0, fontFamily:"'Georgia',serif", weathering:0.05
+        };
+        GaiaMason.MATERIALS['abyss_black'] = {
+            chars:['▓','▒','░','█','▓'], textColor:'#0a0a10', mortarColor:'#050508',
+            fontSize:42, lineHeight:0.5, letterSpacing:-4, fontFamily:"'Cinzel','Georgia',serif", weathering:0.02
+        };
+        GaiaMason.MATERIALS['pearl_sheen'] = {
+            chars:['◈','◇','◈','◇','◈'], textColor:'#e8e0d8', mortarColor:'#c8c0b8',
+            fontSize:22, lineHeight:0.5, letterSpacing:0, fontFamily:"'Georgia',serif", weathering:0
+        };
+        GaiaMason.MATERIALS['kelp_dark'] = {
+            chars:['║','║','║','║','║'], textColor:'#2a4a2a', mortarColor:'#1a2a1a',
+            fontSize:16, lineHeight:0.5, letterSpacing:2, fontFamily:'monospace', weathering:0.2
+        };
+        GaiaMason.MATERIALS['trident_bronze'] = {
+            chars:['▬','▬','▬','▬','▬'], textColor:'#8a7a5a', mortarColor:'#5a4a3a',
+            fontSize:24, lineHeight:0.5, letterSpacing:-2, fontFamily:'monospace', weathering:0.3
+        };
+
+        const moonPhase = getMoonPhase();
+        const mirrorGlow = 0.15 + moonPhase * 0.5; // brightest at full moon
+
+        // ═══════════════════════════════════
+        // DEEP WALLS (y: 0 to 900)
+        // ═══════════════════════════════════
+
+        // Far wall — water_pontus, vast and dark
+        m.buildWall({
+            ...GaiaMason.mat('water_pontus'),
+            x: 60, y: 0, width: 700, height: 900, z: 0,
+            openings: [
+                // Central arch opening to the abyss beyond
+                { x: 200, y: 80, width: 400, height: 500, arch: true, glass: false },
+            ]
+        });
+
+        // Arch over the central opening — coral-encrusted
+        m.buildArch({
+            chars: ['❀','✿','❁','✾','❋'],
+            textColor: '#c87070', fontSize: 26,
+            fontFamily: "'Georgia',serif",
+            cx: 410, cy: 100, innerRadius: 200,
+            stoneCount: 25, stoneDepth: 30, z: 5,
+            keystoneChar: '❁', keystoneOversize: 1.7
+        });
+
+        // Side walls — receding into the deep
+        m.buildWall({
+            ...GaiaMason.mat('obsidian'),
+            x: 0, y: 0, width: 70, height: 900, z: 1,
+            perspective: 'recede-left',
+            weathering: 0.15
+        });
+        m.buildWall({
+            ...GaiaMason.mat('obsidian'),
+            x: 750, y: 0, width: 70, height: 900, z: 1,
+            perspective: 'recede-right',
+            weathering: 0.15
+        });
+
+        // ═══════════════════════════════════
+        // WATER SURFACE ABOVE (y: -80 to 0)
+        // ═══════════════════════════════════
+
+        m.buildWall({
+            ...GaiaMason.mat('water_shallow'),
+            x: 60, y: -60, width: 700, height: 65, z: -1,
+            weathering: 0.25
+        });
+
+        // Caustic shimmer overlay
+        const caustic = document.createElement('div');
+        caustic.style.cssText = `
+            position: absolute; left: 60px; top: -60px;
+            width: 700px; height: 65px; z-index: 2;
+            color: rgba(180,210,230,0.4); font-size: 16px;
+            font-family: Georgia,serif; letter-spacing: 3px;
+            pointer-events: none;
+            animation: waterCaustic 3s ease-in-out infinite;
+            text-align: center; line-height: 65px;
+        `;
+        caustic.textContent = '~  ·  ≋  ·  ≈  ·  ~  ·  ≋  ·  ≈  ·  ~';
+        container.appendChild(caustic);
+
+        // Light shafts piercing down
+        m.buildLight({ color: '#5a9bc0', radius: 30, x: 250, y: '8%', pulse: true, z: 1 });
+        m.buildLight({ color: '#5a9bc0', radius: 25, x: 410, y: '6%', pulse: true, z: 1 });
+        m.buildLight({ color: '#5a9bc0', radius: 20, x: 570, y: '9%', pulse: true, z: 1 });
+
+        // ═══════════════════════════════════
+        // CORAL THRONE (center-right, y: 200-450)
+        // ═══════════════════════════════════
+
+        // Throne platform
+        m.buildWall({
+            ...GaiaMason.mat('marble_veined'),
+            x: 460, y: 340, width: 160, height: 30, z: 6,
+            weathering: 0.2
+        });
+
+        // Throne back — arch with pearl keystone
+        m.buildArch({
+            chars: ['H','N','M','W'],
+            textColor: '#d8d0c8', fontSize: 28,
+            fontFamily: "'Cinzel','Georgia',serif",
+            cx: 540, cy: 270, innerRadius: 75,
+            stoneCount: 15, stoneDepth: 28, z: 7,
+            keystoneChar: '◈', keystoneOversize: 1.8,
+            highlightColor: 'rgba(232,224,216,0.2)'
+        });
+
+        // Throne seat
+        m.buildWall({
+            ...GaiaMason.mat('abyss_black'),
+            x: 480, y: 315, width: 120, height: 30, z: 7,
+            weathering: 0
+        });
+
+        // Coral pillars flanking the throne
+        m.buildPillar({
+            ...GaiaMason.mat('coral_rough'),
+            x: 465, y: 200, width: 24, height: 150, z: 6,
+            capital: true, capitalHeight: 22
+        });
+        m.buildPillar({
+            ...GaiaMason.mat('coral_pale'),
+            x: 590, y: 210, width: 22, height: 140, z: 6,
+            capital: true, capitalHeight: 20
+        });
+
+        // Throne inscription
+        m.buildInscription({
+            text: 'THE DEEP THRONE',
+            x: 485, y: 185,
+            fontSize: 8, color: 'rgba(200,216,224,0.5)',
+            fontFamily: "'Cinzel',serif", z: 8
+        });
+
+        // Pearl inlay on throne
+        m.buildWall({
+            ...GaiaMason.mat('pearl_sheen'),
+            x: 530, y: 250, width: 20, height: 60, z: 8,
+            shape: 'circle'
+        });
+
+        // Sit zone
+        const throneZone = makeZone(480, 260, 120, 100, 'Sit upon the Coral Throne', () => {
+            state.deepSpokeCount++;
+            const whispers = [
+                'The throne accepts you. For a moment, you feel the weight of every tide that has ever risen.',
+                'The coral creaks. A voice like grinding continents: "You are not the first to sit here. You will not be the last to drown."',
+                'The deep speaks: "I have swallowed cities. I have cradled empires. You are a breath between waves."',
+                'Silence. Then, very quietly: "The trident remembers your name."',
+            ];
+            const msg = whispers[state.deepSpokeCount % whispers.length];
+            if (state.deepSpokeCount === 1) {
+                toast('🪸 ' + msg + '\n\nA warmth spreads through the coral. The Deep Hold knows you now.');
+            } else {
+                toast('🪸 ' + msg);
+            }
+            spawnBubbles(540, 300, 8);
+            saveState();
+        });
+        container.appendChild(throneZone);
+
+        // ═══════════════════════════════════
+        // THE TRIDENT (center, y: 300-550)
+        // ═══════════════════════════════════
+
+        if (!state.tridentTaken) {
+            // Offering bowl base
+            m.buildOfferingBowl({ x: 355, y: 440, z: 15, material: 'trident_bronze' });
+
+            // Trident shaft
+            m.buildPillar({
+                ...GaiaMason.mat('trident_bronze'),
+                x: 397, y: 290, width: 14, height: 160, z: 14,
+            });
+
+            // Three tines
+            m.buildPillar({
+                ...GaiaMason.mat('trident_bronze'),
+                x: 397, y: 240, width: 6, height: 55, z: 15,
+            });
+            m.buildPillar({
+                ...GaiaMason.mat('trident_bronze'),
+                x: 380, y: 255, width: 5, height: 40, z: 15,
+            });
+            m.buildPillar({
+                ...GaiaMason.mat('trident_bronze'),
+                x: 413, y: 255, width: 5, height: 40, z: 15,
+            });
+
+            // Trident glow
+            const tridentGlow = document.createElement('div');
+            tridentGlow.style.cssText = `
+                position: absolute; left: 389px; top: 240px;
+                width: 24px; height: 50px; z-index: 16;
+                pointer-events: none;
+                font-size: 40px; color: #d4af37;
+                animation: tridentGlow 3s ease-in-out infinite;
+            `;
+            tridentGlow.textContent = '✦';
+            container.appendChild(tridentGlow);
+
+            // Take zone
+            const tridentZone = makeZone(370, 240, 70, 210, 'Take the Trident', () => {
+                state.tridentTaken = true;
+                toast('🔱 The Trident surges with power. The entire Deep Hold shudders.\n\nThe tides of every realm feel this. You are now bound to the sea.');
+                spawnBubbles(404, 300, 30);
+                saveState();
+                // Rebuild to remove trident
+                setTimeout(() => buildDeepHold(), 600);
+            });
+            container.appendChild(tridentZone);
+        } else {
+            // Empty bowl where trident was
+            m.buildOfferingBowl({ x: 355, y: 440, z: 10, material: 'iron_dark' });
+            m.buildInscription({
+                text: 'The Trident is taken. The sea waits.',
+                x: 340, y: 410,
+                fontSize: 7, color: 'rgba(168,184,200,0.4)',
+                fontFamily: "'Georgia',serif", z: 12
+            });
+        }
+
+        // ═══════════════════════════════════
+        // ABYSSAL MIRROR (left wall, y: 220-450)
+        // ═══════════════════════════════════
+
+        // Full circle arch around mirror
+        m.buildArch({
+            chars: ['◈','◇','◈','◇','◈'],
+            textColor: '#a8b8c8', fontSize: 20,
+            fontFamily: "'Georgia',serif",
+            cx: 180, cy: 310, innerRadius: 70,
+            stoneCount: 22, stoneDepth: 20, z: 6,
+            fullCircle: true,
+            keystoneChar: '◈', keystoneOversize: 1.4
+        });
+
+        // Mirror surface
+        const mirrorEl = m.buildWall({
+            ...GaiaMason.mat('quicksilver'),
+            x: 115, y: 245, width: 130, height: 130, z: 5,
+            shape: 'circle'
+        });
+
+        // Mirror glow (moon-phase linked)
+        const mirrorGlowEl = document.createElement('div');
+        mirrorGlowEl.style.cssText = `
+            position: absolute; left: 115px; top: 245px;
+            width: 130px; height: 130px; border-radius: 50%;
+            background: radial-gradient(circle, rgba(102,136,221,${mirrorGlow}) 0%, transparent 70%);
+            pointer-events: none; z-index: 7;
+            animation: mirrorPulse 4s ease-in-out infinite;
+        `;
+        container.appendChild(mirrorGlowEl);
+
+        m.buildInscription({
+            text: 'THE ABYSSAL MIRROR',
+            x: 92, y: 390,
+            fontSize: 7, color: 'rgba(168,184,200,0.5)',
+            fontFamily: "'Cinzel',serif", z: 8
+        });
+
+        // Gaze zone
+        const mirrorZone = makeZone(115, 245, 130, 130, 'Gaze into the Abyssal Mirror', () => {
+            state.mirrorGazedCount++;
+            const visions = [
+                'A shipwreck. Sails still billowing. Crew still at their posts. Frozen.',
+                'Your own face. But older. Much older. And behind you, something vast.',
+                'A city of coral and bone. Lights in the windows. Someone waves.',
+                'The surface. So far above. A storm is breaking. Lightning reaches down.',
+                'Nothing. Pure abyss. And then — an eye opens.',
+            ];
+            const moonMsg = moonPhase > 0.45 ? ' The full moon reveals more than usual.' : '';
+            toast('🪞 ' + visions[state.mirrorGazedCount % visions.length] + moonMsg);
+            spawnBubbles(180, 310, 5);
+            saveState();
+        });
+        container.appendChild(mirrorZone);
+
+        // ═══════════════════════════════════
+        // TRENCH BRAZIER (center foreground, y: 600-750)
+        // ═══════════════════════════════════
+
+        m.buildWall({
+            ...GaiaMason.mat('abyss_black'),
+            x: 340, y: 620, width: 140, height: 130, z: 6,
+            weathering: 0
+        });
+
+        // Hearth ring
+        m.buildWall({
+            ...GaiaMason.mat('pearl_sheen'),
+            x: 345, y: 625, width: 130, height: 120, z: 7,
+            shape: 'circle'
+        });
+
+        // Inner pit
+        m.buildWall({
+            ...GaiaMason.mat('obsidian'),
+            x: 360, y: 640, width: 100, height: 90, z: 8,
+            shape: 'circle'
+        });
+
+        // Blue flame
+        const flameEl = document.createElement('div');
+        flameEl.style.cssText = `
+            position: absolute; left: 370px; top: 645px;
+            width: 80px; height: 80px; z-index: 9;
+            background: radial-gradient(ellipse at 50% 60%, #aaccff 0%, #6688dd 30%, #334488 60%, transparent 80%);
+            border-radius: 50%;
+            animation: flameFlickerBlue 2.5s ease-in-out infinite;
+            pointer-events: none;
+        `;
+        container.appendChild(flameEl);
+
+        m.buildInscription({
+            text: 'THE DEEP BURNS',
+            x: 355, y: 755,
+            fontSize: 8, color: 'rgba(102,136,221,0.5)',
+            fontFamily: "'Cinzel',serif", z: 10
+        });
+
+        // Tend zone
+        const brazierZone = makeZone(350, 620, 120, 130, 'Tend the Trench Brazier', () => {
+            state.offeringsMade++;
+            const offerings = [
+                'You offer a breath. The flame brightens. The deep is hungry.',
+                'You offer a memory. It sinks into the blue. The flame wavers, then strengthens.',
+                'You offer nothing. The flame accepts anyway. "The fire holds," it seems to say.',
+                'You offer salt. The flame hisses. Steam rises through the bubbles. Accepted.',
+            ];
+            const msg = offerings[state.offeringsMade % offerings.length];
+            toast('🔥 ' + msg);
+            spawnBubbles(410, 620, 15);
+            // Extra blue particles from the flame
+            m.spawnParticles({
+                x: 410, y: 650, count: 10,
+                color: '#aaccff', minSize: 2, maxSize: 5,
+                riseDistance: 120, spreadX: 50,
+                z: 85
+            });
+            saveState();
+        });
+        container.appendChild(brazierZone);
+
+        // ═══════════════════════════════════
+        // PRESSURE STEPS (right side, descending, y: 500-850)
+        // ═══════════════════════════════════
+
+        const stepLevels = [
+            { x: 580, y: 510, w: 200, h: 40, fs: 32, ps: 4, color: '#4a6a7a' },
+            { x: 585, y: 555, w: 190, h: 40, fs: 28, ps: 6, color: '#3a5a6a' },
+            { x: 590, y: 600, w: 180, h: 40, fs: 24, ps: 8, color: '#2a4a5a' },
+            { x: 595, y: 645, w: 170, h: 40, fs: 20, ps: 10, color: '#1a3a4a' },
+            { x: 600, y: 690, w: 160, h: 40, fs: 16, ps: 12, color: '#0a2a3a' },
+            { x: 605, y: 735, w: 150, h: 40, fs: 12, ps: 14, color: '#051a2a' },
+        ];
+
+        stepLevels.forEach((step, i) => {
+            m.buildFloor({
+                chars: ['▓','░','▒','█','░'],
+                textColor: step.color,
+                mortarColor: '#0a1520',
+                fontSize: step.fs,
+                lineHeight: 0.5,
+                letterSpacing: -2,
+                fontFamily: 'monospace',
+                x: step.x, y: step.y,
+                width: step.w, height: step.h,
+                z: 3,
+                perspectiveStrength: step.ps,
+            });
+        });
+
+        // Depth pressure indicator
+        const depthEl = document.createElement('div');
+        depthEl.style.cssText = `
+            position: absolute; left: 620px; top: 775px;
+            z-index: 10; pointer-events: none;
+            font-family: 'Cinzel',serif; font-size: 7px;
+            color: rgba(200,216,224,0.3);
+            animation: depthPulse 4s ease-in-out infinite;
+        `;
+        depthEl.textContent = 'PRESSURE  ·  DEPTH  ·  SILENCE';
+        container.appendChild(depthEl);
+
+        // Descend zone
+        const stepZone = makeZone(580, 510, 220, 270, 'Descend the Pressure Steps', () => {
+            state.descentLevel = Math.min(5, state.descentLevel + 1);
+            const feelings = [
+                'The water presses closer. Your ears ache.',
+                'Deeper. The light is a memory. The cold is real.',
+                'Your bones feel the weight. The stone here is ancient.',
+                'You can barely see. But you can hear — something breathing.',
+                'The bottom. The pressure is absolute. And yet — you are still here.',
+            ];
+            toast('🪨 ' + feelings[state.descentLevel - 1] + `\n\nDepth: ${state.descentLevel}/5`);
+            spawnBubbles(670, 700, 6);
+            saveState();
+        });
+        container.appendChild(stepZone);
+
+        // ═══════════════════════════════════
+        // SHELL GROTTOS (small niches, y: 400-550, edges)
+        // ═══════════════════════════════════
+
+        const grottos = [
+            { x: 100, y: 470, ship: 'The Erytheia', whisper: '...cargo of olive oil and bronze ingots... crew of forty... lost in the storm of the century...' },
+            { x: 680, y: 480, ship: 'The Nereid\'s Tear', whisper: '...a wedding ship... sank on its maiden voyage... the bride\'s veil still drifts in the current...' },
+            { x: 520, y: 720, ship: 'The Leviathan\'s Bane', whisper: '...harpoon ship... hunted something it could not kill... only the bow remains...' },
+        ];
+
+        grottos.forEach((grotto, i) => {
+            // Small arch
+            m.buildArch({
+                chars: ['❀','✿','❁','✾'],
+                textColor: '#c87070', fontSize: 14,
+                fontFamily: "'Georgia',serif",
+                cx: grotto.x + 25, cy: grotto.y,
+                innerRadius: 22, stoneCount: 9,
+                stoneDepth: 14, z: 6
+            });
+
+            // Dark niche
+            m.buildWall({
+                ...GaiaMason.mat('void_black'),
+                x: grotto.x + 5, y: grotto.y + 8,
+                width: 40, height: 35, z: 5,
+            });
+
+            // Glyph
+            m.buildInscription({
+                text: '🐚',
+                x: grotto.x + 14, y: grotto.y + 14,
+                fontSize: 16, color: 'rgba(200,216,224,0.4)',
+                fontFamily: "'Georgia',serif", z: 7
+            });
+
+            // Listen zone
+            const grottoZone = makeZone(grotto.x, grotto.y - 5, 50, 55, `Listen to the Shell Grotto`, () => {
+                if (!state.shipwrecksHeard.includes(grotto.ship)) {
+                    state.shipwrecksHeard.push(grotto.ship);
+                }
+                toast(`🐚 ${grotto.ship}\n\n"${grotto.whisper}"`);
+                spawnBubbles(grotto.x + 25, grotto.y + 10, 4);
+                saveState();
+            });
+            container.appendChild(grottoZone);
+        });
+
+        // ═══════════════════════════════════
+        // KELP FOREST (left edge, y: 500-850)
+        // ═══════════════════════════════════
+
+        for (let i = 0; i < 7; i++) {
+            const kx = 20 + i * 15 + Math.random() * 8;
+            const kh = 80 + Math.random() * 120;
+            const ky = 500 + Math.random() * 300;
+            const kelp = m.buildPillar({
+                ...GaiaMason.mat('kelp_dark'),
+                x: kx, y: ky, width: 5 + Math.random() * 6,
+                height: kh, z: 2,
+            });
+            // Sway animation
+            kelp.style.animation = `kelpSway ${3 + Math.random() * 4}s ease-in-out infinite`;
+            kelp.style.animationDelay = `${Math.random() * 2}s`;
+        }
+
+        // Kelp label
+        m.buildInscription({
+            text: 'THE KELP FOREST',
+            x: 25, y: 490,
+            fontSize: 6, color: 'rgba(42,74,42,0.4)',
+            fontFamily: "'Cinzel',serif", z: 3,
+            rotation: -90
+        });
+
+        // ═══════════════════════════════════
+        // FLOOR (y: 800-950)
+        // ═══════════════════════════════════
+
+        m.buildFloor({
+            ...GaiaMason.mat('obsidian'),
+            x: 30, y: 820, width: 760, height: 130, z: 0,
+            perspectiveStrength: 8,
+            glyphCarving: {
+                text: '~  ≋  ≈  ~  ≋  ≈  ~  ≋  ≈',
+                x: 120, y: 55,
+                size: 20, spacing: 28,
+                color: 'rgba(58,107,140,0.12)'
+            }
+        });
+
+        // Floor inscription
+        m.buildInscription({
+            text: 'THE SEA REMEMBERS ALL NAMES',
+            x: 270, y: 910,
+            fontSize: 8, color: 'rgba(168,184,200,0.3)',
+            fontFamily: "'Cinzel',serif", z: 5
+        });
+
+        // ═══════════════════════════════════
+        // EXIT (bottom center)
+        // ═══════════════════════════════════
+
+        m.buildArch({
+            chars: ['H','N','M','W'],
+            textColor: '#5a9bc0', fontSize: 20,
+            fontFamily: "'Cinzel','Georgia',serif",
+            cx: 410, cy: 970, innerRadius: 55,
+            stoneCount: 13, stoneDepth: 20, z: 10,
+            keystoneChar: '~', keystoneOversize: 1.5
+        });
+
+        m.buildInscription({
+            text: 'RISE TO GWALENN',
+            x: 360, y: 1040,
+            fontSize: 7, color: 'rgba(90,155,192,0.5)',
+            fontFamily: "'Cinzel',serif", z: 11
+        });
+
+        const exitZone = makeZone(355, 950, 110, 80, 'Rise to the surface', () => {
+            saveState();
+            toast('🌊 You rise through the water column. Light returns. Pressure releases.\n\nThe surface breaks above you.');
+            setTimeout(() => {
+                window.location.href = '../gwalenn.html?from=poseidon';
+            }, 1200);
+        });
+        exitZone.innerHTML = `
+            <div style="width:110px;height:80px;background:radial-gradient(ellipse at center, rgba(90,155,192,0.15), transparent 70%);border-radius:55px 55px 0 0;"></div>
+        `;
+        container.appendChild(exitZone);
+
+        // ═══════════════════════════════════
+        // AMBIENT BUBBLES
+        // ═══════════════════════════════════
+
+        m.spawnAmbientFall({
+            count: 25,
+            color: 'rgba(180,210,230,0.25)',
+            minSize: 1, maxSize: 3,
+            speedMin: 10, speedMax: 25,
+            z: 50
+        });
+
+        return m;
+    }
+
+    function makeZone(x, y, w, h, title, action) {
+        const el = document.createElement('div');
+        el.className = 'zone';
+        el.title = title;
+        el.style.cssText = `position:absolute;left:${x}px;top:${y}px;width:${w}px;height:${h}px;z-index:25;`;
+        el.addEventListener('click', action);
+        return el;
+    }
+
+    // ═══════════════════════════════════
+    // INIT
+    // ═══════════════════════════════════
+
+    function init() {
+        const loaded = loadState();
+        if (!loaded) saveState();
+
+        const params = new URLSearchParams(window.location.search);
+        if (params.get('from')) {
+            toast(`🌊 You descend from the ${params.get('from')}. The pressure builds. The light fades.`);
+            window.history.replaceState({}, '', 'realm.html');
+        } else {
+            const welcome = state.tridentTaken
+                ? '🔱 The Deep Hold awaits. The Trident is yours. The sea watches.'
+                : '🌊 You enter the Deep Hold. The Trident waits. The water breathes.';
+            toast(welcome);
+        }
+
+        buildDeepHold();
+
+        // Occasional random bubble burst
+        setInterval(() => {
+            const x = 100 + Math.random() * 620;
+            const y = 200 + Math.random() * 600;
+            spawnBubbles(x, y, 3 + Math.floor(Math.random() * 6));
+        }, 8000 + Math.random() * 12000);
+
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Space' && !e.target.closest('input,textarea')) {
+                e.preventDefault();
+                const brazier = document.querySelector('[title="Tend the Trench Brazier"]');
+                if (brazier) brazier.click();
+            }
+        });
+    }
+
+    init();
+    </script>
+</body>
+</html>
