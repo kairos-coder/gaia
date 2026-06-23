@@ -70,45 +70,70 @@ class GaiaSceneLoader {
     // ═══════════════════════════════════
 
     async load(sceneUrl) {
-        const resp = await fetch(sceneUrl);
-        if (!resp.ok) throw new Error(`GaiaSceneLoader: ${resp.status} loading ${sceneUrl}`);
-        this.scene = await resp.json();
+    // Load materials FIRST
+    this.materials = { ...GaiaMason.MATERIALS };
+    await this._loadExternalMaterials();
+    
+    // Then load scene
+    const resp = await fetch(sceneUrl);
+    if (!resp.ok) throw new Error(`GaiaSceneLoader: ${resp.status} loading ${sceneUrl}`);
+    this.scene = await resp.json();
 
-        // Merge materials
-        this.materials = { ...GaiaMason.MATERIALS };
-        if (this.scene.materials) Object.assign(this.materials, this.scene.materials);
+    // Merge scene-specific materials
+    if (this.scene.materials) {
+        Object.assign(this.materials, this.scene.materials);
+    }
 
-        // Clear
-        this.container.innerHTML = '';
-        this.builtElements = [];
-        this.canvasLayers = {};
-        this.interactiveZones = [];
+    // Clear and build
+    this.container.innerHTML = '';
+    this.builtElements = [];
+    this.canvasLayers = {};
+    this.interactiveZones = [];
 
-        // Set container size
-        if (this.scene.size) {
-            this.container.style.width = this.scene.size.w + 'px';
-            this.container.style.height = this.scene.size.h + 'px';
+    if (this.scene.size) {
+        this.container.style.width = this.scene.size.w + 'px';
+        this.container.style.height = this.scene.size.h + 'px';
+    }
+
+    this.mason = new GaiaMason(this.container.id);
+
+    // Build layers
+    if (this.scene.background) this._buildBackground();
+    if (this.scene.room) this._buildRoom();
+    if (this.scene.altarRing) this._buildAltarRing();
+    if (this.scene.hearth) this._buildHearth();
+    if (this.scene.floor) this._buildFloor();
+    if (this.scene.objects) this._buildObjects();
+    if (this.scene.inscriptions) this._buildInscriptions();
+    if (this.scene.exits) this._buildExits();
+    if (this.scene.atmosphere) this._buildAtmosphere();
+}
+
+async _loadExternalMaterials() {
+    // Try multiple paths for olympian-materials.json
+    const paths = [
+        '../json/olympian-materials.json',
+        'json/olympian-materials.json',
+        './json/olympian-materials.json',
+    ];
+    
+    for (const path of paths) {
+        try {
+            const resp = await fetch(path);
+            if (resp.ok) {
+                const data = await resp.json();
+                for (const category of Object.values(data)) {
+                    if (typeof category === 'object' && !Array.isArray(category)) {
+                        Object.assign(this.materials, category);
+                    }
+                }
+                return; // Success — stop trying
+            }
+        } catch(e) {
+            continue;
         }
-
-        // Create mason
-        this.mason = new GaiaMason(this.container.id);
-
-        // Build layers in order: background → room → altarRing → hearth → floor → objects → inscriptions → exits → atmosphere
-        if (this.scene.background) this._buildBackground();
-        if (this.scene.room) this._buildRoom();
-        if (this.scene.altarRing) this._buildAltarRing();
-        if (this.scene.hearth) this._buildHearth();
-        if (this.scene.floor) this._buildFloor();
-        if (this.scene.objects) this._buildObjects();
-        if (this.scene.inscriptions) this._buildInscriptions();
-        if (this.scene.exits) this._buildExits();
-        if (this.scene.atmosphere) this._buildAtmosphere();
     }
-
-    setState(state) {
-        this.state = state;
-        this._refreshBindings();
-    }
+}
 
     // ═══════════════════════════════════
     // MATERIAL RESOLVER
