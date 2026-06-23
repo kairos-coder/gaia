@@ -493,6 +493,8 @@ function buildTreeFromJSON(mason, variantName, treeX, treeY, overrides = {}) {
 function buildGrove() {
     const groveLayer = document.getElementById('grove-layer');
     groveLayer.innerHTML = '';
+    groveLayer.style.height = fieldH + 'px';
+    groveLayer.style.width = fieldW + 'px';
     const m = new GaiaMason('grove-layer');
     
     // Register Demeter-specific materials
