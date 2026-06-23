@@ -23,7 +23,48 @@ class GaiaSceneLoader {
         this.onAltarInteract = null;
         this.onExit = null;
     }
-
+    async loadFromIndex(indexUrl, sceneName) {
+    // Fetch the index
+    const resp = await fetch(indexUrl);
+    if (!resp.ok) throw new Error(`GaiaSceneLoader: ${resp.status} loading index`);
+    const index = await resp.json();
+    
+    // Load materials first
+    const matFile = index.files?.materials?.['olympian-materials.json'];
+    if (matFile) {
+        try {
+            const matResp = await fetch(matFile.path);
+            if (matResp.ok) {
+                const extMats = await matResp.json();
+                for (const category of Object.values(extMats)) {
+                    if (typeof category === 'object') {
+                        Object.assign(this.materials, category);
+                    }
+                }
+            }
+        } catch (e) {
+            console.warn('GaiaSceneLoader: could not load materials from index');
+        }
+    }
+    
+    // Find the scene path
+    let scenePath = null;
+    
+    // Search all categories
+    for (const [category, files] of Object.entries(index.files || {})) {
+        if (files[sceneName]) {
+            scenePath = files[sceneName].path;
+            break;
+        }
+    }
+    
+    if (!scenePath) {
+        throw new Error(`GaiaSceneLoader: scene "${sceneName}" not found in index`);
+    }
+    
+    // Load the scene
+    return this.load(scenePath);
+}
     // ═══════════════════════════════════
     // LOAD
     // ═══════════════════════════════════
