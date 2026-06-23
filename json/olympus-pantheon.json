@@ -1,0 +1,51 @@
+{
+  "name": "The Pantheon Ledge",
+  "description": "Twelve doorways carved into the mountainside. Each leads to a god's realm. The doors are always open.",
+  "size": { "w": 860, "h": 260 },
+  "room": {
+    "farWall": { "material": "marble_white" },
+    "leftWall": { "material": "marble_white", "width": 20 },
+    "rightWall": { "material": "marble_white", "width": 20 },
+    "floor": { "material": "marble_veined", "y": 200, "height": 60, "perspective": 8 }
+  },
+  "objects": [
+    { "type": "doorway", "x": 30, "y": 15, "god": "zeus", "label": "ZEUS", "glyph": "⚡", "color": "#ffd700", "mat": "storm_grey", "link": "realm.html" },
+    { "type": "doorway", "x": 155, "y": 15, "god": "hera", "label": "HERA", "glyph": "🦚", "color": "#4a8aaa", "mat": "peacock_blue", "link": "../hera/realm.html" },
+    { "type": "doorway", "x": 280, "y": 15, "god": "poseidon", "label": "POSEIDON", "glyph": "🌊", "color": "#3a6b8c", "mat": "water_pontus", "link": "../poseidon/realm.html" },
+    { "type": "doorway", "x": 405, "y": 15, "god": "demeter", "label": "DEMETER", "glyph": "🌾", "color": "#c8a848", "mat": "wheat_gold", "link": "../demeter/realm.html" },
+    { "type": "doorway", "x": 530, "y": 15, "god": "apollo", "label": "APOLLO", "glyph": "☀️", "color": "#ffcc44", "mat": "gold_leaf", "link": "../apollo/realm.html" },
+    { "type": "doorway", "x": 655, "y": 15, "god": "artemis", "label": "ARTEMIS", "glyph": "🌙", "color": "#c8d8e8", "mat": "silver_frost", "link": "../artemis/realm.html" },
+    { "type": "doorway", "x": 30, "y": 120, "god": "ares", "label": "ARES", "glyph": "⚔️", "color": "#cc6644", "mat": "iron_dark", "link": "../ares/realm.html" },
+    { "type": "doorway", "x": 155, "y": 120, "god": "aphrodite", "label": "APHRODITE", "glyph": "💋", "color": "#d8a0b8", "mat": "rose_quartz", "link": "../aphrodite/realm.html" },
+    { "type": "doorway", "x": 280, "y": 120, "god": "athena", "label": "ATHENA", "glyph": "🦉", "color": "#d8d0c8", "mat": "marble_white", "link": "../athena/realm.html" },
+    { "type": "doorway", "x": 405, "y": 120, "god": "hephaestus", "label": "HEPHAESTUS", "glyph": "🔨", "color": "#ff8833", "mat": "bronze_weathered", "link": "../hephaestus/realm.html" },
+    { "type": "doorway", "x": 530, "y": 120, "god": "hermes", "label": "HERMES", "glyph": "🪄", "color": "#a8b8c8", "mat": "quicksilver", "link": "../hermes/realm.html" },
+    { "type": "doorway", "x": 655, "y": 120, "god": "hestia", "label": "HESTIA", "glyph": "🔥", "color": "#ffaa44", "mat": "marble_veined", "link": "../hestia/realm.html" }
+  ],
+  "inscriptions": [
+    {
+      "text": "THE PANTHEON · ALL DOORS ARE OPEN",
+      "x": 240,
+      "y": 235,
+      "fontSize": 8,
+      "color": "rgba(201,168,76,0.4)",
+      "fontFamily": "'Cinzel',serif",
+      "z": 8
+    }
+  ],
+  "atmosphere": {
+    "lights": [
+      { "color": "#c9a84c", "radius": 350, "x": "50%", "y": "50%", "pulse": false, "z": 0 }
+    ]
+  },
+  "objectDefinitions": {
+    "doorway": {
+      "bounds": { "width": 100, "height": 85 },
+      "layers": [
+        { "type": "wall", "material": "storm_grey", "position": { "x": 10, "y": 10, "z": 6 }, "dimensions": { "width": 80, "height": 75 } },
+        { "type": "arch", "material": "gold_leaf", "position": { "x": 30, "y": 12, "z": 8 }, "dimensions": { "width": 40, "height": 55 }, "stoneCount": 9, "stoneDepth": 12 },
+        { "type": "wall", "material": "void_black", "position": { "x": 32, "y": 22, "z": 5 }, "dimensions": { "width": 36, "height": 48 } }
+      ]
+    }
+  }
+}
