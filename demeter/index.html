@@ -492,16 +492,9 @@ function buildTreeFromJSON(mason, variantName, treeX, treeY, overrides = {}) {
 // ── BUILD THE SACRED GROVE ──
 function buildGrove() {
     const groveLayer = document.getElementById('grove-layer');
-    const canvas = document.getElementById('fieldCanvas');
-    const groveW = canvas.clientWidth;
-    const groveH = canvas.clientHeight;
-    
     groveLayer.innerHTML = '';
-    groveLayer.style.height = groveH + 'px';
-    groveLayer.style.width = groveW + 'px';
-    
     const m = new GaiaMason('grove-layer');
-    // ... then replace all fieldW → groveW and fieldH → groveH in the rest of the function  
+    // ... rest unchanged, but remove groveLayer.style.height/width lines
     // Register Demeter-specific materials
     GaiaMason.MATERIALS['earth_dark'] = {
         chars: ['▓','░','▒','▓','░'], textColor:'#5a4a35', mortarColor:'#3d2f1f',
