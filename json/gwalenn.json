@@ -1,0 +1,157 @@
+{
+  "name": "Gwalenn de Olympia — The Olympian Haven",
+  "description": "The sacred ring at the peak of the celestial mountain. Twelve altars surround the central hearth. Ouranos arches overhead. Pontus flows beneath. Every god has a place here.",
+  "size": { "w": 860, "h": 600 },
+  "background": {
+    "type": "ouranos"
+  },
+  "altarRing": {
+    "centerX": 430,
+    "centerY": 290,
+    "radius": 210,
+    "hearthSize": 55,
+    "altars": [
+      {
+        "god": "zeus",
+        "name": "ZEUS",
+        "glyph": "⚡",
+        "material": "storm_grey",
+        "glowColor": "#ffd700",
+        "interaction": { "label": "Altar of Zeus — King of Olympus", "action": "approach_altar" }
+      },
+      {
+        "god": "hera",
+        "name": "HERA",
+        "glyph": "🦚",
+        "material": "peacock_blue",
+        "glowColor": "#4a8aaa",
+        "interaction": { "label": "Altar of Hera — Queen of the Gods", "action": "approach_altar" }
+      },
+      {
+        "god": "poseidon",
+        "name": "POSEIDON",
+        "glyph": "🌊",
+        "material": "water_pontus",
+        "glowColor": "#3a6b8c",
+        "interaction": { "label": "Altar of Poseidon — Lord of the Seas", "action": "approach_altar" }
+      },
+      {
+        "god": "demeter",
+        "name": "DEMETER",
+        "glyph": "🌾",
+        "material": "wheat_gold",
+        "glowColor": "#c8a848",
+        "interaction": { "label": "Altar of Demeter — Goddess of the Harvest", "action": "approach_altar" }
+      },
+      {
+        "god": "apollo",
+        "name": "APOLLO",
+        "glyph": "☀️",
+        "material": "gold_leaf",
+        "glowColor": "#ffcc44",
+        "interaction": { "label": "Altar of Apollo — God of Light and Prophecy", "action": "approach_altar" }
+      },
+      {
+        "god": "artemis",
+        "name": "ARTEMIS",
+        "glyph": "🌙",
+        "material": "silver_frost",
+        "glowColor": "#c8d8e8",
+        "interaction": { "label": "Altar of Artemis — Goddess of the Hunt", "action": "approach_altar" }
+      },
+      {
+        "god": "ares",
+        "name": "ARES",
+        "glyph": "⚔️",
+        "material": "iron_dark",
+        "glowColor": "#cc6644",
+        "interaction": { "label": "Altar of Ares — God of War", "action": "approach_altar" }
+      },
+      {
+        "god": "aphrodite",
+        "name": "APHRODITE",
+        "glyph": "💋",
+        "material": "rose_quartz",
+        "glowColor": "#d8a0b8",
+        "interaction": { "label": "Altar of Aphrodite — Goddess of Love", "action": "approach_altar" }
+      },
+      {
+        "god": "athena",
+        "name": "ATHENA",
+        "glyph": "🦉",
+        "material": "marble_white",
+        "glowColor": "#d8d0c8",
+        "interaction": { "label": "Altar of Athena — Goddess of Wisdom", "action": "approach_altar" }
+      },
+      {
+        "god": "hephaestus",
+        "name": "HEPHAESTUS",
+        "glyph": "🔨",
+        "material": "bronze_weathered",
+        "glowColor": "#ff8833",
+        "interaction": { "label": "Altar of Hephaestus — God of the Forge", "action": "approach_altar" }
+      },
+      {
+        "god": "hermes",
+        "name": "HERMES",
+        "glyph": "🪄",
+        "material": "quicksilver",
+        "glowColor": "#a8b8c8",
+        "interaction": { "label": "Altar of Hermes — Messenger of the Gods", "action": "approach_altar" }
+      },
+      {
+        "god": "hestia",
+        "name": "HESTIA",
+        "glyph": "🔥",
+        "material": "marble_veined",
+        "glowColor": "#ffaa44",
+        "interaction": { "label": "Altar of Hestia — Keeper of the Hearth", "action": "approach_altar" }
+      }
+    ]
+  },
+  "hearth": {
+    "x": 430,
+    "y": 290,
+    "size": 55,
+    "inscription": "THE FIRE HOLDS"
+  },
+  "floor": {
+    "material": "marble_veined",
+    "y": 420,
+    "height": 180,
+    "perspective": 10
+  },
+  "inscriptions": [
+    {
+      "text": "ΓΒΑΛΕΝΝ ΔΕ ΟΛΨΜΠΙΑ",
+      "x": 260,
+      "y": 530,
+      "fontSize": 10,
+      "color": "rgba(212,175,55,0.35)",
+      "fontFamily": "'Cinzel',serif",
+      "z": 8
+    },
+    {
+      "text": "THE OLYMPIAN HAVEN",
+      "x": 310,
+      "y": 545,
+      "fontSize": 7,
+      "color": "rgba(200,180,150,0.3)",
+      "fontFamily": "'Cinzel',serif",
+      "z": 8
+    }
+  ],
+  "exits": [
+    {
+      "direction": "south",
+      "target": "index.html",
+      "param": "gwalenn",
+      "label": "Return to GAIA"
+    }
+  ],
+  "atmosphere": {
+    "lights": [
+      { "color": "#ffd700", "radius": 160, "x": "50%", "y": "48%", "pulse": true, "z": 0 }
+    ]
+  }
+}
