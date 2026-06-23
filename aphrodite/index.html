@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>APHRODITE · Temple of Love</title>
+    <link href="https://fonts.googleapis.com/css2?family=UnifrakturMaguntia&family=Cinzel:wght@400;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script type="importmap">
         { "imports": { "@xenova/transformers": "https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.2/dist/transformers.min.js" } }
@@ -22,144 +23,144 @@
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
-            background: var(--obsidian);
+            background: #0e0b0f;
             font-family: var(--font-body);
             color: var(--ivory);
             min-height: 100vh;
             overflow-x: hidden;
+            display: flex; flex-direction: column; align-items: center;
+            background-image:
+                radial-gradient(ellipse at 50% 0%, rgba(200,78,104,0.08) 0%, transparent 55%),
+                radial-gradient(ellipse at 50% 100%, rgba(74,42,74,0.9) 0%, transparent 50%),
+                radial-gradient(ellipse at 50% 50%, rgba(240,216,224,0.02) 0%, transparent 60%);
         }
 
-        body::before {
-            content: '';
-            position: fixed; inset: 0; pointer-events: none; z-index: 0;
-            background:
-                radial-gradient(ellipse 60% 40% at 50% 0%, rgba(160,56,80,0.15) 0%, transparent 70%),
-                radial-gradient(ellipse 40% 60% at 80% 100%, rgba(200,148,58,0.06) 0%, transparent 60%),
-                radial-gradient(ellipse 30% 40% at 20% 60%, rgba(120,42,64,0.08) 0%, transparent 50%);
+        #temple-container {
+            position: relative;
+            width: 100%; max-width: 900px;
+            margin: 0 auto;
         }
 
-        body::after {
-            content: '';
-            position: fixed; top: 0; left: 0; right: 0; height: 4px;
-            background: linear-gradient(90deg, transparent, var(--rose-deep), var(--gold), var(--rose-deep), transparent);
-            z-index: 100;
+        #mason-layer {
+            position: relative;
+            width: 100%;
+            min-height: 900px;
+            background: linear-gradient(180deg, #1a0a18 0%, #2a1a28 50%, #1a0a18 100%);
+            border-left: 4px solid #3a2a38;
+            border-right: 4px solid #3a2a38;
+            box-shadow: 0 0 120px rgba(200,78,104,0.08), 0 0 240px rgba(0,0,0,0.5);
+            overflow: hidden;
         }
 
-        .container { position: relative; z-index: 1; max-width: 1200px; margin: 0 auto; padding: 2rem; }
-
-        /* ── HERO IMAGE ── */
-        .shrine-hero {
-            position: relative; width: 100%; height: 320px; overflow: hidden;
-            border-radius: 8px; margin-bottom: 1.5rem;
+        #ouranos-canvas {
+            position: absolute; top: 0; left: 0;
+            width: 100%; height: 280px;
+            z-index: 1; pointer-events: none;
         }
-        .shrine-hero img {
-            width: 100%; height: 100%; object-fit: cover; object-position: center 40%;
-            display: block; transition: transform 8s ease;
-        }
-        .shrine-hero:hover img { transform: scale(1.04); }
-        .shrine-hero-overlay {
-            position: absolute; inset: 0;
-            background: linear-gradient(to bottom, rgba(14,11,15,0.1) 0%, rgba(14,11,15,0.7) 75%, rgba(14,11,15,1) 100%);
-        }
-        .shrine-hero-label {
-            position: absolute; bottom: 1.2rem; left: 50%; transform: translateX(-50%);
-            font-family: var(--font-mono); font-size: 0.45rem; letter-spacing: 4px;
-            color: var(--gold-pale); opacity: 0.7; text-transform: uppercase; white-space: nowrap;
+        #pontus-canvas {
+            position: absolute; bottom: 0; left: 0;
+            width: 100%; height: 200px;
+            z-index: 1; pointer-events: none;
         }
 
-        /* ── PEDIMENT ── */
-        .pediment {
-            text-align: center; margin-bottom: 1.5rem; padding-bottom: 1.5rem; position: relative;
+        .content-layer {
+            position: relative; z-index: 10;
+            padding: 2rem 1.5rem;
         }
-        .pediment::after {
-            content: ''; position: absolute; bottom: 0; left: 10%; right: 10%; height: 1px;
-            background: linear-gradient(90deg, transparent, var(--gold), var(--rose-bright), var(--gold), transparent);
+
+        .zone { cursor: pointer; transition: filter 0.3s, transform 0.3s; }
+        .zone:hover { filter: brightness(1.3); z-index: 50 !important; }
+        .zone:active { transform: scale(0.94); transition: transform 0.1s; }
+
+        #toast {
+            position: fixed; bottom: 1.5rem; left: 50%; transform: translateX(-50%);
+            background: rgba(26,10,24,0.95); border: 1px solid #c84e68;
+            border-radius: 6px; padding: 0.5rem 1.2rem;
+            font-family: 'Georgia',serif; font-size: 0.78rem;
+            z-index: 200; opacity: 0; transition: opacity 0.35s;
+            pointer-events: none; text-align: center; max-width: 420px; line-height: 1.4;
+            box-shadow: 0 6px 24px rgba(0,0,0,0.6); white-space: pre-line;
+            color: #f0d8e0;
         }
+        #toast.show { opacity: 1; }
+
+        @keyframes starTwinkle {
+            0%,100% { opacity: 0.15; }
+            50% { opacity: 0.6; }
+        }
+        @keyframes waveFlow {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+        @keyframes doorGlow {
+            0%,100% { box-shadow: 0 0 10px rgba(200,78,104,0.2), inset 0 0 20px rgba(200,78,104,0.1); }
+            50% { box-shadow: 0 0 25px rgba(200,78,104,0.5), inset 0 0 40px rgba(200,78,104,0.25); }
+        }
+        @keyframes roseShimmer {
+            0%,100% { text-shadow: 0 0 4px rgba(200,78,104,0.2); }
+            50% { text-shadow: 0 0 16px rgba(200,78,104,0.5); }
+        }
+
+        /* ── CONTENT STYLES ── */
+        .pediment { text-align: center; margin-bottom: 1rem; }
         .temple-name {
-            font-family: var(--font-temple); font-size: clamp(2rem, 5vw, 3.5rem); font-weight: 900;
+            font-family: var(--font-temple); font-size: clamp(1.8rem, 4vw, 2.8rem); font-weight: 900;
             letter-spacing: 6px; color: var(--rose-bright);
             text-shadow: 0 0 40px rgba(200,78,104,0.4), 0 0 80px rgba(200,78,104,0.15);
             margin-bottom: 0.3rem;
         }
         .temple-subtitle {
-            font-family: var(--font-body); font-style: italic; font-size: 0.95rem;
+            font-family: var(--font-body); font-style: italic; font-size: 0.85rem;
             color: var(--gold-pale); letter-spacing: 3px; opacity: 0.8;
         }
 
-        /* ── TELOS HEADER ── */
         .telos-bar {
             background: rgba(200,148,58,0.05); border: 1px solid rgba(200,148,58,0.25);
             border-left: 3px solid var(--gold); border-radius: 2px;
-            padding: 0.5rem 1rem; margin-bottom: 1.5rem;
-            display: flex; align-items: center; gap: 0.6rem;
+            padding: 0.4rem 0.8rem; margin-bottom: 1rem;
+            display: flex; align-items: center; gap: 0.5rem;
         }
-        .telos-bar .telos-label {
-            font-family: var(--font-mono); font-size: 0.4rem; letter-spacing: 3px;
+        .telos-label {
+            font-family: var(--font-mono); font-size: 0.38rem; letter-spacing: 3px;
             color: var(--gold-pale); text-transform: uppercase; white-space: nowrap;
         }
-        .telos-bar .telos-text {
-            font-family: var(--font-body); font-size: 0.8rem; color: var(--ivory);
+        .telos-text {
+            font-family: var(--font-body); font-size: 0.75rem; color: var(--ivory);
             font-style: italic; flex: 1;
         }
-        .telos-bar .telos-text.empty { color: var(--muted); }
+        .telos-text.empty { color: var(--muted); }
 
-        /* ── MYTH PANEL ── */
-        .myth-panel {
-            display: grid; grid-template-columns: 240px 1fr; gap: 1.2rem;
-            margin-bottom: 1.5rem; align-items: start;
-        }
-        .myth-image {
-            border: 1px solid var(--gold); border-radius: 6px; overflow: hidden;
-            box-shadow: 0 0 24px rgba(200,148,58,0.15); position: relative;
-        }
-        .myth-image img { width: 100%; display: block; transition: transform 0.6s ease; }
-        .myth-image:hover img { transform: scale(1.03); }
-        .myth-image-caption {
-            position: absolute; bottom: 0; left: 0; right: 0;
-            padding: 0.5rem; background: linear-gradient(to top, rgba(14,11,15,0.9), transparent);
-            font-family: var(--font-mono); font-size: 0.35rem; letter-spacing: 2px;
-            color: var(--gold-pale); text-align: center;
-        }
-        .myth-right { display: flex; flex-direction: column; gap: 0.8rem; }
-
-        /* ── ORACLE STRIP ── */
         .oracle-strip {
-            display: flex; justify-content: center; gap: 2rem; flex-wrap: wrap;
-            padding: 0.8rem 0; border-top: 1px solid rgba(74,46,66,0.4);
+            display: flex; justify-content: center; gap: 1.5rem; flex-wrap: wrap;
+            padding: 0.6rem 0; margin-bottom: 1rem;
+            border-top: 1px solid rgba(74,46,66,0.4);
             border-bottom: 1px solid rgba(74,46,66,0.4);
         }
         .oracle-stat { text-align: center; }
-        .oracle-stat-value { font-family: var(--font-temple); font-size: 1.2rem; color: var(--rose-bright); display: block; }
-        .oracle-stat-label { font-family: var(--font-mono); font-size: 0.4rem; color: var(--muted); letter-spacing: 2px; margin-top: 0.2rem; display: block; }
+        .oracle-stat-value { font-family: var(--font-temple); font-size: 1rem; color: var(--rose-bright); display: block; }
+        .oracle-stat-label { font-family: var(--font-mono); font-size: 0.35rem; color: var(--muted); letter-spacing: 2px; margin-top: 0.15rem; display: block; }
 
-        /* ── TOKEN FRIEZE ── */
         .frieze {
-            background: linear-gradient(135deg, var(--stone), var(--altar));
-            border: 1px solid var(--border); border-radius: 2px; padding: 1rem 1.2rem; margin-bottom: 1.5rem;
-        }
-        .frieze::before {
-            content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
-            background: linear-gradient(90deg, transparent, var(--rose-deep), transparent);
+            background: rgba(38,28,36,0.6); border: 1px solid var(--border); border-radius: 2px;
+            padding: 0.8rem 1rem; margin-bottom: 1rem;
         }
         .frieze-title {
-            font-family: var(--font-mono); font-size: 0.4rem; letter-spacing: 3px;
-            color: var(--muted); margin-bottom: 0.6rem; text-transform: uppercase;
+            font-family: var(--font-mono); font-size: 0.38rem; letter-spacing: 3px;
+            color: var(--muted); margin-bottom: 0.5rem; text-transform: uppercase;
         }
-        .token-cloud { display: flex; flex-wrap: wrap; gap: 0.3rem; min-height: 2rem; }
+        .token-cloud { display: flex; flex-wrap: wrap; gap: 0.25rem; min-height: 1.5rem; }
         .token-chip {
-            font-family: var(--font-body); font-style: italic; font-size: 0.7rem;
-            padding: 0.12rem 0.5rem; border-radius: 1px;
+            font-family: var(--font-body); font-style: italic; font-size: 0.65rem;
+            padding: 0.1rem 0.4rem; border-radius: 1px;
             background: rgba(160,56,80,0.12); color: var(--rose-light);
             border: 1px solid rgba(160,56,80,0.25); transition: all 0.2s;
         }
-        .token-chip:hover { background: rgba(160,56,80,0.25); border-color: var(--rose); }
         .token-chip.counter { background: rgba(200,148,58,0.1); color: var(--gold-pale); border-color: rgba(200,148,58,0.2); }
 
-        /* ── CONTROLS ── */
-        .ritual-controls { display: flex; gap: 0.6rem; justify-content: center; flex-wrap: wrap; margin-bottom: 1.5rem; }
+        .ritual-controls { display: flex; gap: 0.5rem; justify-content: center; flex-wrap: wrap; margin-bottom: 1rem; }
         .btn {
-            font-family: var(--font-mono); font-size: 0.5rem; letter-spacing: 2px; text-transform: uppercase;
-            padding: 0.5rem 1.2rem; border-radius: 1px; cursor: pointer;
+            font-family: var(--font-mono); font-size: 0.45rem; letter-spacing: 2px; text-transform: uppercase;
+            padding: 0.4rem 1rem; border-radius: 1px; cursor: pointer;
             border: 1px solid var(--border); background: var(--stone); color: var(--muted);
             transition: all 0.25s;
         }
@@ -172,17 +173,12 @@
         .spin { display: inline-block; animation: spin 0.8s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
 
-        /* ── PAIRS SANCTUM ── */
-        .sanctum-title {
-            font-family: var(--font-body); font-style: italic; font-size: 1rem;
-            color: var(--gold-pale); letter-spacing: 2px; margin-bottom: 1rem; text-align: center; opacity: 0.7;
-        }
         .pairs-grid {
-            display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 0.8rem; margin-bottom: 1.5rem;
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 0.6rem; margin-bottom: 1rem;
         }
         .pair-card {
             background: linear-gradient(160deg, var(--stone) 0%, var(--altar) 100%);
-            border: 1px solid var(--border); border-radius: 2px; padding: 1rem; position: relative;
+            border: 1px solid var(--border); border-radius: 2px; padding: 0.8rem; position: relative;
             transition: all 0.3s; animation: cardRise 0.4s ease both;
         }
         @keyframes cardRise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
@@ -192,106 +188,80 @@
         }
         .pair-card.counter-domain::before { background: linear-gradient(90deg, var(--rose-deep), var(--gold), var(--rose-deep)); }
         .pair-card:hover { border-color: var(--rose); transform: translateY(-2px); box-shadow: 0 8px 32px rgba(160,56,80,0.15); }
-        .pair-union { display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.6rem; }
-        .pair-word { font-family: var(--font-body); font-size: 1.1rem; font-style: italic; color: var(--rose-light); flex: 1; }
+        .pair-union { display: flex; align-items: center; gap: 0.4rem; margin-bottom: 0.4rem; }
+        .pair-word { font-family: var(--font-body); font-size: 0.9rem; font-style: italic; color: var(--rose-light); flex: 1; }
         .pair-word.b { text-align: right; color: var(--ivory); }
-        .pair-connector { font-family: var(--font-temple); font-size: 0.55rem; color: var(--rose); letter-spacing: 2px; flex-shrink: 0; }
+        .pair-connector { font-family: var(--font-temple); font-size: 0.5rem; color: var(--rose); letter-spacing: 2px; flex-shrink: 0; }
         .pair-counter-badge {
-            font-family: var(--font-mono); font-size: 0.38rem; letter-spacing: 2px; color: var(--gold);
-            border: 1px solid rgba(200,148,58,0.3); padding: 0.1rem 0.35rem; margin-bottom: 0.5rem; display: inline-block; text-transform: uppercase;
+            font-family: var(--font-mono); font-size: 0.35rem; letter-spacing: 2px; color: var(--gold);
+            border: 1px solid rgba(200,148,58,0.3); padding: 0.08rem 0.3rem; margin-bottom: 0.4rem; display: inline-block; text-transform: uppercase;
         }
         .pair-type-badge {
-            font-family: var(--font-mono); font-size: 0.38rem; letter-spacing: 2px; color: var(--muted);
-            border: 1px solid rgba(74,46,66,0.5); padding: 0.1rem 0.35rem; margin-bottom: 0.5rem; display: inline-block; margin-left: 0.3rem;
+            font-family: var(--font-mono); font-size: 0.35rem; letter-spacing: 2px; color: var(--muted);
+            border: 1px solid rgba(74,46,66,0.5); padding: 0.08rem 0.3rem; margin-bottom: 0.4rem; display: inline-block; margin-left: 0.2rem;
         }
-        .pair-scores { display: flex; gap: 1rem; margin-top: 0.6rem; padding-top: 0.5rem; border-top: 1px solid rgba(74,46,66,0.4); }
+        .pair-scores { display: flex; gap: 0.8rem; margin-top: 0.4rem; padding-top: 0.4rem; border-top: 1px solid rgba(74,46,66,0.4); }
         .pair-score-item { flex: 1; text-align: center; }
-        .pair-score-value { font-family: var(--font-temple); font-size: 0.9rem; display: block; }
-        .pair-score-label { font-family: var(--font-mono); font-size: 0.35rem; color: var(--muted); letter-spacing: 1px; display: block; margin-top: 0.1rem; text-transform: uppercase; }
+        .pair-score-value { font-family: var(--font-temple); font-size: 0.75rem; display: block; }
+        .pair-score-label { font-family: var(--font-mono); font-size: 0.32rem; color: var(--muted); letter-spacing: 1px; display: block; margin-top: 0.08rem; text-transform: uppercase; }
         .affinity-high { color: var(--rose-bright); }
         .affinity-med  { color: var(--rose); }
         .affinity-low  { color: var(--muted); }
         .tension-high { color: var(--gold); }
         .tension-low  { color: var(--muted); }
-        .empty-sanctum {
-            grid-column: 1 / -1; text-align: center; padding: 3rem 2rem; color: var(--muted);
-        }
-        .empty-sanctum .empty-glyph { font-family: var(--font-temple); font-size: 2rem; color: var(--rose-deep); display: block; margin-bottom: 0.8rem; opacity: 0.4; }
-        .empty-sanctum p { font-style: italic; font-size: 0.8rem; line-height: 1.8; }
+        .empty-sanctum { grid-column: 1 / -1; text-align: center; padding: 2rem 1rem; color: var(--muted); }
+        .empty-sanctum .empty-glyph { font-family: var(--font-temple); font-size: 1.5rem; color: var(--rose-deep); display: block; margin-bottom: 0.5rem; opacity: 0.4; }
+        .empty-sanctum p { font-style: italic; font-size: 0.7rem; line-height: 1.6; }
 
-        /* ── SHRINE STRIP ── */
-        .shrine-strip { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; margin-bottom: 1.5rem; }
-        .shrine-strip-item {
-            border: 1px solid var(--border); border-radius: 4px; overflow: hidden;
-            position: relative; height: 150px; transition: border-color 0.3s, box-shadow 0.3s;
-        }
-        .shrine-strip-item img {
-            width: 100%; height: 100%; object-fit: cover; object-position: center top;
-            filter: brightness(0.7) saturate(0.85); transition: filter 0.4s, transform 0.5s;
-        }
-        .shrine-strip-item:hover { border-color: var(--gold); box-shadow: 0 0 16px rgba(200,148,58,0.18); }
-        .shrine-strip-item:hover img { filter: brightness(1) saturate(1.1); transform: scale(1.05); }
-        .shrine-strip-glyph {
-            position: absolute; bottom: 0; left: 0; right: 0;
-            padding: 0.5rem 0.4rem; background: linear-gradient(to top, rgba(14,11,15,0.88), transparent);
-            text-align: center; font-family: var(--font-mono); font-size: 0.35rem;
-            letter-spacing: 2px; color: var(--gold-pale); opacity: 0; transition: opacity 0.3s;
-        }
-        .shrine-strip-item:hover .shrine-strip-glyph { opacity: 1; }
-
-        /* ── LOG ── */
         .oracle-log {
             background: rgba(10, 7, 12, 0.8); border: 1px solid rgba(74,46,66,0.3); border-radius: 2px;
-            padding: 0.6rem; max-height: 100px; overflow-y: auto;
-            font-family: var(--font-mono); font-size: 0.45rem; color: var(--muted); line-height: 1.6;
+            padding: 0.5rem; max-height: 80px; overflow-y: auto;
+            font-family: var(--font-mono); font-size: 0.4rem; color: var(--muted); line-height: 1.5;
         }
-        .log-line { padding: 0.1rem 0; }
         .log-line.success { color: var(--rose-light); }
         .log-line.warn    { color: var(--gold-pale); }
         .log-line.err     { color: #e87878; }
 
+        /* ── DOORWAY TO REALM ── */
+        .doorway-container {
+            display: flex; justify-content: center; margin: 1.5rem 0;
+        }
+        .doorway-zone {
+            display: flex; flex-direction: column; align-items: center;
+            cursor: pointer; transition: all 0.3s;
+        }
+        .doorway-zone:hover .doorway-label {
+            color: var(--rose-bright);
+            text-shadow: 0 0 12px rgba(200,78,104,0.5);
+        }
+
         @media (max-width: 700px) {
-            .container { padding: 1.5rem 1rem; }
-            .myth-panel { grid-template-columns: 1fr; }
-            .myth-image { max-width: 240px; margin: 0 auto; }
+            .content-layer { padding: 1.5rem 1rem; }
             .pairs-grid { grid-template-columns: 1fr; }
-            .oracle-strip { gap: 1rem; }
-            .shrine-strip { grid-template-columns: repeat(3, 1fr); }
-            .shrine-hero { height: 220px; }
+            .oracle-strip { gap: 0.8rem; }
         }
     </style>
 </head>
 <body>
 
-<div class="container">
+<div id="temple-container">
+    <div id="mason-layer">
+        <canvas id="ouranos-canvas"></canvas>
+        <canvas id="pontus-canvas"></canvas>
+        <div class="content-layer">
+            <!-- ══ PEDIMENT ══ -->
+            <header class="pediment">
+                <div class="temple-name">APHRODITE</div>
+                <div class="temple-subtitle">She Who Binds — Temple of the Sacred Pair</div>
+            </header>
 
-    <!-- ══ HERO IMAGE ══ -->
-    <div class="shrine-hero">
-        <img src="assets/aphrodite-hero.jpg" alt="Aphrodite · Temple of Love" />
-        <div class="shrine-hero-overlay"></div>
-        <div class="shrine-hero-label">♀ she who binds · between hearts · between souls</div>
-    </div>
+            <!-- ══ TELOS ══ -->
+            <div class="telos-bar">
+                <span class="telos-label">🎯 ACTIVE TELOS</span>
+                <span class="telos-text empty" id="telosText">Loading...</span>
+            </div>
 
-    <!-- ══ PEDIMENT ══ -->
-    <header class="pediment">
-        <div class="temple-name">APHRODITE</div>
-        <div class="temple-subtitle">She Who Binds — Temple of the Sacred Pair</div>
-    </header>
-
-    <!-- ══ TELOS HEADER ══ -->
-    <div class="telos-bar">
-        <span class="telos-label">🎯 ACTIVE TELOS</span>
-        <span class="telos-text empty" id="telosText">Loading...</span>
-    </div>
-
-    <!-- ══ MYTH PANEL ══ -->
-    <div class="myth-panel">
-        <div class="myth-image">
-            <img src="assets/aphrodite-shrine.jpg" alt="Aphrodite · The Shrine" />
-            <div class="myth-image-caption">THE BINDER · ARCHITECT OF PAIRS</div>
-        </div>
-        <div class="myth-right">
-            <!-- ORACLE STRIP -->
+            <!-- ══ ORACLE STRIP ══ -->
             <div class="oracle-strip">
                 <div class="oracle-stat">
                     <span class="oracle-stat-value" id="tokenCount">—</span>
@@ -310,58 +280,51 @@
                     <span class="oracle-stat-label">Sent to Ares</span>
                 </div>
             </div>
+
+            <!-- ══ TOKEN FRIEZE ══ -->
+            <div class="frieze">
+                <div class="frieze-title">⟡ Claimed Tokens</div>
+                <div class="token-cloud" id="tokenCloud">
+                    <span style="font-style:italic; color:var(--muted); font-size:0.65rem;">Summon tokens from Hermes to begin the rite.</span>
+                </div>
+            </div>
+
+            <!-- ══ RITUAL CONTROLS ══ -->
+            <div class="ritual-controls">
+                <button class="btn primary" id="claimBtn">♀ Summon Tokens</button>
+                <button class="btn" id="pairBtn" disabled>⟡ Form Pairs</button>
+                <button class="btn gold" id="dispatchBtn" disabled>⚔ Send to Ares</button>
+                <button class="btn" id="clearBtn">✕ Clear Consumed</button>
+            </div>
+
+            <!-- ══ PAIRS SANCTUM ══ -->
+            <div class="pairs-grid" id="pairsGrid">
+                <div class="empty-sanctum">
+                    <span class="empty-glyph">♀</span>
+                    <p>The temple awaits.<br>Summon tokens, then perform the binding rite.</p>
+                </div>
+            </div>
+
+            <!-- ══ DOORWAY TO REALM ══ -->
+            <div class="doorway-container" id="doorwayContainer"></div>
+
+            <!-- ══ ORACLE LOG ══ -->
+            <div class="oracle-log" id="oracleLog">
+                <div class="log-line">♀ Aphrodite stirs. The temple is ready.</div>
+            </div>
         </div>
     </div>
-
-    <!-- ══ TOKEN FRIEZE ══ -->
-    <div class="frieze">
-        <div class="frieze-title">⟡ Claimed Tokens</div>
-        <div class="token-cloud" id="tokenCloud">
-            <span style="font-style:italic; color:var(--muted); font-size:0.7rem;">Summon tokens from Hermes to begin the rite.</span>
-        </div>
-    </div>
-
-    <!-- ══ RITUAL CONTROLS ══ -->
-    <div class="ritual-controls">
-        <button class="btn primary" id="claimBtn">♀ Summon Tokens</button>
-        <button class="btn" id="pairBtn" disabled>⟡ Form Pairs</button>
-        <button class="btn gold" id="dispatchBtn" disabled>⚔ Send to Ares</button>
-        <button class="btn" id="clearBtn">✕ Clear Consumed</button>
-    </div>
-
-    <!-- ══ PAIRS SANCTUM ══ -->
-    <div class="sanctum-title">The Sanctum of Pairs</div>
-    <div class="pairs-grid" id="pairsGrid">
-        <div class="empty-sanctum">
-            <span class="empty-glyph">♀</span>
-            <p>The temple awaits.<br>Summon tokens, then perform the binding rite.</p>
-        </div>
-    </div>
-
-    <!-- ══ SHRINE STRIP ══ -->
-    <div class="shrine-strip">
-        <div class="shrine-strip-item">
-            <img src="assets/aphrodite-chthonic.jpg" alt="Aphrodite · Chthonic" />
-            <div class="shrine-strip-glyph">CHTHONIC · DEPTHS · DESIRE</div>
-        </div>
-        <div class="shrine-strip-item">
-            <img src="assets/aphrodite-runic.jpg" alt="Aphrodite · Runic" />
-            <div class="shrine-strip-glyph">RUNIC · BINDING · UNION</div>
-        </div>
-        <div class="shrine-strip-item">
-            <img src="assets/aphrodite-cyber.jpg" alt="Aphrodite · Cyber" />
-            <div class="shrine-strip-glyph">CYBER · NETWORK · RESONANCE</div>
-        </div>
-    </div>
-
-    <!-- ══ ORACLE LOG ══ -->
-    <div class="oracle-log" id="oracleLog">
-        <div class="log-line">♀ Aphrodite stirs. The temple is ready.</div>
-    </div>
-
 </div>
 
+<div id="toast"></div>
+
+<script src="../js/gaia-mason.js"></script>
 <script type="module">
+// ═══════════════════════════════════════
+// APHRODITE · Temple of Love
+// Mason frame + ritual engine + doorway
+// ═══════════════════════════════════════
+
 const sb = window.supabase.createClient(
   'https://kzcucjcyxybypncbdbws.supabase.co',
   'sb_publishable_saeUHGocDah-T2_709M6Fg_g26JtLXw'
@@ -375,7 +338,236 @@ let embedder = null;
 let claimedTokens = [];
 let formedPairs = [];
 
-// ── MODEL ──────────────────────────────────────────
+// ── TOAST ──
+const toastEl = document.getElementById('toast');
+let toastTimer;
+function toast(msg, d = 2800) {
+    toastEl.textContent = msg; toastEl.classList.add('show');
+    clearTimeout(toastTimer); toastTimer = setTimeout(() => toastEl.classList.remove('show'), d);
+}
+
+// ── MASON FRAME ──
+function buildMasonFrame() {
+    const container = document.getElementById('mason-layer');
+    const m = new GaiaMason('mason-layer');
+
+    GaiaMason.MATERIALS['rose_quartz'] = {
+        chars: ['◆','◇','◆','◇','◆'], textColor:'#d8a0b8', mortarColor:'#b08098',
+        fontSize:22, lineHeight:0.5, letterSpacing:0, fontFamily:"'Georgia',serif", weathering:0.02
+    };
+    GaiaMason.MATERIALS['pearl_sheen'] = {
+        chars: ['◈','◇','◈','◇','◈'], textColor:'#f0e8e0', mortarColor:'#d8d0c8',
+        fontSize:20, lineHeight:0.5, letterSpacing:0, fontFamily:"'Georgia',serif", weathering:0
+    };
+    GaiaMason.MATERIALS['deep_rose'] = {
+        chars: ['▓','▒','░','▓','▒'], textColor:'#6a3050', mortarColor:'#4a1a35',
+        fontSize:34, lineHeight:0.5, letterSpacing:-2, fontFamily:"'Cinzel','Georgia',serif", weathering:0.1
+    };
+
+    // Left pillar
+    m.buildPillar({
+        ...GaiaMason.mat('rose_quartz'),
+        x: 15, y: 30, width: 28, height: 820, z: 3,
+        capital: true, capitalHeight: 24
+    });
+
+    // Right pillar
+    m.buildPillar({
+        ...GaiaMason.mat('rose_quartz'),
+        x: 857, y: 30, width: 28, height: 820, z: 3,
+        capital: true, capitalHeight: 24
+    });
+
+    // Top arch
+    m.buildArch({
+        chars: ['◈','◇','◈','◇','◈'],
+        textColor: '#f0e8e0', fontSize: 22,
+        fontFamily: "'Georgia',serif",
+        cx: 450, cy: 10, innerRadius: 420,
+        stoneCount: 29, stoneDepth: 22, z: 5,
+        keystoneChar: '◆', keystoneOversize: 1.8
+    });
+
+    // Temple floor
+    m.buildFloor({
+        ...GaiaMason.mat('deep_rose'),
+        x: 40, y: 840, width: 820, height: 60, z: 0,
+        perspectiveStrength: 4
+    });
+
+    // Inscriptions on pillars
+    m.buildInscription({
+        text: 'APHRODITE',
+        x: 2, y: 420, fontSize: 8,
+        color: 'rgba(216,160,184,0.25)',
+        fontFamily: "'Cinzel',serif", z: 8, rotation: -90
+    });
+    m.buildInscription({
+        text: 'CYTHEREA',
+        x: 870, y: 400, fontSize: 8,
+        color: 'rgba(216,160,184,0.25)',
+        fontFamily: "'Cinzel',serif", z: 8, rotation: 90
+    });
+
+    m.buildLight({ color: '#f0c0d8', radius: 100, x: 450, y: 450, pulse: true, z: 0 });
+
+    // ── DOORWAY TO REALM ──
+    const doorwayCx = 450, doorwayCy = 780;
+    m.buildArch({
+        chars: ['◈','◇','◈','◇'],
+        textColor: '#f0e8e0', fontSize: 18,
+        fontFamily: "'Georgia',serif",
+        cx: doorwayCx, cy: doorwayCy, innerRadius: 55,
+        stoneCount: 15, stoneDepth: 18, z: 10,
+        keystoneChar: '◆', keystoneOversize: 1.6
+    });
+
+    // Dark void inside doorway
+    const doorVoid = m.buildWall({
+        chars: [' '],
+        textColor: '#0a0806', mortarColor: '#0a0806',
+        fontSize: 10, lineHeight: 0.5, letterSpacing: 0,
+        fontFamily: 'monospace',
+        x: doorwayCx - 50, y: doorwayCy - 5,
+        width: 100, height: 70, z: 9
+    });
+    if (doorVoid) {
+        doorVoid.style.borderRadius = '55px 55px 0 0';
+        doorVoid.style.boxShadow = 'inset 0 0 35px rgba(200,78,104,0.4)';
+        doorVoid.style.animation = 'doorGlow 3s ease-in-out infinite';
+    }
+
+    // Doorway glow text
+    m.buildInscription({
+        text: 'ENTER THE',
+        x: doorwayCx - 42, y: doorwayCy - 30,
+        fontSize: 7, color: 'rgba(240,216,224,0.5)',
+        fontFamily: "'Cinzel',serif", z: 12
+    });
+    m.buildInscription({
+        text: 'SEA-FOAM TEMPLE',
+        x: doorwayCx - 62, y: doorwayCy - 18,
+        fontSize: 7, color: 'rgba(200,78,104,0.5)',
+        fontFamily: "'Cinzel',serif", z: 12,
+        animation: 'roseShimmer 3s ease-in-out infinite'
+    });
+
+    // Click zone for doorway
+    const doorwayZone = document.createElement('div');
+    doorwayZone.className = 'zone';
+    doorwayZone.title = 'Enter the Sea-Foam Temple';
+    doorwayZone.style.cssText = `
+        position: absolute; left: ${doorwayCx - 50}px; top: ${doorwayCy - 5}px;
+        width: 100px; height: 70px; z-index: 30; cursor: pointer;
+    `;
+    doorwayZone.addEventListener('click', () => {
+        toast('🕊️ You step through the threshold into the Sea-Foam Temple...');
+        setTimeout(() => { window.location.href = 'realm.html?from=index'; }, 1000);
+    });
+    container.appendChild(doorwayZone);
+
+    // Floor inscription near doorway
+    m.buildInscription({
+        text: 'BORN OF THE SEA FOAM  ·  CROWNED BY THE STARS',
+        x: 245, y: 860,
+        fontSize: 6, color: 'rgba(240,216,224,0.2)',
+        fontFamily: "'Cinzel',serif", z: 5
+    });
+
+    return m;
+}
+
+// ── OURANOS ──
+function setupOuranos() {
+    const canvas = document.getElementById('ouranos-canvas');
+    canvas.width = canvas.parentElement.clientWidth;
+    canvas.height = 280;
+    const ctx = canvas.getContext('2d');
+    const W = canvas.width, H = canvas.height;
+
+    const stars = Array.from({ length: 50 }, () => ({
+        x: Math.random() * W,
+        y: Math.random() * H * 0.7,
+        r: Math.random() * 1.2 + 0.2,
+        phase: Math.random() * Math.PI * 2,
+        speed: 0.5 + Math.random() * 1.5
+    }));
+
+    function draw() {
+        ctx.clearRect(0, 0, W, H);
+        const grad = ctx.createLinearGradient(0, 0, 0, H);
+        grad.addColorStop(0, 'rgba(10,5,15,0.9)');
+        grad.addColorStop(1, 'rgba(26,10,24,0.5)');
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, W, H);
+
+        ctx.strokeStyle = 'rgba(216,160,184,0.1)';
+        ctx.lineWidth = 1;
+        ctx.setLineDash([2, 8]);
+        ctx.beginPath();
+        ctx.arc(W / 2, H * 0.35, 110, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        const now = Date.now() * 0.001;
+        stars.forEach(s => {
+            const twinkle = 0.3 + 0.5 * Math.sin(now * s.speed + s.phase);
+            ctx.beginPath();
+            ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+            ctx.fillStyle = `rgba(255,220,240,${twinkle})`;
+            ctx.fill();
+        });
+
+        requestAnimationFrame(draw);
+    }
+    draw();
+}
+
+// ── PONTUS ──
+function setupPontus() {
+    const canvas = document.getElementById('pontus-canvas');
+    canvas.width = canvas.parentElement.clientWidth;
+    canvas.height = 200;
+    const ctx = canvas.getContext('2d');
+    const W = canvas.width, H = canvas.height;
+
+    const waveLayers = [
+        { speed: 0.01, amp: 12, color: 'rgba(80,40,70,0.5)', offset: 0 },
+        { speed: 0.014, amp: 8, color: 'rgba(100,50,80,0.4)', offset: 1 },
+        { speed: 0.008, amp: 16, color: 'rgba(60,30,55,0.3)', offset: 2 },
+        { speed: 0.018, amp: 5, color: 'rgba(220,180,200,0.25)', offset: 3 },
+    ];
+
+    function draw() {
+        ctx.clearRect(0, 0, W, H);
+        const grad = ctx.createLinearGradient(0, 0, 0, H);
+        grad.addColorStop(0, 'rgba(26,10,24,0.6)');
+        grad.addColorStop(1, 'rgba(5,2,5,0.95)');
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, W, H);
+
+        const now = Date.now() * 0.001;
+        waveLayers.forEach(layer => {
+            ctx.beginPath();
+            ctx.strokeStyle = layer.color;
+            ctx.lineWidth = 1.2;
+            const yBase = 20 + layer.offset * 35;
+            for (let x = 0; x <= W; x += 2) {
+                const y = yBase +
+                    Math.sin(x * 0.008 + now * layer.speed) * layer.amp +
+                    Math.sin(x * 0.016 + now * layer.speed * 0.5) * layer.amp * 0.35;
+                if (x === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+            }
+            ctx.stroke();
+        });
+
+        requestAnimationFrame(draw);
+    }
+    draw();
+}
+
+// ── RITUAL ENGINE ──
 async function loadModel() {
     try {
         embedder = await pipeline('feature-extraction', 'Xenova/all-MiniLM-L6-v2');
@@ -398,7 +590,6 @@ function cosineSim(a, b) {
     return (na && nb) ? dot / (Math.sqrt(na) * Math.sqrt(nb)) : 0;
 }
 
-// ── TELOS ──────────────────────────────────────────
 async function loadTelos() {
     const { data } = await sb.from('telos').select('statement').eq('is_active', true).maybeSingle();
     const el = document.getElementById('telosText');
@@ -408,7 +599,6 @@ async function loadTelos() {
     }
 }
 
-// ── CLAIM TOKENS ───────────────────────────────────
 async function claimTokens() {
     setBusy('claimBtn', '⟳ Summoning...');
     log('Summoning tokens from Hermes...');
@@ -442,7 +632,6 @@ async function claimTokens() {
     clearBusy('claimBtn', '♀ Summon Tokens');
 }
 
-// ── FORM PAIRS ─────────────────────────────────────
 async function formPairs() {
     if (claimedTokens.length < 2) { log('Need at least 2 tokens.', 'warn'); return; }
     setBusy('pairBtn', '⟳ Binding...');
@@ -492,7 +681,6 @@ async function formPairs() {
     clearBusy('pairBtn', '⟡ Form Pairs');
 }
 
-// ── DISPATCH TO ARES ────────────────────────────────
 async function dispatchToAres() {
     if (!formedPairs.length) return;
     setBusy('dispatchBtn', '⟳ Sending...');
@@ -512,18 +700,16 @@ async function dispatchToAres() {
     clearBusy('dispatchBtn', '⚔ Send to Ares');
 }
 
-// ── CLEAR CONSUMED ──────────────────────────────────
 async function clearConsumed() {
     const { error } = await sb.from('pairs').delete().eq('consumed', true);
     if (error) { log(`Clear failed: ${error.message}`, 'err'); return; }
     log('Consumed pairs cleared.', 'success');
 }
 
-// ── RENDER ──────────────────────────────────────────
 function renderTokenCloud() {
     const cloud = document.getElementById('tokenCloud');
     if (!claimedTokens.length) {
-        cloud.innerHTML = '<span style="font-style:italic;color:var(--muted);font-size:0.7rem;">No tokens claimed yet.</span>';
+        cloud.innerHTML = '<span style="font-style:italic;color:var(--muted);font-size:0.65rem;">No tokens claimed yet.</span>';
         return;
     }
     cloud.innerHTML = claimedTokens.map(t => {
@@ -561,7 +747,7 @@ function renderPairs() {
                     <span class="pair-score-label">Tension</span>
                 </div>
                 <div class="pair-score-item">
-                    <span class="pair-score-value" style="color:var(--muted);font-size:0.65rem;">${esc(p.domain_a || '·')}/${esc(p.domain_b || '·')}</span>
+                    <span class="pair-score-value" style="color:var(--muted);font-size:0.6rem;">${esc(p.domain_a || '·')}/${esc(p.domain_b || '·')}</span>
                     <span class="pair-score-label">Domains</span>
                 </div>
             </div>
@@ -575,7 +761,6 @@ function updateStats() {
     document.getElementById('counterCount').textContent = formedPairs.filter(p => p.counter_domain_pair).length || '—';
 }
 
-// ── UTILITIES ───────────────────────────────────────
 function log(msg, type = '') {
     const el = document.getElementById('oracleLog');
     const div = document.createElement('div');
@@ -596,7 +781,7 @@ async function archiveSelf() {
             title: 'APHRODITE · Temple of Love',
             type: 'olympian',
             content: document.documentElement.outerHTML,
-            description: 'Claims tokens from Hermes, forms semantic pairs, writes to pairs table for Ares',
+            description: 'Mason-framed ritual engine. Claims tokens from Hermes, forms semantic pairs, writes to pairs for Ares. Doorway to Sea-Foam Temple realm.',
             reads_from: ['tokens'],
             writes_to: ['pairs'],
             models_used: ['Xenova/all-MiniLM-L6-v2'],
@@ -606,12 +791,17 @@ async function archiveSelf() {
     } catch {}
 }
 
-// ── INIT ────────────────────────────────────────────
+// ── INIT ──
 function init() {
+    setupOuranos();
+    setupPontus();
+    buildMasonFrame();
+
     document.getElementById('claimBtn').onclick = claimTokens;
     document.getElementById('pairBtn').onclick = formPairs;
     document.getElementById('dispatchBtn').onclick = dispatchToAres;
     document.getElementById('clearBtn').onclick = clearConsumed;
+
     loadModel();
     loadTelos();
     setTimeout(archiveSelf, 4000);
