@@ -495,7 +495,73 @@ class GaiaMason {
         this.walls.push({ el, config, type: 'floor' });
         return el;
     }
+    // ═══════════════════════════════════
+    // VAULT (CEILING)
+    // ═══════════════════════════════════
 
+    buildVault(config = {}) {
+        const {
+            x = 100, y = -20, width = 600, height = 90, z = -1,
+            chars = ['⌢','⌣','~','⋅',' '],
+            textColor = '#2a2520',
+            fontSize = 15,
+            lineHeight = 0.85,
+            letterSpacing = 2,
+            fontFamily = "'Georgia','Times New Roman',serif",
+            ribs = [],
+        } = config;
+
+        const el = document.createElement('div');
+        el.className = 'gaia-vault';
+
+        const charW = fontSize * 0.5;
+        const perRow = Math.ceil(width / charW);
+        const rowH = fontSize * lineHeight;
+        const rows = Math.ceil(height / rowH);
+
+        let text = '';
+        for (let r = 0; r < rows; r++) {
+            const indent = Math.floor((rows - r) * 0.8);
+            text += ' '.repeat(Math.max(0, indent));
+            for (let c = 0; c < perRow - indent * 2; c++) {
+                text += chars[r % chars.length];
+            }
+            text += '\n';
+        }
+
+        el.textContent = text;
+
+        Object.assign(el.style, {
+            position: 'absolute',
+            left: x + 'px', top: y + 'px',
+            width: width + 'px', height: height + 'px',
+            zIndex: z,
+            fontFamily, fontSize: fontSize + 'px',
+            lineHeight, letterSpacing: letterSpacing + 'px',
+            color: textColor,
+            textAlign: 'center', whiteSpace: 'pre',
+            userSelect: 'none', overflow: 'hidden',
+            borderRadius: '50% 50% 0 0',
+        });
+
+        this.container.appendChild(el);
+        this.walls.push({ el, config, type: 'vault' });
+
+        for (const rib of ribs) {
+            const rEl = document.createElement('div');
+            Object.assign(rEl.style, {
+                position: 'absolute',
+                left: rib.x + 'px', top: (y + 8) + 'px',
+                width: (rib.depth || 6) + 'px', height: (height - 10) + 'px',
+                background: rib.color || '#3d362f',
+                zIndex: z + 1,
+                borderRadius: '3px 3px 0 0',
+            });
+            this.container.appendChild(rEl);
+        }
+
+        return el;
+    }
     // ═══════════════════════════════════
     // INSCRIPTION
     // ═══════════════════════════════════
