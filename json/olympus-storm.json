@@ -1,0 +1,41 @@
+{
+  "name": "The Storm Belt",
+  "description": "Clouds spiral around the upper peak. Lightning cracks the air. The wind carries the voices of oaths sworn and broken.",
+  "size": { "w": 860, "h": 140 },
+  "room": {
+    "farWall": { "material": "storm_grey" },
+    "leftWall": { "material": "storm_grey", "width": 30 },
+    "rightWall": { "material": "storm_grey", "width": 30 },
+    "floor": { "material": "marble_dark", "y": 100, "height": 40, "perspective": 5 }
+  },
+  "objects": [
+    { "type": "shattered_pillar", "x": 120, "y": 30 },
+    { "type": "shattered_pillar", "x": 620, "y": 30 },
+    { "type": "offering_bowl", "x": 380, "y": 55 }
+  ],
+  "inscriptions": [
+    {
+      "text": "THE STORM REMEMBERS EVERY OATH",
+      "x": 230,
+      "y": 110,
+      "fontSize": 7,
+      "color": "rgba(180,190,220,0.35)",
+      "fontFamily": "'Cinzel',serif",
+      "z": 6
+    }
+  ],
+  "atmosphere": {
+    "lights": [
+      { "color": "#8899bb", "radius": 200, "x": "50%", "y": "50%", "pulse": false, "z": 0 }
+    ]
+  },
+  "objectDefinitions": {
+    "shattered_pillar": {
+      "bounds": { "width": 50, "height": 90 },
+      "layers": [
+        { "type": "pillar", "material": "marble_veined", "position": { "x": 10, "y": 25, "z": 6 }, "dimensions": { "width": 28, "height": 65 } },
+        { "type": "wall", "material": "marble_veined", "position": { "x": 5, "y": 10, "z": 7 }, "dimensions": { "width": 38, "height": 20 } }
+      ]
+    }
+  }
+}
