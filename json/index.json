@@ -4,7 +4,7 @@
   "files": {
     "materials": {
       "olympian-materials.json": {
-        "path": "json/olympian-materials.json",
+        "path": "../json/olympian-materials.json",
         "description": "Divine palette — marble, gold, bronze, rose quartz, peacock blue, storm grey, obsidian, flames, water, void",
         "categories": ["stone", "metal", "sacred", "elemental"],
         "materialCount": 27
