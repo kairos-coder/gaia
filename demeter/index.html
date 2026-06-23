@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DEMETER — The Harvest Temple</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&family=Cinzel:wght@400;600&family=EB+Garamond:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&family=Cinzel:wght@400;600&family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=UnifrakturMaguntia&display=swap" rel="stylesheet">
     <style>
         :root {
             --gold: #c9a84c; --gold-bright: #f0d080; --gold-dim: #8b7332;
@@ -62,13 +62,28 @@
 
         /* FIELD ZONE */
         .field-zone { background:linear-gradient(180deg, #faf7ed, #f0ead5); border:1px solid rgba(150,130,80,0.25); border-top:2px solid #889966; border-radius:4px; overflow:hidden; position:relative; }
-        .field-header { display:flex; justify-content:space-between; align-items:center; padding:0.75rem 1.25rem; border-bottom:1px solid rgba(150,130,80,0.15); }
+        .field-header { display:flex; justify-content:space-between; align-items:center; padding:0.75rem 1.25rem; border-bottom:1px solid rgba(150,130,80,0.15); position:relative; z-index:20; background:rgba(250,247,237,0.95); }
         .field-title { font-family:'Cinzel Decorative',serif; font-size:0.85rem; letter-spacing:0.2em; color:#667744; }
         .field-meta { font-family:'Cinzel',serif; font-size:0.6rem; letter-spacing:0.15em; color:rgba(100,120,60,0.5); }
-        #fieldCanvas { width:100%; height:450px; display:block; }
-        .field-overlay { position:absolute; bottom:0; left:0; right:0; padding:0.8rem 1.5rem; background:linear-gradient(to top, rgba(245,240,224,0.95), transparent); pointer-events:none; }
+        #fieldCanvas { width:100%; height:450px; display:block; position:relative; z-index:5; }
+        .field-overlay { position:absolute; bottom:0; left:0; right:0; padding:0.8rem 1.5rem; background:linear-gradient(to top, rgba(245,240,224,0.95), transparent); pointer-events:none; z-index:10; }
         .field-poem { font-family:'EB Garamond',serif; font-size:0.85rem; font-style:italic; color:#6b5520; text-align:center; min-height:2rem; transition:opacity 0.8s; }
         .field-act { font-family:'Cinzel',serif; font-size:0.6rem; letter-spacing:0.25em; color:#8b7332; text-align:center; margin-bottom:0.3rem; }
+
+        /* GROVE LAYER — Mason-built trees behind/beside canvas */
+        #grove-layer { position:absolute; inset:0; z-index:2; pointer-events:none; }
+        #grove-layer .zone { pointer-events:auto; cursor:pointer; transition:filter 0.25s, transform 0.25s; }
+        #grove-layer .zone:hover { filter:brightness(1.25); z-index:50 !important; }
+        #grove-layer .zone:active { transform:scale(0.94); transition:transform 0.1s; }
+
+        @keyframes petalFall {
+            0% { transform: translateY(-20px) translateX(0) rotate(0deg); opacity: 0.7; }
+            100% { transform: translateY(80px) translateX(var(--px)) rotate(var(--pr)); opacity: 0; }
+        }
+        @keyframes groveSway {
+            0%,100% { transform: translateX(0); }
+            50% { transform: translateX(2px); }
+        }
 
         /* ARISTAEUS ZONE */
         .aristaeus-zone { background:linear-gradient(160deg, #faf7ed, #f5f0e0); border:1px solid rgba(180,150,80,0.25); border-top:2px solid #997733; border-radius:4px; overflow:hidden; }
@@ -137,7 +152,7 @@
     <!-- HEADER -->
     <div class="header">
         <h1 class="temple-title">🌾 DEMETER</h1>
-        <div class="subtitle">The Harvest Temple · Field of Bees · Sanctuary of Aristaeus</div>
+        <div class="subtitle">The Harvest Temple · Field of Bees · Sacred Grove of Aristaeus</div>
         <a href="../index.html" class="back-link">← Return to GAIA</a>
     </div>
 
@@ -151,12 +166,14 @@
         <div class="si"><span id="fieldCoherence" style="color:rgba(100,120,60,0.5)">Coherence: —</span></div>
     </div>
 
-    <!-- POLLINATION FIELD -->
-    <div class="field-zone">
+    <!-- POLLINATION FIELD + GROVE -->
+    <div class="field-zone" id="fieldZone">
         <div class="field-header">
             <span class="field-title">🌸 THE POLLINATION FIELD</span>
             <span class="field-meta" id="fieldMeta">Bees: — · Blooms: — · Honey: —</span>
         </div>
+        <!-- GROVE LAYER: Mason-built trees live here, behind/beside canvas -->
+        <div id="grove-layer"></div>
         <canvas id="fieldCanvas"></canvas>
         <div class="field-overlay">
             <div class="field-act" id="fieldAct">Act I — The Apprentice</div>
@@ -215,6 +232,8 @@
 
 <div id="toast"></div>
 
+<!-- Mason dependency -->
+<script src="../js/gaia-mason.js"></script>
 <script src="../js/gaia-celestial.js"></script>
 <script src="../js/gaia-suncalc.js"></script>
 <script src="../js/gaia-astronomy.js"></script>
@@ -223,6 +242,412 @@
 // ══════════════════════════════════════════════
 // DEMETER'S TEMPLE — THE POLLINATION ENGINE
 // ══════════════════════════════════════════════
+
+// ── TREE JSON (embedded from json/tree.json) ──
+const TREE_JSON = {
+  name: "Tree",
+  baseProperties: {
+    chars: ["▲","▼","◆","▲","▼"],
+    fontFamily: "monospace",
+    letterSpacing: -2,
+    weathering: 0.05
+  },
+  variants: {
+    sapling: {
+      textColor: "#4a7a3a", mortarColor: "#2d3a1f",
+      fontSize: 12, lineHeight: 0.45, width: 22, height: 50,
+      interaction: {
+        label: "Observe the sapling",
+        whispers: [
+          "Barely a season old. The bark is still smooth.",
+          "It leans toward the light. Patient.",
+          "A single leaf trembles. There is no wind."
+        ]
+      }
+    },
+    mature: {
+      textColor: "#3d5a2a", mortarColor: "#1a2a0f",
+      fontSize: 20, lineHeight: 0.4, width: 70, height: 140,
+      canopyChars: ["▲","◆","▲","▼","▲"],
+      canopyTextColor: "#4a7a3a", canopyMortarColor: "#2d3a1f",
+      canopyFontSize: 22, canopyWidth: 90, canopyHeight: 50,
+      canopyOffsetX: -10, canopyOffsetY: -40,
+      trunkChars: ["║","║","║"],
+      trunkTextColor: "#3d2b1f", trunkMortarColor: "#2a1f15",
+      trunkFontSize: 16, trunkWidth: 18, trunkHeight: 90,
+      trunkOffsetX: 26, trunkOffsetY: 50,
+      interaction: {
+        label: "Rest beneath the tree",
+        whispers: [
+          "The shade is cool. Something scurries in the branches above.",
+          "A bird calls. Another answers. The forest is talking."
+        ]
+      }
+    },
+    ancient: {
+      textColor: "#2d4a1a", mortarColor: "#0f1a08",
+      fontSize: 30, lineHeight: 0.38, width: 120, height: 240,
+      weathering: 0.15,
+      canopyChars: ["▲","▲","◆","▲","▲"],
+      canopyTextColor: "#3d5a2a", canopyMortarColor: "#2d3a1f",
+      canopyFontSize: 32, canopyWidth: 140, canopyHeight: 70,
+      canopyOffsetX: -10, canopyOffsetY: -55,
+      trunkChars: ["║","╫","║","╫","║"],
+      trunkTextColor: "#4a3525", trunkMortarColor: "#2a1f15",
+      trunkFontSize: 24, trunkWidth: 34, trunkHeight: 160,
+      trunkOffsetX: 43, trunkOffsetY: 70,
+      roots: { chars: ["╽","╿","╽","╿","╽"], textColor: "#3d2b1f", fontSize: 12, width: 100, height: 20, offsetX: 10, offsetY: 220 },
+      glyphCarving: { text: "𐤀 𐤋 𐤐 𐤄", x: 30, y: 130, size: 16, spacing: 22, color: "rgba(184,134,11,0.1)" },
+      interaction: {
+        label: "Touch the ancient bark",
+        whispers: [
+          "The bark is warm. Your hand fits a groove worn by a thousand others.",
+          "You feel it breathing. Slow. In. Out. One breath per season.",
+          "The tree remembers fire. It remembers flood. It remembers ice."
+        ]
+      }
+    },
+    hollow: {
+      extends: "ancient",
+      openings: [{ x: 35, y: 100, width: 50, height: 85, arch: true, description: "A hollow in the trunk. Large enough to enter." }],
+      weathering: 0.2,
+      interaction: {
+        label: "Enter the hollow",
+        whispers: [
+          "You duck inside. It's larger than it looked.",
+          "The walls are smooth. Worn by bodies.",
+          "A whisper, very close: 'Leave an offering. Or don't.'"
+        ]
+      }
+    },
+    charred: {
+      textColor: "#1a1410", mortarColor: "#0a0806",
+      fontSize: 24, lineHeight: 0.42, width: 80, height: 150,
+      weathering: 0.5,
+      canopyChars: ["▲","▲","◆","▲"], canopyTextColor: "#0f0c08", canopyMortarColor: "#050505",
+      canopyFontSize: 20, canopyWidth: 90, canopyHeight: 30, canopyOffsetX: -5, canopyOffsetY: -30,
+      trunkChars: ["║","║","║"], trunkTextColor: "#1a1410", trunkMortarColor: "#0a0806",
+      trunkFontSize: 18, trunkWidth: 22, trunkHeight: 90, trunkOffsetX: 29, trunkOffsetY: 60,
+      glyphCarving: { text: "B U R N E D", x: 8, y: 100, size: 6, spacing: 5, color: "rgba(196,79,28,0.3)" },
+      interaction: {
+        label: "Touch the charred bark",
+        whispers: [
+          "Still warm. The fire was recent. Or the tree has never stopped burning.",
+          "Your fingers come away black. The soot smells like incense."
+        ]
+      }
+    },
+    blooming: {
+      textColor: "#2d4a1a", mortarColor: "#0f1a08",
+      fontSize: 32, lineHeight: 0.38, width: 140, height: 260,
+      weathering: 0.05,
+      canopyChars: ["▲","◆","▲","▼","▲"], canopyTextColor: "#5a8a4a", canopyMortarColor: "#3a6a2a",
+      canopyFontSize: 36, canopyWidth: 160, canopyHeight: 80, canopyOffsetX: -10, canopyOffsetY: -60,
+      trunkChars: ["║","╫","║","╫","║"], trunkTextColor: "#4a3525", trunkMortarColor: "#2a1f15",
+      trunkFontSize: 26, trunkWidth: 38, trunkHeight: 170, trunkOffsetX: 51, trunkOffsetY: 80,
+      roots: { chars: ["╽","╿","╽","╿","╽"], textColor: "#3d2b1f", fontSize: 14, width: 120, height: 24, offsetX: 10, offsetY: 235 },
+      blossomChars: ["❀","✿","❁","✾","❋"],
+      blossomTextColor: "#d8a8b8", blossomFontSize: 18, blossomWidth: 150, blossomHeight: 35, blossomOffsetX: -5, blossomOffsetY: -52,
+      glyphCarving: { text: "❀  ✿  ❁  ✾  ❋", x: 20, y: 135, size: 16, spacing: 16, color: "rgba(216,168,184,0.3)" },
+      petalFall: { active: true, color: "rgba(255,200,210,0.7)", count: 6, intervalMs: 4000 },
+      interaction: {
+        label: "Stand beneath the blossoms",
+        whispers: [
+          "Petals fall on your shoulders. They smell like honey and something older.",
+          "The tree is celebrating. A wedding? A birth? A century of survival?",
+          "One blossom lands in your palm. It's warm. It pulses, once."
+        ]
+      }
+    }
+  }
+};
+
+// ── BUILD TREE FROM JSON ──
+function buildTreeFromJSON(mason, variantName, treeX, treeY, overrides = {}) {
+    const variant = TREE_JSON.variants[variantName];
+    if (!variant) { console.warn(`Tree variant "${variantName}" not found.`); return null; }
+    
+    const v = { ...variant, ...overrides };
+    const elements = [];
+    
+    // Trunk
+    if (v.trunkChars) {
+        const trunk = mason.buildPillar({
+            chars: v.trunkChars,
+            textColor: v.trunkTextColor || v.textColor,
+            mortarColor: v.trunkMortarColor || v.mortarColor,
+            fontSize: v.trunkFontSize || v.fontSize,
+            fontFamily: v.fontFamily || TREE_JSON.baseProperties.fontFamily,
+            x: treeX + (v.trunkOffsetX || 0),
+            y: treeY + (v.trunkOffsetY || 0),
+            width: v.trunkWidth || 20,
+            height: v.trunkHeight || 100,
+            z: 4
+        });
+        if (trunk) { trunk.style.animation = `groveSway ${5 + Math.random()*4}s ease-in-out infinite`; elements.push(trunk); }
+    }
+    
+    // Canopy
+    if (v.canopyChars) {
+        const canopy = mason.buildWall({
+            chars: v.canopyChars,
+            textColor: v.canopyTextColor || v.textColor,
+            mortarColor: v.canopyMortarColor || v.mortarColor,
+            fontSize: v.canopyFontSize || v.fontSize,
+            lineHeight: v.lineHeight || 0.4,
+            letterSpacing: v.letterSpacing || TREE_JSON.baseProperties.letterSpacing,
+            fontFamily: v.fontFamily || TREE_JSON.baseProperties.fontFamily,
+            x: treeX + (v.canopyOffsetX || 0),
+            y: treeY + (v.canopyOffsetY || 0),
+            width: v.canopyWidth || 100,
+            height: v.canopyHeight || 60,
+            z: 5,
+            weathering: v.weathering || 0.05
+        });
+        if (canopy) { canopy.style.animation = `groveSway ${4 + Math.random()*3}s ease-in-out infinite`; elements.push(canopy); }
+    }
+    
+    // Blossom overlay
+    if (v.blossomChars) {
+        const blossom = mason.buildWall({
+            chars: v.blossomChars,
+            textColor: v.blossomTextColor,
+            mortarColor: 'transparent',
+            fontSize: v.blossomFontSize,
+            lineHeight: 0.45,
+            letterSpacing: 0,
+            fontFamily: "'Georgia',serif",
+            x: treeX + (v.blossomOffsetX || 0),
+            y: treeY + (v.blossomOffsetY || 0),
+            width: v.blossomWidth || 120,
+            height: v.blossomHeight || 30,
+            z: 6,
+            weathering: 0
+        });
+        if (blossom) { blossom.style.background = 'transparent'; blossom.style.pointerEvents = 'none'; elements.push(blossom); }
+    }
+    
+    // Roots
+    if (v.roots) {
+        const roots = mason.buildInscription({
+            text: v.roots.chars.join(' '),
+            x: treeX + (v.roots.offsetX || 0),
+            y: treeY + (v.roots.offsetY || 0),
+            fontSize: v.roots.fontSize || 12,
+            color: v.roots.textColor,
+            fontFamily: v.fontFamily || 'monospace',
+            z: 3
+        });
+        if (roots) elements.push(roots);
+    }
+    
+    // Glyph carving
+    if (v.glyphCarving) {
+        const glyph = mason.buildInscription({
+            text: v.glyphCarving.text,
+            x: treeX + v.glyphCarving.x,
+            y: treeY + v.glyphCarving.y,
+            fontSize: v.glyphCarving.size,
+            color: v.glyphCarving.color,
+            fontFamily: "'Georgia',serif",
+            z: 6,
+            letterSpacing: v.glyphCarving.spacing + 'px'
+        });
+        if (glyph) { glyph.style.letterSpacing = (v.glyphCarving.spacing || 16) + 'px'; elements.push(glyph); }
+    }
+    
+    // Opening (for hollow trees)
+    if (v.openings && v.openings.length > 0) {
+        const op = v.openings[0];
+        const dark = mason.buildWall({
+            chars: [' '],
+            textColor: '#0a0806', mortarColor: '#0a0806',
+            fontSize: 10, lineHeight: 0.5, letterSpacing: 0,
+            fontFamily: 'monospace',
+            x: treeX + op.x,
+            y: treeY + op.y,
+            width: op.width,
+            height: op.height,
+            z: 7,
+            shape: op.arch ? null : null
+        });
+        if (dark) {
+            dark.style.borderRadius = op.arch ? `${op.width/2}px ${op.width/2}px 0 0` : '2px';
+            dark.style.boxShadow = 'inset 0 0 20px rgba(0,0,0,0.8)';
+            elements.push(dark);
+        }
+    }
+    
+    return elements;
+}
+
+// ── BUILD THE SACRED GROVE ──
+function buildGrove() {
+    const groveLayer = document.getElementById('grove-layer');
+    groveLayer.innerHTML = '';
+    const m = new GaiaMason('grove-layer');
+    
+    // Register Demeter-specific materials
+    GaiaMason.MATERIALS['earth_dark'] = {
+        chars: ['▓','░','▒','▓','░'], textColor:'#5a4a35', mortarColor:'#3d2f1f',
+        fontSize:28, lineHeight:0.48, letterSpacing:-2, fontFamily:'monospace', weathering:0.1
+    };
+    GaiaMason.MATERIALS['blossom_pink'] = {
+        chars: ['❀','✿','❁','✾','❋'], textColor:'#d8a8b8', mortarColor:'#b87888',
+        fontSize:16, lineHeight:0.45, letterSpacing:0, fontFamily:"'Georgia',serif", weathering:0
+    };
+    GaiaMason.MATERIALS['sage_green'] = {
+        chars: ['▲','▼','◆','▲','▼'], textColor:'#778866', mortarColor:'#556644',
+        fontSize:18, lineHeight:0.45, letterSpacing:-1, fontFamily:'monospace', weathering:0.1
+    };
+    
+    const fieldW = document.getElementById('fieldZone').clientWidth;
+    const fieldH = 450;
+    
+    // ── ANCIENT BLOOMING — center top, the sacred heart ──
+    const ancientX = fieldW / 2 - 70;
+    const ancientY = -40;
+    buildTreeFromJSON(m, 'blooming', ancientX, ancientY);
+    
+    // Zone: stand beneath the blooming ancient
+    const ancientZone = document.createElement('div');
+    ancientZone.className = 'zone';
+    ancientZone.title = 'Stand beneath the Sacred Tree';
+    ancientZone.style.cssText = `position:absolute;left:${ancientX-20}px;top:${ancientY+20}px;width:180px;height:200px;z-index:30;`;
+    ancientZone.addEventListener('click', () => {
+        const whispers = TREE_JSON.variants.blooming.interaction.whispers;
+        const msg = whispers[Math.floor(Math.random() * whispers.length)];
+        showToast('🌸 ' + msg, 'honey');
+        // Spawn petal particles
+        m.spawnParticles({
+            x: ancientX + 70, y: ancientY + 60,
+            count: 12, color: '#ffccdd',
+            minSize: 3, maxSize: 7,
+            riseDistance: 80, spreadX: 100,
+            durationMin: 2, durationMax: 5,
+            z: 50
+        });
+        addLog('🌸 Petals fall from the Sacred Tree.');
+    });
+    groveLayer.appendChild(ancientZone);
+    
+    // ── HOLLOW TREE (left) — exit to Poseidon ──
+    const hollowLeftX = 10;
+    const hollowLeftY = 120;
+    buildTreeFromJSON(m, 'hollow', hollowLeftX, hollowLeftY, {
+        width: 90, height: 190,
+        trunkOffsetX: 36, trunkOffsetY: 70, trunkWidth: 28, trunkHeight: 110,
+        canopyOffsetX: -5, canopyOffsetY: -45, canopyWidth: 110, canopyHeight: 55,
+        openings: [{ x: 25, y: 80, width: 42, height: 70, arch: true }]
+    });
+    
+    m.buildInscription({
+        text: 'TO THE DEEP',
+        x: hollowLeftX + 15, y: hollowLeftY + 155,
+        fontSize: 6, color: 'rgba(58,107,140,0.5)',
+        fontFamily: "'Cinzel',serif", z: 10
+    });
+    
+    const hollowLeftZone = document.createElement('div');
+    hollowLeftZone.className = 'zone';
+    hollowLeftZone.title = 'Enter the hollow — descend to Poseidon\'s realm';
+    hollowLeftZone.style.cssText = `position:absolute;left:${hollowLeftX+25}px;top:${hollowLeftY+80}px;width:42px;height:70px;z-index:35;`;
+    hollowLeftZone.addEventListener('click', () => {
+        showToast('🌊 You step into the hollow. Salt air rises. The deep calls.');
+        setTimeout(() => { window.location.href = '../poseidon/realm.html?from=demeter'; }, 1000);
+    });
+    groveLayer.appendChild(hollowLeftZone);
+    
+    // ── HOLLOW TREE (right) — exit to Gwalenn ──
+    const hollowRightX = fieldW - 110;
+    const hollowRightY = 100;
+    buildTreeFromJSON(m, 'hollow', hollowRightX, hollowRightY, {
+        width: 90, height: 190,
+        trunkOffsetX: 30, trunkOffsetY: 70, trunkWidth: 28, trunkHeight: 110,
+        canopyOffsetX: -10, canopyOffsetY: -45, canopyWidth: 110, canopyHeight: 55,
+        openings: [{ x: 22, y: 80, width: 42, height: 70, arch: true }]
+    });
+    
+    m.buildInscription({
+        text: 'TO THE HAVEN',
+        x: hollowRightX + 8, y: hollowRightY + 155,
+        fontSize: 6, color: 'rgba(184,134,11,0.5)',
+        fontFamily: "'Cinzel',serif", z: 10
+    });
+    
+    const hollowRightZone = document.createElement('div');
+    hollowRightZone.className = 'zone';
+    hollowRightZone.title = 'Enter the hollow — rise to Gwalenn';
+    hollowRightZone.style.cssText = `position:absolute;left:${hollowRightX+22}px;top:${hollowRightY+80}px;width:42px;height:70px;z-index:35;`;
+    hollowRightZone.addEventListener('click', () => {
+        showToast('🏛️ You step through. The Olympian Haven awaits.');
+        setTimeout(() => { window.location.href = '../gwalenn.html?from=demeter'; }, 1000);
+    });
+    groveLayer.appendChild(hollowRightZone);
+    
+    // ── MATURE TREES (edges) ──
+    buildTreeFromJSON(m, 'mature', 60, 200, { width: 60, height: 120, canopyWidth: 80, canopyHeight: 45, trunkWidth: 16, trunkHeight: 80 });
+    buildTreeFromJSON(m, 'mature', fieldW - 130, 180, { width: 60, height: 120, canopyWidth: 80, canopyHeight: 45, trunkWidth: 16, trunkHeight: 80 });
+    
+    // ── CHARRED STUMP (far left) ──
+    const charredX = 5;
+    const charredY = 280;
+    buildTreeFromJSON(m, 'charred', charredX, charredY, { width: 60, height: 110, trunkWidth: 18, trunkHeight: 70, trunkOffsetX: 21, trunkOffsetY: 40, canopyWidth: 70, canopyHeight: 25, canopyOffsetX: -5, canopyOffsetY: -20 });
+    
+    const charredZone = document.createElement('div');
+    charredZone.className = 'zone';
+    charredZone.title = 'Touch the charred stump';
+    charredZone.style.cssText = `position:absolute;left:${charredX}px;top:${charredY+20}px;width:60px;height:90px;z-index:25;`;
+    charredZone.addEventListener('click', () => {
+        const whispers = TREE_JSON.variants.charred.interaction.whispers;
+        showToast('🔥 ' + whispers[Math.floor(Math.random() * whispers.length)]);
+        m.spawnParticles({ x: charredX + 30, y: charredY + 50, count: 5, color: '#ff6b2b', minSize: 2, maxSize: 4, riseDistance: 60, spreadX: 30, durationMin: 1.5, durationMax: 3, z: 50 });
+        addLog('🔥 Embers rise from the charred stump.');
+    });
+    groveLayer.appendChild(charredZone);
+    
+    // ── SAPLING CLUSTER (bottom right) ──
+    for (let i = 0; i < 3; i++) {
+        const sx = fieldW - 100 + i * 22;
+        const sy = 310 + Math.random() * 30;
+        buildTreeFromJSON(m, 'sapling', sx, sy);
+    }
+    
+    // ── EARTH FLOOR beneath the grove ──
+    m.buildFloor({
+        ...GaiaMason.mat('earth_dark'),
+        x: 0, y: 360, width: fieldW, height: 90, z: 0,
+        perspectiveStrength: 4
+    });
+    
+    // ── AMBIENT PETAL FALL ──
+    m.spawnAmbientFall({
+        count: 8,
+        color: 'rgba(255,200,210,0.4)',
+        minSize: 2, maxSize: 5,
+        speedMin: 8, speedMax: 18,
+        z: 15
+    });
+    
+    // ── LIGHT SHAFTS through the canopy ──
+    m.buildLight({ color: '#ffeebb', radius: 60, x: fieldW * 0.3, y: '12%', pulse: true, z: 1 });
+    m.buildLight({ color: '#ffeebb', radius: 50, x: fieldW * 0.5, y: '8%', pulse: true, z: 1 });
+    m.buildLight({ color: '#ffeebb', radius: 55, x: fieldW * 0.7, y: '14%', pulse: true, z: 1 });
+    
+    // ── INSCRIPTION on the grove floor ──
+    m.buildInscription({
+        text: 'THE GROVE REMEMBERS EVERY SEED',
+        x: fieldW / 2 - 130, y: 410,
+        fontSize: 7, color: 'rgba(200,180,140,0.3)',
+        fontFamily: "'Cinzel',serif", z: 5
+    });
+    
+    return m;
+}
+
+// ═══════════════════════════════════════
+// SIMULATION CODE (unchanged from original)
+// ═══════════════════════════════════════
 
 const FLOWER_SPECIES = [
     { name:'Wheat', emoji:'🌾', color:'#d4a853', petalColor:'#f0d080', size:1.0, season:'all', nectar:12 },
@@ -237,106 +662,62 @@ const FLOWER_SPECIES = [
     { name:'Barley', emoji:'🌾', color:'#ccaa55', petalColor:'#eebb77', size:0.9, season:'all', nectar:10 },
 ];
 
-// ── ARISTAEUS STORY ──
 const STORY_ACTS = {
     apprentice: {
-        name: 'Act I — The Apprentice',
-        threshold: 0,
+        name: 'Act I — The Apprentice', threshold: 0,
         bgGradient: ['#e8ece0', '#dce4d0', '#c8d4b8'],
         poem: () => 'Aristaeus learned from the nymphs. The bees came willingly then, golden and eager in the morning light.',
         journal: 'He watches the hive with reverence. The nymphs taught him well, but knowledge without trial is fragile.',
         lore: 'Son of Apollo and Cyrene. The nymphs raised him. They taught him beekeeping, olive cultivation, and the art of cheese-making. He was the gentle god of rustic crafts.',
-        beeSpawnRate: 0.4,
-        flowerSpawnRate: 0.015,
-        nectarMult: 1.0
+        beeSpawnRate: 0.4, flowerSpawnRate: 0.015, nectarMult: 1.0
     },
     loss: {
-        name: 'Act II — The Loss',
-        threshold: 50,
+        name: 'Act II — The Loss', threshold: 50,
         bgGradient: ['#d0d4c0', '#bcc0a8', '#a0a888'],
         poem: () => 'He pursued Eurydice through the tall grass. She did not see the serpent. The bees died for his transgression.',
-        journal: 'The hive falls silent. Cell by cell, the bees abandon their work. Aristaeus weeps among the empty frames. He did not mean for her to die.',
-        lore: 'Aristaeus chased Eurydice through the fields. Fleeing, she stepped upon a serpent and died. The nymphs punished him. Every bee in his keeping perished. The hive was a tomb.',
-        beeSpawnRate: 0.1,
-        flowerSpawnRate: 0.005,
-        nectarMult: 0.5,
+        journal: 'The hive falls silent. Cell by cell, the bees abandon their work. Aristaeus weeps among the empty frames.',
+        lore: 'Aristaeus chased Eurydice through the fields. Fleeing, she stepped upon a serpent and died. The nymphs punished him. Every bee in his keeping perished.',
+        beeSpawnRate: 0.1, flowerSpawnRate: 0.005, nectarMult: 0.5,
         onEnter: function() {
-            // Kill half the bees
             const killCount = Math.floor(bees.length * 0.6);
-            for (let i = 0; i < killCount; i++) {
-                if (bees.length > 3) bees.pop();
-            }
-            // Wither some blooms
-            blooms.forEach(b => {
-                if (Math.random() < 0.4) b.blooming = false;
-            });
+            for (let i = 0; i < killCount; i++) { if (bees.length > 3) bees.pop(); }
+            blooms.forEach(b => { if (Math.random() < 0.4) b.blooming = false; });
             beeCount = bees.length;
-            updateBeeCount();
-            updateBloomCount();
+            updateBeeCount(); updateBloomCount();
             addLog('🌑 The bees die. The field withers. Aristaeus has lost everything.');
             showToast('Act II: The Loss — The bees are dying...', 'honey');
         }
     },
     proteus: {
-        name: 'Act III — Proteus',
-        threshold: 150,
+        name: 'Act III — Proteus', threshold: 150,
         bgGradient: ['#c0ccc0', '#a8b8b0', '#90a498'],
         poem: () => 'He found Proteus in the sea-cave, sleeping among seals. He bound the god with chains. Lion. Serpent. Fire. Water. He held on.',
-        journal: 'The sea-cave is cold. Proteus shifts beneath his grip — lion, serpent, fire, water. Aristaeus does not let go. Knowledge demands pain.',
-        lore: 'Proteus, the Old Man of the Sea, could see all things but would only speak if captured. Aristaeus chained him. Proteus became a lion. He held on. A serpent. He held on. Fire. Water. A tree. He held on until the god yielded.',
-        beeSpawnRate: 0.25,
-        flowerSpawnRate: 0.01,
-        nectarMult: 0.7,
+        journal: 'The sea-cave is cold. Proteus shifts beneath his grip — lion, serpent, fire, water. Aristaeus does not let go.',
+        lore: 'Proteus, the Old Man of the Sea, could see all things but would only speak if captured. Aristaeus chained him.',
+        beeSpawnRate: 0.25, flowerSpawnRate: 0.01, nectarMult: 0.7,
         onEnter: function() {
             addLog('🌊 Aristaeus enters the sea-cave. Proteus sleeps among the seals.');
             showToast('Act III: Proteus — Wrestle the shape-shifter', 'honey');
         }
     },
     regeneration: {
-        name: 'Act IV — The Regeneration',
-        threshold: 300,
+        name: 'Act IV — The Regeneration', threshold: 300,
         bgGradient: ['#e8f0d8', '#dce8c8', '#c8dca8'],
-        poem: () => `The ox lay upon the altar. Nine days passed. On the ninth day: the bees. The bougonia. ${honeyStored.toFixed(0)} honey gathered. The secret that cannot be unlearned.`,
-        journal: 'From the ox, a swarm. Golden. Humming. Alive. Aristaeus kneels in the meadow and laughs — the bees have returned, and this time he knows the price.',
-        lore: 'Proteus told him: sacrifice an ox. Leave it. Return in nine days. From the carcass, bees will rise — bougonia, the regeneration. Life from death. The eternal hive. Aristaeus never forgot.',
-        beeSpawnRate: 0.6,
-        flowerSpawnRate: 0.04,
-        nectarMult: 2.0,
+        poem: () => `The ox lay upon the altar. Nine days passed. On the ninth day: the bees. The bougonia. ${honeyStored.toFixed(0)} honey gathered.`,
+        journal: 'From the ox, a swarm. Golden. Humming. Alive. Aristaeus kneels in the meadow and laughs.',
+        lore: 'Proteus told him: sacrifice an ox. Leave it. Return in nine days. From the carcass, bees will rise — bougonia.',
+        beeSpawnRate: 0.6, flowerSpawnRate: 0.04, nectarMult: 2.0,
         onEnter: function() {
-            // Swarm!
             for (let i = 0; i < 10; i++) {
-                bees.push({
-                    x: 0.5 + (Math.random() - 0.5) * 0.2,
-                    y: 0.85,
-                    vx: (Math.random() - 0.5) * 0.008,
-                    vy: -Math.random() * 0.02 - 0.01,
-                    target: null,
-                    carrying: 0,
-                    maxCarry: 8,
-                    energy: 1.5,
-                    phase: Math.random() * Math.PI * 2,
-                    size: 0.6 + Math.random() * 0.5
-                });
+                bees.push({ x:0.5+(Math.random()-0.5)*0.2, y:0.85, vx:(Math.random()-0.5)*0.008, vy:-Math.random()*0.02-0.01, target:null, carrying:0, maxCarry:8, energy:1.5, phase:Math.random()*Math.PI*2, size:0.6+Math.random()*0.5 });
             }
-            beeCount = bees.length;
-            updateBeeCount();
-            // Bloom explosion
+            beeCount = bees.length; updateBeeCount();
             for (let i = 0; i < 15; i++) {
-                const species = FLOWER_SPECIES[Math.floor(Math.random() * FLOWER_SPECIES.length)];
-                blooms.push({
-                    x: Math.random() * 0.85 + 0.075,
-                    y: Math.random() * 0.6 + 0.1,
-                    species,
-                    nectar: species.nectar * 2,
-                    maxNectar: species.nectar * 2,
-                    phase: Math.random() * Math.PI * 2,
-                    size: species.size * 1.2,
-                    blooming: true,
-                    lastVisited: 0
-                });
+                const species = FLOWER_SPECIES[Math.floor(Math.random()*FLOWER_SPECIES.length)];
+                blooms.push({ x:Math.random()*0.85+0.075, y:Math.random()*0.6+0.1, species, nectar:species.nectar*2, maxNectar:species.nectar*2, phase:Math.random()*Math.PI*2, size:species.size*1.2, blooming:true, lastVisited:0 });
             }
             updateBloomCount();
-            addLog('🐝✨ THE BOUGONIA! Bees rise from the altar. The field erupts in golden swarm!');
+            addLog('🐝✨ THE BOUGONIA! Bees rise from the altar. The field erupts!');
             showToast('✨ Act IV: The Regeneration — The bees return!', 'success');
         }
     }
@@ -344,41 +725,25 @@ const STORY_ACTS = {
 
 const ACT_ORDER = ['apprentice', 'loss', 'proteus', 'regeneration'];
 
-// ── STATE ──
 const fieldCvs = document.getElementById('fieldCanvas');
 const fieldCtx = fieldCvs.getContext('2d');
 let W, H;
+let bees = [], blooms = [], particles = [], hiveCells = [];
+const HIVE_ROWS = 6, HIVE_COLS = 6;
+let honeyStored = 0, offerings = {}, fieldTime = 0, beeCount = 12;
+let coherenceLevel = 0.4, currentActKey = 'apprentice', proteusTimer = 0;
 
-let bees = [];
-let blooms = [];
-let particles = [];
-let hiveCells = [];
-const HIVE_ROWS = 6;
-const HIVE_COLS = 6;
-let honeyStored = 0;
-let offerings = {};
-let fieldTime = 0;
-let beeCount = 12;
-let coherenceLevel = 0.4;
-let currentActKey = 'apprentice';
-let proteusForm = 0;
-let proteusTimer = 0;
-
-// ── RESIZE ──
 const resize = () => {
     const parent = fieldCvs.parentElement;
     W = fieldCvs.width = parent.clientWidth;
     H = fieldCvs.height = 450;
 };
-window.addEventListener('resize', resize);
+window.addEventListener('resize', () => { resize(); /* rebuild grove on resize if needed */ });
 resize();
 
-// ── STORY ENGINE ──
 function getCurrentAct() {
-    for (let i = ACT_ORDER.length - 1; i >= 0; i--) {
-        if (honeyStored >= STORY_ACTS[ACT_ORDER[i]].threshold) {
-            return ACT_ORDER[i];
-        }
+    for (let i = ACT_ORDER.length-1; i>=0; i--) {
+        if (honeyStored >= STORY_ACTS[ACT_ORDER[i]].threshold) return ACT_ORDER[i];
     }
     return 'apprentice';
 }
@@ -394,713 +759,311 @@ function updateStory() {
         updateJournal('story');
         if (act.onEnter) act.onEnter();
     }
-    // Update poem each tick for dynamic honey count in Act IV
     const act = STORY_ACTS[currentActKey];
     document.getElementById('fieldPoem').textContent = typeof act.poem === 'function' ? act.poem() : act.poem;
 }
 
-// ── HIVE ──
 function initHive() {
     hiveCells = [];
-    for (let r = 0; r < HIVE_ROWS; r++) {
-        for (let c = 0; c < HIVE_COLS; c++) {
-            hiveCells.push({ row: r, col: c, state: 'empty', nectar: 0, cappedAt: null });
-        }
-    }
+    for (let r=0; r<HIVE_ROWS; r++) for (let c=0; c<HIVE_COLS; c++) hiveCells.push({row:r,col:c,state:'empty',nectar:0,cappedAt:null});
     renderHive();
 }
 
 function renderHive() {
     const grid = document.getElementById('hiveGrid');
     grid.innerHTML = hiveCells.map(cell => {
-        const cls = cell.state === 'capped' ? 'capped' : cell.state === 'filled' ? 'filled' : 'empty';
-        const icon = cell.state === 'capped' ? '🔒' : cell.state === 'filled' ? '🍯' : '';
-        return `<div class="hex-cell ${cls}" data-row="${cell.row}" data-col="${cell.col}"
-                    onclick="clickCell(${cell.row},${cell.col})" 
-                    title="${cell.state}: ${cell.nectar.toFixed(0)} nectar">${icon}</div>`;
+        const cls = cell.state==='capped'?'capped':cell.state==='filled'?'filled':'empty';
+        const icon = cell.state==='capped'?'🔒':cell.state==='filled'?'🍯':'';
+        return `<div class="hex-cell ${cls}" onclick="clickCell(${cell.row},${cell.col})" title="${cell.state}: ${cell.nectar.toFixed(0)} nectar">${icon}</div>`;
     }).join('');
-    
-    const filled = hiveCells.filter(c => c.state === 'filled').length;
-    const capped = hiveCells.filter(c => c.state === 'capped').length;
-    const empty = hiveCells.filter(c => c.state === 'empty').length;
-    
-    document.getElementById('hiveFilled').textContent = filled;
-    document.getElementById('hiveCapped').textContent = capped;
-    document.getElementById('hiveEmpty').textContent = empty;
-    document.getElementById('aristaeusMeta').textContent = `Hive: active · Filled: ${filled} · Capped: ${capped} · Empty: ${empty}`;
+    document.getElementById('hiveFilled').textContent = hiveCells.filter(c=>c.state==='filled').length;
+    document.getElementById('hiveCapped').textContent = hiveCells.filter(c=>c.state==='capped').length;
+    document.getElementById('hiveEmpty').textContent = hiveCells.filter(c=>c.state==='empty').length;
+    document.getElementById('aristaeusMeta').textContent = `Hive: active · Filled: ${document.getElementById('hiveFilled').textContent} · Capped: ${document.getElementById('hiveCapped').textContent}`;
 }
 
 function clickCell(row, col) {
-    const cell = hiveCells.find(c => c.row === row && c.col === col);
+    const cell = hiveCells.find(c=>c.row===row&&c.col===col);
     if (!cell) return;
-    if (cell.state === 'empty') {
+    if (cell.state==='empty') {
         addLog(`🐝 Cell [${row},${col}] is empty. Bees must fill it first.`);
-    } else if (cell.state === 'filled') {
-        cell.state = 'capped';
-        cell.cappedAt = fieldTime;
+    } else if (cell.state==='filled') {
+        cell.state='capped'; cell.cappedAt=fieldTime;
         addLog(`🔒 Aristaeus caps cell [${row},${col}]. The honey is sealed.`);
         showToast('🔒 Cell capped! Ready for harvest.', 'success');
     }
     renderHive();
 }
 
-// ── BLOOMS ──
-function initBlooms(count = 25) {
+function initBlooms(count=25) {
     blooms = [];
-    for (let i = 0; i < count; i++) {
-        const species = FLOWER_SPECIES[Math.floor(Math.random() * FLOWER_SPECIES.length)];
-        blooms.push({
-            x: Math.random() * 0.85 + 0.075,
-            y: Math.random() * 0.75 + 0.1,
-            species,
-            nectar: species.nectar * (0.6 + Math.random() * 0.4),
-            maxNectar: species.nectar,
-            phase: Math.random() * Math.PI * 2,
-            size: species.size * (0.8 + Math.random() * 0.4),
-            blooming: true,
-            lastVisited: 0
-        });
+    for (let i=0;i<count;i++) {
+        const species = FLOWER_SPECIES[Math.floor(Math.random()*FLOWER_SPECIES.length)];
+        blooms.push({ x:Math.random()*0.85+0.075, y:Math.random()*0.75+0.1, species, nectar:species.nectar*(0.6+Math.random()*0.4), maxNectar:species.nectar, phase:Math.random()*Math.PI*2, size:species.size*(0.8+Math.random()*0.4), blooming:true, lastVisited:0 });
     }
     updateBloomCount();
 }
 
-// ── BEES ──
-function initBees(count = 14) {
+function initBees(count=14) {
     bees = [];
-    for (let i = 0; i < count; i++) {
-        bees.push({
-            x: Math.random(),
-            y: Math.random() * 0.7 + 0.15,
-            vx: (Math.random() - 0.5) * 0.003,
-            vy: (Math.random() - 0.5) * 0.003,
-            target: null,
-            carrying: 0,
-            maxCarry: 8,
-            energy: 1,
-            phase: Math.random() * Math.PI * 2,
-            size: 0.7 + Math.random() * 0.6
-        });
+    for (let i=0;i<count;i++) {
+        bees.push({ x:Math.random(), y:Math.random()*0.7+0.15, vx:(Math.random()-0.5)*0.003, vy:(Math.random()-0.5)*0.003, target:null, carrying:0, maxCarry:8, energy:1, phase:Math.random()*Math.PI*2, size:0.7+Math.random()*0.6 });
     }
-    beeCount = count;
-    updateBeeCount();
+    beeCount = count; updateBeeCount();
 }
 
-function updateBloomCount() {
-    document.getElementById('bloomCount').textContent = `🌸 Blooms: ${blooms.length}`;
-    document.getElementById('fieldMeta').textContent = `Bees: ${bees.length} · Blooms: ${blooms.length} · Honey: ${honeyStored.toFixed(0)}`;
-}
+function updateBloomCount() { document.getElementById('bloomCount').textContent = `🌸 Blooms: ${blooms.length}`; document.getElementById('fieldMeta').textContent = `Bees: ${bees.length} · Blooms: ${blooms.length} · Honey: ${honeyStored.toFixed(0)}`; }
+function updateBeeCount() { document.getElementById('beeCount').textContent = `🐝 Bees: ${bees.length}`; }
 
-function updateBeeCount() {
-    document.getElementById('beeCount').textContent = `🐝 Bees: ${bees.length}`;
-}
-
-// ── COHERENCE ──
 function fetchCoherence() {
     try {
         const state = GaiaSuncalc.getFullState();
         const planets = GaiaAstronomy.getAllPlanets();
         if (planets?.moon?.phase !== undefined) {
-            const phase = planets.moon.phase;
-            coherenceLevel = 0.2 + 0.6 * (0.5 + 0.5 * Math.sin(phase * Math.PI * 2));
+            coherenceLevel = 0.2 + 0.6 * (0.5 + 0.5 * Math.sin(planets.moon.phase * Math.PI * 2));
         }
-    } catch(e) {
-        coherenceLevel = 0.4 + 0.3 * Math.sin(Date.now() / 3600000);
-    }
+    } catch(e) { coherenceLevel = 0.4 + 0.3 * Math.sin(Date.now()/3600000); }
     document.getElementById('fieldCoherence').textContent = `Coherence: ${coherenceLevel.toFixed(2)}`;
 }
 
-// ── DRAW FIELD ──
 function drawField() {
-    fieldCtx.clearRect(0, 0, W, H);
-    
+    fieldCtx.clearRect(0,0,W,H);
     const act = STORY_ACTS[currentActKey];
     
-    // Background based on story act
-    const bgGrad = fieldCtx.createLinearGradient(0, 0, 0, H);
+    const bgGrad = fieldCtx.createLinearGradient(0,0,0,H);
     bgGrad.addColorStop(0, act.bgGradient[0]);
     bgGrad.addColorStop(0.5, act.bgGradient[1]);
     bgGrad.addColorStop(1, act.bgGradient[2]);
     fieldCtx.fillStyle = bgGrad;
-    fieldCtx.fillRect(0, 0, W, H);
+    fieldCtx.fillRect(0,0,W,H);
     
     // Soil texture
-    for (let i = 0; i < 80; i++) {
-        const sx = (i * 137.508) % W;
-        const sy = H * 0.85 + (i * 97.3) % (H * 0.15);
-        fieldCtx.beginPath();
-        fieldCtx.arc(sx, sy, 0.5 + (i % 3) * 0.4, 0, Math.PI * 2);
-        fieldCtx.fillStyle = `rgba(139,115,85,${0.08 + (i % 5) * 0.02})`;
-        fieldCtx.fill();
+    for (let i=0;i<80;i++) {
+        const sx = (i*137.508)%W, sy = H*0.85+(i*97.3)%(H*0.15);
+        fieldCtx.beginPath(); fieldCtx.arc(sx,sy,0.5+(i%3)*0.4,0,Math.PI*2);
+        fieldCtx.fillStyle = `rgba(139,115,85,${0.08+(i%5)*0.02})`; fieldCtx.fill();
     }
     
     // Grass
-    for (let x = 0; x < W; x += 8) {
-        const grassH = 15 + Math.sin(x * 0.05 + fieldTime * 0.02) * 8;
-        fieldCtx.strokeStyle = `rgba(100,140,70,${0.25 + Math.sin(x * 0.03) * 0.1})`;
-        fieldCtx.lineWidth = 0.7;
-        fieldCtx.beginPath();
-        fieldCtx.moveTo(x, H);
-        fieldCtx.quadraticCurveTo(x + Math.sin(x * 0.1) * 3, H - grassH, x + Math.sin(x * 0.1 + 1) * 5, H - grassH - 5);
+    for (let x=0;x<W;x+=8) {
+        const grassH = 15+Math.sin(x*0.05+fieldTime*0.02)*8;
+        fieldCtx.strokeStyle = `rgba(100,140,70,${0.25+Math.sin(x*0.03)*0.1})`;
+        fieldCtx.lineWidth=0.7; fieldCtx.beginPath();
+        fieldCtx.moveTo(x,H); fieldCtx.quadraticCurveTo(x+Math.sin(x*0.1)*3,H-grassH,x+Math.sin(x*0.1+1)*5,H-grassH-5);
         fieldCtx.stroke();
     }
     
-    // ── PROTEUS (Act III) ──
-    if (currentActKey === 'proteus') {
-        proteusTimer += 0.02;
-        const px = W * 0.75 + Math.sin(proteusTimer * 0.3) * 60;
-        const py = H * 0.5 + Math.cos(proteusTimer * 0.4) * 40;
-        const pSize = 35 + Math.sin(proteusTimer * 0.5) * 15;
-        
-        // Shifting aura
-        const auraGrad = fieldCtx.createRadialGradient(px, py, 0, px, py, pSize * 2);
-        const hueShift = Math.sin(proteusTimer * 0.7) * 30;
-        auraGrad.addColorStop(0, `hsla(${200 + hueShift}, 50%, 60%, 0.3)`);
-        auraGrad.addColorStop(0.5, `hsla(${210 + hueShift}, 40%, 50%, 0.15)`);
-        auraGrad.addColorStop(1, 'transparent');
-        fieldCtx.fillStyle = auraGrad;
-        fieldCtx.beginPath();
-        fieldCtx.arc(px, py, pSize * 2, 0, Math.PI * 2);
+    // Proteus
+    if (currentActKey==='proteus') {
+        proteusTimer+=0.02;
+        const px=W*0.75+Math.sin(proteusTimer*0.3)*60, py=H*0.5+Math.cos(proteusTimer*0.4)*40, pSize=35+Math.sin(proteusTimer*0.5)*15;
+        const auraGrad = fieldCtx.createRadialGradient(px,py,0,px,py,pSize*2);
+        const hueShift = Math.sin(proteusTimer*0.7)*30;
+        auraGrad.addColorStop(0,`hsla(${200+hueShift},50%,60%,0.3)`);
+        auraGrad.addColorStop(0.5,`hsla(${210+hueShift},40%,50%,0.15)`);
+        auraGrad.addColorStop(1,'transparent');
+        fieldCtx.fillStyle=auraGrad; fieldCtx.beginPath(); fieldCtx.arc(px,py,pSize*2,0,Math.PI*2); fieldCtx.fill();
+        fieldCtx.fillStyle='rgba(85,153,170,0.4)'; fieldCtx.beginPath();
+        const formType = Math.floor(proteusTimer/3)%4;
+        if (formType===0) fieldCtx.arc(px,py,pSize,0,Math.PI*2);
+        else if (formType===1) for(let s=0;s<5;s++){const sx=px+Math.sin(proteusTimer+s)*pSize*0.6,sy=py+Math.cos(proteusTimer+s)*pSize*0.4;fieldCtx.moveTo(sx,sy);fieldCtx.arc(sx,sy,pSize*0.25,0,Math.PI*2);}
+        else if (formType===2) for(let f=0;f<8;f++){const fx=px+Math.cos(f/8*Math.PI*2)*pSize*(0.5+Math.random()*0.3),fy=py+Math.sin(f/8*Math.PI*2)*pSize*(0.5+Math.random()*0.3)-10;fieldCtx.moveTo(fx,fy);fieldCtx.arc(fx,fy,pSize*0.2,0,Math.PI*2);}
+        else fieldCtx.ellipse(px,py,pSize*1.2,pSize*0.6,proteusTimer*0.2,0,Math.PI*2);
         fieldCtx.fill();
-        
-        // Shape-shifting form
-        fieldCtx.fillStyle = `rgba(85,153,170,0.4)`;
-        fieldCtx.beginPath();
-        const formType = Math.floor(proteusTimer / 3) % 4;
-        if (formType === 0) {
-            // Lion-like
-            fieldCtx.arc(px, py, pSize, 0, Math.PI * 2);
-        } else if (formType === 1) {
-            // Serpentine
-            for (let s = 0; s < 5; s++) {
-                const sx = px + Math.sin(proteusTimer + s) * pSize * 0.6;
-                const sy = py + Math.cos(proteusTimer + s) * pSize * 0.4;
-                fieldCtx.moveTo(sx, sy);
-                fieldCtx.arc(sx, sy, pSize * 0.25, 0, Math.PI * 2);
-            }
-        } else if (formType === 2) {
-            // Fire-like
-            for (let f = 0; f < 8; f++) {
-                const fx = px + Math.cos(f/8*Math.PI*2) * pSize * (0.5 + Math.random()*0.3);
-                const fy = py + Math.sin(f/8*Math.PI*2) * pSize * (0.5 + Math.random()*0.3) - 10;
-                fieldCtx.moveTo(fx, fy);
-                fieldCtx.arc(fx, fy, pSize * 0.2, 0, Math.PI * 2);
-            }
-        } else {
-            // Water-like
-            fieldCtx.ellipse(px, py, pSize * 1.2, pSize * 0.6, proteusTimer * 0.2, 0, Math.PI * 2);
-        }
-        fieldCtx.fill();
-        
-        // Chains
-        fieldCtx.strokeStyle = 'rgba(180,150,80,0.3)';
-        fieldCtx.lineWidth = 1;
-        fieldCtx.setLineDash([3, 5]);
-        for (let c = 0; c < 3; c++) {
-            const angle = (c / 3) * Math.PI * 2 + proteusTimer * 0.1;
-            fieldCtx.beginPath();
-            fieldCtx.moveTo(px, py);
-            fieldCtx.lineTo(px + Math.cos(angle) * pSize * 1.8, py + Math.sin(angle) * pSize * 1.8);
-            fieldCtx.stroke();
-        }
+        fieldCtx.strokeStyle='rgba(180,150,80,0.3)'; fieldCtx.lineWidth=1; fieldCtx.setLineDash([3,5]);
+        for(let c=0;c<3;c++){const angle=(c/3)*Math.PI*2+proteusTimer*0.1;fieldCtx.beginPath();fieldCtx.moveTo(px,py);fieldCtx.lineTo(px+Math.cos(angle)*pSize*1.8,py+Math.sin(angle)*pSize*1.8);fieldCtx.stroke();}
         fieldCtx.setLineDash([]);
-        
-        // Label
-        fieldCtx.font = '10px Cinzel, serif';
-        fieldCtx.fillStyle = 'rgba(80,130,140,0.5)';
-        fieldCtx.textAlign = 'center';
-        fieldCtx.fillText('PROTEUS', px, py - pSize - 12);
+        fieldCtx.font='10px Cinzel,serif'; fieldCtx.fillStyle='rgba(80,130,140,0.5)'; fieldCtx.textAlign='center'; fieldCtx.fillText('PROTEUS',px,py-pSize-12);
     }
     
-    // ── BOUGONIA ALTAR (Act IV) ──
-    if (currentActKey === 'regeneration') {
-        const ax = W * 0.65;
-        const ay = H * 0.55;
-        const altarGrad = fieldCtx.createRadialGradient(ax, ay, 5, ax, ay, 30);
-        altarGrad.addColorStop(0, 'rgba(255,200,60,0.5)');
-        altarGrad.addColorStop(0.5, 'rgba(200,150,40,0.2)');
-        altarGrad.addColorStop(1, 'transparent');
-        fieldCtx.fillStyle = altarGrad;
-        fieldCtx.beginPath();
-        fieldCtx.arc(ax, ay, 35, 0, Math.PI * 2);
-        fieldCtx.fill();
-        
-        fieldCtx.fillStyle = 'rgba(139,115,85,0.3)';
-        fieldCtx.fillRect(ax - 25, ay - 5, 50, 15);
-        
-        fieldCtx.font = '9px Cinzel, serif';
-        fieldCtx.fillStyle = 'rgba(200,160,80,0.5)';
-        fieldCtx.textAlign = 'center';
-        fieldCtx.fillText('ALTAR', ax, ay - 20);
+    // Bougonia altar
+    if (currentActKey==='regeneration') {
+        const ax=W*0.65,ay=H*0.55;
+        const altarGrad = fieldCtx.createRadialGradient(ax,ay,5,ax,ay,30);
+        altarGrad.addColorStop(0,'rgba(255,200,60,0.5)'); altarGrad.addColorStop(0.5,'rgba(200,150,40,0.2)'); altarGrad.addColorStop(1,'transparent');
+        fieldCtx.fillStyle=altarGrad; fieldCtx.beginPath(); fieldCtx.arc(ax,ay,35,0,Math.PI*2); fieldCtx.fill();
+        fieldCtx.fillStyle='rgba(139,115,85,0.3)'; fieldCtx.fillRect(ax-25,ay-5,50,15);
+        fieldCtx.font='9px Cinzel,serif'; fieldCtx.fillStyle='rgba(200,160,80,0.5)'; fieldCtx.textAlign='center'; fieldCtx.fillText('ALTAR',ax,ay-20);
     }
     
-    // Draw blooms
-    blooms.forEach(bloom => {
-        if (!bloom.blooming) return;
-        const bx = bloom.x * W;
-        const by = bloom.y * H;
-        const pulseSize = bloom.size * (0.9 + 0.1 * Math.sin(fieldTime * 0.03 + bloom.phase));
-        const r = 12 * pulseSize;
-        
-        const glowGrad = fieldCtx.createRadialGradient(bx, by, 0, bx, by, r * 2);
-        const glowAlpha = bloom.nectar / bloom.maxNectar * 0.3;
-        glowGrad.addColorStop(0, bloom.species.petalColor + '44');
-        glowGrad.addColorStop(1, 'transparent');
-        fieldCtx.fillStyle = glowGrad;
-        fieldCtx.beginPath();
-        fieldCtx.arc(bx, by, r * 2, 0, Math.PI * 2);
-        fieldCtx.fill();
-        
-        const petalCount = 5 + (bloom.species.name.length % 3);
-        for (let p = 0; p < petalCount; p++) {
-            const angle = (p / petalCount) * Math.PI * 2 + bloom.phase * 0.5;
-            const pr = r * 0.6;
-            const px = bx + Math.cos(angle) * r * 0.5;
-            const py = by + Math.sin(angle) * r * 0.5;
-            fieldCtx.beginPath();
-            fieldCtx.ellipse(px, py, pr * 0.45, pr * 0.25, angle, 0, Math.PI * 2);
-            fieldCtx.fillStyle = bloom.species.petalColor + '88';
-            fieldCtx.fill();
+    // Blooms
+    blooms.forEach(bloom=>{
+        if(!bloom.blooming)return;
+        const bx=bloom.x*W,by=bloom.y*H;
+        const pulseSize=bloom.size*(0.9+0.1*Math.sin(fieldTime*0.03+bloom.phase));
+        const r=12*pulseSize;
+        const glowGrad=fieldCtx.createRadialGradient(bx,by,0,bx,by,r*2);
+        glowGrad.addColorStop(0,bloom.species.petalColor+'44');glowGrad.addColorStop(1,'transparent');
+        fieldCtx.fillStyle=glowGrad;fieldCtx.beginPath();fieldCtx.arc(bx,by,r*2,0,Math.PI*2);fieldCtx.fill();
+        const petalCount=5+(bloom.species.name.length%3);
+        for(let p=0;p<petalCount;p++){
+            const angle=(p/petalCount)*Math.PI*2+bloom.phase*0.5,pr=r*0.6,px=bx+Math.cos(angle)*r*0.5,py=by+Math.sin(angle)*r*0.5;
+            fieldCtx.beginPath();fieldCtx.ellipse(px,py,pr*0.45,pr*0.25,angle,0,Math.PI*2);
+            fieldCtx.fillStyle=bloom.species.petalColor+'88';fieldCtx.fill();
         }
-        
-        const centerGrad = fieldCtx.createRadialGradient(bx, by, 0, bx, by, r * 0.35);
-        centerGrad.addColorStop(0, bloom.species.color);
-        centerGrad.addColorStop(1, bloom.species.color + '44');
-        fieldCtx.fillStyle = centerGrad;
-        fieldCtx.beginPath();
-        fieldCtx.arc(bx, by, r * 0.35, 0, Math.PI * 2);
-        fieldCtx.fill();
-        
-        if (bloom.nectar > bloom.maxNectar * 0.3) {
-            fieldCtx.beginPath();
-            fieldCtx.arc(bx, by, r * 0.12, 0, Math.PI * 2);
-            fieldCtx.fillStyle = 'rgba(255,220,100,0.8)';
-            fieldCtx.fill();
-        }
-        
-        if (bloom.size > 0.9) {
-            fieldCtx.font = `${9 * pulseSize}px EB Garamond, serif`;
-            fieldCtx.fillStyle = 'rgba(150,120,60,0.3)';
-            fieldCtx.textAlign = 'center';
-            fieldCtx.fillText(bloom.species.emoji, bx, by - r - 8);
-        }
+        const centerGrad=fieldCtx.createRadialGradient(bx,by,0,bx,by,r*0.35);
+        centerGrad.addColorStop(0,bloom.species.color);centerGrad.addColorStop(1,bloom.species.color+'44');
+        fieldCtx.fillStyle=centerGrad;fieldCtx.beginPath();fieldCtx.arc(bx,by,r*0.35,0,Math.PI*2);fieldCtx.fill();
+        if(bloom.nectar>bloom.maxNectar*0.3){fieldCtx.beginPath();fieldCtx.arc(bx,by,r*0.12,0,Math.PI*2);fieldCtx.fillStyle='rgba(255,220,100,0.8)';fieldCtx.fill();}
+        if(bloom.size>0.9){fieldCtx.font=`${9*pulseSize}px EB Garamond,serif`;fieldCtx.fillStyle='rgba(150,120,60,0.3)';fieldCtx.textAlign='center';fieldCtx.fillText(bloom.species.emoji,bx,by-r-8);}
     });
     
-    // Draw bees
-    bees.forEach(bee => {
-        const bx = bee.x * W;
-        const by = bee.y * H;
-        const buzz = Math.sin(fieldTime * 0.15 + bee.phase) * 2;
-        const beeSize = 4 * bee.size;
-        
-        if (bee.carrying > 0) {
-            fieldCtx.beginPath();
-            fieldCtx.arc(bx, by + buzz, beeSize * 0.6, 0, Math.PI * 2);
-            fieldCtx.fillStyle = `rgba(255,220,80,${bee.carrying / bee.maxCarry * 0.3})`;
-            fieldCtx.fill();
-        }
-        
-        const wingAngle = fieldTime * 0.3 + bee.phase;
-        const wingFlap = Math.sin(wingAngle * 3) * 3;
-        fieldCtx.fillStyle = 'rgba(255,255,255,0.5)';
-        fieldCtx.beginPath();
-        fieldCtx.ellipse(bx - beeSize * 0.5, by - beeSize * 0.8 + wingFlap, beeSize * 0.7, beeSize * 0.25, -0.5, 0, Math.PI * 2);
-        fieldCtx.fill();
-        fieldCtx.beginPath();
-        fieldCtx.ellipse(bx + beeSize * 0.3, by - beeSize * 0.6 - wingFlap, beeSize * 0.6, beeSize * 0.2, 0.3, 0, Math.PI * 2);
-        fieldCtx.fill();
-        
-        const bodyGrad = fieldCtx.createLinearGradient(bx - beeSize, by, bx + beeSize, by);
-        bodyGrad.addColorStop(0, '#3d2b1f');
-        bodyGrad.addColorStop(0.4, '#eebb44');
-        bodyGrad.addColorStop(0.6, '#eebb44');
-        bodyGrad.addColorStop(1, '#2a1f0a');
-        fieldCtx.fillStyle = bodyGrad;
-        fieldCtx.beginPath();
-        fieldCtx.ellipse(bx, by + buzz, beeSize * 0.8, beeSize * 0.35, 0, 0, Math.PI * 2);
-        fieldCtx.fill();
-        
-        fieldCtx.strokeStyle = 'rgba(0,0,0,0.4)';
-        fieldCtx.lineWidth = 0.6;
-        for (let s = -1; s <= 1; s += 2) {
-            fieldCtx.beginPath();
-            fieldCtx.moveTo(bx + s * beeSize * 0.25, by + buzz - beeSize * 0.3);
-            fieldCtx.lineTo(bx + s * beeSize * 0.25, by + buzz + beeSize * 0.3);
-            fieldCtx.stroke();
-        }
-        
-        fieldCtx.fillStyle = '#000';
-        fieldCtx.beginPath();
-        fieldCtx.arc(bx + beeSize * 0.5, by + buzz - beeSize * 0.1, beeSize * 0.15, 0, Math.PI * 2);
-        fieldCtx.fill();
-        
-        if (bee.carrying > 0) {
-            fieldCtx.beginPath();
-            fieldCtx.arc(bx - beeSize * 0.3, by + buzz - beeSize * 0.2, beeSize * 0.3 * (bee.carrying / bee.maxCarry), 0, Math.PI * 2);
-            fieldCtx.fillStyle = `rgba(255,230,120,${0.5 + bee.carrying / bee.maxCarry * 0.5})`;
-            fieldCtx.fill();
-        }
+    // Bees
+    bees.forEach(bee=>{
+        const bx=bee.x*W,by=bee.y*H,buzz=Math.sin(fieldTime*0.15+bee.phase)*2,beeSize=4*bee.size;
+        if(bee.carrying>0){fieldCtx.beginPath();fieldCtx.arc(bx,by+buzz,beeSize*0.6,0,Math.PI*2);fieldCtx.fillStyle=`rgba(255,220,80,${bee.carrying/bee.maxCarry*0.3})`;fieldCtx.fill();}
+        const wingAngle=fieldTime*0.3+bee.phase,wingFlap=Math.sin(wingAngle*3)*3;
+        fieldCtx.fillStyle='rgba(255,255,255,0.5)';fieldCtx.beginPath();fieldCtx.ellipse(bx-beeSize*0.5,by-beeSize*0.8+wingFlap,beeSize*0.7,beeSize*0.25,-0.5,0,Math.PI*2);fieldCtx.fill();
+        fieldCtx.beginPath();fieldCtx.ellipse(bx+beeSize*0.3,by-beeSize*0.6-wingFlap,beeSize*0.6,beeSize*0.2,0.3,0,Math.PI*2);fieldCtx.fill();
+        const bodyGrad=fieldCtx.createLinearGradient(bx-beeSize,by,bx+beeSize,by);
+        bodyGrad.addColorStop(0,'#3d2b1f');bodyGrad.addColorStop(0.4,'#eebb44');bodyGrad.addColorStop(0.6,'#eebb44');bodyGrad.addColorStop(1,'#2a1f0a');
+        fieldCtx.fillStyle=bodyGrad;fieldCtx.beginPath();fieldCtx.ellipse(bx,by+buzz,beeSize*0.8,beeSize*0.35,0,0,Math.PI*2);fieldCtx.fill();
+        fieldCtx.strokeStyle='rgba(0,0,0,0.4)';fieldCtx.lineWidth=0.6;
+        for(let s=-1;s<=1;s+=2){fieldCtx.beginPath();fieldCtx.moveTo(bx+s*beeSize*0.25,by+buzz-beeSize*0.3);fieldCtx.lineTo(bx+s*beeSize*0.25,by+buzz+beeSize*0.3);fieldCtx.stroke();}
+        fieldCtx.fillStyle='#000';fieldCtx.beginPath();fieldCtx.arc(bx+beeSize*0.5,by+buzz-beeSize*0.1,beeSize*0.15,0,Math.PI*2);fieldCtx.fill();
+        if(bee.carrying>0){fieldCtx.beginPath();fieldCtx.arc(bx-beeSize*0.3,by+buzz-beeSize*0.2,beeSize*0.3*(bee.carrying/bee.maxCarry),0,Math.PI*2);fieldCtx.fillStyle=`rgba(255,230,120,${0.5+bee.carrying/bee.maxCarry*0.5})`;fieldCtx.fill();}
     });
     
     // Particles
-    for (let i = particles.length - 1; i >= 0; i--) {
-        const p = particles[i];
-        p.life -= 0.008;
-        p.y -= p.vy;
-        p.x += p.vx;
-        if (p.life <= 0) { particles.splice(i, 1); continue; }
-        const radius = Math.max(0.1, p.size * p.life);
-        fieldCtx.beginPath();
-        fieldCtx.arc(p.x, p.y, radius, 0, Math.PI * 2);
-        fieldCtx.fillStyle = p.color.replace('1)', `${Math.max(0, Math.min(1, p.life))})`);
-        fieldCtx.fill();
+    for(let i=particles.length-1;i>=0;i--){
+        const p=particles[i];p.life-=0.008;p.y-=p.vy;p.x+=p.vx;
+        if(p.life<=0){particles.splice(i,1);continue;}
+        const radius=Math.max(0.1,p.size*p.life);
+        fieldCtx.beginPath();fieldCtx.arc(p.x,p.y,radius,0,Math.PI*2);
+        fieldCtx.fillStyle=p.color.replace('1)',`${Math.max(0,Math.min(1,p.life))})`);fieldCtx.fill();
     }
 }
 
-// ── SPAWN PARTICLE ──
-function spawnParticle(x, y, color = 'rgba(255,220,100,1)') {
-    for (let i = 0; i < 4; i++) {
-        particles.push({
-            x: Math.max(0, Math.min(W, x * W)),
-            y: Math.max(0, Math.min(H, y * H)),
-            vx: (Math.random() - 0.5) * 1.2,
-            vy: Math.random() * 0.8 + 0.3,
-            size: Math.max(0.5, 1.5 + Math.random() * 2),
-            life: 1.0,
-            color
-        });
-    }
-}
+function spawnParticleField(x,y,color='rgba(255,220,100,1)'){for(let i=0;i<4;i++)particles.push({x:Math.max(0,Math.min(W,x*W)),y:Math.max(0,Math.min(H,y*H)),vx:(Math.random()-0.5)*1.2,vy:Math.random()*0.8+0.3,size:Math.max(0.5,1.5+Math.random()*2),life:1.0,color});}
 
-// ── BEE LOGIC ──
-function updateBees() {
-    const act = STORY_ACTS[currentActKey];
-    
-    bees.forEach(bee => {
-        if (!bee.target || bee.target.nectar <= 0 || !bee.target.blooming) {
-            let nearest = null;
-            let nearestDist = Infinity;
-            blooms.forEach(bloom => {
-                if (!bloom.blooming || bloom.nectar <= 0) return;
-                const dx = bloom.x - bee.x;
-                const dy = bloom.y - bee.y;
-                const dist = Math.sqrt(dx * dx + dy * dy);
-                if (dist < nearestDist) { nearestDist = dist; nearest = bloom; }
-            });
-            bee.target = nearest;
+function updateBees(){
+    const act=STORY_ACTS[currentActKey];
+    bees.forEach(bee=>{
+        if(!bee.target||bee.target.nectar<=0||!bee.target.blooming){
+            let nearest=null,nearestDist=Infinity;
+            blooms.forEach(bloom=>{if(!bloom.blooming||bloom.nectar<=0)return;const dx=bloom.x-bee.x,dy=bloom.y-bee.y,dist=Math.sqrt(dx*dx+dy*dy);if(dist<nearestDist){nearestDist=dist;nearest=bloom;}});
+            bee.target=nearest;
         }
-        
-        if (bee.target && bee.target.nectar > 0 && bee.target.blooming) {
-            const dx = bee.target.x - bee.x;
-            const dy = bee.target.y - bee.y;
-            const dist = Math.sqrt(dx * dx + dy * dy);
-            
-            if (dist < 0.03) {
-                if (bee.carrying < bee.maxCarry) {
-                    const collect = Math.min(2, bee.target.nectar * act.nectarMult, bee.maxCarry - bee.carrying);
-                    bee.carrying += collect;
-                    bee.target.nectar -= collect;
-                    bee.target.lastVisited = fieldTime;
-                    spawnParticle(bee.target.x, bee.target.y, bee.target.species.petalColor.replace(')', ',1)'));
-                }
-                bee.target = null;
-                bee.vx += (Math.random() - 0.5) * 0.004;
-                bee.vy += (Math.random() - 0.5) * 0.004;
-            } else {
-                const speed = 0.003 + coherenceLevel * 0.004;
-                bee.vx += (dx / dist) * speed * 0.1;
-                bee.vy += (dy / dist) * speed * 0.1;
-            }
-        } else {
-            bee.vx += (Math.random() - 0.5) * 0.001;
-            bee.vy += (Math.random() - 0.5) * 0.001;
-            
-            if (bee.carrying >= bee.maxCarry) {
-                const hiveX = 0.5, hiveY = 0.85;
-                bee.vx += (hiveX - bee.x) * 0.003;
-                bee.vy += (hiveY - bee.y) * 0.003;
-                if (Math.abs(bee.x - hiveX) < 0.04 && Math.abs(bee.y - hiveY) < 0.04) {
-                    depositHoney(bee);
-                }
-            }
+        if(bee.target&&bee.target.nectar>0&&bee.target.blooming){
+            const dx=bee.target.x-bee.x,dy=bee.target.y-bee.y,dist=Math.sqrt(dx*dx+dy*dy);
+            if(dist<0.03){
+                if(bee.carrying<bee.maxCarry){const collect=Math.min(2,bee.target.nectar*act.nectarMult,bee.maxCarry-bee.carrying);bee.carrying+=collect;bee.target.nectar-=collect;bee.target.lastVisited=fieldTime;spawnParticleField(bee.target.x,bee.target.y,bee.target.species.petalColor);}
+                bee.target=null;bee.vx+=(Math.random()-0.5)*0.004;bee.vy+=(Math.random()-0.5)*0.004;
+            }else{const speed=0.003+coherenceLevel*0.004;bee.vx+=(dx/dist)*speed*0.1;bee.vy+=(dy/dist)*speed*0.1;}
+        }else{bee.vx+=(Math.random()-0.5)*0.001;bee.vy+=(Math.random()-0.5)*0.001;
+            if(bee.carrying>=bee.maxCarry){const hiveX=0.5,hiveY=0.85;bee.vx+=(hiveX-bee.x)*0.003;bee.vy+=(hiveY-bee.y)*0.003;if(Math.abs(bee.x-hiveX)<0.04&&Math.abs(bee.y-hiveY)<0.04)depositHoney(bee);}
         }
-        
-        bee.vx *= 0.95;
-        bee.vy *= 0.95;
-        bee.x += bee.vx;
-        bee.y += bee.vy;
-        bee.x = Math.max(0.05, Math.min(0.95, bee.x));
-        bee.y = Math.max(0.05, Math.min(0.9, bee.y));
-        bee.phase += 0.1 + Math.random() * 0.05;
+        bee.vx*=0.95;bee.vy*=0.95;bee.x+=bee.vx;bee.y+=bee.vy;
+        bee.x=Math.max(0.05,Math.min(0.95,bee.x));bee.y=Math.max(0.05,Math.min(0.9,bee.y));
+        bee.phase+=0.1+Math.random()*0.05;
     });
-    
-    // Nectar regeneration
-    blooms.forEach(bloom => {
-        if (bloom.nectar < bloom.maxNectar && fieldTime - bloom.lastVisited > 6) {
-            bloom.nectar = Math.min(bloom.maxNectar, bloom.nectar + 0.05 * coherenceLevel);
-        }
-    });
-    
-    // New blooms
-    if (blooms.length < 50 && Math.random() < act.flowerSpawnRate * (1 + coherenceLevel)) {
-        const species = FLOWER_SPECIES[Math.floor(Math.random() * FLOWER_SPECIES.length)];
-        blooms.push({
-            x: Math.random() * 0.85 + 0.075,
-            y: Math.random() * 0.6 + 0.1,
-            species,
-            nectar: species.nectar * 0.5,
-            maxNectar: species.nectar,
-            phase: Math.random() * Math.PI * 2,
-            size: species.size * (0.6 + Math.random() * 0.4),
-            blooming: true,
-            lastVisited: 0
-        });
+    blooms.forEach(bloom=>{if(bloom.nectar<bloom.maxNectar&&fieldTime-bloom.lastVisited>6)bloom.nectar=Math.min(bloom.maxNectar,bloom.nectar+0.05*coherenceLevel);});
+    if(blooms.length<50&&Math.random()<act.flowerSpawnRate*(1+coherenceLevel)){
+        const species=FLOWER_SPECIES[Math.floor(Math.random()*FLOWER_SPECIES.length)];
+        blooms.push({x:Math.random()*0.85+0.075,y:Math.random()*0.6+0.1,species,nectar:species.nectar*0.5,maxNectar:species.nectar,phase:Math.random()*Math.PI*2,size:species.size*(0.6+Math.random()*0.4),blooming:true,lastVisited:0});
     }
 }
 
-function depositHoney(bee) {
-    const emptyCell = hiveCells.find(c => c.state === 'empty');
-    if (emptyCell) {
-        emptyCell.state = 'filled';
-        emptyCell.nectar = bee.carrying * 10;
-        honeyStored += bee.carrying * 10;
-        bee.carrying = 0;
-        addLog(`🍯 A bee deposits honey. Cell [${emptyCell.row},${emptyCell.col}] fills.`);
-        renderHive();
-    } else {
-        honeyStored += bee.carrying * 5;
-        bee.carrying = 0;
-        addLog(`🍯 The hive overflows! Honey drips into Demeter's store.`);
-    }
-    document.getElementById('honeyTotal').textContent = `🍯 Honey: ${honeyStored.toFixed(0)}`;
-    updateBloomCount();
-    updateStory();
+function depositHoney(bee){
+    const emptyCell=hiveCells.find(c=>c.state==='empty');
+    if(emptyCell){emptyCell.state='filled';emptyCell.nectar=bee.carrying*10;honeyStored+=bee.carrying*10;bee.carrying=0;addLog(`🍯 A bee deposits honey. Cell [${emptyCell.row},${emptyCell.col}] fills.`);renderHive();}
+    else{honeyStored+=bee.carrying*5;bee.carrying=0;addLog('🍯 The hive overflows!');}
+    document.getElementById('honeyTotal').textContent=`🍯 Honey: ${honeyStored.toFixed(0)}`;updateBloomCount();updateStory();
 }
 
-// ── PASSIVE HONEY TRICKLE ──
-function passiveHoney() {
-    const cappedCount = hiveCells.filter(c => c.state === 'capped').length;
-    if (cappedCount > 0) {
-        const trickle = cappedCount * 1.5;
-        honeyStored += trickle;
-        document.getElementById('honeyTotal').textContent = `🍯 Honey: ${honeyStored.toFixed(0)}`;
-        updateStory();
-    }
+function passiveHoney(){const cappedCount=hiveCells.filter(c=>c.state==='capped').length;if(cappedCount>0){honeyStored+=cappedCount*1.5;document.getElementById('honeyTotal').textContent=`🍯 Honey: ${honeyStored.toFixed(0)}`;updateStory();}}
+
+function harvestHoney(){
+    let harvested=0;
+    hiveCells.forEach(cell=>{if(cell.state==='capped'){harvested+=cell.nectar;cell.state='empty';cell.nectar=0;cell.cappedAt=null;}});
+    if(harvested>0){honeyStored+=harvested;addLog(`🍯✨ HARVEST! ${harvested.toFixed(0)} honey collected.`);showToast(`🍯 Harvested ${harvested.toFixed(0)} honey!`,'honey');updateJournal('harvest');}
+    else{addLog('🔒 No capped cells to harvest.');showToast('No capped cells ready.');}
+    document.getElementById('honeyTotal').textContent=`🍯 Honey: ${honeyStored.toFixed(0)}`;renderHive();updateBloomCount();updateStory();
 }
 
-// ── HARVEST HONEY ──
-function harvestHoney() {
-    let harvested = 0;
-    hiveCells.forEach(cell => {
-        if (cell.state === 'capped') {
-            harvested += cell.nectar;
-            cell.state = 'empty';
-            cell.nectar = 0;
-            cell.cappedAt = null;
-        }
-    });
-    if (harvested > 0) {
-        honeyStored += harvested;
-        addLog(`🍯✨ HARVEST! ${harvested.toFixed(0)} honey collected. Demeter blesses the harvest.`);
-        showToast(`🍯 Harvested ${harvested.toFixed(0)} honey!`, 'honey');
-        updateJournal('harvest');
-    } else {
-        addLog('🔒 No capped cells to harvest.');
-        showToast('No capped cells ready for harvest.');
-    }
-    document.getElementById('honeyTotal').textContent = `🍯 Honey: ${honeyStored.toFixed(0)}`;
-    renderHive();
-    updateBloomCount();
-    updateStory();
+function tendHive(){
+    const act=STORY_ACTS[currentActKey];bees.forEach(bee=>{bee.energy=Math.min(1,bee.energy+0.3);});
+    if(bees.length<30&&Math.random()<act.beeSpawnRate){bees.push({x:0.5,y:0.85,vx:(Math.random()-0.5)*0.005,vy:-Math.random()*0.01,target:null,carrying:0,maxCarry:8,energy:1,phase:Math.random()*Math.PI*2,size:0.5+Math.random()*0.4});beeCount=bees.length;addLog('🐝 A new bee emerges.');}
+    updateBeeCount();updateJournal('tend');addLog('🐝 Aristaeus tends the hive.');showToast('🐝 Hive tended.','success');
 }
 
-// ── TEND HIVE ──
-function tendHive() {
-    const act = STORY_ACTS[currentActKey];
-    bees.forEach(bee => { bee.energy = Math.min(1, bee.energy + 0.3); });
-    
-    if (bees.length < 30 && Math.random() < act.beeSpawnRate) {
-        bees.push({
-            x: 0.5, y: 0.85,
-            vx: (Math.random() - 0.5) * 0.005,
-            vy: -Math.random() * 0.01,
-            target: null, carrying: 0, maxCarry: 8,
-            energy: 1, phase: Math.random() * Math.PI * 2,
-            size: 0.5 + Math.random() * 0.4
-        });
-        beeCount = bees.length;
-        addLog('🐝 A new bee emerges from the hive.');
-    }
-    updateBeeCount();
-    updateJournal('tend');
-    addLog('🐝 Aristaeus tends the hive.');
-    showToast('🐝 Hive tended.', 'success');
-}
+function smokeHive(){bees.forEach(bee=>{bee.maxCarry=Math.min(12,bee.maxCarry+2);setTimeout(()=>{bee.maxCarry=Math.max(4,bee.maxCarry-2);},30000);});addLog('💨 Smoke calms the hive.');updateJournal('smoke');showToast('💨 Hive smoked.');}
 
-// ── SMOKE HIVE ──
-function smokeHive() {
-    bees.forEach(bee => {
-        bee.maxCarry = Math.min(12, bee.maxCarry + 2);
-        setTimeout(() => { bee.maxCarry = Math.max(4, bee.maxCarry - 2); }, 30000);
-    });
-    addLog('💨 Smoke calms the hive. Bees carry more.');
-    updateJournal('smoke');
-    showToast('💨 Hive smoked.');
-}
-
-// ── JOURNAL ──
-const JOURNAL_ENTRIES = {
-    tend: [
-        'Aristaeus checks each frame. The brood pattern is strong.',
-        'The hive hums a steady song. A healthy colony.',
-        'He brushes a bee gently from his sleeve. "Patience, little one."',
-    ],
-    smoke: [
-        'The smoke curls into the entrance. The bees retreat, gorging on stores.',
-        'Through the smoke, he counts the capped cells. A good season.',
-    ],
-    harvest: [
-        'The honey flows golden into the jar — clover, lavender, a hint of thistle.',
-        'He leaves an offering at Demeter\'s shrine. The first honey belongs to her.',
-    ],
-    story: [
-        null // handled by lore
-    ]
+const JOURNAL_ENTRIES={
+    tend:['Aristaeus checks each frame. The brood pattern is strong.','The hive hums a steady song.','He brushes a bee gently from his sleeve. "Patience, little one."'],
+    smoke:['The smoke curls into the entrance.','Through the smoke, he counts the capped cells. A good season.'],
+    harvest:['The honey flows golden into the jar.','He leaves an offering at Demeter\'s shrine. The first honey belongs to her.'],
+    story:[null]
 };
 
-function updateJournal(action) {
-    if (action === 'story') {
-        const act = STORY_ACTS[currentActKey];
-        document.getElementById('journalEntry').textContent = act.journal;
-        return;
-    }
-    const entries = JOURNAL_ENTRIES[action] || JOURNAL_ENTRIES.tend;
-    const entry = entries[Math.floor(Math.random() * entries.length)];
-    document.getElementById('journalEntry').textContent = entry;
+function updateJournal(action){
+    if(action==='story'){document.getElementById('journalEntry').textContent=STORY_ACTS[currentActKey].journal;return;}
+    const entries=JOURNAL_ENTRIES[action]||JOURNAL_ENTRIES.tend;
+    document.getElementById('journalEntry').textContent=entries[Math.floor(Math.random()*entries.length)];
 }
 
-// ── OFFERINGS ──
-const OFFERINGS_LIST = [
-    { id:'firstfruits', icon:'🌾', name:'First Fruits', desc:'The first sheaf of wheat, offered to the goddess of the harvest.' },
-    { id:'honeycake', icon:'🍯', name:'Honey Cake', desc:'Baked with hive honey and barley flour — Demeter\'s favorite.' },
-    { id:'poppy', icon:'🌺', name:'Poppy Bloom', desc:'The red poppy grows where Demeter\'s tears fell for Persephone.' },
-    { id:'barleywater', icon:'🏺', name:'Barley Water', desc:'The kykeon — sacred drink of the Eleusinian Mysteries.' },
-    { id:'fig', icon:'🫒', name:'Sacred Fig', desc:'Demeter gifted the fig tree to Phytalos for his hospitality.' },
-    { id:'wreath', icon:'💐', name:'Grain Wreath', desc:'Woven from wheat stalks, blessed at the threshing floor.' },
+const OFFERINGS_LIST=[
+    {id:'firstfruits',icon:'🌾',name:'First Fruits',desc:'The first sheaf of wheat.'},
+    {id:'honeycake',icon:'🍯',name:'Honey Cake',desc:'Baked with hive honey.'},
+    {id:'poppy',icon:'🌺',name:'Poppy Bloom',desc:'Demeter\'s tears for Persephone.'},
+    {id:'barleywater',icon:'🏺',name:'Barley Water',desc:'The kykeon — sacred drink.'},
+    {id:'fig',icon:'🫒',name:'Sacred Fig',desc:'Gifted to Phytalos.'},
+    {id:'wreath',icon:'💐',name:'Grain Wreath',desc:'Blessed at the threshing floor.'},
 ];
 
-function initOfferings() {
-    const grid = document.getElementById('offeringsGrid');
-    grid.innerHTML = OFFERINGS_LIST.map(o => {
-        const count = offerings[o.id] || 0;
-        return `<div class="offering-card ${count > 0 ? 'offered' : ''}" onclick="makeOffering('${o.id}')">
-            <div class="offering-icon">${o.icon}</div>
-            <div class="offering-name">${o.name}</div>
-            <div class="offering-desc">${o.desc}</div>
-            <div class="offering-count">Offered ${count} time${count !== 1 ? 's' : ''}</div>
-        </div>`;
-    }).join('');
+function initOfferings(){
+    const grid=document.getElementById('offeringsGrid');
+    grid.innerHTML=OFFERINGS_LIST.map(o=>{const count=offerings[o.id]||0;return `<div class="offering-card ${count>0?'offered':''}" onclick="makeOffering('${o.id}')"><div class="offering-icon">${o.icon}</div><div class="offering-name">${o.name}</div><div class="offering-desc">${o.desc}</div><div class="offering-count">Offered ${count} time${count!==1?'s':''}</div></div>`;}).join('');
 }
 
-function makeOffering(id) {
-    offerings[id] = (offerings[id] || 0) + 1;
-    if (id === 'firstfruits' || id === 'honeycake') {
-        for (let i = 0; i < 4; i++) {
-            const species = FLOWER_SPECIES[Math.floor(Math.random() * FLOWER_SPECIES.length)];
-            blooms.push({
-                x: Math.random() * 0.85 + 0.075,
-                y: Math.random() * 0.6 + 0.1,
-                species, nectar: species.nectar, maxNectar: species.nectar,
-                phase: Math.random() * Math.PI * 2,
-                size: species.size * (0.8 + Math.random() * 0.4),
-                blooming: true, lastVisited: 0
-            });
-        }
-        addLog(`🕯️ ${OFFERINGS_LIST.find(o=>o.id===id)?.name} offered. New blooms appear.`);
-    } else if (id === 'barleywater') {
-        bees.forEach(bee => { bee.energy = 1.5; setTimeout(() => { bee.energy = Math.min(1, bee.energy); }, 20000); });
-        addLog('🏺 Kykeon offered. The bees fly with sacred vigor.');
-    } else {
-        addLog(`🕯️ ${OFFERINGS_LIST.find(o=>o.id===id)?.name} offered to Demeter.`);
-    }
-    updateBloomCount();
-    initOfferings();
-    showToast('🕯️ Offering made to Demeter', 'success');
+function makeOffering(id){
+    offerings[id]=(offerings[id]||0)+1;
+    if(id==='firstfruits'||id==='honeycake'){for(let i=0;i<4;i++){const species=FLOWER_SPECIES[Math.floor(Math.random()*FLOWER_SPECIES.length)];blooms.push({x:Math.random()*0.85+0.075,y:Math.random()*0.6+0.1,species,nectar:species.nectar,maxNectar:species.nectar,phase:Math.random()*Math.PI*2,size:species.size*(0.8+Math.random()*0.4),blooming:true,lastVisited:0});}addLog(`🕯️ ${OFFERINGS_LIST.find(o=>o.id===id)?.name} offered. New blooms appear.`);}
+    else if(id==='barleywater'){bees.forEach(bee=>{bee.energy=1.5;setTimeout(()=>{bee.energy=Math.min(1,bee.energy);},20000);});addLog('🏺 Kykeon offered. The bees fly with sacred vigor.');}
+    else{addLog(`🕯️ ${OFFERINGS_LIST.find(o=>o.id===id)?.name} offered to Demeter.`);}
+    updateBloomCount();initOfferings();showToast('🕯️ Offering made to Demeter','success');
 }
 
-// ── LOG ──
-const logLines = [];
-function addLog(msg) {
-    const time = new Date().toLocaleTimeString('en-US', { hour:'2-digit', minute:'2-digit', second:'2-digit' });
-    logLines.unshift(`[${time}] ${msg}`);
-    if (logLines.length > 50) logLines.length = 50;
-    document.getElementById('logScroll').innerHTML = logLines.map(l => `<div class="log-line">${l}</div>`).join('');
-}
+const logLines=[];
+function addLog(msg){const time=new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit',second:'2-digit'});logLines.unshift(`[${time}] ${msg}`);if(logLines.length>50)logLines.length=50;document.getElementById('logScroll').innerHTML=logLines.map(l=>`<div class="log-line">${l}</div>`).join('');}
 
-// ── TOAST ──
 let toastTimer;
-function showToast(msg, type='') {
-    const el = document.getElementById('toast');
-    el.className = 'show ' + (type||'');
-    el.textContent = msg;
-    clearTimeout(toastTimer);
-    toastTimer = setTimeout(() => { el.className = ''; }, 3500);
-}
+function showToast(msg,type=''){const el=document.getElementById('toast');el.className='show '+(type||'');el.textContent=msg;clearTimeout(toastTimer);toastTimer=setTimeout(()=>{el.className='';},3500);}
 
-// ── MAIN LOOP ──
-let passiveTick = 0;
-function tick() {
-    fieldTime += 0.1;
-    passiveTick++;
-    
-    updateBees();
-    drawField();
-    
-    if (Math.floor(fieldTime) % 30 === 0) {
-        fetchCoherence();
-    }
-    
-    if (Math.floor(fieldTime) % 20 === 0) {
-        updateBloomCount();
-    }
-    
-    if (Math.floor(fieldTime) % 60 === 0) {
-        updateBeeCount();
-    }
-    
-    // Passive honey trickle every ~1 second
-    if (passiveTick % 10 === 0) {
-        passiveHoney();
-    }
-    
+let passiveTick=0;
+function tick(){
+    fieldTime+=0.1;passiveTick++;
+    updateBees();drawField();
+    if(Math.floor(fieldTime)%30===0)fetchCoherence();
+    if(Math.floor(fieldTime)%20===0)updateBloomCount();
+    if(Math.floor(fieldTime)%60===0)updateBeeCount();
+    if(passiveTick%10===0)passiveHoney();
     requestAnimationFrame(tick);
 }
 
-// ── BUTTONS ──
-document.getElementById('tendHiveBtn').addEventListener('click', tendHive);
-document.getElementById('smokeHiveBtn').addEventListener('click', smokeHive);
-document.getElementById('harvestHoneyBtn').addEventListener('click', harvestHoney);
+document.getElementById('tendHiveBtn').addEventListener('click',tendHive);
+document.getElementById('smokeHiveBtn').addEventListener('click',smokeHive);
+document.getElementById('harvestHoneyBtn').addEventListener('click',harvestHoney);
 
-// ── INIT ──
-function init() {
+function init(){
     resize();
     initBlooms(30);
     initBees(14);
     initHive();
     initOfferings();
     fetchCoherence();
-    updateBloomCount();
-    updateBeeCount();
-    document.getElementById('honeyTotal').textContent = '🍯 Honey: 0';
-    document.getElementById('storyAct').textContent = 'Act I: The Apprentice';
-    document.getElementById('fieldAct').textContent = 'Act I — The Apprentice';
-    
-    // Set initial lore
-    const act = STORY_ACTS['apprentice'];
-    document.getElementById('beeLore').textContent = `"${act.lore}"`;
-    document.getElementById('journalEntry').textContent = act.journal;
-    
+    updateBloomCount();updateBeeCount();
+    document.getElementById('honeyTotal').textContent='🍯 Honey: 0';
+    document.getElementById('storyAct').textContent='Act I: The Apprentice';
+    document.getElementById('fieldAct').textContent='Act I — The Apprentice';
+    document.getElementById('beeLore').textContent=`"${STORY_ACTS['apprentice'].lore}"`;
+    document.getElementById('journalEntry').textContent=STORY_ACTS['apprentice'].journal;
     addLog('🌾 Demeter\'s temple awakens at dawn. The field waits for the first bee.');
     addLog('🐝 Aristaeus opens the hive. The story begins.');
+    addLog('🌳 The Sacred Grove stirs. Ancient trees watch over the field.');
+    
+    // Build the grove around the field
+    buildGrove();
     
     tick();
 }
