@@ -1,0 +1,82 @@
+{
+  "name": "GAIA JSON Index",
+  "description": "Complete registry of all JSON files in the GAIA cosmos. Materials, scenes, objects, realms, and altars.",
+  "files": {
+    "materials": {
+      "olympian-materials.json": {
+        "path": "json/olympian-materials.json",
+        "description": "Divine palette — marble, gold, bronze, rose quartz, peacock blue, storm grey, obsidian, flames, water, void",
+        "categories": ["stone", "metal", "sacred", "elemental"],
+        "materialCount": 27
+      }
+    },
+    "objects": {
+      "altar-objects.json": {
+        "path": "json/altar-objects.json",
+        "description": "Sacred objects for altars and ritual spaces — offering bowls, braziers, tripods, thunderbolts, tridents, lyres, owl statues, caduceus, mirrors, anvils, bows, laurels, grain sheaves",
+        "objectCount": 14
+      }
+    },
+    "scenes": {
+      "gwalenn.json": {
+        "path": "json/gwalenn.json",
+        "description": "The Olympian Haven — 12 altars in a ring, central hearth, Ouranos sky, marble floor",
+        "type": "altar_ring",
+        "godCount": 12
+      }
+    },
+    "realms": {
+      "zeus-realm.json": {
+        "path": "json/zeus-realm.json",
+        "description": "Thunder Peak — throne room of Zeus. Storm grey walls, massive throne, eagles, Styx river, lightning, oath-breaker chains",
+        "god": "zeus",
+        "levels": 1
+      }
+    },
+    "mountain_levels": {
+      "olympus-storm.json": {
+        "path": "json/olympus-storm.json",
+        "description": "Storm Belt — shattered pillars, oath-winds, offering bowl, lightning sky",
+        "mountain_level": 2,
+        "height": 140
+      },
+      "olympus-pantheon.json": {
+        "path": "json/olympus-pantheon.json",
+        "description": "Pantheon Ledge — 12 doorways to every god's realm, marble white, golden light",
+        "mountain_level": 3,
+        "height": 260,
+        "doorwayCount": 12
+      },
+      "olympus-hall.json": {
+        "path": "json/olympus-hall.json",
+        "description": "Hall of Assembly — council seats, central hearth, torch sconces, the laws of Olympus",
+        "mountain_level": 4,
+        "height": 200
+      },
+      "olympus-lower.json": {
+        "path": "json/olympus-lower.json",
+        "description": "The Ascent — votive stones, worn pilgrim path, torchlight, exit to Gwalenn",
+        "mountain_level": 5,
+        "height": 140
+      }
+    }
+  },
+  "stats": {
+    "totalFiles": 8,
+    "materials": 27,
+    "objects": 14,
+    "gods": 12,
+    "mountainLevels": 4,
+    "totalLinesOfJSON": "~2000"
+  },
+  "loadOrder": [
+    "json/olympian-materials.json",
+    "json/altar-objects.json",
+    "json/gwalenn.json",
+    "json/zeus-realm.json",
+    "json/olympus-storm.json",
+    "json/olympus-pantheon.json",
+    "json/olympus-hall.json",
+    "json/olympus-lower.json"
+  ]
+}
