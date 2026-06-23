@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Sea-Foam Temple · Aphrodite's Realm · GAIA</title>
+    <link href="https://fonts.googleapis.com/css2?family=UnifrakturMaguntia&family=Cinzel:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #1a0a14; --text: #f0d8e0;
+            --rose: #d8a0b8; --rose-glow: #f0c0d8;
+            --pearl: #f0e8e0; --gold: #d4af37;
+            --foam: #fff5f8; --sea: #4a2a4a;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Georgia','Times New Roman',serif;
+            display: flex; flex-direction: column; align-items: center;
+            min-height: 100vh; overflow-x: hidden;
+            background-image:
+                radial-gradient(ellipse at 50% 0%, rgba(216,160,184,0.06) 0%, transparent 55%),
+                radial-gradient(ellipse at 50% 100%, rgba(74,42,74,0.95) 0%, transparent 50%),
+                radial-gradient(ellipse at 50% 50%, rgba(240,216,224,0.02) 0%, transparent 60%);
+        }
+
+        #realm {
+            position: relative;
+            width: 820px; max-width: 98vw;
+            height: 1100px; margin: 0 auto 1rem;
+            overflow: hidden;
+            background: linear-gradient(180deg, #1a0a18 0%, #2a1a28 50%, #1a0a18 100%);
+            border-left: 4px solid #3a2a38;
+            border-right: 4px solid #3a2a38;
+            box-shadow: 0 0 120px rgba(216,160,184,0.08), 0 0 240px rgba(0,0,0,0.5);
+        }
+        @media (max-width: 840px) {
+            #realm { width: 98vw; height: calc(98vw * 1.34); }
+        }
+
+        #ouranos-canvas {
+            position: absolute; top: 0; left: 0;
+            width: 100%; height: 380px;
+            z-index: -2; pointer-events: none;
+        }
+        #pontus-canvas {
+            position: absolute; bottom: 0; left: 0;
+            width: 100%; height: 300px;
+            z-index: -1; pointer-events: none;
+        }
+
+        .zone { cursor: pointer; transition: filter 0.3s, transform 0.3s; }
+        .zone:hover { filter: brightness(1.3); z-index: 50 !important; }
+        .zone:active { transform: scale(0.94); transition: transform 0.1s; }
+
+        #toast {
+            position: fixed; bottom: 1.5rem; left: 50%; transform: translateX(-50%);
+            background: rgba(26,10,24,0.95); border: 1px solid var(--rose);
+            border-radius: 6px; padding: 0.5rem 1.2rem;
+            font-family: 'Georgia',serif; font-size: 0.78rem;
+            z-index: 200; opacity: 0; transition: opacity 0.35s;
+            pointer-events: none; text-align: center; max-width: 420px; line-height: 1.4;
+            box-shadow: 0 6px 24px rgba(0,0,0,0.6); white-space: pre-line;
+            color: #f0d8e0;
+        }
+        #toast.show { opacity: 1; }
+
+        @keyframes starTwinkle {
+            0%,100% { opacity: 0.2; }
+            50% { opacity: 0.7; }
+        }
+        @keyframes mirrorPulse {
+            0%,100% { box-shadow: 0 0 12px rgba(216,160,184,0.2), 0 0 30px rgba(240,192,216,0.1); }
+            50% { box-shadow: 0 0 24px rgba(216,160,184,0.5), 0 0 55px rgba(240,192,216,0.3); }
+        }
+        @keyframes foamShimmer {
+            0%,100% { opacity: 0.3; }
+            50% { opacity: 0.6; }
+        }
+        @keyframes roseGlow {
+            0%,100% { text-shadow: 0 0 4px rgba(216,160,184,0.2); }
+            50% { text-shadow: 0 0 16px rgba(216,160,184,0.5); }
+        }
+        @keyframes pearlFloat {
+            0%,100% { transform: translateY(0); }
+            50% { transform: translateY(-4px); }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="realm">
+        <canvas id="ouranos-canvas"></canvas>
+        <canvas id="pontus-canvas"></canvas>
+    </div>
+    <div id="toast"></div>
+
+    <script src="../js/gaia-mason.js"></script>
+    <script>
+    /*
+     * ═══════════════════════════════════════════════════════════════
+     * THE SEA-FOAM TEMPLE · Aphrodite's Realm
+     * Born from the waves. Crowned by the stars.
+     * Rose quartz walls. Pearl throne. Quicksilver mirror.
+     * Ouranos above watches. Pontus below remembers her birth.
+     * All built from typography + canvas. GaiaMason v2.1.
+     * ═══════════════════════════════════════════════════════════════
+     */
+
+    const DEFAULT_STATE = {
+        visits: 0,
+        mirrorGazed: 0,
+        offeringsMade: 0,
+        throneSat: 0,
+    };
+    let state = JSON.parse(JSON.stringify(DEFAULT_STATE));
+
+    function loadState() {
+        const raw = localStorage.getItem('gaia_aphrodite');
+        if (!raw) return false;
+        try { state = { ...DEFAULT_STATE, ...JSON.parse(raw) }; return true; } catch(e) { return false; }
+    }
+    function saveState() { localStorage.setItem('gaia_aphrodite', JSON.stringify(state)); }
+
+    const toastEl = document.getElementById('toast');
+    let toastTimer;
+    function toast(msg, d = 3200) {
+        toastEl.textContent = msg; toastEl.classList.add('show');
+        clearTimeout(toastTimer); toastTimer = setTimeout(() => toastEl.classList.remove('show'), d);
+    }
+
+    function makeZone(x, y, w, h, title, action) {
+        const el = document.createElement('div');
+        el.className = 'zone';
+        el.title = title;
+        el.style.cssText = `position:absolute;left:${x}px;top:${y}px;width:${w}px;height:${h}px;z-index:25;`;
+        el.addEventListener('click', action);
+        return el;
+    }
+
+    // ═══════════════════════════════════
+    // OURANOS — rose-tinted heavens
+    // ═══════════════════════════════════
+
+    function setupOuranos() {
+        const canvas = document.getElementById('ouranos-canvas');
+        const container = document.getElementById('realm');
+        canvas.width = container.clientWidth;
+        canvas.height = 380;
+        const ctx = canvas.getContext('2d');
+        const W = canvas.width, H = canvas.height;
+
+        const stars = Array.from({ length: 60 }, () => ({
+            x: Math.random() * W,
+            y: Math.random() * H * 0.7,
+            r: Math.random() * 1.3 + 0.3,
+            phase: Math.random() * Math.PI * 2,
+            speed: 0.5 + Math.random() * 1.5
+        }));
+
+        // Venus — brightest, pink-tinged
+        const venus = { x: W * 0.7, y: H * 0.2, r: 3.5, glow: 20 };
+
+        function draw() {
+            ctx.clearRect(0, 0, W, H);
+
+            // Deep rose sky gradient
+            const grad = ctx.createLinearGradient(0, 0, 0, H);
+            grad.addColorStop(0, 'rgba(10,5,15,0.95)');
+            grad.addColorStop(0.6, 'rgba(26,10,24,0.9)');
+            grad.addColorStop(1, 'rgba(40,20,38,0.7)');
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, W, H);
+
+            // Zodiac ring
+            ctx.strokeStyle = 'rgba(216,160,184,0.12)';
+            ctx.lineWidth = 1;
+            ctx.setLineDash([2, 8]);
+            ctx.beginPath();
+            ctx.arc(W / 2, H * 0.35, 140, 0, Math.PI * 2);
+            ctx.stroke();
+            ctx.setLineDash([]);
+
+            // Stars
+            const now = Date.now() * 0.001;
+            stars.forEach(s => {
+                const twinkle = 0.3 + 0.5 * Math.sin(now * s.speed + s.phase);
+                ctx.beginPath();
+                ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(255,220,240,${twinkle})`;
+                ctx.fill();
+            });
+
+            // Venus glow
+            const venusGrad = ctx.createRadialGradient(venus.x, venus.y, 0, venus.x, venus.y, venus.glow * 2);
+            venusGrad.addColorStop(0, 'rgba(255,200,220,0.8)');
+            venusGrad.addColorStop(0.3, 'rgba(240,180,200,0.3)');
+            venusGrad.addColorStop(1, 'transparent');
+            ctx.fillStyle = venusGrad;
+            ctx.beginPath();
+            ctx.arc(venus.x, venus.y, venus.glow * 2, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Venus body
+            ctx.beginPath();
+            ctx.arc(venus.x, venus.y, venus.r, 0, Math.PI * 2);
+            ctx.fillStyle = '#ffe0ee';
+            ctx.fill();
+
+            requestAnimationFrame(draw);
+        }
+        draw();
+    }
+
+    // ═══════════════════════════════════
+    // PONTUS — gentle foam waves
+    // ═══════════════════════════════════
+
+    function setupPontus() {
+        const canvas = document.getElementById('pontus-canvas');
+        const container = document.getElementById('realm');
+        canvas.width = container.clientWidth;
+        canvas.height = 300;
+        const ctx = canvas.getContext('2d');
+        const W = canvas.width, H = canvas.height;
+
+        const waveLayers = [
+            { speed: 0.008, amp: 14, color: 'rgba(80,40,70,0.5)', offset: 0 },
+            { speed: 0.012, amp: 10, color: 'rgba(100,50,80,0.4)', offset: 1 },
+            { speed: 0.006, amp: 18, color: 'rgba(60,30,55,0.3)', offset: 2 },
+            { speed: 0.015, amp: 6,  color: 'rgba(220,180,200,0.25)', offset: 3 },
+            { speed: 0.01,  amp: 8,  color: 'rgba(255,230,240,0.2)', offset: 4 },
+        ];
+
+        function draw() {
+            ctx.clearRect(0, 0, W, H);
+
+            // Deep sea gradient
+            const grad = ctx.createLinearGradient(0, 0, 0, H);
+            grad.addColorStop(0, 'rgba(30,15,28,0.8)');
+            grad.addColorStop(0.5, 'rgba(20,8,18,0.9)');
+            grad.addColorStop(1, 'rgba(5,2,5,0.98)');
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, W, H);
+
+            const now = Date.now() * 0.001;
+
+            waveLayers.forEach(layer => {
+                ctx.beginPath();
+                ctx.strokeStyle = layer.color;
+                ctx.lineWidth = 1.5;
+                const yBase = 30 + layer.offset * 45;
+
+                for (let x = 0; x <= W; x += 2) {
+                    const y = yBase +
+                        Math.sin(x * 0.008 + now * layer.speed) * layer.amp +
+                        Math.sin(x * 0.018 + now * layer.speed * 0.6) * layer.amp * 0.4 +
+                        Math.sin(x * 0.004 + now * layer.speed * 0.3) * layer.amp * 0.2;
+
+                    if (x === 0) ctx.moveTo(x, y);
+                    else ctx.lineTo(x, y);
+                }
+                ctx.stroke();
+            });
+
+            // Foam sparkles near the top
+            for (let i = 0; i < 15; i++) {
+                const fx = (i * 137.5) % W;
+                const fy = 20 + Math.sin(now * 2 + i) * 8;
+                const fa = 0.15 + 0.25 * Math.sin(now * 3 + i);
+                ctx.beginPath();
+                ctx.arc(fx, fy, 0.8, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(255,245,250,${fa})`;
+                ctx.fill();
+            }
+
+            requestAnimationFrame(draw);
+        }
+        draw();
+    }
+
+    // ═══════════════════════════════════
+    // BUILD THE SEA-FOAM TEMPLE
+    // ═══════════════════════════════════
+
+    function buildTemple() {
+        const container = document.getElementById('realm');
+        const m = new GaiaMason('realm');
+
+        // ── Register Aphrodite's materials ──
+        GaiaMason.MATERIALS['rose_quartz'] = {
+            chars: ['◆','◇','◆','◇','◆'], textColor:'#d8a0b8', mortarColor:'#b08098',
+            fontSize:24, lineHeight:0.5, letterSpacing:0, fontFamily:"'Georgia',serif", weathering:0.02
+        };
+        GaiaMason.MATERIALS['pearl_sheen'] = {
+            chars: ['◈','◇','◈','◇','◈'], textColor:'#f0e8e0', mortarColor:'#d8d0c8',
+            fontSize:22, lineHeight:0.5, letterSpacing:0, fontFamily:"'Georgia',serif", weathering:0
+        };
+        GaiaMason.MATERIALS['sea_foam'] = {
+            chars: ['~','·','≋','·','~'], textColor:'#fff5f8', mortarColor:'#f0d8e8',
+            fontSize:18, lineHeight:0.45, letterSpacing:2, fontFamily:"'Georgia',serif", weathering:0
+        };
+        GaiaMason.MATERIALS['deep_rose'] = {
+            chars: ['▓','▒','░','▓','▒'], textColor:'#6a3050', mortarColor:'#4a1a35',
+            fontSize:36, lineHeight:0.5, letterSpacing:-2, fontFamily:"'Cinzel','Georgia',serif", weathering:0.1
+        };
+
+        // ── TEMPLE PLATFORM — horizon line ──
+        m.buildFloor({
+            ...GaiaMason.mat('deep_rose'),
+            x: 40, y: 340, width: 740, height: 20, z: 0,
+            perspectiveStrength: 2
+        });
+
+        m.buildFloor({
+            ...GaiaMason.mat('rose_quartz'),
+            x: 60, y: 355, width: 700, height: 100, z: 0,
+            perspectiveStrength: 6,
+            glyphCarving: {
+                text: '◆  ◇  ❀  ✿  ◇  ◆',
+                x: 160, y: 40,
+                size: 18, spacing: 36,
+                color: 'rgba(240,216,224,0.08)'
+            }
+        });
+
+        // ── SCALLOP ARCH — the temple entrance ──
+        m.buildArch({
+            chars: ['◈','◇','◈','◇','◈'],
+            textColor: '#f0e8e0', fontSize: 24,
+            fontFamily: "'Georgia',serif",
+            cx: 410, cy: 150, innerRadius: 130,
+            stoneCount: 21, stoneDepth: 26, z: 5,
+            keystoneChar: '◆', keystoneOversize: 1.8,
+            highlightColor: 'rgba(255,220,240,0.1)'
+        });
+
+        // ── LEFT PILLAR — rose quartz ──
+        m.buildPillar({
+            ...GaiaMason.mat('rose_quartz'),
+            x: 260, y: 170, width: 24, height: 180, z: 3,
+            capital: true, capitalHeight: 22
+        });
+
+        // ── RIGHT PILLAR — pearl ──
+        m.buildPillar({
+            ...GaiaMason.mat('pearl_sheen'),
+            x: 536, y: 170, width: 24, height: 180, z: 3,
+            capital: true, capitalHeight: 22,
+            fontSize: 18
+        });
+
+        // ── PEARL THRONE — left side ──
+        m.buildWall({
+            ...GaiaMason.mat('pearl_sheen'),
+            x: 130, y: 280, width: 100, height: 20, z: 6,
+            weathering: 0
+        });
+
+        m.buildArch({
+            chars: ['◈','◇','◈','◇'],
+            textColor: '#f0e8e0', fontSize: 20,
+            fontFamily: "'Georgia',serif",
+            cx: 180, cy: 250, innerRadius: 50,
+            stoneCount: 11, stoneDepth: 18, z: 6,
+            keystoneChar: '◆', keystoneOversize: 1.5
+        });
+
+        m.buildInscription({
+            text: 'THE PEARL THRONE',
+            x: 125, y: 235,
+            fontSize: 6, color: 'rgba(240,232,224,0.5)',
+            fontFamily: "'Cinzel',serif", z: 8
+        });
+
+        // Pearl floating above throne
+        const pearlGlow = m.buildInscription({
+            text: '◈',
+            x: 175, y: 215,
+            fontSize: 28, color: 'rgba(240,232,224,0.7)',
+            fontFamily: "'Georgia',serif", z: 9,
+            animation: 'pearlFloat 3s ease-in-out infinite'
+        });
+
+        const throneZone = makeZone(130, 250, 100, 60, 'Sit upon the Pearl Throne', () => {
+            state.throneSat++;
+            const whispers = [
+                'The throne cradles you. For a moment, you feel utterly loved.',
+                'You sit. The pearl above you pulses. Someone far away is thinking of you.',
+                'The throne remembers every queen who sat here. You are in good company.',
+                'A warmth spreads through you. Not fire — something gentler. Acceptance.',
+            ];
+            toast('🕊️ ' + whispers[state.throneSat % whispers.length]);
+            saveState();
+        });
+        container.appendChild(throneZone);
+
+        // ── QUICKSILVER MIRROR — right side ──
+        m.buildArch({
+            chars: ['◈','◇','◈','◇','◈'],
+            textColor: '#a8b8c8', fontSize: 18,
+            fontFamily: "'Georgia',serif",
+            cx: 620, cy: 270, innerRadius: 55,
+            stoneCount: 18, stoneDepth: 18, z: 6,
+            fullCircle: true,
+            keystoneChar: '◈', keystoneOversize: 1.3
+        });
+
+        const mirrorEl = m.buildWall({
+            ...GaiaMason.mat('quicksilver'),
+            x: 570, y: 220, width: 100, height: 100, z: 5,
+            shape: 'circle'
+        });
+
+        // Mirror glow overlay
+        const mirrorGlowEl = document.createElement('div');
+        mirrorGlowEl.style.cssText = `
+            position: absolute; left: 570px; top: 220px;
+            width: 100px; height: 100px; border-radius: 50%;
+            background: radial-gradient(circle, rgba(240,192,216,0.3) 0%, transparent 70%);
+            pointer-events: none; z-index: 7;
+            animation: mirrorPulse 4s ease-in-out infinite;
+        `;
+        container.appendChild(mirrorGlowEl);
+
+        m.buildInscription({
+            text: 'THE MIRROR OF BEAUTY',
+            x: 548, y: 330,
+            fontSize: 6, color: 'rgba(168,184,200,0.5)',
+            fontFamily: "'Cinzel',serif", z: 8
+        });
+
+        const mirrorZone = makeZone(570, 220, 100, 100, 'Gaze into the Mirror of Beauty', () => {
+            state.mirrorGazed++;
+            const visions = [
+                'You see yourself. But radiant. The version of you that is most loved.',
+                'A face you almost recognize. Someone you haven\'t met yet. They\'re smiling.',
+                'The sea at dawn. Foam on the waves. Something golden beneath the surface.',
+                'Your own eyes. But they hold every kindness you\'ve ever given. You are beautiful.',
+                'Two doves. Flying together. One lands. The other circles back. Love, returning.',
+            ];
+            toast('🪞 ' + visions[state.mirrorGazed % visions.length]);
+            saveState();
+        });
+        container.appendChild(mirrorZone);
+
+        // ── OFFERING BOWL — center ──
+        m.buildOfferingBowl({ x: 385, y: 390, z: 10, material: 'rose_quartz' });
+
+        m.buildInscription({
+            text: 'OFFER A ROSE',
+            x: 375, y: 435,
+            fontSize: 6, color: 'rgba(216,160,184,0.5)',
+            fontFamily: "'Cinzel',serif", z: 11
+        });
+
+        const offeringZone = makeZone(375, 380, 70, 60, 'Offer a rose at the bowl', () => {
+            state.offeringsMade++;
+            const responses = [
+                '🌸 You place a rose in the bowl. Its petals shimmer and multiply.',
+                '🌹 The rose sinks into the quartz. The bowl glows pink. Accepted.',
+                '💮 A petal drifts up from the bowl. It lands on your cheek. A kiss.',
+                '🕊️ You offer a rose. Somewhere, someone just fell in love.',
+            ];
+            toast(responses[state.offeringsMade % responses.length]);
+            m.spawnParticles({
+                x: 420, y: 400, count: 8,
+                color: '#ffccdd', minSize: 3, maxSize: 6,
+                riseDistance: 60, spreadX: 50,
+                durationMin: 2, durationMax: 4, z: 50
+            });
+            saveState();
+        });
+        container.appendChild(offeringZone);
+
+        // ── SEA FOAM BRAZIER — right foreground ──
+        m.buildWall({
+            ...GaiaMason.mat('sea_foam'),
+            x: 560, y: 400, width: 80, height: 80, z: 6,
+            shape: 'circle'
+        });
+
+        m.buildWall({
+            ...GaiaMason.mat('void_black'),
+            x: 570, y: 410, width: 60, height: 60, z: 7,
+            shape: 'circle'
+        });
+
+        const flameEl = document.createElement('div');
+        flameEl.style.cssText = `
+            position: absolute; left: 578px; top: 412px;
+            width: 44px; height: 56px; z-index: 8;
+            background: radial-gradient(ellipse at 50% 40%, #ffe0ee 0%, #f0c0d8 30%, #d8a0b8 70%, transparent 90%);
+            border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+            animation: mirrorPulse 2s ease-in-out infinite;
+            pointer-events: none;
+        `;
+        container.appendChild(flameEl);
+
+        m.buildInscription({
+            text: 'FOAM FLAME',
+            x: 568, y: 485,
+            fontSize: 6, color: 'rgba(255,245,248,0.4)',
+            fontFamily: "'Cinzel',serif", z: 9
+        });
+
+        const brazierZone = makeZone(560, 400, 80, 80, 'Tend the Foam Flame', () => {
+            toast('🫧 The foam flame flickers. It smells like the sea at dawn. Like the moment she was born.');
+            m.spawnParticles({
+                x: 600, y: 430, count: 6,
+                color: '#fff5f8', minSize: 2, maxSize: 4,
+                riseDistance: 50, spreadX: 30,
+                durationMin: 1.5, durationMax: 3, z: 50
+            });
+            saveState();
+        });
+        container.appendChild(brazierZone);
+
+        // ── INSCRIPTIONS ──
+        m.buildInscription({
+            text: 'APHRODITE  ·  CYTHEREA  ·  PHILOMMEDES',
+            x: 245, y: 465,
+            fontSize: 6, color: 'rgba(216,160,184,0.35)',
+            fontFamily: "'Cinzel',serif", z: 5
+        });
+
+        m.buildInscription({
+            text: 'BORN OF THE SEA FOAM  ·  CROWNED BY THE STARS',
+            x: 210, y: 480,
+            fontSize: 5, color: 'rgba(240,216,224,0.25)',
+            fontFamily: "'Cinzel',serif", z: 5
+        });
+
+        // ── EXITS — two portals ──
+        // Left exit — to Poseidon (her sea-brother)
+        m.buildArch({
+            chars: ['◈','◇','◈','◇'],
+            textColor: '#a8b8c8', fontSize: 16,
+            fontFamily: "'Georgia',serif",
+            cx: 100, cy: 490, innerRadius: 35,
+            stoneCount: 9, stoneDepth: 14, z: 10,
+            keystoneChar: '~', keystoneOversize: 1.4
+        });
+
+        m.buildInscription({
+            text: 'TO THE DEEP',
+            x: 72, y: 530,
+            fontSize: 5, color: 'rgba(58,107,140,0.5)',
+            fontFamily: "'Cinzel',serif", z: 11
+        });
+
+        const leftExitZone = makeZone(65, 470, 70, 55, 'Descend to Poseidon\'s realm', () => {
+            saveState();
+            toast('🌊 You descend through the waves to the Deep Hold...');
+            setTimeout(() => { window.location.href = '../poseidon/realm.html?from=aphrodite'; }, 1000);
+        });
+        container.appendChild(leftExitZone);
+
+        // Right exit — to Gwalenn
+        m.buildArch({
+            chars: ['◈','◇','◈','◇'],
+            textColor: '#d4af37', fontSize: 16,
+            fontFamily: "'Georgia',serif",
+            cx: 720, cy: 490, innerRadius: 35,
+            stoneCount: 9, stoneDepth: 14, z: 10,
+            keystoneChar: '✦', keystoneOversize: 1.4
+        });
+
+        m.buildInscription({
+            text: 'TO THE HAVEN',
+            x: 688, y: 530,
+            fontSize: 5, color: 'rgba(212,175,55,0.5)',
+            fontFamily: "'Cinzel',serif", z: 11
+        });
+
+        const rightExitZone = makeZone(685, 470, 70, 55, 'Rise to Gwalenn', () => {
+            saveState();
+            toast('🏛️ You rise to the Olympian Haven...');
+            setTimeout(() => { window.location.href = '../gwalenn.html?from=aphrodite'; }, 1000);
+        });
+        container.appendChild(rightExitZone);
+
+        // ── AMBIENT ──
+        m.buildLight({ color: '#f0c0d8', radius: 80, x: 410, y: 200, pulse: true, z: 0 });
+        m.buildLight({ color: '#f0c0d8', radius: 50, x: 620, y: 270, pulse: true, z: 0 });
+
+        m.spawnAmbientFall({
+            count: 6,
+            color: 'rgba(255,220,240,0.2)',
+            minSize: 2, maxSize: 4,
+            speedMin: 15, speedMax: 30,
+            z: 10
+        });
+
+        return m;
+    }
+
+    // ═══════════════════════════════════
+    // INIT
+    // ═══════════════════════════════════
+
+    function init() {
+        const loaded = loadState();
+        if (!loaded) saveState();
+
+        state.visits++;
+        saveState();
+
+        setupOuranos();
+        setupPontus();
+        buildTemple();
+
+        const params = new URLSearchParams(window.location.search);
+        if (params.get('from')) {
+            toast(`🕊️ You arrive from the ${params.get('from')}. The Sea-Foam Temple welcomes you.`);
+            window.history.replaceState({}, '', 'realm.html');
+        } else {
+            const welcome = state.visits > 1
+                ? '🕊️ The Sea-Foam Temple remembers you. The mirror has missed your face.'
+                : '🕊️ You enter the Sea-Foam Temple. The stars watch from above. The waves remember below.';
+            toast(welcome);
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Space' && !e.target.closest('input,textarea')) {
+                e.preventDefault();
+                const bowl = document.querySelector('[title="Offer a rose at the bowl"]');
+                if (bowl) bowl.click();
+            }
+        });
+    }
+
+    init();
+    </script>
+</body>
+</html>
