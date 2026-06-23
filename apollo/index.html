@@ -4,33 +4,98 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>☀️ APOLLO · The Complete Sanctuary</title>
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&family=Cinzel:wght@400;600&family=EB+Garamond:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=UnifrakturMaguntia&family=Cinzel+Decorative:wght@400;700;900&family=Cinzel:wght@400;600&family=EB+Garamond:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
     <style>
         :root {
-            --gold: #c9a84c;
-            --gold-bright: #f0d080;
-            --sun: #ffcc44;
-            --sun-bright: #ffe088;
-            --deep: #0a0c12;
-            --surface: #141820;
-            --surface-light: #1e2432;
-            --text: #bcbcbc;
-            --text-dim: #7a7a8a;
+            --gold: #c9a84c; --gold-bright: #f0d080; --sun: #ffcc44; --sun-bright: #ffe088;
+            --deep: #0a0c12; --surface: #141820; --surface-light: #1e2432;
+            --text: #d8d0c0; --text-dim: #8a8a7a;
+            --mason-stone: #1a1c14; --mason-light: #2a2c24;
         }
         * { margin:0; padding:0; box-sizing:border-box; }
         body {
-            background: var(--deep);
+            background: #0a0c12;
             color: var(--text);
             font-family: 'EB Garamond', Georgia, serif;
             min-height: 100vh;
-            background-image: radial-gradient(ellipse at 50% 0%, rgba(255,200,68,0.06), transparent 60%);
+            display: flex; flex-direction: column; align-items: center;
+            background-image:
+                radial-gradient(ellipse at 50% 0%, rgba(255,200,68,0.1) 0%, transparent 55%),
+                radial-gradient(ellipse at 50% 100%, rgba(10,12,18,0.98) 0%, transparent 50%);
+            overflow-x: hidden;
         }
-        
-        /* Header / Title Bar */
+
+        #apollo-sanctuary {
+            position: relative;
+            width: 100%; max-width: 960px;
+            margin: 0 auto;
+            min-height: 100vh;
+        }
+
+        #mason-layer {
+            position: relative;
+            width: 100%;
+            min-height: 100vh;
+            background: linear-gradient(180deg, #141820 0%, #1a1c14 50%, #141820 100%);
+            border-left: 4px solid #2a2c24;
+            border-right: 4px solid #2a2c24;
+            box-shadow: 0 0 140px rgba(255,200,68,0.06), 0 0 280px rgba(0,0,0,0.5);
+            overflow: hidden;
+        }
+
+        #ouranos-canvas {
+            position: absolute; top: 0; left: 0;
+            width: 100%; height: 300px;
+            z-index: 1; pointer-events: none;
+        }
+        #pontus-canvas {
+            position: absolute; bottom: 0; left: 0;
+            width: 100%; height: 180px;
+            z-index: 1; pointer-events: none;
+        }
+
+        .content-layer {
+            position: relative; z-index: 10;
+            padding: 2rem 1.5rem;
+        }
+
+        .zone { cursor: pointer; transition: filter 0.3s, transform 0.3s; }
+        .zone:hover { filter: brightness(1.3); z-index: 50 !important; }
+        .zone:active { transform: scale(0.94); transition: transform 0.1s; }
+
+        #toast {
+            position: fixed; bottom: 1.5rem; left: 50%; transform: translateX(-50%);
+            background: rgba(10,12,18,0.96); border: 1px solid var(--gold);
+            border-radius: 6px; padding: 0.5rem 1.2rem;
+            font-family: 'Georgia',serif; font-size: 0.78rem;
+            z-index: 200; opacity: 0; transition: opacity 0.35s;
+            pointer-events: none; text-align: center; max-width: 420px; line-height: 1.4;
+            box-shadow: 0 6px 24px rgba(0,0,0,0.6); white-space: pre-line;
+            color: #f0d080;
+        }
+        #toast.show { opacity: 1; }
+
+        @keyframes sunPulse {
+            0%,100% { box-shadow: 0 0 30px rgba(255,200,68,0.3); }
+            50% { box-shadow: 0 0 60px rgba(255,200,68,0.7); }
+        }
+        @keyframes lightRipple {
+            0%,100% { opacity: 0.15; }
+            50% { opacity: 0.4; }
+        }
+        @keyframes doorGlow {
+            0%,100% { box-shadow: 0 0 10px rgba(255,200,68,0.2), inset 0 0 20px rgba(255,200,68,0.1); }
+            50% { box-shadow: 0 0 30px rgba(255,200,68,0.5), inset 0 0 50px rgba(255,200,68,0.3); }
+        }
+        @keyframes goldShimmer {
+            0%,100% { text-shadow: 0 0 4px rgba(255,200,68,0.2); }
+            50% { text-shadow: 0 0 20px rgba(255,200,68,0.6); }
+        }
+
+        /* ── APOLLO CONTENT STYLES ── */
         .apollo-header {
             text-align: center;
-            padding: 1.5rem 1rem 0.5rem;
-            border-bottom: 1px solid rgba(201,168,76,0.2);
+            padding: 1rem 1rem 0.3rem;
         }
         .apollo-glyph {
             font-size: 2.5rem;
@@ -40,159 +105,499 @@
         }
         .apollo-title {
             font-family: 'Cinzel Decorative', serif;
-            font-size: 1.8rem;
+            font-size: clamp(1.5rem, 4vw, 2rem);
             letter-spacing: 0.2em;
             color: var(--sun-bright);
             display: inline-block;
             vertical-align: middle;
+            text-shadow: 0 0 40px rgba(255,200,68,0.3);
         }
         .phi-sub {
             font-family: 'Cinzel', serif;
-            font-size: 0.65rem;
+            font-size: 0.6rem;
             letter-spacing: 0.2em;
             color: var(--gold);
             margin-top: 0.25rem;
         }
-        
-        /* Tab Bar */
+
         .tab-bar {
             display: flex;
             flex-wrap: wrap;
             justify-content: center;
-            gap: 0.25rem;
-            padding: 1rem 1rem 0;
-            border-bottom: 1px solid rgba(201,168,76,0.15);
-            background: rgba(10,12,18,0.8);
+            gap: 0.2rem;
+            padding: 0.8rem 1rem 0;
+            margin-bottom: 0.8rem;
         }
         .tab-btn {
-            background: var(--surface);
-            border: none;
+            background: rgba(20,24,32,0.8);
+            border: 1px solid rgba(201,168,76,0.2);
             color: var(--text-dim);
             font-family: 'Cinzel', serif;
-            font-size: 0.8rem;
+            font-size: 0.7rem;
             letter-spacing: 0.1em;
-            padding: 0.6rem 1.2rem;
+            padding: 0.5rem 1rem;
             cursor: pointer;
-            border-radius: 8px 8px 0 0;
+            border-radius: 4px 4px 0 0;
             transition: all 0.2s;
         }
         .tab-btn.active {
             background: var(--surface-light);
             color: var(--sun);
+            border-color: var(--sun);
             border-bottom: 2px solid var(--sun);
         }
         .tab-btn:hover:not(.active) {
             color: var(--gold);
-            background: #1a1e2a;
+            border-color: rgba(201,168,76,0.4);
         }
-        
-        /* Content Container — where loaded pages go */
+
         .content-container {
-            margin: 1rem;
-            min-height: 70vh;
-            background: rgba(10,12,18,0.6);
-            border-radius: 12px;
+            background: rgba(10,12,18,0.7);
+            border-radius: 6px;
             overflow: hidden;
-            border: 1px solid rgba(201,168,76,0.1);
+            border: 1px solid rgba(201,168,76,0.12);
+            min-height: 60vh;
         }
-        
         iframe.sanctum-frame {
             width: 100%;
-            height: 75vh;
+            height: 65vh;
             border: none;
-            background: var(--deep);
+            background: transparent;
             display: block;
         }
-        
+
         .footer-note {
             text-align: center;
             font-family: 'Cinzel', serif;
-            font-size: 0.55rem;
+            font-size: 0.5rem;
             letter-spacing: 0.2em;
             color: rgba(201,168,76,0.3);
-            padding: 1.5rem;
-            border-top: 1px solid rgba(201,168,76,0.08);
+            padding: 1rem;
             margin-top: 1rem;
+            border-top: 1px solid rgba(201,168,76,0.08);
         }
-        
+
+        /* ── DOORWAY ── */
+        .doorway-container {
+            display: flex; justify-content: center; margin: 1rem 0 0.5rem;
+        }
+
         @media (max-width: 700px) {
-            .tab-btn { padding: 0.4rem 0.8rem; font-size: 0.65rem; }
-            .apollo-title { font-size: 1.2rem; }
-            iframe.sanctum-frame { height: 65vh; }
+            .content-layer { padding: 1.5rem 0.8rem; }
+            .tab-btn { padding: 0.35rem 0.6rem; font-size: 0.6rem; }
+            iframe.sanctum-frame { height: 55vh; }
         }
     </style>
 </head>
 <body>
 
-<div class="apollo-header">
-    <span class="apollo-glyph">☀️</span>
-    <span class="apollo-title">APOLLO</span>
-    <div class="phi-sub">THE COMPLETE SANCTUARY · φ ENGINE · ALL MODES</div>
+<div id="apollo-sanctuary">
+    <div id="mason-layer">
+        <canvas id="ouranos-canvas"></canvas>
+        <canvas id="pontus-canvas"></canvas>
+        <div class="content-layer">
+
+            <!-- ══ HEADER ══ -->
+            <div class="apollo-header">
+                <span class="apollo-glyph">☀️</span>
+                <span class="apollo-title">APOLLO</span>
+                <div class="phi-sub">THE COMPLETE SANCTUARY · φ ENGINE · ALL MODES</div>
+            </div>
+
+            <!-- ══ TAB BAR ══ -->
+            <div class="tab-bar">
+                <button class="tab-btn active" data-tab="table">🃏 THE TABLE</button>
+                <button class="tab-btn" data-tab="chat">💬 THE VOICE</button>
+                <button class="tab-btn" data-tab="prophecy">🔮 PROPHECY</button>
+                <button class="tab-btn" data-tab="studio">🎨 STUDIO</button>
+            </div>
+
+            <!-- ══ CONTENT ══ -->
+            <div class="content-container">
+                <iframe id="sanctuaryFrame" class="sanctum-frame" src="apolloTable.html" title="Apollo Sanctuary"></iframe>
+            </div>
+
+            <!-- ══ DOORWAY TO REALM ══ -->
+            <div class="doorway-container" id="doorwayContainer"></div>
+
+            <!-- ══ FOOTER ══ -->
+            <div class="footer-note">
+                GAIA · Apollo Engine · The Table · The Voice · The Prophecy · The Studio
+            </div>
+
+        </div>
+    </div>
 </div>
 
-<div class="tab-bar">
-    <button class="tab-btn active" data-tab="table">🃏 THE TABLE</button>
-    <button class="tab-btn" data-tab="chat">💬 THE VOICE</button>
-    <button class="tab-btn" data-tab="prophecy">🔮 PROPHECY</button>
-    <button class="tab-btn" data-tab="studio">🎨 STUDIO</button>
-</div>
+<div id="toast"></div>
 
-<div class="content-container">
-    <iframe id="sanctuaryFrame" class="sanctum-frame" src="apolloTable.html" title="Apollo Sanctuary"></iframe>
-</div>
-
-<div class="footer-note">
-    GAIA · Apollo Engine · The Table · The Voice · The Prophecy · The Studio
-</div>
-
+<script src="../js/gaia-mason.js"></script>
 <script>
-    // Map tabs to their respective HTML files
-    const tabMap = {
-        table: 'apolloTable.html',
-        chat: 'chat.html',
-        prophecy: 'prophecy.html',
-        studio: 'studio.html'
+// ═══════════════════════════════════════
+// APOLLO · The Complete Sanctuary
+// Mason frame + Ouranos + Pontus + Doorway
+// ═══════════════════════════════════════
+
+const DEFAULT_STATE = {
+    visits: 0,
+    lastTab: 'table',
+};
+let state = JSON.parse(JSON.stringify(DEFAULT_STATE));
+
+function loadState() {
+    const raw = localStorage.getItem('gaia_apollo');
+    if (!raw) return false;
+    try { state = { ...DEFAULT_STATE, ...JSON.parse(raw) }; return true; } catch(e) { return false; }
+}
+function saveState() { localStorage.setItem('gaia_apollo', JSON.stringify(state)); }
+
+const toastEl = document.getElementById('toast');
+let toastTimer;
+function toast(msg, d = 2800) {
+    toastEl.textContent = msg; toastEl.classList.add('show');
+    clearTimeout(toastTimer); toastTimer = setTimeout(() => toastEl.classList.remove('show'), d);
+}
+
+// ═══════════════════════════════════
+// MASON FRAME
+// ═══════════════════════════════════
+
+function buildMasonFrame() {
+    const container = document.getElementById('mason-layer');
+    const m = new GaiaMason('mason-layer');
+
+    // Apollo's materials
+    GaiaMason.MATERIALS['sun_stone'] = {
+        chars: ['◆','◇','◆','◇','◆'], textColor:'#e8d080', mortarColor:'#c8b840',
+        fontSize:24, lineHeight:0.5, letterSpacing:0, fontFamily:"'Georgia',serif", weathering:0.02
     };
-    
-    const iframe = document.getElementById('sanctuaryFrame');
-    const tabs = document.querySelectorAll('.tab-btn');
-    
-    function switchTab(tabId) {
-        const url = tabMap[tabId];
-        if (url && iframe.src.indexOf(url) === -1) {
-            iframe.src = url;
-        }
-        
-        // Update active class on buttons
-        tabs.forEach(btn => {
-            const btnTab = btn.getAttribute('data-tab');
-            if (btnTab === tabId) {
-                btn.classList.add('active');
-            } else {
-                btn.classList.remove('active');
+    GaiaMason.MATERIALS['laurel_dark'] = {
+        chars: ['▲','▼','◆','▲','▼'], textColor:'#4a6a3a', mortarColor:'#2a4a1a',
+        fontSize:20, lineHeight:0.48, letterSpacing:-1, fontFamily:'monospace', weathering:0.12
+    };
+    GaiaMason.MATERIALS['marble_sun'] = {
+        chars: ['M','N','H','M','N'], textColor:'#d8d0b8', mortarColor:'#b8b098',
+        fontSize:36, lineHeight:0.5, letterSpacing:-3, fontFamily:"'Cinzel','Georgia',serif", weathering:0.04
+    };
+    GaiaMason.MATERIALS['oracle_black'] = {
+        chars: ['▓','▒','░','▓','▒'], textColor:'#1a1c14', mortarColor:'#0a0c08',
+        fontSize:34, lineHeight:0.5, letterSpacing:-2, fontFamily:"'Cinzel','Georgia',serif", weathering:0.06
+    };
+
+    const W = container.clientWidth;
+
+    // Left pillar — laurel green
+    m.buildPillar({
+        ...GaiaMason.mat('laurel_dark'),
+        x: 10, y: 20, width: 30, height: 900, z: 3,
+        capital: true, capitalHeight: 26
+    });
+
+    // Right pillar — laurel green
+    m.buildPillar({
+        ...GaiaMason.mat('laurel_dark'),
+        x: W - 40, y: 20, width: 30, height: 900, z: 3,
+        capital: true, capitalHeight: 26
+    });
+
+    // Top arch — sun stone
+    m.buildArch({
+        chars: ['◆','◇','◆','◇','◆'],
+        textColor: '#e8d080', fontSize: 24,
+        fontFamily: "'Georgia',serif",
+        cx: W / 2, cy: 15, innerRadius: W / 2 - 50,
+        stoneCount: 31, stoneDepth: 24, z: 5,
+        keystoneChar: '☀️', keystoneOversize: 2.0,
+        highlightColor: 'rgba(255,220,100,0.1)'
+    });
+
+    // Floor
+    m.buildFloor({
+        ...GaiaMason.mat('oracle_black'),
+        x: 30, y: 880, width: W - 60, height: 60, z: 0,
+        perspectiveStrength: 4
+    });
+
+    // Inscriptions on pillars
+    m.buildInscription({
+        text: 'ΓΝΩΘΙ ΣΕΑΥΤΟΝ',
+        x: 1, y: 440, fontSize: 9,
+        color: 'rgba(200,168,76,0.3)',
+        fontFamily: "'Cinzel',serif", z: 8, rotation: -90
+    });
+    m.buildInscription({
+        text: 'ΜΗΔΕΝ ΑΓΑΝ',
+        x: W - 20, y: 420, fontSize: 9,
+        color: 'rgba(200,168,76,0.3)',
+        fontFamily: "'Cinzel',serif", z: 8, rotation: 90
+    });
+
+    // Light
+    m.buildLight({ color: '#ffe088', radius: 120, x: W / 2, y: 450, pulse: true, z: 0 });
+
+    // ── DOORWAY TO REALM ──
+    const doorwayCx = W / 2, doorwayCy = 830;
+
+    m.buildArch({
+        chars: ['◆','◇','◆','◇'],
+        textColor: '#e8d080', fontSize: 20,
+        fontFamily: "'Georgia',serif",
+        cx: doorwayCx, cy: doorwayCy, innerRadius: 55,
+        stoneCount: 15, stoneDepth: 20, z: 10,
+        keystoneChar: '☀️', keystoneOversize: 1.8
+    });
+
+    // Dark void
+    const doorVoid = m.buildWall({
+        chars: [' '],
+        textColor: '#0a0800', mortarColor: '#0a0800',
+        fontSize: 10, lineHeight: 0.5, letterSpacing: 0,
+        fontFamily: 'monospace',
+        x: doorwayCx - 50, y: doorwayCy - 5,
+        width: 100, height: 70, z: 9
+    });
+    if (doorVoid) {
+        doorVoid.style.borderRadius = '55px 55px 0 0';
+        doorVoid.style.boxShadow = 'inset 0 0 40px rgba(255,200,68,0.5)';
+        doorVoid.style.animation = 'doorGlow 3s ease-in-out infinite';
+    }
+
+    m.buildInscription({
+        text: 'ENTER THE',
+        x: doorwayCx - 42, y: doorwayCy - 30,
+        fontSize: 7, color: 'rgba(240,216,128,0.5)',
+        fontFamily: "'Cinzel',serif", z: 12
+    });
+    m.buildInscription({
+        text: 'SOLAR TEMPLE',
+        x: doorwayCx - 52, y: doorwayCy - 18,
+        fontSize: 7, color: 'rgba(255,200,68,0.5)',
+        fontFamily: "'Cinzel',serif", z: 12,
+        animation: 'goldShimmer 3s ease-in-out infinite'
+    });
+
+    // Click zone
+    const doorwayZone = document.createElement('div');
+    doorwayZone.className = 'zone';
+    doorwayZone.title = 'Enter the Solar Temple';
+    doorwayZone.style.cssText = `
+        position: absolute; left: ${doorwayCx - 50}px; top: ${doorwayCy - 5}px;
+        width: 100px; height: 70px; z-index: 30; cursor: pointer;
+    `;
+    doorwayZone.addEventListener('click', () => {
+        saveState();
+        toast('☀️ You step through the threshold into the Solar Temple...');
+        setTimeout(() => { window.location.href = 'realm.html?from=index'; }, 1000);
+    });
+    container.appendChild(doorwayZone);
+
+    // Floor inscription
+    m.buildInscription({
+        text: 'LIGHT  ·  TRUTH  ·  PROPHECY  ·  MUSIC',
+        x: W / 2 - 140, y: 900,
+        fontSize: 6, color: 'rgba(240,216,128,0.2)',
+        fontFamily: "'Cinzel',serif", z: 5
+    });
+
+    return m;
+}
+
+// ═══════════════════════════════════
+// OURANOS — sun-dominant heavens
+// ═══════════════════════════════════
+
+function setupOuranos() {
+    const canvas = document.getElementById('ouranos-canvas');
+    const container = document.getElementById('mason-layer');
+    canvas.width = container.clientWidth;
+    canvas.height = 300;
+    const ctx = canvas.getContext('2d');
+    const W = canvas.width, H = canvas.height;
+
+    const stars = Array.from({ length: 40 }, () => ({
+        x: Math.random() * W,
+        y: Math.random() * H * 0.6,
+        r: Math.random() * 1 + 0.2,
+        phase: Math.random() * Math.PI * 2,
+        speed: 0.3 + Math.random() * 1
+    }));
+
+    // The Sun — prominent, warm
+    const sun = { x: W * 0.75, y: H * 0.2, r: 18, glow: 50 };
+
+    function draw() {
+        ctx.clearRect(0, 0, W, H);
+
+        // Warm sky gradient
+        const grad = ctx.createLinearGradient(0, 0, 0, H);
+        grad.addColorStop(0, 'rgba(8,6,2,0.9)');
+        grad.addColorStop(0.6, 'rgba(20,16,8,0.8)');
+        grad.addColorStop(1, 'rgba(26,24,18,0.4)');
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, W, H);
+
+        // Zodiac ring
+        ctx.strokeStyle = 'rgba(255,200,68,0.12)';
+        ctx.lineWidth = 1;
+        ctx.setLineDash([2, 8]);
+        ctx.beginPath();
+        ctx.arc(W / 2, H * 0.3, 120, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        // Stars
+        const now = Date.now() * 0.001;
+        stars.forEach(s => {
+            const twinkle = 0.2 + 0.4 * Math.sin(now * s.speed + s.phase);
+            ctx.beginPath();
+            ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+            ctx.fillStyle = `rgba(255,240,200,${twinkle})`;
+            ctx.fill();
+        });
+
+        // Sun glow
+        const sunGrad = ctx.createRadialGradient(sun.x, sun.y, 0, sun.x, sun.y, sun.glow * 3);
+        sunGrad.addColorStop(0, 'rgba(255,240,180,0.9)');
+        sunGrad.addColorStop(0.2, 'rgba(255,200,68,0.5)');
+        sunGrad.addColorStop(0.5, 'rgba(255,180,40,0.15)');
+        sunGrad.addColorStop(1, 'transparent');
+        ctx.fillStyle = sunGrad;
+        ctx.beginPath();
+        ctx.arc(sun.x, sun.y, sun.glow * 3, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Sun body
+        ctx.beginPath();
+        ctx.arc(sun.x, sun.y, sun.r, 0, Math.PI * 2);
+        ctx.fillStyle = '#ffe088';
+        ctx.fill();
+
+        requestAnimationFrame(draw);
+    }
+    draw();
+}
+
+// ═══════════════════════════════════
+// PONTUS — light ripples (not waves)
+// ═══════════════════════════════════
+
+function setupPontus() {
+    const canvas = document.getElementById('pontus-canvas');
+    const container = document.getElementById('mason-layer');
+    canvas.width = container.clientWidth;
+    canvas.height = 180;
+    const ctx = canvas.getContext('2d');
+    const W = canvas.width, H = canvas.height;
+
+    const rippleLayers = [
+        { speed: 0.012, amp: 6, color: 'rgba(200,168,76,0.3)', offset: 0 },
+        { speed: 0.008, amp: 10, color: 'rgba(180,140,60,0.2)', offset: 1 },
+        { speed: 0.016, amp: 4, color: 'rgba(240,200,100,0.25)', offset: 2 },
+        { speed: 0.01, amp: 8, color: 'rgba(160,120,50,0.15)', offset: 3 },
+    ];
+
+    function draw() {
+        ctx.clearRect(0, 0, W, H);
+
+        const grad = ctx.createLinearGradient(0, 0, 0, H);
+        grad.addColorStop(0, 'rgba(20,18,10,0.5)');
+        grad.addColorStop(1, 'rgba(5,4,2,0.95)');
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, W, H);
+
+        const now = Date.now() * 0.001;
+
+        rippleLayers.forEach(layer => {
+            ctx.beginPath();
+            ctx.strokeStyle = layer.color;
+            ctx.lineWidth = 1;
+            const yBase = 15 + layer.offset * 30;
+            for (let x = 0; x <= W; x += 2) {
+                const y = yBase +
+                    Math.sin(x * 0.01 + now * layer.speed) * layer.amp +
+                    Math.sin(x * 0.022 + now * layer.speed * 0.4) * layer.amp * 0.3;
+                if (x === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
             }
+            ctx.stroke();
         });
+
+        // Golden sparkles
+        for (let i = 0; i < 10; i++) {
+            const fx = (i * 137.5) % W;
+            const fy = 10 + Math.sin(now * 2 + i) * 6;
+            const fa = 0.1 + 0.2 * Math.sin(now * 3 + i);
+            ctx.beginPath();
+            ctx.arc(fx, fy, 0.6, 0, Math.PI * 2);
+            ctx.fillStyle = `rgba(255,220,120,${fa})`;
+            ctx.fill();
+        }
+
+        requestAnimationFrame(draw);
     }
-    
-    // Attach click handlers
+    draw();
+}
+
+// ═══════════════════════════════════
+// TAB LOGIC
+// ═══════════════════════════════════
+
+const tabMap = {
+    table: 'apolloTable.html',
+    chat: 'chat.html',
+    prophecy: 'prophecy.html',
+    studio: 'studio.html'
+};
+
+const iframe = document.getElementById('sanctuaryFrame');
+const tabs = document.querySelectorAll('.tab-btn');
+
+function switchTab(tabId) {
+    const url = tabMap[tabId];
+    if (url && iframe.src.indexOf(url) === -1) {
+        iframe.src = url;
+    }
     tabs.forEach(btn => {
-        btn.addEventListener('click', () => {
-            const tabId = btn.getAttribute('data-tab');
-            switchTab(tabId);
-        });
+        const btnTab = btn.getAttribute('data-tab');
+        btn.classList.toggle('active', btnTab === tabId);
     });
-    
-    // Optional: restore last viewed tab from localStorage
-    const lastTab = localStorage.getItem('apollo_last_tab');
-    if (lastTab && tabMap[lastTab]) {
-        switchTab(lastTab);
+    state.lastTab = tabId;
+    saveState();
+}
+
+tabs.forEach(btn => {
+    btn.addEventListener('click', () => {
+        switchTab(btn.getAttribute('data-tab'));
+    });
+});
+
+// ═══════════════════════════════════
+// INIT
+// ═══════════════════════════════════
+
+function init() {
+    const loaded = loadState();
+    if (!loaded) saveState();
+
+    state.visits++;
+    saveState();
+
+    setupOuranos();
+    setupPontus();
+    buildMasonFrame();
+
+    // Restore last tab
+    if (state.lastTab && tabMap[state.lastTab]) {
+        switchTab(state.lastTab);
     }
-    
-    // Save current tab when changing
-    iframe.addEventListener('load', () => {
-        const activeTab = document.querySelector('.tab-btn.active')?.getAttribute('data-tab');
-        if (activeTab) localStorage.setItem('apollo_last_tab', activeTab);
-    });
+
+    toast(state.visits > 1
+        ? '☀️ The Sanctuary remembers your light. Welcome back.'
+        : '☀️ You enter Apollo\'s Sanctuary. The sun watches. Truth awaits.'
+    );
+}
+
+init();
 </script>
 </body>
 </html>
