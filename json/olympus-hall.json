@@ -1,0 +1,61 @@
+{
+  "name": "The Hall of Assembly",
+  "description": "Where the gods convene. Twelve stone seats in a circle. A central hearth that has burned since the Titanomachy.",
+  "size": { "w": 860, "h": 200 },
+  "room": {
+    "farWall": { "material": "marble_veined" },
+    "leftWall": { "material": "marble_veined", "width": 25 },
+    "rightWall": { "material": "marble_veined", "width": 25 },
+    "floor": { "material": "marble_dark", "y": 150, "height": 50, "perspective": 8 }
+  },
+  "objects": [
+    { "type": "council_seat", "x": 180, "y": 40 },
+    { "type": "council_seat", "x": 280, "y": 40 },
+    { "type": "council_seat", "x": 380, "y": 40 },
+    { "type": "council_seat", "x": 480, "y": 40 },
+    { "type": "council_seat", "x": 580, "y": 40 },
+    { "type": "central_hearth", "x": 370, "y": 85 },
+    { "type": "torch_sconce", "x": 80, "y": 50 },
+    { "type": "torch_sconce", "x": 720, "y": 50 }
+  ],
+  "inscriptions": [
+    {
+      "text": "THE GODS CONVENE · THE LAWS ARE WRITTEN · THE FIRE NEVER DIES",
+      "x": 130,
+      "y": 175,
+      "fontSize": 7,
+      "color": "rgba(201,168,76,0.35)",
+      "fontFamily": "'Cinzel',serif",
+      "z": 8
+    }
+  ],
+  "atmosphere": {
+    "lights": [
+      { "color": "#ff8833", "radius": 130, "x": "50%", "y": "60%", "pulse": true, "z": 0 }
+    ]
+  },
+  "objectDefinitions": {
+    "council_seat": {
+      "bounds": { "width": 60, "height": 50 },
+      "layers": [
+        { "type": "wall", "material": "marble_white", "position": { "x": 10, "y": 20, "z": 7 }, "dimensions": { "width": 40, "height": 30 } },
+        { "type": "wall", "material": "marble_white", "position": { "x": 5, "y": 12, "z": 8 }, "dimensions": { "width": 50, "height": 12 } }
+      ]
+    },
+    "central_hearth": {
+      "bounds": { "width": 70, "height": 55 },
+      "layers": [
+        { "type": "wall", "material": "marble_veined", "position": { "x": 5, "y": 22, "z": 8 }, "dimensions": { "width": 60, "height": 33 } },
+        { "type": "wall", "material": "iron_dark", "position": { "x": 15, "y": 12, "z": 9 }, "dimensions": { "width": 40, "height": 18 } },
+        { "type": "wall", "material": "flame_gold", "position": { "x": 20, "y": 2, "z": 10 }, "dimensions": { "width": 30, "height": 16 } }
+      ]
+    },
+    "torch_sconce": {
+      "bounds": { "width": 16, "height": 40 },
+      "layers": [
+        { "type": "pillar", "material": "iron_dark", "position": { "x": 4, "y": 12, "z": 7 }, "dimensions": { "width": 6, "height": 28 } },
+        { "type": "wall", "material": "flame_gold", "position": { "x": 1, "y": 0, "z": 8 }, "dimensions": { "width": 12, "height": 16 } }
+      ]
+    }
+  }
+}
