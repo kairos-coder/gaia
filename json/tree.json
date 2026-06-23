@@ -1,0 +1,290 @@
+{
+  "name": "Tree",
+  "description": "A family of typographic trees. From sapling to ancient hollow, through winter bare and fire-charred. Every tree is a door if you know where to look.",
+  "lineage": "world-tree",
+  "baseProperties": {
+    "chars": ["▲","▼","◆","▲","▼"],
+    "fontFamily": "monospace",
+    "letterSpacing": -2,
+    "weathering": 0.05,
+    "canBeDoor": true
+  },
+  "variants": {
+    "sapling": {
+      "description": "First growth. Thin bark. Few branches. The forest's promise.",
+      "textColor": "#4a7a3a",
+      "mortarColor": "#2d3a1f",
+      "fontSize": 12,
+      "lineHeight": 0.45,
+      "width": 22,
+      "height": 50,
+      "glyph": "╎",
+      "interaction": {
+        "label": "Observe the sapling",
+        "whispers": [
+          "Barely a season old. The bark is still smooth. You could snap it with your hands.",
+          "It leans toward the light. Patient. It has no concept of time.",
+          "A single leaf trembles. There is no wind."
+        ]
+      }
+    },
+    "mature": {
+      "description": "Full canopy. Deep roots. Bears witness to the forest.",
+      "textColor": "#3d5a2a",
+      "mortarColor": "#1a2a0f",
+      "fontSize": 20,
+      "lineHeight": 0.4,
+      "width": 70,
+      "height": 160,
+      "canopyChars": ["▲","◆","▲","▼","▲"],
+      "canopyTextColor": "#4a7a3a",
+      "canopyMortarColor": "#2d3a1f",
+      "canopyFontSize": 22,
+      "canopyWidth": 90,
+      "canopyHeight": 50,
+      "canopyOffsetX": -10,
+      "canopyOffsetY": -40,
+      "trunkChars": ["║","║","║"],
+      "trunkTextColor": "#3d2b1f",
+      "trunkMortarColor": "#2a1f15",
+      "trunkFontSize": 16,
+      "trunkWidth": 22,
+      "trunkHeight": 110,
+      "trunkOffsetX": 24,
+      "trunkOffsetY": 50,
+      "interaction": {
+        "label": "Rest beneath the tree",
+        "whispers": [
+          "The shade is cool. Something scurries in the branches above. You are not alone.",
+          "Roots surface here and there. One of them looks almost like a hand. Almost.",
+          "A bird calls. Another answers. The forest is talking. You are the subject."
+        ]
+      }
+    },
+    "ancient": {
+      "description": "Centuries deep. The forest's memory. Birds nest in its crown, fungi at its feet.",
+      "textColor": "#2d4a1a",
+      "mortarColor": "#0f1a08",
+      "fontSize": 30,
+      "lineHeight": 0.38,
+      "width": 120,
+      "height": 260,
+      "weathering": 0.15,
+      "canopyChars": ["▲","▲","◆","▲","▲"],
+      "canopyTextColor": "#3d5a2a",
+      "canopyMortarColor": "#2d3a1f",
+      "canopyFontSize": 32,
+      "canopyWidth": 140,
+      "canopyHeight": 70,
+      "canopyOffsetX": -10,
+      "canopyOffsetY": -55,
+      "trunkChars": ["║","╫","║","╫","║"],
+      "trunkTextColor": "#4a3525",
+      "trunkMortarColor": "#2a1f15",
+      "trunkFontSize": 24,
+      "trunkWidth": 34,
+      "trunkHeight": 180,
+      "trunkOffsetX": 43,
+      "trunkOffsetY": 70,
+      "roots": {
+        "chars": ["╽","╿","╽","╿","╽"],
+        "textColor": "#3d2b1f",
+        "fontSize": 12,
+        "width": 100,
+        "height": 20,
+        "offsetX": 10,
+        "offsetY": 240
+      },
+      "glyphCarving": {
+        "text": "𐤀 𐤋 𐤐 𐤄",
+        "x": 30,
+        "y": 140,
+        "size": 16,
+        "spacing": 22,
+        "color": "rgba(184,134,11,0.1)"
+      },
+      "interaction": {
+        "label": "Touch the ancient bark",
+        "whispers": [
+          "The bark is warm. Your hand fits into a groove worn by a thousand other hands.",
+          "You feel it breathing. Slow. In. Out. One breath per season.",
+          "Something is carved here. Old letters. You almost recognize them.",
+          "The tree remembers fire. It remembers flood. It remembers when this was all ice."
+        ]
+      }
+    },
+    "hollow": {
+      "description": "The ancient has opened. A doorway in the trunk. Something lives inside now.",
+      "extends": "ancient",
+      "openings": [
+        {
+          "x": 35,
+          "y": 110,
+          "width": 50,
+          "height": 85,
+          "arch": true,
+          "description": "A hollow in the trunk. Large enough to enter. The darkness inside breathes."
+        }
+      ],
+      "weathering": 0.2,
+      "interior": {
+        "description": "The hollow's interior. Dark. Warm. The walls are lined with old fur and older bones.",
+        "textColor": "#0a0806",
+        "mortarColor": "#1a1410",
+        "fontSize": 14,
+        "width": 45,
+        "height": 75,
+        "inscription": {
+          "text": "𐤇 𐤌 𐤒 𐤅 𐤌",
+          "x": 5,
+          "y": 35,
+          "fontSize": 8,
+          "color": "rgba(184,134,11,0.2)"
+        }
+      },
+      "interaction": {
+        "label": "Enter the hollow",
+        "whispers": [
+          "You duck inside. It's larger than it looked. Something shifts in the dark.",
+          "The walls are smooth. Worn by bodies. You are not the first to shelter here.",
+          "A whisper, very close: 'Leave an offering. Or don't. The tree takes either way.'",
+          "You find a small bone. A bird skull. It fits in your palm. You may keep it or return it."
+        ]
+      }
+    },
+    "fallen": {
+      "description": "The great tree lies down. A bridge. A bench. A slow return to soil.",
+      "textColor": "#3d362f",
+      "mortarColor": "#1f1a15",
+      "fontSize": 16,
+      "lineHeight": 0.5,
+      "width": 200,
+      "height": 28,
+      "weathering": 0.3,
+      "rotation": 0,
+      "mossChars": ["░","▒","░","▒","░"],
+      "mossTextColor": "#4a6b3a",
+      "mossFontSize": 10,
+      "mossWidth": 180,
+      "mossHeight": 6,
+      "mossOffsetX": 10,
+      "mossOffsetY": -6,
+      "fungi": {
+        "chars": ["◈","◇","◈"],
+        "textColor": "#c8a878",
+        "fontSize": 8,
+        "spacing": 14,
+        "offsetX": 50,
+        "offsetY": -12
+      },
+      "interaction": {
+        "label": "Sit on the fallen trunk",
+        "whispers": [
+          "The wood is soft with rot. Your weight settles into it. The ground will take it back soon.",
+          "Mushrooms line the underside. Tiny white cities. You disturb nothing.",
+          "You sit. The forest sits with you. A long silence. Then a bird, unconcerned, resumes."
+        ]
+      }
+    },
+    "winterBare": {
+      "description": "Ice in the branches. No leaves. The tree as skeleton.",
+      "extends": "ancient",
+      "textColor": "#4a4a4a",
+      "mortarColor": "#1a1a1a",
+      "canopyTextColor": "#3a3a3a",
+      "canopyMortarColor": "#1a1a1a",
+      "frostChars": ["░","▒","░","▒","░"],
+      "frostTextColor": "#c8d8e8",
+      "frostFontSize": 14,
+      "frostWidth": 130,
+      "frostHeight": 15,
+      "frostOffsetX": 0,
+      "frostOffsetY": -60,
+      "interaction": {
+        "label": "Brush the frost away",
+        "whispers": [
+          "Ice crystals cling to your fingers. They don't melt. They're not cold. They're something else.",
+          "Beneath the frost, the bark is black. The tree is not dead. It's waiting.",
+          "The branches rattle. There is no wind. It's the tree, shivering."
+        ]
+      }
+    },
+    "charred": {
+      "description": "Fire passed through. The tree stands black. But it stands.",
+      "extends": "ancient",
+      "textColor": "#1a1410",
+      "mortarColor": "#0a0806",
+      "canopyTextColor": "#0f0c08",
+      "canopyMortarColor": "#050505",
+      "trunkTextColor": "#1a1410",
+      "trunkMortarColor": "#0a0806",
+      "weathering": 0.5,
+      "embers": {
+        "active": true,
+        "color": "#c44f1c",
+        "count": 3,
+        "intervalMs": 4000
+      },
+      "glyphCarving": {
+        "text": "B U R N E D   B U T   N O T   G O N E",
+        "x": 15,
+        "y": 160,
+        "size": 7,
+        "spacing": 6,
+        "color": "rgba(196,79,28,0.3)"
+      },
+      "interaction": {
+        "label": "Touch the charred bark",
+        "whispers": [
+          "Still warm. The fire was recent. Or the tree has never stopped burning inside.",
+          "Your fingers come away black. The soot is fine. It smells like incense.",
+          "The trunk is hollow now. The fire carved a doorway where there was none before."
+        ]
+      }
+    },
+    "blooming": {
+      "description": "Spring comes. The tree erupts in flower. Sacred. Overwhelming.",
+      "extends": "ancient",
+      "canopyTextColor": "#5a8a4a",
+      "canopyMortarColor": "#3a6a2a",
+      "blossomChars": ["❀","✿","❁","✾","❋"],
+      "blossomTextColor": "#d8a8b8",
+      "blossomFontSize": 16,
+      "blossomWidth": 130,
+      "blossomHeight": 30,
+      "blossomOffsetX": 0,
+      "blossomOffsetY": -48,
+      "petalFall": {
+        "active": true,
+        "color": "rgba(216,168,184,0.6)",
+        "count": 8,
+        "intervalMs": 3000
+      },
+      "glyphCarving": {
+        "text": "❀  ✿  ❁  ✾  ❋",
+        "x": 25,
+        "y": 140,
+        "size": 14,
+        "spacing": 18,
+        "color": "rgba(216,168,184,0.25)"
+      },
+      "interaction": {
+        "label": "Stand beneath the blossoms",
+        "whispers": [
+          "Petals fall on your shoulders. They smell like honey and something older.",
+          "A bee the size of your thumb drifts past. It's not interested in you. It's on pilgrimage.",
+          "The tree is celebrating something. A wedding? A birth? A century of survival? All of them.",
+          "One blossom lands in your palm. It's warm. It pulses, once. Then it's just a flower."
+        ]
+      }
+    }
+  },
+  "interactionDefaults": {
+    "whisperInterval": 2800,
+    "particleBurst": {
+      "active": true,
+      "color": "#aacc88",
+      "count": 6
+    }
+  }
+}
