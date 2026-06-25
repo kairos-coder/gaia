@@ -131,19 +131,12 @@
         .koios-actions { margin-top:0.9rem; display:flex; gap:0.7rem; align-items:center; }
         .k-btn { font-family:'Cinzel',serif; font-size:0.63rem; letter-spacing:0.18em; background:transparent; border:1px solid rgba(30,100,60,0.38); color:#88ddaa; padding:0.45rem 1.1rem; border-radius:2px; cursor:pointer; transition:all 0.18s; }
         .k-btn:hover { background:rgba(30,100,60,0.18); border-color:#2a7a4a; }
-        .koios-gate-status { font-family:'Cinzel',serif; font-size:0.6rem; letter-spacing:0.15em; color:rgba(100,180,130,0.45); margin-left:auto; }
-        .koios-gate-status.earning { color:#ffaa44; }
-        .koios-gate-status.earned { color:var(--locked); }
         .koios-sidebar { display:flex; flex-direction:column; gap:1rem; }
         .streak-display { text-align:center; padding:1rem; background:rgba(0,0,0,0.28); border:1px solid rgba(30,100,60,0.18); border-radius:4px; }
         .streak-number { font-family:'Cinzel Decorative',serif; font-size:3rem; color:#88ddaa; line-height:1; text-shadow:0 0 30px rgba(68,204,136,0.35); }
         .streak-number.hot { color:var(--gold); text-shadow:0 0 30px rgba(201,168,76,0.55); animation:sPulse 0.45s ease-out; }
         @keyframes sPulse { 0%{transform:scale(1.3)} 100%{transform:scale(1)} }
         .streak-lbl { font-family:'Cinzel',serif; font-size:0.58rem; letter-spacing:0.3em; color:var(--gold-dim); margin-top:0.25rem; }
-        .streak-gate-pip { display:flex; gap:0.3rem; justify-content:center; margin-top:0.5rem; }
-        .pip { width:10px; height:10px; border-radius:50%; border:1px solid rgba(30,100,60,0.38); background:rgba(0,0,0,0.4); transition:all 0.3s; }
-        .pip.filled { background:var(--locked); border-color:var(--locked); box-shadow:0 0 8px rgba(68,204,136,0.6); }
-        .pip.fire { background:var(--fire-bright); border-color:var(--fire); box-shadow:0 0 8px rgba(255,68,0,0.6); }
         .koios-stats { background:rgba(0,0,0,0.28); border:1px solid rgba(30,100,60,0.18); border-radius:4px; padding:1rem; }
         .ks-title { font-family:'Cinzel',serif; font-size:0.58rem; letter-spacing:0.25em; color:var(--gold-dim); margin-bottom:0.7rem; }
         .stat-row { display:flex; justify-content:space-between; align-items:center; padding:0.28rem 0; border-bottom:1px solid rgba(30,100,60,0.1); font-family:'Cinzel',serif; font-size:0.7rem; }
@@ -211,23 +204,32 @@
         .threshold-zone.unlocked .threshold-text { color:var(--fire-bright); text-shadow:0 0 30px rgba(255,100,0,0.7); }
         .threshold-subtext { font-family:'Cinzel',serif; font-size:0.62rem; letter-spacing:0.25em; color:rgba(80,50,15,0.5); margin-top:0.4rem; transition:all 1s; }
         .threshold-zone.unlocked .threshold-subtext { color:rgba(200,120,50,0.7); }
-        .gate-paths { display:grid; grid-template-columns:1fr 1fr; gap:1rem; padding:1rem 1.25rem; }
-        .gate-path { background:rgba(0,0,0,0.4); border:1px solid rgba(80,50,20,0.25); border-radius:3px; padding:1rem; }
-        .gate-path-title { font-family:'Cinzel',serif; font-size:0.66rem; letter-spacing:0.2em; color:rgba(150,100,40,0.7); margin-bottom:0.6rem; display:flex; align-items:center; gap:0.5rem; }
-        .gate-path-title .path-status { margin-left:auto; font-size:0.6rem; }
-        .gate-path-title .path-status.complete { color:var(--locked); }
-        .gate-path-title .path-status.active { color:#ffaa44; }
-        .gate-pips { display:flex; gap:0.4rem; margin-bottom:0.6rem; }
-        .gate-pip { width:24px; height:24px; border-radius:50%; border:1px solid rgba(80,50,20,0.4); background:rgba(0,0,0,0.5); display:flex; align-items:center; justify-content:center; font-size:0.7rem; transition:all 0.4s; }
-        .gate-pip.lit { border-color:var(--locked); background:rgba(68,204,136,0.15); box-shadow:0 0 10px rgba(68,204,136,0.4); }
-        .gate-pip.lit::after { content:'✓'; color:var(--locked); font-size:0.65rem; }
-        .gate-path-desc { font-size:0.75rem; font-style:italic; color:rgba(150,100,40,0.5); line-height:1.5; }
-        .chthonic-cards { display:flex; gap:0.5rem; margin-bottom:0.6rem; flex-wrap:wrap; }
-        .chthonic-card { background:rgba(10,0,0,0.6); border:1px solid rgba(100,40,20,0.3); border-radius:3px; padding:0.4rem 0.6rem; font-family:'Cinzel',serif; font-size:0.6rem; letter-spacing:0.1em; color:rgba(180,100,60,0.55); cursor:pointer; transition:all 0.3s; display:flex; align-items:center; gap:0.3rem; }
-        .chthonic-card:hover:not(.accepted) { border-color:rgba(200,80,30,0.5); color:rgba(220,140,80,0.8); background:rgba(20,5,0,0.8); }
-        .chthonic-card.accepted { border-color:var(--fire); color:var(--fire-bright); background:rgba(30,10,0,0.9); box-shadow:0 0 12px rgba(255,68,0,0.3); cursor:default; }
-        .draw-btn { font-family:'Cinzel',serif; font-size:0.62rem; letter-spacing:0.18em; background:rgba(80,30,10,0.3); border:1px solid rgba(100,50,20,0.4); color:rgba(180,100,50,0.7); padding:0.4rem 0.9rem; border-radius:2px; cursor:pointer; transition:all 0.2s; }
-        .draw-btn:hover { background:rgba(100,40,10,0.5); border-color:rgba(180,80,30,0.6); color:var(--fire-bright); }
+
+        /* ══ CHARON PANEL ══ */
+        .charon-panel { padding:1.5rem 1.25rem; display:flex; flex-direction:column; align-items:center; gap:1.25rem; }
+        .charon-lore { max-width:560px; text-align:center; }
+        .charon-lore p { font-size:0.88rem; font-style:italic; line-height:1.9; color:rgba(180,140,80,0.65); }
+        .charon-lore p + p { margin-top:0.75rem; }
+        .charon-lore .charon-name { font-family:'Cinzel Decorative',serif; font-size:1rem; letter-spacing:0.3em; color:rgba(150,100,40,0.8); display:block; margin-bottom:0.75rem; }
+        .obol-line { font-family:'Cinzel',serif; font-size:0.72rem; letter-spacing:0.3em; color:rgba(201,168,76,0.5); text-align:center; }
+        .obol-amount { font-family:'Cinzel Decorative',serif; font-size:1.8rem; color:var(--gold); text-shadow:0 0 20px rgba(201,168,76,0.4); letter-spacing:0.1em; }
+        .obol-sub { font-family:'Cinzel',serif; font-size:0.6rem; letter-spacing:0.3em; color:var(--gold-dim); margin-top:0.2rem; }
+        .charon-btn { font-family:'Cinzel Decorative',serif; font-size:0.88rem; letter-spacing:0.25em;
+            background:linear-gradient(135deg,rgba(30,15,0,0.95),rgba(50,25,0,0.95));
+            border:1px solid rgba(180,120,40,0.5); color:var(--gold-bright);
+            padding:1rem 3rem; border-radius:2px; cursor:pointer; text-decoration:none;
+            display:inline-block; transition:all 0.3s; position:relative; overflow:hidden;
+            box-shadow:0 0 20px rgba(180,120,40,0.15); }
+        .charon-btn::before { content:''; position:absolute; inset:0;
+            background:linear-gradient(135deg,transparent,rgba(201,168,76,0.06));
+            opacity:0; transition:opacity 0.3s; }
+        .charon-btn:hover { border-color:var(--gold); box-shadow:0 0 40px rgba(201,168,76,0.3);
+            color:#fff; transform:translateY(-1px); }
+        .charon-btn:hover::before { opacity:1; }
+        .charon-paid-panel { display:none; flex-direction:column; align-items:center; gap:1rem;
+            padding:1.5rem; text-align:center; }
+        .charon-paid-panel.visible { display:flex; }
+        .charon-paid-text { font-family:'Cinzel',serif; font-size:0.72rem; letter-spacing:0.25em; color:var(--locked); }
         .crack-overlay { position:absolute; inset:0; pointer-events:none; overflow:hidden; opacity:0; transition:opacity 1.5s; }
         .threshold-zone.unlocked .crack-overlay { opacity:1; }
         .crack-line { position:absolute; background:linear-gradient(to bottom, transparent, var(--fire), rgba(255,150,50,0.8), transparent); width:1px; transition:all 1.5s; }
@@ -258,7 +260,6 @@
             .ouranos-sidebar { max-height:none; border-left:none; border-top:1px solid rgba(60,100,180,0.18); }
             #ouranosCvs { min-height:380px; }
             .koios-layout { grid-template-columns:1fr; }
-            .gate-paths { grid-template-columns:1fr; }
             .kronos-controls { grid-template-columns:1fr 1fr; }
         }
     </style>
@@ -282,7 +283,7 @@
         <div class="si"><span id="statusAge">🌫️ Silence</span></div>
         <div class="si"><span id="statusBand">Band: dormant</span></div>
         <div class="si"><span id="statusTick" style="color:rgba(100,150,100,0.45)">Tick: 0</span></div>
-        <div class="si"><span id="statusDescent" style="color:rgba(150,80,30,0.5)">Gate: sealed</span></div>
+        <div class="si"><span id="statusDescent" style="color:rgba(150,80,30,0.5)">⛵ Charon: waiting</span></div>
         <div class="si"><span id="statusSky" style="color:rgba(140,180,240,0.5)">Sky: loading</span></div>
     </div>
 
@@ -298,103 +299,20 @@
             <div class="ouranos-sidebar">
                <div class="sky-section-lbl" style="margin-top:0.3rem;">🏛️ THE PANTHEON</div>
 <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.4rem;padding:0.4rem 0;">
-
-    <!-- Apollo -->
-    <button onclick="window.open('apollo/apolloTable.html','_blank')" 
-        style="font-family:'Cinzel',serif;font-size:0.52rem;letter-spacing:0.12em;background:rgba(255,170,50,0.1);border:1px solid rgba(255,170,50,0.22);color:#ffaa44;padding:0.4rem 0.5rem;border-radius:2px;cursor:pointer;transition:all 0.2s;"
-        onmouseover="this.style.background='rgba(255,170,50,0.2)';"
-        onmouseout="this.style.background='rgba(255,170,50,0.1)';">
-        ☀️ APOLLO · Tarot
-    </button>
-
-    <!-- Aphrodite -->
-    <button onclick="window.open('aphrodite/index.html','_blank')" 
-        style="font-family:'Cinzel',serif;font-size:0.52rem;letter-spacing:0.12em;background:rgba(255,100,150,0.1);border:1px solid rgba(255,100,150,0.22);color:#ff88aa;padding:0.4rem 0.5rem;border-radius:2px;cursor:pointer;transition:all 0.2s;"
-        onmouseover="this.style.background='rgba(255,100,150,0.2)';"
-        onmouseout="this.style.background='rgba(255,100,150,0.1)';">
-        💋 APHRODITE · Heart
-    </button>
-
-    <!-- Athena -->
-    <button onclick="window.open('athena/index.html','_blank')" 
-        style="font-family:'Cinzel',serif;font-size:0.52rem;letter-spacing:0.12em;background:rgba(170,136,238,0.1);border:1px solid rgba(170,136,238,0.22);color:#aa88ee;padding:0.4rem 0.5rem;border-radius:2px;cursor:pointer;transition:all 0.2s;"
-        onmouseover="this.style.background='rgba(170,136,238,0.2)';"
-        onmouseout="this.style.background='rgba(170,136,238,0.1)';">
-        🦉 ATHENA · Wisdom
-    </button>
-    
-    <!-- Artemis -->
-    <button onclick="window.open('artemis/index.html','_blank')" 
-        style="font-family:'Cinzel',serif;font-size:0.52rem;letter-spacing:0.12em;background:rgba(180,200,180,0.1);border:1px solid rgba(180,200,180,0.22);color:#aaccaa;padding:0.4rem 0.5rem;border-radius:2px;cursor:pointer;transition:all 0.2s;"
-        onmouseover="this.style.background='rgba(180,200,180,0.2)';"
-        onmouseout="this.style.background='rgba(180,200,180,0.1)';">
-        🏹 ARTEMIS · Hunt
-    </button>
-
-    <!-- Demeter -->
-    <button onclick="window.open('demeter/index.html','_blank')" 
-        style="font-family:'Cinzel',serif;font-size:0.52rem;letter-spacing:0.12em;background:rgba(120,180,100,0.1);border:1px solid rgba(120,180,100,0.22);color:#88bb66;padding:0.4rem 0.5rem;border-radius:2px;cursor:pointer;transition:all 0.2s;"
-        onmouseover="this.style.background='rgba(120,180,100,0.2)';"
-        onmouseout="this.style.background='rgba(120,180,100,0.1)';">
-        🌾 DEMETER · Harvest
-    </button>
-    
-        <!-- Hephaestus -->
-    <button onclick="window.open('hephaestus/index.html','_blank')" 
-        style="font-family:'Cinzel',serif;font-size:0.52rem;letter-spacing:0.12em;background:rgba(255,130,50,0.1);border:1px solid rgba(255,130,50,0.22);color:#ff8833;padding:0.4rem 0.5rem;border-radius:2px;cursor:pointer;transition:all 0.2s;"
-        onmouseover="this.style.background='rgba(255,130,50,0.2)';"
-        onmouseout="this.style.background='rgba(255,130,50,0.1)';">
-        🔨 HEPHAESTUS · Forge
-    </button>
-    
-    <!-- Hera -->
-    <button onclick="window.open('hera/index.html','_blank')" 
-        style="font-family:'Cinzel',serif;font-size:0.52rem;letter-spacing:0.12em;background:rgba(136,200,220,0.1);border:1px solid rgba(136,200,220,0.22);color:#88ccdd;padding:0.4rem 0.5rem;border-radius:2px;cursor:pointer;transition:all 0.2s;"
-        onmouseover="this.style.background='rgba(136,200,220,0.2)';"
-        onmouseout="this.style.background='rgba(136,200,220,0.1)';">
-        🪄 HERA · Hearth
-    </button>
-
-    <!-- Hermes -->
-    <button onclick="window.open('hermes/index.html','_blank')" 
-        style="font-family:'Cinzel',serif;font-size:0.52rem;letter-spacing:0.12em;background:rgba(136,200,220,0.1);border:1px solid rgba(136,200,220,0.22);color:#88ccdd;padding:0.4rem 0.5rem;border-radius:2px;cursor:pointer;transition:all 0.2s;"
-        onmouseover="this.style.background='rgba(136,200,220,0.2)';"
-        onmouseout="this.style.background='rgba(136,200,220,0.1)';">
-        🪄 HERMES · Messenger
-    </button>
-    
-    <!-- Poseidon -->
-    <button onclick="window.open('poseidon/index.html','_blank')" 
-        style="font-family:'Cinzel',serif;font-size:0.52rem;letter-spacing:0.12em;background:rgba(136,200,220,0.1);border:1px solid rgba(136,200,220,0.22);color:#88ccdd;padding:0.4rem 0.5rem;border-radius:2px;cursor:pointer;transition:all 0.2s;"
-        onmouseover="this.style.background='rgba(136,200,220,0.2)';"
-        onmouseout="this.style.background='rgba(136,200,220,0.1)';">
-        🪄 POSEIDON · Sea
-    </button>
-    
-    <!-- Zeus -->
-    <button onclick="window.open('zeus/index.html','_blank')" 
-        style="font-family:'Cinzel',serif;font-size:0.52rem;letter-spacing:0.12em;background:rgba(200,180,120,0.1);border:1px solid rgba(200,180,120,0.22);color:#ddcc88;padding:0.4rem 0.5rem;border-radius:2px;cursor:pointer;transition:all 0.2s;"
-        onmouseover="this.style.background='rgba(200,180,120,0.2)';"
-        onmouseout="this.style.background='rgba(200,180,120,0.1)';">
-        ⚡ ZEUS · Court
-    </button>
-    
+    <button onclick="window.open('apollo/apolloTable.html','_blank')" style="font-family:'Cinzel',serif;font-size:0.52rem;letter-spacing:0.12em;background:rgba(255,170,50,0.1);border:1px solid rgba(255,170,50,0.22);color:#ffaa44;padding:0.4rem 0.5rem;border-radius:2px;cursor:pointer;transition:all 0.2s;" onmouseover="this.style.background='rgba(255,170,50,0.2)';" onmouseout="this.style.background='rgba(255,170,50,0.1)';">☀️ APOLLO · Tarot</button>
+    <button onclick="window.open('aphrodite/index.html','_blank')" style="font-family:'Cinzel',serif;font-size:0.52rem;letter-spacing:0.12em;background:rgba(255,100,150,0.1);border:1px solid rgba(255,100,150,0.22);color:#ff88aa;padding:0.4rem 0.5rem;border-radius:2px;cursor:pointer;transition:all 0.2s;" onmouseover="this.style.background='rgba(255,100,150,0.2)';" onmouseout="this.style.background='rgba(255,100,150,0.1)';">💋 APHRODITE · Heart</button>
+    <button onclick="window.open('athena/index.html','_blank')" style="font-family:'Cinzel',serif;font-size:0.52rem;letter-spacing:0.12em;background:rgba(170,136,238,0.1);border:1px solid rgba(170,136,238,0.22);color:#aa88ee;padding:0.4rem 0.5rem;border-radius:2px;cursor:pointer;transition:all 0.2s;" onmouseover="this.style.background='rgba(170,136,238,0.2)';" onmouseout="this.style.background='rgba(170,136,238,0.1)';">🦉 ATHENA · Wisdom</button>
+    <button onclick="window.open('artemis/index.html','_blank')" style="font-family:'Cinzel',serif;font-size:0.52rem;letter-spacing:0.12em;background:rgba(180,200,180,0.1);border:1px solid rgba(180,200,180,0.22);color:#aaccaa;padding:0.4rem 0.5rem;border-radius:2px;cursor:pointer;transition:all 0.2s;" onmouseover="this.style.background='rgba(180,200,180,0.2)';" onmouseout="this.style.background='rgba(180,200,180,0.1)';">🏹 ARTEMIS · Hunt</button>
+    <button onclick="window.open('demeter/index.html','_blank')" style="font-family:'Cinzel',serif;font-size:0.52rem;letter-spacing:0.12em;background:rgba(120,180,100,0.1);border:1px solid rgba(120,180,100,0.22);color:#88bb66;padding:0.4rem 0.5rem;border-radius:2px;cursor:pointer;transition:all 0.2s;" onmouseover="this.style.background='rgba(120,180,100,0.2)';" onmouseout="this.style.background='rgba(120,180,100,0.1)';">🌾 DEMETER · Harvest</button>
+    <button onclick="window.open('hephaestus/index.html','_blank')" style="font-family:'Cinzel',serif;font-size:0.52rem;letter-spacing:0.12em;background:rgba(255,130,50,0.1);border:1px solid rgba(255,130,50,0.22);color:#ff8833;padding:0.4rem 0.5rem;border-radius:2px;cursor:pointer;transition:all 0.2s;" onmouseover="this.style.background='rgba(255,130,50,0.2)';" onmouseout="this.style.background='rgba(255,130,50,0.1)';">🔨 HEPHAESTUS · Forge</button>
+    <button onclick="window.open('hera/index.html','_blank')" style="font-family:'Cinzel',serif;font-size:0.52rem;letter-spacing:0.12em;background:rgba(136,200,220,0.1);border:1px solid rgba(136,200,220,0.22);color:#88ccdd;padding:0.4rem 0.5rem;border-radius:2px;cursor:pointer;transition:all 0.2s;" onmouseover="this.style.background='rgba(136,200,220,0.2)';" onmouseout="this.style.background='rgba(136,200,220,0.1)';">🪄 HERA · Hearth</button>
+    <button onclick="window.open('hermes/index.html','_blank')" style="font-family:'Cinzel',serif;font-size:0.52rem;letter-spacing:0.12em;background:rgba(136,200,220,0.1);border:1px solid rgba(136,200,220,0.22);color:#88ccdd;padding:0.4rem 0.5rem;border-radius:2px;cursor:pointer;transition:all 0.2s;" onmouseover="this.style.background='rgba(136,200,220,0.2)';" onmouseout="this.style.background='rgba(136,200,220,0.1)';">🪄 HERMES · Messenger</button>
+    <button onclick="window.open('poseidon/index.html','_blank')" style="font-family:'Cinzel',serif;font-size:0.52rem;letter-spacing:0.12em;background:rgba(136,200,220,0.1);border:1px solid rgba(136,200,220,0.22);color:#88ccdd;padding:0.4rem 0.5rem;border-radius:2px;cursor:pointer;transition:all 0.2s;" onmouseover="this.style.background='rgba(136,200,220,0.2)';" onmouseout="this.style.background='rgba(136,200,220,0.1)';">🪄 POSEIDON · Sea</button>
+    <button onclick="window.open('zeus/index.html','_blank')" style="font-family:'Cinzel',serif;font-size:0.52rem;letter-spacing:0.12em;background:rgba(200,180,120,0.1);border:1px solid rgba(200,180,120,0.22);color:#ddcc88;padding:0.4rem 0.5rem;border-radius:2px;cursor:pointer;transition:all 0.2s;" onmouseover="this.style.background='rgba(200,180,120,0.2)';" onmouseout="this.style.background='rgba(200,180,120,0.1)';">⚡ ZEUS · Court</button>
 </div>
-<div style="font-size:0.5rem;font-style:italic;color:rgba(200,180,100,0.25);text-align:center;padding:0.2rem 0 0.3rem;">
-    The pantheon assembles. Eight gods. One GAIA.
-</div>
-                <!-- Add this in the ouranos-sidebar, after the pantheon grid and before the sun-moon-strip -->
+<div style="font-size:0.5rem;font-style:italic;color:rgba(200,180,100,0.25);text-align:center;padding:0.2rem 0 0.3rem;">The pantheon assembles. Eight gods. One GAIA.</div>
 <div style="text-align:center;padding:0.5rem 0;border-top:1px solid rgba(201,168,76,0.08);border-bottom:1px solid rgba(201,168,76,0.08);margin:0.4rem 0;">
-    <a href="council.html" 
-       style="font-family:'Cinzel Decorative',serif;font-size:0.65rem;letter-spacing:0.25em;
-              color:var(--council-gold, #ddcc88);text-decoration:none;
-              background:rgba(180,160,100,0.06);border:1px solid rgba(180,160,100,0.25);
-              padding:0.5rem 1.5rem;border-radius:3px;display:inline-block;
-              transition:all 0.3s;"
-       onmouseover="this.style.background='rgba(180,160,100,0.15)';this.style.borderColor='#998855';"
-       onmouseout="this.style.background='rgba(180,160,100,0.06)';this.style.borderColor='rgba(180,160,100,0.25)';">
-        🏛️ Comitia Titanica
-    </a>
+    <a href="council.html" style="font-family:'Cinzel Decorative',serif;font-size:0.65rem;letter-spacing:0.25em;color:#ddcc88;text-decoration:none;background:rgba(180,160,100,0.06);border:1px solid rgba(180,160,100,0.25);padding:0.5rem 1.5rem;border-radius:3px;display:inline-block;transition:all 0.3s;" onmouseover="this.style.background='rgba(180,160,100,0.15)';this.style.borderColor='#998855';" onmouseout="this.style.background='rgba(180,160,100,0.06)';this.style.borderColor='rgba(180,160,100,0.25)';">🏛️ Comitia Titanica</a>
 </div>
                 <div class="sky-section-lbl">☉ APOLLO · ☽ ARTEMIS</div>
                 <div class="sun-moon-strip">
@@ -481,18 +399,12 @@
                     <div class="koios-actions">
                         <button class="k-btn" id="askKoiosBtn">⚗️ Ask Koios</button>
                         <button class="k-btn" id="koiosSkip">↷ Skip</button>
-                        <span class="koios-gate-status" id="koiosGateStatus">Descent: answer 3 in a row</span>
                     </div>
                 </div>
                 <div class="koios-sidebar">
                     <div class="streak-display">
                         <div class="streak-number" id="streakNum">0</div>
                         <div class="streak-lbl">CURRENT STREAK</div>
-                        <div class="streak-gate-pip" id="streakPips">
-                            <div class="pip" id="pip1"></div>
-                            <div class="pip" id="pip2"></div>
-                            <div class="pip" id="pip3"></div>
-                        </div>
                     </div>
                     <div class="koios-stats">
                         <div class="ks-title">SESSION RECORD</div>
@@ -577,32 +489,38 @@
         <div class="fire-glow"></div>
         <div class="threshold-inscription">
             <div class="threshold-text" id="thresholdText">HERE THE LIGHT ENDS</div>
-            <div class="threshold-subtext" id="thresholdSub">Seal unbroken — Cerberus watches — prove yourself worthy</div>
+            <div class="threshold-subtext" id="thresholdSub">Charon waits at the river's edge — the obol is one coin</div>
         </div>
-        <div class="gate-paths">
-            <div class="gate-path" id="gatePath1">
-                <div class="gate-path-title">
-                    ⚗️ THE TRIAL OF KOIOS
-                    <span class="path-status" id="koiosPathStatus">0 / 3</span>
-                </div>
-                <div class="gate-pips">
-                    <div class="gate-pip" id="gPip1"></div>
-                    <div class="gate-pip" id="gPip2"></div>
-                    <div class="gate-pip" id="gPip3"></div>
-                </div>
-                <div class="gate-path-desc">Answer three questions correctly in a row. Koios does not accept ignorance at the threshold.</div>
+
+        <!-- CHARON PANEL — shown before payment -->
+        <div class="charon-panel" id="charonPanel">
+            <div class="charon-lore">
+                <span class="charon-name">⛵ CHARON</span>
+                <p>The Ferryman does not speak. He extends one hand.</p>
+                <p>He has always been here, at the edge of what you know. The river Styx is not a punishment — it is a threshold. To cross it costs one obol. Not because Charon is greedy. Because the act of paying is the act of choosing.</p>
+                <p>Anyone may find the other shore by walking around. Charon is not a lock. Charon is a <em>lesson</em>.</p>
             </div>
-            <div class="gate-path" id="gatePath2">
-                <div class="gate-path-title">
-                    🌑 THE DRAW OF SHADOWS
-                    <span class="path-status" id="cardPathStatus">0 / 3</span>
-                </div>
-                <div class="chthonic-cards" id="chthonicCards">
-                    <div style="font-size:0.75rem;font-style:italic;color:rgba(150,80,40,0.5)">Draw to reveal today's void...</div>
-                </div>
-                <button class="draw-btn" id="drawChthonicBtn">🌑 Draw from the Void</button>
+            <div style="text-align:center">
+                <div class="obol-line">THE OBOL OF PASSAGE</div>
+                <div class="obol-amount">$1.61</div>
+                <div class="obol-sub">one coin · one crossing · one card from the void</div>
+            </div>
+            <a class="charon-btn" href="https://buy.stripe.com/eVq8wPfnKaTX98A9f22Ji00" target="_blank" rel="noopener">
+                ⛵ &nbsp; PAY THE FERRYMAN &nbsp; ⛵
+            </a>
+            <div style="font-family:'Cinzel',serif;font-size:0.58rem;letter-spacing:0.18em;color:rgba(120,80,30,0.4);text-align:center;max-width:380px;">
+                Stripe will return you here with your passage confirmed.<br>Your card from Charon awaits on the other side.
             </div>
         </div>
+
+        <!-- PAID PANEL — shown after ?paid=true -->
+        <div class="charon-paid-panel" id="charonPaidPanel">
+            <div class="charon-paid-text">⛵ THE OBOL IS COUNTED · THE STONE CRACKS · THE PATH IS OPEN</div>
+            <div style="font-size:0.8rem;font-style:italic;color:rgba(180,130,60,0.65);text-align:center;max-width:420px;line-height:1.8;">
+                Charon has received his coin. Your greeting card from the Ferryman has been sent. The descent awaits.
+            </div>
+        </div>
+
         <div class="descent-btn-wrap">
             <button class="descent-btn" id="descentBtn" disabled>
                 🌀 &nbsp; DESCEND INTO THE UNDERWORLD &nbsp; 🌀
@@ -623,9 +541,6 @@
 </div>
 <div id="toast"></div>
 
-<!-- ══════════════════════════════════════════════
-     GAIA NATIVE CELESTIAL ENGINE
-     ══════════════════════════════════════════════ -->
 <script src="js/gaia-celestial.js"></script>
 <script src="js/gaia-suncalc.js"></script>
 <script src="js/gaia-astronomy.js"></script>
@@ -667,46 +582,26 @@ const TITANS = [
 ];
 
 // ══════════════════════════════════════════════
-// DESCENT GATE STATE
+// CHARON GATE — ?paid=true detection
 // ══════════════════════════════════════════════
 let descentUnlocked = false;
-let koiosGateStreak = 0;
-let cardAccepted = 0;
-let drawnCards = [];
-const GATE_KOIOS_NEEDED = 3;
-const GATE_CARDS_NEEDED = 3;
 
-function updateGateState() {
-    const kDone = koiosGateStreak >= GATE_KOIOS_NEEDED;
-    const cDone = cardAccepted >= GATE_CARDS_NEEDED;
-    const shouldUnlock = kDone || cDone;
-
-    for(let i=1;i<=3;i++){
-        const pip = document.getElementById(`gPip${i}`);
-        if(pip) pip.className = 'gate-pip' + (i <= koiosGateStreak ? ' lit' : '');
-    }
-    document.getElementById('koiosPathStatus').textContent = `${Math.min(koiosGateStreak,3)} / 3`;
-    document.getElementById('koiosPathStatus').className = 'path-status' + (kDone?' complete':koiosGateStreak>0?' active':'');
-    document.getElementById('cardPathStatus').textContent = `${cardAccepted} / 3`;
-    document.getElementById('cardPathStatus').className = 'path-status' + (cDone?' complete':cardAccepted>0?' active':'');
-
-    for(let i=1;i<=3;i++){
-        const pip = document.getElementById(`pip${i}`);
-        if(pip) pip.className = 'pip' + (i <= koiosGateStreak ? (i===3&&kDone?' fire':' filled') : '');
-    }
-
-    const statusEl = document.getElementById('koiosGateStatus');
-    if(kDone){ statusEl.textContent='✦ Trial passed — gate open'; statusEl.className='koios-gate-status earned'; }
-    else if(koiosGateStreak>0){ statusEl.textContent=`${koiosGateStreak}/3 — keep going`; statusEl.className='koios-gate-status earning'; }
-    else { statusEl.textContent='Descent: answer 3 in a row'; statusEl.className='koios-gate-status'; }
-
-    if(shouldUnlock && !descentUnlocked) {
+function checkCharonGate() {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('paid') === 'true') {
         descentUnlocked = true;
+        // Hide payment panel, show confirmation
+        document.getElementById('charonPanel').style.display = 'none';
+        document.getElementById('charonPaidPanel').classList.add('visible');
         crackTheStone();
+        // Clean URL without reload
+        window.history.replaceState({}, '', window.location.pathname);
+        setTimeout(() => {
+            ticker('⛵ Charon has received his obol. The coin is counted. The stone cracks.');
+            ticker('🌑 Phobos and Deimos step aside. The path opens downward.');
+            toast('⛵ Charon accepts your obol. The descent is open.', 'fire');
+        }, 600);
     }
-
-    document.getElementById('statusDescent').textContent = descentUnlocked ? '🔥 Gate: open' : '⛓️ Gate: sealed';
-    document.getElementById('statusDescent').style.color = descentUnlocked ? 'var(--fire-bright)' : 'rgba(150,80,30,0.5)';
 }
 
 function crackTheStone() {
@@ -716,8 +611,8 @@ function crackTheStone() {
     btn.classList.add('active');
     btn.disabled = false;
     document.getElementById('thresholdText').textContent = 'THE STONE CRACKS — FIRE BENEATH';
-    document.getElementById('thresholdSub').textContent  = 'The gate is open — the path to the Underworld awaits';
-    document.getElementById('cerberusWarn').textContent  = 'Cerberus steps aside. Phobos and Deimos watch from the shadows. The descent begins.';
+    document.getElementById('thresholdSub').textContent  = 'The obol is paid — the gate is open — the crossing begins';
+    document.getElementById('cerberusWarn').textContent  = 'Cerberus steps aside. You paid. That is all he requires.';
 
     const overlay = document.getElementById('crackOverlay');
     overlay.innerHTML = '';
@@ -733,8 +628,8 @@ function crackTheStone() {
         overlay.appendChild(el);
     });
 
-    ticker('🔥 The stone cracks. Fire beneath. Phobos and Deimos await. The path opens.');
-    toast('🌀 The gate yields. Descend into the Underworld.', 'fire');
+    document.getElementById('statusDescent').textContent = '🔥 Charon: obol taken';
+    document.getElementById('statusDescent').style.color = 'var(--fire-bright)';
 }
 
 // ══════════════════════════════════════════════
@@ -756,7 +651,7 @@ const drawStars=t=>{starCtx.clearRect(0,0,starCvs.width,starCvs.height);stars.fo
 (function anim(t){drawStars(t);requestAnimationFrame(anim);})(0);
 
 // ══════════════════════════════════════════════
-// OURANOS CANVAS — ENHANCED SKY RENDERER
+// OURANOS CANVAS
 // ══════════════════════════════════════════════
 const oCvs = document.getElementById('ouranosCvs');
 const oCtx = oCvs.getContext('2d');
@@ -795,18 +690,13 @@ function drawOuranos() {
     const W = oCvs.width, H = oCvs.height;
     oCtx.clearRect(0, 0, W, H);
     ouranosTick += 0.0015;
-
     const cx = W/2, cy = H/2;
-
-    // Deep sky gradient — centered on zodiac
     const grad = oCtx.createRadialGradient(cx, cy, 0, cx, cy, Math.max(W,H)*0.55);
     grad.addColorStop(0, 'rgba(12,16,40,0.95)');
     grad.addColorStop(0.5, 'rgba(6,10,28,0.97)');
     grad.addColorStop(1, 'rgba(2,4,15,0.99)');
     oCtx.fillStyle = grad;
     oCtx.fillRect(0, 0, W, H);
-
-    // Background stars
     for(let i=0;i<200;i++){
         const sx = ((i*137.5)%100)/100*W;
         const sy = ((i*97.3)%100)/100*H;
@@ -816,8 +706,6 @@ function drawOuranos() {
         oCtx.fillStyle = `rgba(200,210,240,${sa})`;
         oCtx.fill();
     }
-
-    // Constellation lines
     CONSTELLATIONS.forEach(c => {
         oCtx.strokeStyle = 'rgba(100,130,200,0.10)';
         oCtx.lineWidth = 0.5;
@@ -843,12 +731,8 @@ function drawOuranos() {
             oCtx.fillText(c.name.toUpperCase(), labelX, labelY+14);
         }
     });
-
-    // ══ ZODIAC RINGS ══
     const rZodiac = Math.min(W, H) * 0.42;
     const rInner = rZodiac * 0.82;
-
-    // Outer ring
     oCtx.strokeStyle = 'rgba(201,168,76,0.12)';
     oCtx.lineWidth = 1;
     oCtx.setLineDash([3, 7]);
@@ -856,8 +740,6 @@ function drawOuranos() {
     oCtx.arc(cx, cy, rZodiac, 0, Math.PI*2);
     oCtx.stroke();
     oCtx.setLineDash([]);
-
-    // Inner ring
     oCtx.strokeStyle = 'rgba(201,168,76,0.05)';
     oCtx.lineWidth = 0.5;
     oCtx.setLineDash([1, 10]);
@@ -865,23 +747,16 @@ function drawOuranos() {
     oCtx.arc(cx, cy, rInner, 0, Math.PI*2);
     oCtx.stroke();
     oCtx.setLineDash([]);
-
-    // Zodiac glyphs + names
     const SIGN_GLYPHS = ['♈','♉','♊','♋','♌','♍','♎','♏','♐','♑','♒','♓'];
     const SIGN_NAMES = ['Aries','Taurus','Gemini','Cancer','Leo','Virgo','Libra','Scorpio','Sagittarius','Capricorn','Aquarius','Pisces'];
-
     for(let i=0;i<12;i++){
         const angle = (i/12)*Math.PI*2 - Math.PI/2;
-
-        // Tick mark
         oCtx.strokeStyle = 'rgba(201,168,76,0.15)';
         oCtx.lineWidth = 0.5;
         oCtx.beginPath();
         oCtx.moveTo(cx + Math.cos(angle)*(rZodiac-3), cy + Math.sin(angle)*(rZodiac-3));
         oCtx.lineTo(cx + Math.cos(angle)*(rZodiac+3), cy + Math.sin(angle)*(rZodiac+3));
         oCtx.stroke();
-
-        // Glyph
         const gx = cx + Math.cos(angle)*(rZodiac+14);
         const gy = cy + Math.sin(angle)*(rZodiac+14);
         oCtx.font = '11px serif';
@@ -889,40 +764,29 @@ function drawOuranos() {
         oCtx.textAlign = 'center';
         oCtx.textBaseline = 'middle';
         oCtx.fillText(SIGN_GLYPHS[i], gx, gy);
-
-        // Name
         const nx = cx + Math.cos(angle)*(rZodiac+30);
         const ny = cy + Math.sin(angle)*(rZodiac+30);
         oCtx.font = '6px Cinzel, serif';
         oCtx.fillStyle = 'rgba(201,168,76,0.18)';
         oCtx.fillText(SIGN_NAMES[i].toUpperCase(), nx, ny);
     }
-
-    // ══ PLANETS ══
     if(skyData && skyData.planets) {
         const SIGN_ORDER = ['Aries','Taurus','Gemini','Cancer','Leo','Virgo','Libra','Scorpio','Sagittarius','Capricorn','Aquarius','Pisces'];
         const placedLabels = [];
-
         Object.entries(skyData.planets).forEach(([name, pos]) => {
             if(!pos || !pos.sign) return;
             const signIdx = SIGN_ORDER.indexOf(pos.sign);
             if(signIdx < 0) return;
-
             const signAngle = (signIdx/12)*Math.PI*2 - Math.PI/2;
             const degAngle = ((pos.degree||0)/30)*(Math.PI*2/12);
             const totalAngle = signAngle + degAngle;
-
             const nameHash = name.charCodeAt(0)*17 + (name.charCodeAt(name.length-1)||0)*7;
             const rVariance = (nameHash % 40) - 20;
             const pr = rZodiac * 0.92 + rVariance;
-
             const px = cx + Math.cos(totalAngle)*pr;
             const py = cy + Math.sin(totalAngle)*pr;
-
             const color = PLANET_COLORS[name] || '#ffffff';
             const radius = PLANET_RADII[name] || 5;
-
-            // Glow
             oCtx.shadowColor = color;
             oCtx.shadowBlur = 12;
             oCtx.beginPath();
@@ -930,21 +794,15 @@ function drawOuranos() {
             oCtx.fillStyle = color;
             oCtx.fill();
             oCtx.shadowBlur = 0;
-
-            // Label position — avoid overlap
             let labelY = py - radius - 9;
             const tooClose = placedLabels.find(l => Math.abs(l.x - px) < 30 && Math.abs(l.y - labelY) < 14);
             if(tooClose) labelY = py + radius + 15;
             placedLabels.push({x: px, y: labelY});
-
-            // Glyph
             oCtx.font = '11px serif';
             oCtx.fillStyle = color;
             oCtx.textAlign = 'center';
             oCtx.textBaseline = 'middle';
             oCtx.fillText(pos.glyph || '·', px, labelY);
-
-            // God name
             if(pos.god) {
                 oCtx.font = '7px Cinzel, serif';
                 oCtx.fillStyle = color + '77';
@@ -952,8 +810,6 @@ function drawOuranos() {
             }
         });
     }
-
-    // Equator line
     oCtx.strokeStyle = 'rgba(100,150,200,0.06)';
     oCtx.lineWidth = 0.5;
     oCtx.setLineDash([4, 16]);
@@ -962,7 +818,6 @@ function drawOuranos() {
     oCtx.lineTo(W, cy);
     oCtx.stroke();
     oCtx.setLineDash([]);
-
     oCtx.textAlign = 'left';
     oCtx.textBaseline = 'alphabetic';
     requestAnimationFrame(drawOuranos);
@@ -970,7 +825,7 @@ function drawOuranos() {
 drawOuranos();
 
 // ══════════════════════════════════════════════
-// SKY LOADER — GAIA native engine
+// SKY LOADER
 // ══════════════════════════════════════════════
 const PLANET_ORDER = ['mercury','venus','mars','jupiter','saturn','uranus','neptune','pluto'];
 
@@ -979,7 +834,6 @@ function loadSky() {
         const state = GaiaSuncalc.getFullState();
         const planets = GaiaAstronomy.getAllPlanets();
         skyData = { ...state, planets };
-
         if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition(pos => {
                 const lat = pos.coords.latitude;
@@ -992,7 +846,6 @@ function loadSky() {
         } else {
             renderSkyData(skyData);
         }
-
         document.getElementById('statusSky').textContent = 'Sky: live';
         document.getElementById('statusSky').style.color = 'var(--locked)';
         setTimeout(loadSky, 5 * 60 * 1000);
@@ -1010,15 +863,12 @@ function renderSkyData(sky) {
     const moon = sky.planets?.moon;
     const asc = sky.ascendant;
     const period = sky.period === 'SUN' ? '☀️ Day — Apollo Reigns' : '🌙 Night — Artemis Watches';
-
     document.getElementById('ouranosMeta').textContent =
         `${period} · Asc: ${asc?.sign||'—'} ${asc?.glyph||''} · ${new Date(sky.timestamp).toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'})}`;
-
     if(sun) {
         document.getElementById('sunSign').textContent = `${sun.sign} ${sun.glyph}`;
         document.getElementById('sunArcana').textContent = sun.arcana ? `${sun.arcana.glyph} ${sun.arcana.name}` : 'XIX The Sun';
     }
-
     if(moon) {
         const moonEmoji = moon.phase < 0.0625 || moon.phase > 0.9375 ? '🌑' :
                           moon.phase < 0.25 ? '🌒' :
@@ -1029,7 +879,6 @@ function renderSkyData(sky) {
         document.getElementById('moonSign').textContent = `${moon.sign} ${moon.glyph}`;
         document.getElementById('moonArcana').textContent = moon.arcana ? `${moon.arcana.glyph} ${moon.arcana.name}` : 'XVIII The Moon';
     }
-
     const list = document.getElementById('planetList');
     list.innerHTML = PLANET_ORDER.map(p => {
         const pos = sky.planets?.[p];
@@ -1046,7 +895,6 @@ function renderSkyData(sky) {
             <div class="planet-horizon ${above?'ph-above':'ph-below'}"></div>
         </div>`;
     }).join('');
-
     renderWarReport(sky.planets);
     renderInvocation(sky);
 }
@@ -1204,9 +1052,7 @@ const startField=()=>{
             const t=TITANS[(tickN/40)%TITANS.length|0];
             ticker(`${t.glyph} ${t.name}: ${getLore(t.name,coh,isLocked)}`);
         }
-
         drawPontus(coh,isLocked,pontHz);
-
         document.getElementById('dotLock').className='sd '+(isLocked?'locked':'unlocked');
         document.getElementById('statusLock').textContent=isLocked?'PHASE LOCKED':'SEEKING LOCK';
         document.getElementById('statusAge').textContent=`${age.glyph} ${age.label}`;
@@ -1249,7 +1095,7 @@ const updateTitanVoices=(coh,isLocked)=>{
 };
 
 // ══════════════════════════════════════════════
-// KOIOS TRIVIA + GATE
+// KOIOS TRIVIA (standalone — no gate function)
 // ══════════════════════════════════════════════
 const QS=[
     {id:'m001',q:'Who is the Titaness of Memory and mother of the Nine Muses?',c:['Themis','Mnemosyne','Rhea','Tethys'],a:1,e:'Mnemosyne lay with Zeus for nine nights and bore the nine Muses. Her name is the root of "mnemonic."',tier:0,dom:'mythology'},
@@ -1302,14 +1148,11 @@ window.koiosAnswer=idx=>{
     if(correct){
         kS.streak++;kS.correct++;
         if(kS.streak>kS.best)kS.best=kS.streak;
-        koiosGateStreak = Math.min(koiosGateStreak+1, GATE_KOIOS_NEEDED);
         document.getElementById('koiosLore').textContent=
-            koiosGateStreak>=GATE_KOIOS_NEEDED ? 'Koios steps aside. The trial is complete.' :
             kS.streak>5 ? 'Koios stands. He is genuinely impressed.' :
             'Koios nods slowly. Correct. He is almost impressed.';
     } else {
         kS.streak=0;
-        koiosGateStreak=0;
         document.getElementById('koiosLore').textContent='Koios sighs. Incorrect. The streak is broken.';
     }
     document.getElementById('koiosExp').textContent=kS.active.exp;
@@ -1326,74 +1169,13 @@ window.koiosAnswer=idx=>{
     document.getElementById('sAccuracy').textContent=`${Math.round(kS.correct/kS.answered*100)}%`;
     document.getElementById('sTier').textContent=kTier().l;
     kS.active=null;
-    updateGateState();
 };
 
 document.getElementById('askKoiosBtn').onclick=koiosAsk;
 document.getElementById('koiosSkip').onclick=()=>{
-    kS.streak=0; koiosGateStreak=0;
+    kS.streak=0;
     document.getElementById('streakNum').textContent='0';
-    updateGateState();
     koiosAsk();
-};
-
-// ══════════════════════════════════════════════
-// CHTHONIC CARD DRAW
-// ══════════════════════════════════════════════
-document.getElementById('drawChthonicBtn').onclick = () => {
-    if(cardAccepted >= GATE_CARDS_NEEDED) return;
-    if(typeof Chthonic === 'undefined') {
-        toast('chthonic.js not loaded', 'error'); return;
-    }
-
-    const planets = skyData?.planets || {};
-    let pool = [];
-
-    if(Object.keys(planets).length > 0) {
-        const war = Chthonic.getWarReport(planets);
-        pool = war.claims
-            .filter(c => c.chthonic && !drawnCards.find(d=>d.name===c.chthonic.name))
-            .map(c => c.chthonic);
-    }
-
-    if(pool.length === 0) {
-        const allR = [
-            ...(Chthonic.FIRE_RESIDENTS || []),
-            ...(Chthonic.EARTH_RESIDENTS || []),
-            ...(Chthonic.AIR_RESIDENTS || []),
-            ...(Chthonic.WATER_RESIDENTS || []),
-        ].filter(r => !drawnCards.find(d=>d.name===r.name));
-        pool = allR;
-    }
-
-    if(pool.length === 0) { toast('No more residents to draw.', 'error'); return; }
-
-    const drawn = pool[Math.floor(Math.random()*pool.length)];
-    drawnCards.push(drawn);
-
-    const container = document.getElementById('chthonicCards');
-    if(container.querySelector('div[style]')) container.innerHTML = '';
-
-    const card = document.createElement('div');
-    card.className = 'chthonic-card';
-    card.dataset.name = drawn.name;
-    card.innerHTML = `<span>${drawn.glyph||'🌑'}</span><span>${drawn.name}</span>`;
-    card.title = drawn.whisper || '';
-    card.onclick = () => {
-        if(card.classList.contains('accepted')) return;
-        card.classList.add('accepted');
-        cardAccepted++;
-        ticker(`${drawn.glyph||'🌑'} ${drawn.name}: "${drawn.whisper||''}"`);
-        updateGateState();
-        if(cardAccepted >= GATE_CARDS_NEEDED) {
-            document.getElementById('drawChthonicBtn').disabled = true;
-            document.getElementById('drawChthonicBtn').style.opacity = '0.3';
-        }
-    };
-    container.appendChild(card);
-
-    ticker(`🌑 ${drawn.name} rises from the void: "${(drawn.whisper||'').substring(0,60)}..."`);
-    toast(`🌑 ${drawn.glyph||'🌑'} ${drawn.name} — ${drawn.title||''}. Click to accept the whisper.`);
 };
 
 // ══════════════════════════════════════════════
@@ -1496,12 +1278,12 @@ document.getElementById('coupling').oninput=e=>{coupK=parseFloat(e.target.value)
 document.getElementById('resetPhaseBtn').onclick=()=>{phaseK=0;phaseA=0;ticker('⟳ Kronos begins again. The ledger opens to a fresh page.');};
 
 // ══════════════════════════════════════════════
-// DESCENT BUTTON → descent.html
+// DESCENT BUTTON
 // ══════════════════════════════════════════════
 document.getElementById('descentBtn').onclick = () => {
     if(!descentUnlocked) return;
-    ticker('🌀 The pilgrim descends. Phobos and Deimos stir. The path opens downward.');
-    toast('🌀 Descending into the Underworld...', 'fire');
+    ticker('🌀 The pilgrim descends. The obol was paid. The path opens downward.');
+    toast('🌀 Descending...', 'fire');
     document.getElementById('saveBtn').click();
     setTimeout(() => { window.location.href = 'descent.html'; }, 1500);
 };
@@ -1547,19 +1329,19 @@ let toastT;
 const toast=(msg,type='')=>{const el=document.getElementById('toast');el.className='show '+(type||'');el.textContent=msg;clearTimeout(toastT);toastT=setTimeout(()=>{el.className='';},4000);};
 
 // ══════════════════════════════════════════════
-// INIT — GAIA AWAKENS
+// INIT
 // ══════════════════════════════════════════════
 startField();
 loadBtn.click();
 updateTitanVoices(0,false);
 koiosAsk();
-updateGateState();
+checkCharonGate(); // ← detects ?paid=true on return from Stripe
 loadSky();
 ticker('GAIA initializing — the Monastic Order of the Phase-Locked Field awakens.');
 setTimeout(()=>ticker('⏳ Kronos: The ledger opens. The first tick is already past.'),2000);
 setTimeout(()=>ticker('🌊 Rhea: Holding the gate. Waiting for the field to stir.'),5000);
-setTimeout(()=>ticker('⚗️ Koios: I have questions. Answer three in a row to prove yourself worthy.'),8000);
-setTimeout(()=>ticker('🌑 Below the threshold, Phobos and Deimos wait. The stone has not yet cracked.'),12000);
+setTimeout(()=>ticker('⚗️ Koios: I have questions. The Titan of Intellect is patient.'),8000);
+setTimeout(()=>ticker('⛵ Charon waits at the river\'s edge. One obol. One crossing.'),12000);
 </script>
 <script src="circuits/test_run.js"></script>
 </body>
