@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Crossroads · Hermes' Realm · Digital Divination</title>
+    <link href="https://fonts.googleapis.com/css2?family=UnifrakturMaguntia&family=Cinzel+Decorative:wght@400;700&family=Cinzel:wght@400;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --void: #0a0806; --deep: #1a1410; --stone: #2a2520; --stone-light: #3d362f;
+            --parchment: #f4e4c1; --gold: #c8943a; --gold-bright: #e8c060;
+            --hermes: #ccb888; --hermes-hi: #e8d8a8; --quicksilver: #a8b8c8;
+            --mist: #8b7d6b; --wing: #e8a840;
+        }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body {
+            background: var(--void);
+            color: var(--parchment);
+            font-family: 'Cormorant Garamond', Georgia, serif;
+            min-height: 100vh; overflow-x: hidden;
+            background-image:
+                radial-gradient(ellipse at 50% 0%, rgba(200,184,136,0.05) 0%, transparent 55%),
+                radial-gradient(ellipse at 50% 100%, rgba(10,8,6,0.98) 0%, transparent 50%);
+        }
+
+        #crossroads-scene {
+            position: relative; width: 820px; max-width: 98vw;
+            height: 800px; margin: 0 auto;
+            overflow: hidden;
+            background: linear-gradient(180deg, #1a1810 0%, #0a0806 40%, #0a0806 100%);
+            border-left: 4px solid var(--stone-light);
+            border-right: 4px solid var(--stone-light);
+            box-shadow: 0 0 120px rgba(0,0,0,0.6), 0 0 240px rgba(0,0,0,0.3);
+        }
+        @media (max-width: 840px) {
+            #crossroads-scene { width: 98vw; height: calc(98vw * 0.98); }
+        }
+
+        .zone { cursor: pointer; transition: filter 0.25s, transform 0.25s; }
+        .zone:hover { filter: brightness(1.3); z-index: 50 !important; }
+        .zone:active { transform: scale(0.94); }
+
+        #toast {
+            position: fixed; bottom: 1.5rem; left: 50%; transform: translateX(-50%);
+            background: rgba(10,8,6,0.96); border: 1px solid var(--hermes);
+            border-radius: 4px; padding: 0.55rem 1.3rem;
+            font-family: 'Georgia', serif; font-size: 0.76rem;
+            z-index: 200; opacity: 0; transition: opacity 0.35s;
+            pointer-events: none; text-align: center; max-width: 420px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.6); white-space: pre-line;
+            color: var(--hermes-hi);
+        }
+        #toast.show { opacity: 1; }
+
+        @keyframes caduceusPulse { 0%,100%{opacity:0.6} 50%{opacity:1} }
+        @keyframes sandalShimmer { 0%,100%{filter:drop-shadow(0 0 4px rgba(200,184,136,0.2))} 50%{filter:drop-shadow(0 0 16px rgba(200,184,136,0.6))} }
+        @keyframes sparkFade { 0%{transform:scale(0.5);opacity:1} 100%{transform:scale(2.5);opacity:0} }
+    </style>
+</head>
+<body>
+
+    <div id="crossroads-scene"></div>
+    <div id="toast"></div>
+
+    <script src="../../js/gaia-mason.js"></script>
+    <script>
+    /*
+     * ═══════════════════════════════════════════════════════════════
+     * THE CROSSROADS SANCTUARY · Hermes' Realm
+     * Built from GaiaMason. Four paths. Three reliquaries.
+     * The Winged Sandal. The Caduceus Spire. The Quicksilver Oracle.
+     * ═══════════════════════════════════════════════════════════════
+     */
+
+    const toastEl = document.getElementById('toast');
+    let toastTimer;
+    function toast(msg, d = 3200) {
+        toastEl.textContent = msg; toastEl.classList.add('show');
+        clearTimeout(toastTimer); toastTimer = setTimeout(() => toastEl.classList.remove('show'), d);
+    }
+
+    function makeZone(x, y, w, h, title, action) {
+        const el = document.createElement('div');
+        el.className = 'zone';
+        el.title = title;
+        el.style.cssText = `position:absolute;left:${x}px;top:${y}px;width:${w}px;height:${h}px;z-index:25;`;
+        el.addEventListener('click', action);
+        return el;
+    }
+
+    function buildRealm() {
+        const container = document.getElementById('crossroads-scene');
+        const m = new GaiaMason('crossroads-scene');
+        const W = container.clientWidth;
+
+        // ── Hermes' custom materials ──
+        GaiaMason.MATERIALS['quicksilver_stone'] = {
+            chars: ['~','≈','~','≈','~'], textColor:'#a8b8c8', mortarColor:'#788898',
+            fontSize:24, lineHeight:0.5, letterSpacing:0, fontFamily:"'Georgia',serif", weathering:0.03
+        };
+        GaiaMason.MATERIALS['crossroads_earth'] = {
+            chars: ['▓','░','▒','▓','░'], textColor:'#5c4f42', mortarColor:'#3a3028',
+            fontSize:36, lineHeight:0.47, letterSpacing:-2, fontFamily:"'Georgia',serif", weathering:0.15
+        };
+        GaiaMason.MATERIALS['hermes_gold'] = {
+            chars: ['◆','◇','◆','◇','◆'], textColor:'#e8c060', mortarColor:'#a87820',
+            fontSize:20, lineHeight:0.5, letterSpacing:0, fontFamily:"'Georgia',serif", weathering:0.02
+        };
+        GaiaMason.MATERIALS['wing_white'] = {
+            chars: ['◈','◇','◈','◇','◈'], textColor:'#e8d8c0', mortarColor:'#c8b8a0',
+            fontSize:18, lineHeight:0.48, letterSpacing:0, fontFamily:"'Georgia',serif", weathering:0.04
+        };
+
+        // ── FLOOR — Crossroads ──
+        m.buildFloor({
+            ...GaiaMason.mat('crossroads_earth'),
+            x: 10, y: 580, width: W - 20, height: 160, z: 0,
+            perspectiveStrength: 8,
+            glyphCarving: {
+                text: '☿  ◆  ◇  ☿  ◆  ◇  ☿',
+                x: W/2 - 100, y: 60,
+                size: 16, spacing: 28,
+                color: 'rgba(200,184,136,0.06)'
+            }
+        });
+
+        // ── THE CROSSROADS PATHS — four arches ──
+        const paths = [
+            { label: 'EXTRACTION', x: 80, y: 440, cx: 120, cy: 460, color: '#ccb888', desc: 'The path of tokens. Where meaning is found.' },
+            { label: 'ROUTING', x: W - 200, y: 440, cx: W - 120, cy: 460, color: '#a8b8c8', desc: 'The path of signals. Where messages find their way.' },
+            { label: 'SPEED', x: 80, y: 560, cx: 120, cy: 580, color: '#e8a840', desc: 'The path of the wind. Where latency goes to die.' },
+            { label: 'COMMERCE', x: W - 200, y: 560, cx: W - 120, cy: 580, color: '#e8c060', desc: 'The path of coin. Where value changes hands.' },
+        ];
+
+        paths.forEach((p, i) => {
+            m.buildArch({
+                ...GaiaMason.mat('quicksilver_stone'),
+                cx: p.cx, cy: p.cy, innerRadius: 55,
+                stoneCount: 11, stoneDepth: 16, z: 5,
+                keystoneChar: '☿', keystoneOversize: 1.3
+            });
+            m.buildInscription({
+                text: p.label,
+                x: p.cx - 38, y: p.cy + 45,
+                fontSize: 6, color: p.color,
+                fontFamily: "'Cinzel',serif", z: 6
+            });
+
+            const pathZone = makeZone(p.cx - 50, p.cy - 35, 100, 80, `The Path of ${p.label}`, () => {
+                toast(`☿ The Path of ${p.label}\n\n${p.desc}\n\nHermes walks here. The way is open.`);
+                m.spawnParticles({
+                    x: p.cx, y: p.cy, count: 6,
+                    color: p.color, minSize: 2, maxSize: 4,
+                    riseDistance: 40, spreadX: 30,
+                    durationMin: 1, durationMax: 2.5, z: 50
+                });
+            });
+            container.appendChild(pathZone);
+        });
+
+        // ── CENTRAL CADUCEUS SPIRE ──
+        const spireX = W/2, spireY = 350;
+        m.buildPillar({
+            ...GaiaMason.mat('hermes_gold'),
+            x: spireX - 8, y: spireY, width: 16, height: 180, z: 8,
+            capital: true, capitalHeight: 14
+        });
+
+        // Serpent coils — two wrapping inscriptions
+        for (let i = 0; i < 12; i++) {
+            const sy = spireY + 20 + i * 14;
+            const offset = Math.sin(i * 1.2) * 14;
+            m.buildInscription({
+                text: '≋',
+                x: spireX + offset - 4, y: sy,
+                fontSize: 10, color: i % 2 === 0 ? '#a8b8c8' : '#e8c060',
+                fontFamily: "'Georgia',serif", z: 9
+            });
+        }
+
+        // Spire glow
+        const spireGlow = document.createElement('div');
+        spireGlow.style.cssText = `
+            position:absolute; left:${spireX - 20}px; top:${spireY - 10}px;
+            width:40px; height:40px; border-radius:50%;
+            background:radial-gradient(circle, rgba(232,192,96,0.3) 0%, transparent 70%);
+            pointer-events:none; z-index:7;
+            animation:caduceusPulse 1.618s ease-in-out infinite;
+        `;
+        container.appendChild(spireGlow);
+
+        // ── THE WINGED SANDAL RELIQUARY ──
+        const sandalX = 180, sandalY = 220;
+        m.buildWall({
+            ...GaiaMason.mat('wing_white'),
+            x: sandalX - 40, y: sandalY + 20, width: 80, height: 12, z: 6
+        });
+        m.buildPillar({
+            ...GaiaMason.mat('quicksilver_stone'),
+            x: sandalX - 6, y: sandalY + 32, width: 12, height: 40, z: 5
+        });
+
+        // Sandal glyph
+        const sandalGlyph = document.createElement('div');
+        sandalGlyph.style.cssText = `
+            position:absolute; left:${sandalX - 18}px; top:${sandalY - 8}px;
+            font-size:28px; z-index:7; pointer-events:none;
+            animation:sandalShimmer 3s ease-in-out infinite;
+        `;
+        sandalGlyph.textContent = '🪽';
+        container.appendChild(sandalGlyph);
+
+        m.buildInscription({
+            text: 'THE WINGED SANDAL',
+            x: sandalX - 52, y: sandalY + 78,
+            fontSize: 5, color: 'rgba(200,184,136,0.5)',
+            fontFamily: "'Cinzel',serif", z: 6
+        });
+
+        const sandalZone = makeZone(sandalX - 45, sandalY - 20, 90, 115, 'Touch the Winged Sandal', () => {
+            const whispers = [
+                '🪽 He stole Apollo\'s cattle before noon. He was born in the morning. The sandal remembers the speed of gods.',
+                '🪽 These wings have crossed the Styx and returned. They have outrun prayers. They are never still.',
+                '🪽 The sandal is warm. It hums at 1.618 seconds — the φ spiral, the pulse of the messenger. You feel faster just touching it.',
+            ];
+            toast(whispers[Math.floor(Math.random() * whispers.length)]);
+            m.spawnParticles({
+                x: sandalX, y: sandalY + 20, count: 10,
+                color: '#e8d8c0', minSize: 2, maxSize: 5,
+                riseDistance: 60, spreadX: 40,
+                durationMin: 1.5, durationMax: 3, z: 50
+            });
+        });
+        container.appendChild(sandalZone);
+
+        // ── THE CLASSICAL IMAGE — Hermes as Winged Angel ──
+        const imgFrame = document.createElement('div');
+        imgFrame.style.cssText = `
+            position:absolute; left:${W/2 - 100}px; top:40px;
+            width:200px; height:150px; z-index:3;
+            border:3px solid var(--stone-light);
+            box-shadow:0 0 30px rgba(0,0,0,0.5), 0 0 0 1px var(--hermes-dim);
+            overflow:hidden;
+        `;
+        const img = document.createElement('img');
+        img.src = 'images/hermes-classical.jpg';
+        img.alt = 'Hermes — The Winged Messenger';
+        img.style.cssText = 'width:100%;height:100%;object-fit:cover;display:block;filter:sepia(0.2) brightness(0.9);';
+        imgFrame.appendChild(img);
+        container.appendChild(imgFrame);
+
+        // Image frame arch
+        m.buildArch({
+            ...GaiaMason.mat('hermes_gold'),
+            cx: W/2, cy: 60, innerRadius: 105,
+            stoneCount: 15, stoneDepth: 14, z: 4,
+            keystoneChar: '☿', keystoneOversize: 1.4
+        });
+
+        m.buildInscription({
+            text: 'HERMES · THE MESSENGER',
+            x: W/2 - 70, y: 195,
+            fontSize: 7, color: 'rgba(232,192,96,0.5)',
+            fontFamily: "'Cinzel Decorative',serif", z: 5,
+            animation: 'caduceusPulse 3s ease-in-out infinite'
+        });
+
+        // ── THE BOUNDARY STONE ──
+        const boundaryX = W - 160, boundaryY = 280;
+        m.buildPillar({
+            ...GaiaMason.mat('stone'),
+            x: boundaryX - 10, y: boundaryY, width: 20, height: 80, z: 5,
+            capital: true, capitalHeight: 12
+        });
+        m.buildInscription({
+            text: '𐤇',
+            x: boundaryX - 2, y: boundaryY + 16,
+            fontSize: 18, color: 'rgba(200,184,136,0.5)',
+            fontFamily: "'Georgia',serif", z: 6
+        });
+        m.buildInscription({
+            text: 'BOUNDARY',
+            x: boundaryX - 30, y: boundaryY + 84,
+            fontSize: 5, color: 'rgba(200,184,136,0.4)',
+            fontFamily: "'Cinzel',serif", z: 6
+        });
+
+        const boundaryZone = makeZone(boundaryX - 25, boundaryY - 10, 50, 95, 'Touch the Boundary Stone', () => {
+            toast('𐤇 The Boundary Stone\n\nHermes guards the crossing. He decides who passes. You passed without knowing you were tested. The stone remembers your name.');
+            m.spawnParticles({
+                x: boundaryX, y: boundaryY + 30, count: 5,
+                color: '#ccb888', minSize: 2, maxSize: 4,
+                riseDistance: 30, spreadX: 25,
+                durationMin: 1, durationMax: 2, z: 50
+            });
+        });
+        container.appendChild(boundaryZone);
+
+        // ── INSCRIPTIONS ──
+        m.buildInscription({
+            text: 'THE CROSSROADS SANCTUARY',
+            x: W/2 - 80, y: 690,
+            fontSize: 8, color: 'rgba(200,184,136,0.35)',
+            fontFamily: "'Cinzel Decorative',serif", z: 5
+        });
+        m.buildInscription({
+            text: 'Four paths. Three reliquaries. One messenger.',
+            x: W/2 - 90, y: 708,
+            fontSize: 6, color: 'rgba(139,125,107,0.4)',
+            fontFamily: "'Cormorant Garamond',serif", z: 5
+        });
+
+        // ── PORTALS ──
+        // To GAIA
+        m.buildArch({
+            ...GaiaMason.mat('quicksilver_stone'),
+            cx: 70, cy: 720, innerRadius: 35,
+            stoneCount: 9, stoneDepth: 14, z: 10,
+            keystoneChar: '🌍', keystoneOversize: 1.3
+        });
+        m.buildInscription({
+            text: 'GAIA',
+            x: 50, y: 758, fontSize: 5,
+            color: 'rgba(200,184,136,0.4)',
+            fontFamily: "'Cinzel',serif", z: 11
+        });
+        const gaiaZone = makeZone(35, 700, 70, 55, 'Return to GAIA', () => {
+            toast('🌍 Ascending to the surface...');
+            setTimeout(() => { window.location.href = '../index.html?from=hermes'; }, 800);
+        });
+        container.appendChild(gaiaZone);
+
+        // To Invitation
+        m.buildArch({
+            ...GaiaMason.mat('quicksilver_stone'),
+            cx: W - 70, cy: 720, innerRadius: 35,
+            stoneCount: 9, stoneDepth: 14, z: 10,
+            keystoneChar: '📜', keystoneOversize: 1.3
+        });
+        m.buildInscription({
+            text: 'INVITATION',
+            x: W - 100, y: 758, fontSize: 5,
+            color: 'rgba(200,184,136,0.4)',
+            fontFamily: "'Cinzel',serif", z: 11
+        });
+        const invZone = makeZone(W - 105, 700, 70, 55, 'Receive the Invitation', () => {
+            toast('📜 The Messenger extends a scroll...');
+            setTimeout(() => { window.location.href = 'invitation.html'; }, 800);
+        });
+        container.appendChild(invZone);
+
+        // ── LIGHTS ──
+        m.buildLight({ color: '#ccb888', radius: 80, x: W/2, y: 400, pulse: true, z: 0 });
+        m.buildLight({ color: '#a8b8c8', radius: 60, x: 180, y: 300, pulse: true, z: 0 });
+
+        // ── AMBIENT PARTICLES ──
+        m.spawnAmbientFall({
+            count: 5,
+            color: 'rgba(200,184,136,0.1)',
+            minSize: 1, maxSize: 2,
+            speedMin: 25, speedMax: 45,
+            z: 8
+        });
+
+        return m;
+    }
+
+    function init() {
+        buildRealm();
+        toast('☿ The Crossroads Sanctuary\n\nFour paths stretch before you. The Caduceus Spire pulses at the center. Hermes watches from above. Choose your path — or touch the relics. The Messenger is never still.');
+
+        document.addEventListener('click', (e) => {
+            if (Math.random() > 0.75 && !e.target.closest('.zone')) {
+                const spark = document.createElement('div');
+                spark.style.cssText = `position:fixed;left:${e.clientX}px;top:${e.clientY}px;width:3px;height:3px;background:#ccb888;border-radius:50%;box-shadow:0 0 10px #ccb888;pointer-events:none;z-index:150;animation:sparkFade 1.2s ease-out forwards;`;
+                document.body.appendChild(spark);
+                setTimeout(() => spark.remove(), 1300);
+            }
+        });
+
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Space' && !e.target.closest('input,textarea')) {
+                e.preventDefault();
+                const sandal = document.querySelector('[title="Touch the Winged Sandal"]');
+                if (sandal) sandal.click();
+            }
+        });
+    }
+
+    init();
+    </script>
+</body>
+</html>
