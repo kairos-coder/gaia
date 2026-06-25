@@ -10,7 +10,7 @@
             --void: #0a0806; --deep: #1a1410; --stone: #2a2520; --stone-light: #4a4038;
             --stone-warm: #5c5040; --parchment: #f4e4c1; --gold: #c8943a; --gold-bright: #e8c060;
             --hermes: #ccb888; --hermes-hi: #e8d8a8; --quicksilver: #b8c8d8;
-            --mist: #8b7d6b; --wing: #e8a840; --sky-warm: #d8c8a0;
+            --mist: #8b7d6b; --wing: #e8a840;
         }
         * { margin:0; padding:0; box-sizing:border-box; }
         body {
@@ -69,7 +69,7 @@
      * ═══════════════════════════════════════════════════════════════
      * THE CROSSROADS SANCTUARY · Hermes' Realm
      * Built from GaiaMason. The Winged Messenger presides.
-     * Four paths. Three reliquaries. One god.
+     * Four steles mark the paths. Three reliquaries hold the tokens.
      * ═══════════════════════════════════════════════════════════════
      */
 
@@ -118,6 +118,10 @@
         GaiaMason.MATERIALS['sunlit_stone'] = {
             chars: ['░','▒','░','⋅','░'], textColor:'#8b7d6b', mortarColor:'#6b5d4f',
             fontSize:28, lineHeight:0.48, letterSpacing:-1, fontFamily:"'Georgia',serif", weathering:0.08
+        };
+        GaiaMason.MATERIALS['stele_pillar'] = {
+            chars: ['H','H','H','H','H'], textColor:'#8b7d6b', mortarColor:'#5c5040',
+            fontSize:22, lineHeight:0.5, letterSpacing:-2, fontFamily:"'Cinzel','Georgia',serif", weathering:0.06
         };
 
         // ── ORNATE IMAGE FRAME — Hermes as Winged Messenger ──
@@ -215,34 +219,89 @@
             }
         });
 
-        // ── THE CROSSROADS PATHS — four arches ──
-        const pathY = 490;
-        const paths = [
-            { label: 'EXTRACTION', cx: 130, cy: pathY, color: '#d8c8a0', desc: 'The path of tokens. Where meaning is found in raw noise. Hermes reads the world and extracts the signal.' },
-            { label: 'ROUTING', cx: W - 130, cy: pathY, color: '#b8c8d8', desc: 'The path of signals. Where every message finds its destination. Nothing is lost in transit.' },
-            { label: 'SPEED', cx: 130, cy: pathY + 100, color: '#e8a840', desc: 'The path of the wind. Where latency goes to die. The winged sandals never rest.' },
-            { label: 'COMMERCE', cx: W - 130, cy: pathY + 100, color: '#e8c060', desc: 'The path of coin. Where value changes hands. The first merchant. The first deal. The first offering.' },
+        // ═══════════════════════════════════════
+        // THE FOUR STELES — Pillars with Ring Crowns
+        // ═══════════════════════════════════════
+
+        const steleBaseY = 490;
+        const steleRingRadius = 50;
+        const stelePillarHeight = 80;
+
+        const steles = [
+            { 
+                label: 'EXTRACTION', cx: 130, cy: steleBaseY, color: '#d8c8a0',
+                desc: 'The path of tokens. Where meaning is found in raw noise. Hermes reads the world and extracts the signal.'
+            },
+            { 
+                label: 'ROUTING', cx: W - 130, cy: steleBaseY, color: '#b8c8d8',
+                desc: 'The path of signals. Where every message finds its destination. Nothing is lost in transit.'
+            },
+            { 
+                label: 'SPEED', cx: 130, cy: steleBaseY + 100, color: '#e8a840',
+                desc: 'The path of the wind. Where latency goes to die. The winged sandals never rest.'
+            },
+            { 
+                label: 'COMMERCE', cx: W - 130, cy: steleBaseY + 100, color: '#e8c060',
+                desc: 'The path of coin. Where value changes hands. The first merchant. The first deal. The first offering.'
+            },
         ];
 
-        paths.forEach((p, i) => {
+        steles.forEach((stele, i) => {
+            const pillarTop = stele.cy;
+
+            // ── STELE PILLAR — the column that holds the ring ──
+            m.buildPillar({
+                ...GaiaMason.mat('stele_pillar'),
+                x: stele.cx - 10, y: pillarTop - stelePillarHeight + steleRingRadius + 10,
+                width: 20, height: stelePillarHeight, z: 5,
+                capital: true, capitalHeight: 12
+            });
+
+            // Pillar base
+            m.buildWall({
+                ...GaiaMason.mat('stele_pillar'),
+                x: stele.cx - 16, y: pillarTop + steleRingRadius + 10,
+                width: 32, height: 8, z: 4
+            });
+
+            // ── STELE RING — the arch draped on the pillar ──
             m.buildArch({
                 ...GaiaMason.mat('quicksilver_stone'),
-                cx: p.cx, cy: p.cy, innerRadius: 60,
-                stoneCount: 13, stoneDepth: 18, z: 5,
-                keystoneChar: '☿', keystoneOversize: 1.3
+                cx: stele.cx, cy: pillarTop - stelePillarHeight + steleRingRadius + 5,
+                innerRadius: steleRingRadius,
+                stoneCount: 15, stoneDepth: 16, z: 6,
+                keystoneChar: '☿', keystoneOversize: 1.4
             });
+
+            // ── RING INNER OBJECT — a small glyph inside the ring ──
+            const ringGlyphs = ['📜','🔗','⚡','🪙'];
             m.buildInscription({
-                text: p.label,
-                x: p.cx - 42, y: p.cy + 48,
-                fontSize: 7, color: p.color,
+                text: ringGlyphs[i],
+                x: stele.cx - 8, y: pillarTop - stelePillarHeight + steleRingRadius - 4,
+                fontSize: 14, color: stele.color,
+                fontFamily: "'Georgia',serif", z: 7
+            });
+
+            // ── INSCRIPTION at base ──
+            m.buildInscription({
+                text: stele.label,
+                x: stele.cx - 40, y: pillarTop + steleRingRadius + 22,
+                fontSize: 7, color: stele.color,
                 fontFamily: "'Cinzel',serif", z: 6
             });
 
-            const pathZone = makeZone(p.cx - 55, p.cy - 35, 110, 85, `The Path of ${p.label}`, () => {
-                toast(`☿ The Path of ${p.label}\n\n${p.desc}`);
+            // ── INTERACTION ZONE ──
+            const zoneW = steleRingRadius * 2 + 20;
+            const zoneH = stelePillarHeight + steleRingRadius * 2 + 30;
+            const zoneX = stele.cx - zoneW/2;
+            const zoneY = pillarTop - stelePillarHeight;
+
+            const pathZone = makeZone(zoneX, zoneY, zoneW, zoneH, `The Path of ${stele.label}`, () => {
+                toast(`☿ The Path of ${stele.label}\n\n${stele.desc}`);
                 m.spawnParticles({
-                    x: p.cx, y: p.cy, count: 8,
-                    color: p.color, minSize: 2, maxSize: 5,
+                    x: stele.cx, y: pillarTop - stelePillarHeight + steleRingRadius,
+                    count: 8, color: stele.color,
+                    minSize: 2, maxSize: 5,
                     riseDistance: 50, spreadX: 35,
                     durationMin: 1.2, durationMax: 2.8, z: 50
                 });
@@ -251,10 +310,10 @@
         });
 
         // ── CENTRAL CADUCEUS SPIRE ──
-        const spireX = W/2, spireY = 320;
+        const spireX = W/2, spireY = 330;
         m.buildPillar({
             ...GaiaMason.mat('hermes_gold'),
-            x: spireX - 8, y: spireY, width: 16, height: 150, z: 6,
+            x: spireX - 8, y: spireY, width: 16, height: 140, z: 6,
             capital: true, capitalHeight: 14
         });
 
@@ -364,8 +423,8 @@
             fontFamily: "'Cinzel Decorative',serif", z: 5
         });
         m.buildInscription({
-            text: 'Four paths. Three reliquaries. One messenger. The way is open.',
-            x: W/2 - 140, y: 728,
+            text: 'Four steles. Three reliquaries. One messenger. The way is open.',
+            x: W/2 - 145, y: 728,
             fontSize: 6, color: 'rgba(180,160,120,0.35)',
             fontFamily: "'Cormorant Garamond',serif", z: 5, fontStyle: 'italic'
         });
@@ -428,7 +487,7 @@
 
     function init() {
         buildRealm();
-        toast('☿ The Crossroads Sanctuary\n\nHermes watches from above, wings spread. Four paths stretch before you. The Caduceus Spire pulses at the center. Touch the relics. Choose your path. The Messenger awaits.');
+        toast('☿ The Crossroads Sanctuary\n\nFour steles mark the paths. Each ring holds a token. Each pillar anchors a passage. Touch the relics. Walk the ways. The Messenger watches from above.');
 
         document.addEventListener('click', (e) => {
             if (Math.random() > 0.7 && !e.target.closest('.zone')) {
