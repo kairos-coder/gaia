@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Invitation · Hermes' Realm · Digital Divination</title>
+    <link href="https://fonts.googleapis.com/css2?family=UnifrakturMaguntia&family=Cinzel+Decorative:wght@400;700&family=Cinzel:wght@400;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --void: #0a0806; --deep: #1a1410; --stone: #2a2520; --stone-light: #3d362f;
+            --parchment: #f4e4c1; --gold: #c8943a; --gold-bright: #e8c060;
+            --hermes: #ccb888; --hermes-hi: #e8d8a8; --quicksilver: #a8b8c8;
+            --mist: #8b7d6b; --scroll: #e8d8b0;
+        }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body {
+            background: var(--void);
+            color: var(--parchment);
+            font-family: 'Cormorant Garamond', Georgia, serif;
+            min-height: 100vh; overflow-x: hidden;
+            background-image:
+                radial-gradient(ellipse at 50% 0%, rgba(200,184,136,0.04) 0%, transparent 55%),
+                radial-gradient(ellipse at 50% 100%, rgba(10,8,6,0.98) 0%, transparent 50%);
+        }
+
+        #invitation-scene {
+            position: relative; width: 820px; max-width: 98vw;
+            height: 700px; margin: 0 auto;
+            overflow: hidden;
+            background: linear-gradient(180deg, #1a1810 0%, #0a0806 50%, #0a0806 100%);
+            border-left: 4px solid var(--stone-light);
+            border-right: 4px solid var(--stone-light);
+            box-shadow: 0 0 120px rgba(0,0,0,0.6), 0 0 240px rgba(0,0,0,0.3);
+        }
+        @media (max-width: 840px) {
+            #invitation-scene { width: 98vw; height: calc(98vw * 0.85); }
+        }
+
+        .zone { cursor: pointer; transition: filter 0.25s, transform 0.25s; }
+        .zone:hover { filter: brightness(1.3); z-index: 50 !important; }
+        .zone:active { transform: scale(0.94); }
+
+        #toast {
+            position: fixed; bottom: 1.5rem; left: 50%; transform: translateX(-50%);
+            background: rgba(10,8,6,0.96); border: 1px solid var(--hermes);
+            border-radius: 4px; padding: 0.55rem 1.3rem;
+            font-family: 'Georgia', serif; font-size: 0.76rem;
+            z-index: 200; opacity: 0; transition: opacity 0.35s;
+            pointer-events: none; text-align: center; max-width: 420px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.6); white-space: pre-line;
+            color: var(--hermes-hi);
+        }
+        #toast.show { opacity: 1; }
+
+        @keyframes scrollGlow { 0%,100%{opacity:0.6} 50%{opacity:1} }
+        @keyframes sparkFade { 0%{transform:scale(0.5);opacity:1} 100%{transform:scale(2.5);opacity:0} }
+    </style>
+</head>
+<body>
+
+    <div id="invitation-scene"></div>
+    <div id="toast"></div>
+
+    <script src="../../js/gaia-mason.js"></script>
+    <script>
+    /*
+     * ═══════════════════════════════════════════════════════════════
+     * THE INVITATION · Hermes' Threshold
+     * Built from GaiaMason. The friendly guide with the scroll.
+     * "Come in. The crossroads await."
+     * ═══════════════════════════════════════════════════════════════
+     */
+
+    const toastEl = document.getElementById('toast');
+    let toastTimer;
+    function toast(msg, d = 3400) {
+        toastEl.textContent = msg; toastEl.classList.add('show');
+        clearTimeout(toastTimer); toastTimer = setTimeout(() => toastEl.classList.remove('show'), d);
+    }
+
+    function makeZone(x, y, w, h, title, action) {
+        const el = document.createElement('div');
+        el.className = 'zone';
+        el.title = title;
+        el.style.cssText = `position:absolute;left:${x}px;top:${y}px;width:${w}px;height:${h}px;z-index:25;`;
+        el.addEventListener('click', action);
+        return el;
+    }
+
+    function buildInvitation() {
+        const container = document.getElementById('invitation-scene');
+        const m = new GaiaMason('invitation-scene');
+        const W = container.clientWidth;
+
+        // ── Custom materials ──
+        GaiaMason.MATERIALS['scroll_parchment'] = {
+            chars: ['M','N','H','M','N'], textColor:'#e8d8b0', mortarColor:'#c8b898',
+            fontSize:34, lineHeight:0.5, letterSpacing:-3, fontFamily:"'Cinzel','Georgia',serif", weathering:0.06
+        };
+        GaiaMason.MATERIALS['welcome_stone'] = {
+            chars: ['▓','░','▒','▓','░'], textColor:'#5c4f42', mortarColor:'#3a3028',
+            fontSize:32, lineHeight:0.47, letterSpacing:-2, fontFamily:"'Georgia',serif", weathering:0.12
+        };
+        GaiaMason.MATERIALS['threshold_gold'] = {
+            chars: ['◆','◇','◆','◇','◆'], textColor:'#e8c060', mortarColor:'#a87820',
+            fontSize:18, lineHeight:0.5, letterSpacing:0, fontFamily:"'Georgia',serif", weathering:0.02
+        };
+        GaiaMason.MATERIALS['lamp_bronze'] = {
+            chars: ['▬','▬','▬','▬','▬'], textColor:'#8b7d5e', mortarColor:'#5c4a2a',
+            fontSize:16, lineHeight:0.5, letterSpacing:-1, fontFamily:'monospace', weathering:0.15
+        };
+
+        // ── FLOOR ──
+        m.buildFloor({
+            ...GaiaMason.mat('welcome_stone'),
+            x: 10, y: 520, width: W - 20, height: 120, z: 0,
+            perspectiveStrength: 6,
+            glyphCarving: {
+                text: '☿  📜  ☿  📜  ☿',
+                x: W/2 - 80, y: 50,
+                size: 14, spacing: 24,
+                color: 'rgba(200,184,136,0.05)'
+            }
+        });
+
+        // ── THE HERMES IMAGE — Friendly Guide with Scroll ──
+        const imgFrame = document.createElement('div');
+        imgFrame.style.cssText = `
+            position:absolute; left:${W/2 - 140}px; top:30px;
+            width:280px; height:210px; z-index:3;
+            border:3px solid var(--stone-light);
+            box-shadow:0 0 40px rgba(0,0,0,0.5), 0 0 0 1px rgba(200,184,136,0.15);
+            overflow:hidden;
+        `;
+        const img = document.createElement('img');
+        img.src = 'images/hermes.jpg';
+        img.alt = 'Hermes — The Friendly Guide';
+        img.style.cssText = 'width:100%;height:100%;object-fit:cover;display:block;filter:sepia(0.15) brightness(0.95);';
+        imgFrame.appendChild(img);
+        container.appendChild(imgFrame);
+
+        // Image arch
+        m.buildArch({
+            ...GaiaMason.mat('threshold_gold'),
+            cx: W/2, cy: 60, innerRadius: 145,
+            stoneCount: 17, stoneDepth: 16, z: 4,
+            keystoneChar: '📜', keystoneOversize: 1.3
+        });
+
+        // ── THE SCROLL — held by Hermes in the image, echoed here ──
+        m.buildWall({
+            ...GaiaMason.mat('scroll_parchment'),
+            x: W/2 - 80, y: 270, width: 160, height: 30, z: 5
+        });
+        m.buildWall({
+            ...GaiaMason.mat('scroll_parchment'),
+            x: W/2 - 70, y: 300, width: 140, height: 15, z: 5
+        });
+
+        // Scroll text
+        m.buildInscription({
+            text: 'You are invited.',
+            x: W/2 - 50, y: 275,
+            fontSize: 10, color: '#1a1410',
+            fontFamily: "'Cormorant Garamond',serif", z: 6
+        });
+        m.buildInscription({
+            text: 'The crossroads await.',
+            x: W/2 - 58, y: 303,
+            fontSize: 7, color: '#1a1410',
+            fontFamily: "'Cormorant Garamond',serif", z: 6
+        });
+
+        const scrollZone = makeZone(W/2 - 80, 265, 160, 55, 'Read the Scroll', () => {
+            const messages = [
+                '📜 "To the traveler who has found this threshold: You are welcome here. The crossroads are open. Four paths lie before you — Extraction, Routing, Speed, Commerce. Choose one. Choose all. The Messenger does not judge. He only carries."',
+                '📜 "I am Hermes, guide of souls, patron of merchants, thief of cattle, carrier of messages. I have been expecting you. The scroll has had your name on it since before you were born."',
+                '📜 "You do not need to be worthy. You do not need to pay. You only need to arrive. The invitation is the threshold. The threshold is the gift. Come in."',
+            ];
+            toast(messages[Math.floor(Math.random() * messages.length)]);
+            m.spawnParticles({
+                x: W/2, y: 300, count: 8,
+                color: '#e8d8b0', minSize: 2, maxSize: 4,
+                riseDistance: 50, spreadX: 40,
+                durationMin: 1.5, durationMax: 3, z: 50
+            });
+        });
+        container.appendChild(scrollZone);
+
+        // ── WELCOME LAMPS — two bronze lanterns ──
+        const lampPositions = [
+            { x: 100, y: 380 },
+            { x: W - 120, y: 380 },
+        ];
+        lampPositions.forEach(lp => {
+            m.buildPillar({
+                ...GaiaMason.mat('lamp_bronze'),
+                x: lp.x, y: lp.y, width: 10, height: 60, z: 5,
+                capital: true, capitalHeight: 10
+            });
+            const lampGlow = document.createElement('div');
+            lampGlow.style.cssText = `
+                position:absolute; left:${lp.x - 4}px; top:${lp.y - 2}px;
+                width:18px; height:18px; border-radius:50%;
+                background:radial-gradient(circle, rgba(232,192,96,0.6) 0%, rgba(232,192,96,0.1) 50%, transparent 70%);
+                pointer-events:none; z-index:6;
+                animation:scrollGlow 2s ease-in-out infinite;
+            `;
+            container.appendChild(lampGlow);
+        });
+
+        // ── THE BOUNDARY STONE (continued from realm) ──
+        const boundaryX = W/2, boundaryY = 400;
+        m.buildPillar({
+            ...GaiaMason.mat('welcome_stone'),
+            x: boundaryX - 12, y: boundaryY, width: 24, height: 70, z: 6,
+            capital: true, capitalHeight: 10
+        });
+        m.buildInscription({
+            text: '𐤇',
+            x: boundaryX - 4, y: boundaryY + 16,
+            fontSize: 22, color: 'rgba(200,184,136,0.5)',
+            fontFamily: "'Georgia',serif", z: 7
+        });
+
+        const boundaryZone = makeZone(boundaryX - 20, boundaryY - 5, 40, 80, 'Touch the Boundary Stone', () => {
+            toast('𐤇 The Boundary Stone\n\n"Every threshold is a choice. You have crossed many to arrive here. This one is different — it asks nothing of you but your presence. You have already passed."');
+            m.spawnParticles({
+                x: boundaryX, y: boundaryY + 30, count: 6,
+                color: '#ccb888', minSize: 2, maxSize: 4,
+                riseDistance: 35, spreadX: 25,
+                durationMin: 1, durationMax: 2, z: 50
+            });
+        });
+        container.appendChild(boundaryZone);
+
+        // ── INSCRIPTIONS ──
+        m.buildInscription({
+            text: 'THE INVITATION',
+            x: W/2 - 48, y: 530,
+            fontSize: 9, color: 'rgba(200,184,136,0.4)',
+            fontFamily: "'Cinzel Decorative',serif", z: 5
+        });
+        m.buildInscription({
+            text: '"Come in. The crossroads await. The Messenger is expecting you."',
+            x: W/2 - 160, y: 548,
+            fontSize: 6, color: 'rgba(139,125,107,0.35)',
+            fontFamily: "'Cormorant Garamond',serif", z: 5,
+            fontStyle: 'italic'
+        });
+
+        // ── PORTALS ──
+        // To Realm
+        m.buildArch({
+            ...GaiaMason.mat('threshold_gold'),
+            cx: 80, cy: 620, innerRadius: 35,
+            stoneCount: 9, stoneDepth: 14, z: 10,
+            keystoneChar: '🏛️', keystoneOversize: 1.3
+        });
+        m.buildInscription({
+            text: 'REALM',
+            x: 55, y: 658, fontSize: 5,
+            color: 'rgba(200,184,136,0.4)',
+            fontFamily: "'Cinzel',serif", z: 11
+        });
+        const realmZone = makeZone(45, 600, 70, 55, 'Enter the Crossroads', () => {
+            toast('🏛️ The Crossroads open before you...');
+            setTimeout(() => { window.location.href = 'realm.html'; }, 800);
+        });
+        container.appendChild(realmZone);
+
+        // To GAIA
+        m.buildArch({
+            ...GaiaMason.mat('threshold_gold'),
+            cx: W/2, cy: 640, innerRadius: 38,
+            stoneCount: 10, stoneDepth: 16, z: 10,
+            keystoneChar: '🌍', keystoneOversize: 1.3
+        });
+        m.buildInscription({
+            text: 'GAIA',
+            x: W/2 - 18, y: 680, fontSize: 5,
+            color: 'rgba(200,184,136,0.4)',
+            fontFamily: "'Cinzel',serif", z: 11
+        });
+        const gaiaZone = makeZone(W/2 - 40, 620, 80, 60, 'Return to GAIA', () => {
+            toast('🌍 Returning to the surface...');
+            setTimeout(() => { window.location.href = '../index.html?from=hermes-invitation'; }, 800);
+        });
+        container.appendChild(gaiaZone);
+
+        // To Oracle
+        m.buildArch({
+            ...GaiaMason.mat('threshold_gold'),
+            cx: W - 80, cy: 620, innerRadius: 35,
+            stoneCount: 9, stoneDepth: 14, z: 10,
+            keystoneChar: '🔮', keystoneOversize: 1.3
+        });
+        m.buildInscription({
+            text: 'ORACLE',
+            x: W - 108, y: 658, fontSize: 5,
+            color: 'rgba(200,184,136,0.4)',
+            fontFamily: "'Cinzel',serif", z: 11
+        });
+        const oracleZone = makeZone(W - 115, 600, 70, 55, 'Consult the Oracle', () => {
+            toast('🔮 The Quicksilver Oracle awaits your query...');
+            setTimeout(() => { window.location.href = 'oracle.html'; }, 800);
+        });
+        container.appendChild(oracleZone);
+
+        // ── LIGHTS ──
+        m.buildLight({ color: '#e8d8b0', radius: 90, x: W/2, y: 300, pulse: true, z: 0 });
+        m.buildLight({ color: '#ccb888', radius: 60, x: W/2, y: 450, pulse: true, z: 0 });
+
+        // ── AMBIENT ──
+        m.spawnAmbientFall({
+            count: 4,
+            color: 'rgba(200,184,136,0.08)',
+            minSize: 1, maxSize: 2,
+            speedMin: 20, speedMax: 35,
+            z: 8
+        });
+
+        return m;
+    }
+
+    function init() {
+        buildInvitation();
+        toast('📜 The Invitation\n\nHermes holds the scroll. Your name is written on it. The Boundary Stone marks the threshold. You are already inside. Come in.');
+
+        document.addEventListener('click', (e) => {
+            if (Math.random() > 0.75 && !e.target.closest('.zone')) {
+                const spark = document.createElement('div');
+                spark.style.cssText = `position:fixed;left:${e.clientX}px;top:${e.clientY}px;width:3px;height:3px;background:#ccb888;border-radius:50%;box-shadow:0 0 10px #ccb888;pointer-events:none;z-index:150;animation:sparkFade 1.2s ease-out forwards;`;
+                document.body.appendChild(spark);
+                setTimeout(() => spark.remove(), 1300);
+            }
+        });
+
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Space' && !e.target.closest('input,textarea')) {
+                e.preventDefault();
+                const scroll = document.querySelector('[title="Read the Scroll"]');
+                if (scroll) scroll.click();
+            }
+        });
+    }
+
+    init();
+    </script>
+</body>
+</html>
