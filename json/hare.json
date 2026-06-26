@@ -1,0 +1,80 @@
+{
+  "hare": {
+    "id": null,
+    "name": "Wanderer",
+    "glyph": "🐇",
+    "glyphs": ["🐇", "🐰", "🐇", "🐰", "🐇", "🐰"],
+    "god": "Demeter",
+    "godColor": "#88bb66",
+    "traits": [],
+    "generation": 1,
+    "energy": 100,
+    "maxEnergy": 100,
+    "resting": false,
+    "inventory": [],
+    "maxInventory": 8,
+    "currentTask": null,
+    "currentRealm": null,
+    "pilgrimage": false,
+    "artifactsFound": [],
+    "lastDispatched": null,
+    "born": null,
+    "mutations": [],
+    
+    "rendering": {
+      "size": "2rem",
+      "hopAnimation": "hareHop 0.8s ease-in-out infinite alternate",
+      "glowColor": "#c9a84c",
+      "glowIntensity": "8px",
+      "badgeFont": "'Cinzel', serif",
+      "badgeSize": "0.4rem"
+    },
+    
+    "behaviors": {
+      "nibbleOpacityReduction": 0.15,
+      "nibbleMinOpacity": 0.1,
+      "traceLifespan": 30000,
+      "departTimeMin": 8000,
+      "departTimeMax": 15000,
+      "taskDelayMin": 1500,
+      "taskDelayMax": 3500,
+      "energyPerTask": 10,
+      "energyRegenRate": 5,
+      "breedingChance": 0.15,
+      "pilgrimageChance": 0.15,
+      "mutationChance": 0.05
+    },
+    
+    "traits_pool": [
+      "speed", "endurance", "luck", "cunning",
+      "strength", "beauty", "wisdom", "radiance",
+      "stealth", "fury", "grace", "patience"
+    ],
+    
+    "tasks": [
+      "nibble",
+      "scout",
+      "harvest",
+      "flare-watch",
+      "plant",
+      "trade",
+      "breed",
+      "pilgrimage"
+    ],
+    
+    "items": {
+      "🌿": { "name": "Fiber", "category": "material" },
+      "🥕": { "name": "Carrot", "category": "food" },
+      "🍯": { "name": "Honey", "category": "food" },
+      "🌾": { "name": "Wheat", "category": "seed" },
+      "✨": { "name": "Solar Fragment", "category": "energy" },
+      "☀️": { "name": "Sunbeam", "category": "energy" },
+      "⚡": { "name": "Spark", "category": "energy" },
+      "🪨": { "name": "Stone", "category": "material" },
+      "💎": { "name": "Gem", "category": "treasure" },
+      "📜": { "name": "Scroll", "category": "knowledge" },
+      "🐾": { "name": "Trace", "category": "mark" },
+      "🌸": { "name": "Blossom", "category": "seed" }
+    }
+  }
+}
