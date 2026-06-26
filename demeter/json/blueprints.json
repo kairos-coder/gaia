@@ -1,0 +1,44 @@
+{
+  "cairn": {
+    "name": "Stone Cairn",
+    "cost": { "🪨": 2 },
+    "build": "pillar",
+    "chars": ["▓","▒","░"],
+    "textColor": "#8b7355",
+    "mortarColor": "#5c4f42",
+    "fontSize": 14,
+    "width": 16,
+    "height": 40,
+    "description": "A small stack of stones. Marks a path."
+  },
+  "crop_plant": {
+    "name": "Planted Crop",
+    "cost": { "🌾": 1 },
+    "build": "inscription",
+    "text": "🌾",
+    "fontSize": 16,
+    "color": "#d4a853",
+    "description": "A seed planted by a hare. It will grow."
+  },
+  "tiny_shrine": {
+    "name": "Tiny Shrine",
+    "cost": { "🪨": 3, "✨": 1 },
+    "build": "wall",
+    "chars": ["◆","◇","◆"],
+    "textColor": "#f0d080",
+    "mortarColor": "#6b5520",
+    "fontSize": 12,
+    "width": 30,
+    "height": 24,
+    "description": "A miniature shrine. Something divine watches over it."
+  },
+  "hare_marker": {
+    "name": "Hare Marker",
+    "cost": { "🌿": 2 },
+    "build": "inscription",
+    "text": "🐾",
+    "fontSize": 14,
+    "color": "#aabb88",
+    "description": "A hare's trace, made permanent. I was here."
+  }
+}
