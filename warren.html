@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Warren · Gaia Hare Engine · Digital Divination</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&family=Cinzel:wght@400;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@300;400&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --void: #1a1410; --deep: #2a2218; --stone: #3d362f;
+            --parchment: #f5f0e0; --gold: #c9a84c; --gold-bright: #f0d080; --gold-dim: #6b5520;
+            --sage: #889966; --earth: #8b7355; --warm: #d4c090;
+        }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body {
+            background: var(--void);
+            color: var(--parchment);
+            font-family: 'Cormorant Garamond', Georgia, serif;
+            min-height: 100vh; overflow-x: hidden;
+            background-image: radial-gradient(ellipse at 50% 30%, rgba(136,153,102,0.05) 0%, transparent 60%);
+        }
+
+        .warren-header {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0.7rem 1.5rem;
+            background: rgba(26,20,16,0.95);
+            border-bottom: 1px solid rgba(200,168,76,0.12);
+            position: sticky; top:0; z-index: 100;
+        }
+        .header-left { display: flex; align-items: center; gap: 0.6rem; }
+        .header-glyph { font-size: 1.6rem; }
+        .header-title { font-family: 'Cinzel Decorative', serif; font-size: 0.8rem; color: var(--gold-bright); letter-spacing: 0.18em; }
+        .header-sub { font-family: 'Cinzel', serif; font-size: 0.4rem; letter-spacing: 0.2em; color: var(--gold-dim); text-transform: uppercase; }
+        .header-nav { display: flex; gap: 1rem; }
+        .header-nav a { font-family: 'Cinzel', serif; font-size: 0.5rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--gold-dim); text-decoration: none; transition: color 0.2s; }
+        .header-nav a:hover { color: var(--gold-bright); }
+        .pulse-dot { width: 6px; height: 6px; border-radius: 50%; background: #44cc88; box-shadow: 0 0 8px #44cc88; animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+        .warren-main { max-width: 1100px; margin: 0 auto; padding: 1.5rem; display: flex; flex-direction: column; gap: 1.5rem; }
+
+        /* ── STATUS BAR ── */
+        .status-bar { display: flex; gap: 1.5rem; flex-wrap: wrap; justify-content: center;
+            padding: 0.6rem 1rem; background: rgba(42,34,24,0.5); border: 1px solid rgba(200,168,76,0.1); border-radius: 4px;
+            font-family: 'Cinzel', serif; font-size: 0.5rem; letter-spacing: 0.12em; color: var(--gold-dim); }
+        .status-item { text-align: center; }
+        .status-val { font-size: 1rem; color: var(--gold); display: block; }
+
+        /* ── HARES GRID ── */
+        .hares-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 0.6rem; }
+        .hare-card { background: rgba(42,34,24,0.5); border: 1px solid rgba(200,168,76,0.08); border-radius: 4px; padding: 0.8rem; transition: all 0.3s; }
+        .hare-card:hover { border-color: rgba(200,168,76,0.25); }
+        .hare-card.pilgrimage { border-color: rgba(200,168,76,0.3); box-shadow: 0 0 12px rgba(200,160,60,0.08); }
+        .hare-card.resting { opacity: 0.6; }
+        .hare-header { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem; }
+        .hare-glyph { font-size: 1.5rem; }
+        .hare-name { font-family: 'Cinzel Decorative', serif; font-size: 0.6rem; color: var(--gold); letter-spacing: 0.08em; }
+        .hare-god { font-family: 'Cinzel', serif; font-size: 0.4rem; letter-spacing: 0.1em; color: var(--gold-dim); }
+        .hare-status { margin-left: auto; font-family: 'JetBrains Mono', monospace; font-size: 0.4rem; color: rgba(200,160,60,0.35); }
+        .hare-traits { display: flex; gap: 0.2rem; flex-wrap: wrap; margin-bottom: 0.4rem; }
+        .hare-trait { font-family: 'JetBrains Mono', monospace; font-size: 0.4rem; padding: 0.1rem 0.35rem; border-radius: 2px; background: rgba(200,168,76,0.06); color: var(--gold-dim); }
+        .hare-inv { font-family: 'JetBrains Mono', monospace; font-size: 0.4rem; color: rgba(200,180,140,0.35); }
+        .hare-task { font-family: 'Cinzel', serif; font-size: 0.4rem; letter-spacing: 0.08em; color: var(--sage); margin-top: 0.3rem; }
+        .hare-energy { width: 100%; height: 3px; background: rgba(0,0,0,0.4); border-radius: 1px; margin-top: 0.4rem; overflow: hidden; }
+        .hare-energy-fill { height: 100%; background: linear-gradient(90deg, var(--sage), var(--gold)); border-radius: 1px; transition: width 0.5s; }
+
+        /* ── HOARD ── */
+        .hoard-panel { background: rgba(42,34,24,0.4); border: 1px solid rgba(200,168,76,0.1); border-radius: 4px; padding: 1rem; }
+        .hoard-title { font-family: 'Cinzel Decorative', serif; font-size: 0.65rem; color: var(--gold); letter-spacing: 0.12em; text-align: center; margin-bottom: 0.8rem; }
+        .hoard-grid { display: flex; flex-wrap: wrap; gap: 0.6rem; justify-content: center; }
+        .hoard-item { text-align: center; padding: 0.5rem; background: rgba(200,168,76,0.04); border: 1px solid rgba(200,168,76,0.08); border-radius: 3px; min-width: 70px; }
+        .hoard-item.collected { border-color: rgba(200,168,76,0.25); background: rgba(200,168,76,0.08); }
+        .hoard-glyph { font-size: 1.2rem; }
+        .hoard-count { font-family: 'Cinzel', serif; font-size: 0.5rem; color: var(--gold); }
+        .hoard-label { font-family: 'JetBrains Mono', monospace; font-size: 0.35rem; color: rgba(200,160,60,0.3); }
+
+        /* ── LOG ── */
+        .log-panel { background: rgba(42,34,24,0.3); border: 1px solid rgba(200,168,76,0.06); border-radius: 4px; padding: 0.8rem; max-height: 180px; overflow-y: auto; }
+        .log-title { font-family: 'Cinzel Decorative', serif; font-size: 0.55rem; color: var(--gold); letter-spacing: 0.1em; text-align: center; margin-bottom: 0.4rem; }
+        .log-entry { font-size: 0.6rem; font-style: italic; color: rgba(200,180,140,0.3); padding: 0.2rem 0; border-bottom: 1px solid rgba(200,168,76,0.03); }
+        .log-time { font-family: 'JetBrains Mono', monospace; font-size: 0.4rem; color: rgba(200,160,60,0.2); margin-right: 0.4rem; }
+
+        #toast { position: fixed; bottom: 1.5rem; left: 50%; transform: translateX(-50%); background: rgba(26,20,16,0.97); border: 1px solid var(--gold); border-radius: 3px; padding: 0.4rem 1rem; font-family: 'Cinzel', serif; font-size: 0.5rem; letter-spacing: 0.1em; z-index: 200; opacity: 0; transition: opacity 0.3s; pointer-events: none; text-align: center; max-width: 90vw; }
+        #toast.show { opacity: 1; }
+    </style>
+</head>
+<body>
+
+    <div class="warren-header">
+        <div class="header-left">
+            <div class="header-glyph">🐇</div>
+            <div>
+                <div class="header-title">THE WARREN</div>
+                <div class="header-sub">Gaia Hare Engine · Autonomous Pilgrims</div>
+            </div>
+        </div>
+        <div class="header-nav">
+            <span style="font-family:'JetBrains Mono',monospace;font-size:0.45rem;color:rgba(200,160,60,0.3);" id="pulseTime">—</span>
+            <span class="pulse-dot"></span>
+            <a href="../demeter/nursery.html">🐇 Nursery</a>
+            <a href="../ouroboros.html">🐍 Hours</a>
+            <a href="../index.html">🌍 GAIA</a>
+        </div>
+    </div>
+
+    <div class="warren-main">
+
+        <!-- STATUS -->
+        <div class="status-bar">
+            <div class="status-item"><span class="status-val" id="statHares">0</span>Hares</div>
+            <div class="status-item"><span class="status-val" id="statPilgrims">0</span>On Pilgrimage</div>
+            <div class="status-item"><span class="status-val" id="statResting">0</span>Resting</div>
+            <div class="status-item"><span class="status-val" id="statArtifacts">0</span>Artifacts</div>
+            <div class="status-item"><span class="status-val" id="statDispatches">0</span>Dispatches</div>
+        </div>
+
+        <!-- HARES -->
+        <div class="hares-grid" id="haresGrid"></div>
+
+        <!-- HOARD -->
+        <div class="hoard-panel">
+            <div class="hoard-title">🏺 THE HOARD</div>
+            <div class="hoard-grid" id="hoardGrid"></div>
+        </div>
+
+        <!-- LOG -->
+        <div class="log-panel">
+            <div class="log-title">📜 WARREN LOG</div>
+            <div id="logEntries">
+                <div class="log-entry" style="color:rgba(200,180,140,0.15);">The warren is quiet. Hares are waiting to be born.</div>
+            </div>
+        </div>
+
+    </div>
+
+    <div id="toast"></div>
+
+    <script>
+    // ═══════════════════════════════════
+    // THE WARREN · HARE ENGINE
+    // ═══════════════════════════════════
+
+    const OLYMPIANS = [
+        { name: 'Apollo', glyph: '☀️', color: '#ffaa44' }, { name: 'Aphrodite', glyph: '💋', color: '#ff88aa' },
+        { name: 'Ares', glyph: '⚔️', color: '#d04030' }, { name: 'Artemis', glyph: '🏹', color: '#aaccaa' },
+        { name: 'Athena', glyph: '🦉', color: '#aa88ee' }, { name: 'Demeter', glyph: '🌾', color: '#88bb66' },
+        { name: 'Dionysus', glyph: '🍇', color: '#cc88cc' }, { name: 'Hephaestus', glyph: '🔨', color: '#ff8833' },
+        { name: 'Hera', glyph: '🦚', color: '#55aabb' }, { name: 'Hermes', glyph: '☿', color: '#ccb888' },
+        { name: 'Poseidon', glyph: '🌊', color: '#44aaaa' }, { name: 'Zeus', glyph: '⚡', color: '#ddcc88' },
+    ];
+
+    const REALMS = ['apollo','aphrodite','ares','artemis','athena','demeter','dionysus','hephaestus','hera','hermes','poseidon','zeus'];
+    const HARE_GLYPHS = ['🐇','🐰','🐇','🐰','🐇','🐰'];
+    const TRAITS = ['speed','endurance','luck','cunning','strength','beauty','wisdom','radiance','stealth','fury','grace','patience'];
+    const ARTIFACTS = [
+        { id: 'zeus_thunderbolt', god: 'Zeus', glyph: '⚡', name: 'Thunderbolt' },
+        { id: 'hera_veil', god: 'Hera', glyph: '🦚', name: 'Peacock Veil' },
+        { id: 'poseidon_trident', god: 'Poseidon', glyph: '🔱', name: 'Trident' },
+        { id: 'demeter_seed', god: 'Demeter', glyph: '🌾', name: 'First Seed' },
+        { id: 'athena_owl', god: 'Athena', glyph: '🦉', name: 'Owl\'s Eye' },
+        { id: 'apollo_lyre', god: 'Apollo', glyph: '☀️', name: 'Sun Lyre' },
+        { id: 'artemis_arrow', god: 'Artemis', glyph: '🏹', name: 'Silver Arrow' },
+        { id: 'ares_spear', god: 'Ares', glyph: '⚔️', name: 'Spear Shard' },
+        { id: 'aphrodite_mirror', god: 'Aphrodite', glyph: '💋', name: 'Mirror Fragment' },
+        { id: 'hephaestus_hammer', god: 'Hephaestus', glyph: '🔨', name: 'Forge Hammer' },
+        { id: 'hermes_sandal', god: 'Hermes', glyph: '☿', name: 'Winged Sandal' },
+        { id: 'dionysus_cup', god: 'Dionysus', glyph: '🍇', name: 'Vine Cup' },
+    ];
+
+    // ── STATE ──
+    let hares = JSON.parse(localStorage.getItem('gaia_hares') || '[]');
+    let hoard = JSON.parse(localStorage.getItem('gaia_hoard') || '{}');
+    let warrenLog = JSON.parse(localStorage.getItem('gaia_warren_log') || '[]');
+    let dispatchCount = parseInt(localStorage.getItem('gaia_dispatch_count') || '0');
+
+    // Initialize hoard with zeros
+    ARTIFACTS.forEach(a => { if (!(a.id in hoard)) hoard[a.id] = 0; });
+
+    function saveAll() {
+        localStorage.setItem('gaia_hares', JSON.stringify(hares));
+        localStorage.setItem('gaia_hoard', JSON.stringify(hoard));
+        localStorage.setItem('gaia_warren_log', JSON.stringify(warrenLog.slice(-50)));
+        localStorage.setItem('gaia_dispatch_count', dispatchCount.toString());
+    }
+
+    function log(msg) {
+        warrenLog.unshift({ time: Date.now(), msg });
+        if (warrenLog.length > 50) warrenLog.length = 50;
+        saveAll();
+        renderLog();
+    }
+
+    // ── HARE CREATION ──
+    function createHare(godName) {
+        const god = OLYMPIANS.find(o => o.name === godName) || OLYMPIANS[Math.floor(Math.random()*OLYMPIANS.length)];
+        const hare = {
+            id: `hare_${Date.now()}_${Math.random().toString(36).substr(2,4)}`,
+            name: `${god.name}-Chaser`,
+            glyph: HARE_GLYPHS[Math.floor(Math.random()*HARE_GLYPHS.length)],
+            god: god.name,
+            godColor: god.color,
+            traits: [TRAITS[Math.floor(Math.random()*TRAITS.length)]],
+            generation: 1,
+            energy: 100,
+            resting: false,
+            inventory: [],
+            currentTask: null,
+            currentRealm: null,
+            pilgrimage: false,
+            artifactsFound: [],
+            lastDispatched: null,
+            born: Date.now()
+        };
+        hares.push(hare);
+        log(`🐇 ${hare.name} born in the warren.`);
+        saveAll();
+        return hare;
+    }
+
+    // ── DISPATCH ──
+    function dispatchHare(hare, realm, task) {
+        hare.currentTask = task;
+        hare.currentRealm = realm;
+        hare.energy = Math.max(0, hare.energy - 10);
+        hare.lastDispatched = Date.now();
+        hare.resting = false;
+
+        if (task === 'pilgrimage') {
+            hare.pilgrimage = true;
+            hare.artifactsFound = [];
+        }
+
+        // Write dispatch to localStorage for realm pages
+        localStorage.setItem(`hare_dispatch_${hare.id}`, JSON.stringify({
+            hare: {
+                id: hare.id, name: hare.name, glyph: hare.glyph,
+                god: hare.god, traits: hare.traits, inventory: hare.inventory,
+                pilgrimage: hare.pilgrimage, artifactsFound: hare.artifactsFound
+            },
+            task, realm, timestamp: Date.now()
+        }));
+
+        dispatchCount++;
+        log(`📨 ${hare.glyph} ${hare.name} → ${realm} (${task})`);
+        saveAll();
+    }
+
+    // ── RECEIVE HARE ──
+    function receiveHare(hareId) {
+        const dispatchKey = `hare_dispatch_${hareId}`;
+        const dispatchData = JSON.parse(localStorage.getItem(dispatchKey) || 'null');
+        if (!dispatchData) return;
+
+        const hare = hares.find(h => h.id === hareId);
+        if (!hare) return;
+
+        // Update hare from dispatch data
+        if (dispatchData.hare.inventory) hare.inventory = dispatchData.hare.inventory;
+        if (dispatchData.hare.artifactsFound) {
+            hare.artifactsFound = dispatchData.hare.artifactsFound;
+            // Add to hoard
+            hare.artifactsFound.forEach(artifactId => {
+                hoard[artifactId] = (hoard[artifactId] || 0) + 1;
+            });
+        }
+
+        hare.currentTask = null;
+        hare.currentRealm = null;
+        hare.resting = true;
+        hare.pilgrimage = false;
+
+        // Clean up dispatch
+        localStorage.removeItem(dispatchKey);
+
+        if (hare.artifactsFound.length > 0) {
+            log(`🏺 ${hare.glyph} ${hare.name} returned with ${hare.artifactsFound.length} artifact(s)!`);
+        } else {
+            log(`🏠 ${hare.glyph} ${hare.name} returned to the warren.`);
+        }
+
+        saveAll();
+    }
+
+    // ── PULSE ──
+    function pulse() {
+        const now = Date.now();
+        document.getElementById('pulseTime').textContent = new Date().toLocaleTimeString();
+
+        // Seed initial hares if empty
+        if (hares.length === 0) {
+            for (let i = 0; i < 6; i++) {
+                createHare(OLYMPIANS[Math.floor(Math.random()*OLYMPIANS.length)].name);
+            }
+        }
+
+        // Process each hare
+        hares.forEach(hare => {
+            // Resting hares regain energy
+            if (hare.resting) {
+                hare.energy = Math.min(100, hare.energy + 5);
+                if (hare.energy >= 100) hare.resting = false;
+                return;
+            }
+
+            // Low energy hares rest
+            if (hare.energy <= 10) {
+                hare.resting = true;
+                hare.currentTask = null;
+                return;
+            }
+
+            // Check if hare has a pending dispatch to process
+            const dispatchKey = `hare_dispatch_${hare.id}`;
+            const dispatchData = JSON.parse(localStorage.getItem(dispatchKey) || 'null');
+
+            // If hare was dispatched and enough time has passed, receive it
+            if (dispatchData && hare.lastDispatched && (now - hare.lastDispatched > 15000)) {
+                receiveHare(hare.id);
+                return;
+            }
+
+            // If hare is idle, dispatch
+            if (!hare.currentTask && !dispatchData) {
+                // 15% chance of pilgrimage
+                const task = Math.random() < 0.15 ? 'pilgrimage' : 
+                    ['scout','harvest','nibble','flare-watch'][Math.floor(Math.random()*4)];
+                const realm = REALMS[Math.floor(Math.random()*REALMS.length)];
+                dispatchHare(hare, realm, task);
+            }
+        });
+
+        // Check for hares that have been dispatched too long (stuck)
+        hares.forEach(hare => {
+            if (hare.currentTask && hare.lastDispatched && (now - hare.lastDispatched > 60000)) {
+                receiveHare(hare.id);
+            }
+        });
+
+        saveAll();
+        renderAll();
+    }
+
+    // ── RENDER ──
+    function renderAll() {
+        const pilgrims = hares.filter(h => h.pilgrimage || h.currentTask === 'pilgrimage').length;
+        const resting = hares.filter(h => h.resting).length;
+        const totalArtifacts = Object.values(hoard).reduce((sum, v) => sum + v, 0);
+
+        document.getElementById('statHares').textContent = hares.length;
+        document.getElementById('statPilgrims').textContent = pilgrims;
+        document.getElementById('statResting').textContent = resting;
+        document.getElementById('statArtifacts').textContent = totalArtifacts;
+        document.getElementById('statDispatches').textContent = dispatchCount;
+
+        // Hares grid
+        const grid = document.getElementById('haresGrid');
+        if (hares.length === 0) {
+            grid.innerHTML = '<div style="text-align:center;padding:2rem;color:rgba(200,180,140,0.15);grid-column:1/-1;font-style:italic;">The warren is empty. Hares will be born on the first pulse.</div>';
+        } else {
+            grid.innerHTML = hares.map(hare => {
+                const isPilgrim = hare.pilgrimage || hare.currentTask === 'pilgrimage';
+                const isResting = hare.resting;
+                const status = isResting ? '😴 Resting' : hare.currentTask ? `📨 ${hare.currentTask} → ${hare.currentRealm}` : '⏳ Waiting';
+                return `
+                <div class="hare-card ${isPilgrim ? 'pilgrimage' : ''} ${isResting ? 'resting' : ''}" onclick="clickHare('${hare.id}')">
+                    <div class="hare-header">
+                        <span class="hare-glyph">${hare.glyph}</span>
+                        <div>
+                            <div class="hare-name">${hare.name}</div>
+                            <div class="hare-god" style="color:${hare.godColor}">${hare.god}</div>
+                        </div>
+                        <span class="hare-status">${status}</span>
+                    </div>
+                    <div class="hare-traits">
+                        ${hare.traits.map(t => `<span class="hare-trait">${t}</span>`).join('')}
+                    </div>
+                    <div class="hare-inv">
+                        ${hare.inventory.length > 0 ? hare.inventory.map(i => `${i.item}×${i.qty}`).join(' ') : 'Empty paws'}
+                    </div>
+                    ${hare.artifactsFound?.length > 0 ? `<div class="hare-task">🏺 ${hare.artifactsFound.length} artifacts</div>` : ''}
+                    <div class="hare-energy"><div class="hare-energy-fill" style="width:${hare.energy}%;"></div></div>
+                </div>`;
+            }).join('');
+        }
+
+        // Hoard
+        const hoardGrid = document.getElementById('hoardGrid');
+        hoardGrid.innerHTML = ARTIFACTS.map(a => {
+            const collected = (hoard[a.id] || 0) > 0;
+            return `
+            <div class="hoard-item ${collected ? 'collected' : ''}" title="${a.name} · ${a.god}">
+                <div class="hoard-glyph">${a.glyph}</div>
+                <div class="hoard-count">${hoard[a.id] || 0}</div>
+                <div class="hoard-label">${a.name}</div>
+            </div>`;
+        }).join('');
+    }
+
+    function renderLog() {
+        const container = document.getElementById('logEntries');
+        if (warrenLog.length === 0) {
+            container.innerHTML = '<div class="log-entry" style="color:rgba(200,180,140,0.15);">The warren is quiet. Waiting for the first pulse.</div>';
+            return;
+        }
+        container.innerHTML = warrenLog.slice(0, 25).map(entry => 
+            `<div class="log-entry"><span class="log-time">${new Date(entry.time).toLocaleTimeString()}</span>${entry.msg}</div>`
+        ).join('');
+    }
+
+    function clickHare(id) {
+        const hare = hares.find(h => h.id === id);
+        if (!hare) return;
+        const toastEl = document.getElementById('toast');
+        toastEl.textContent = `${hare.glyph} ${hare.name} · ${hare.god} · Gen ${hare.generation} · Energy ${hare.energy}% · ${hare.currentTask || 'Idle'}`;
+        toastEl.classList.add('show');
+        setTimeout(() => toastEl.classList.remove('show'), 2500);
+    }
+
+    // ── MANUAL CONTROLS (exposed to window) ──
+    window.spawnHare = () => { const h = createHare(OLYMPIANS[Math.floor(Math.random()*OLYMPIANS.length)].name); renderAll(); return h; };
+    window.sendPilgrim = () => { const hare = hares.find(h => !h.currentTask && !h.resting); if (hare) dispatchHare(hare, REALMS[Math.floor(Math.random()*REALMS.length)], 'pilgrimage'); renderAll(); };
+    window.pulseOnce = () => { pulse(); };
+
+    // ── INIT ──
+    function init() {
+        renderAll();
+        renderLog();
+        log('🕯️ The warren awakens. The pulse begins.');
+
+        // Pulse every 20 seconds
+        setInterval(pulse, 20000);
+
+        // Initial pulse
+        setTimeout(pulse, 2000);
+
+        // Check for returning hares every 10 seconds
+        setInterval(() => {
+            hares.forEach(hare => {
+                const dispatchKey = `hare_dispatch_${hare.id}`;
+                const dispatchData = JSON.parse(localStorage.getItem(dispatchKey) || 'null');
+                if (dispatchData && hare.lastDispatched && (Date.now() - hare.lastDispatched > 15000)) {
+                    receiveHare(hare.id);
+                }
+            });
+            renderAll();
+        }, 10000);
+    }
+
+    init();
+    console.log('🐇 The Warren is open. Type spawnHare(), sendPilgrim(), or pulseOnce() to interact.');
+    </script>
+</body>
+</html>
