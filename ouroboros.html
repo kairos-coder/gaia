@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Ouroboros · Olympian Hours · Digital Divination</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&family=Cinzel:wght@400;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --void: #0a0806; --deep: #1a1410; --stone: #2a2218;
+            --gold: #c9a84c; --gold-bright: #f0d080; --gold-dim: #6b5520;
+            --marble: #c8c0b0;
+        }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body {
+            background: var(--void);
+            color: var(--marble);
+            font-family: 'Cormorant Garamond', Georgia, serif;
+            min-height: 100vh; overflow-x: hidden;
+            display: flex; flex-direction: column; align-items: center;
+            background-image: radial-gradient(ellipse at 50% 50%, rgba(200,160,60,0.04) 0%, transparent 70%);
+        }
+
+        .content {
+            position: relative; z-index: 10;
+            max-width: 700px; width: 100%; padding: 2rem 1.5rem 4rem;
+            display: flex; flex-direction: column; align-items: center; gap: 2rem;
+        }
+
+        /* ── HEADER ── */
+        .ouro-header { text-align: center; }
+        .ouro-glyph {
+            font-size: 3rem; margin-bottom: 0.3rem;
+            animation: serpentPulse 4s ease-in-out infinite;
+        }
+        @keyframes serpentPulse {
+            0%,100% { filter: drop-shadow(0 0 15px rgba(200,160,60,0.3)); }
+            50% { filter: drop-shadow(0 0 35px rgba(240,208,128,0.5)); }
+        }
+        .ouro-title {
+            font-family: 'Cinzel Decorative', serif;
+            font-size: clamp(1.8rem, 5vw, 2.6rem);
+            color: var(--gold-bright); letter-spacing: 0.2em;
+            text-shadow: 0 0 30px rgba(200,160,60,0.3);
+        }
+        .ouro-subtitle {
+            font-family: 'Cinzel', serif; font-size: 0.5rem;
+            letter-spacing: 0.3em; color: var(--gold-dim);
+            text-transform: uppercase; margin-top: 0.3rem;
+        }
+
+        /* ── CURRENT HOUR ── */
+        .current-hour {
+            text-align: center; padding: 2rem;
+            background: rgba(26,20,16,0.8);
+            border: 1px solid rgba(200,160,60,0.2);
+            border-radius: 4px; width: 100%;
+        }
+        .current-time {
+            font-family: 'Cinzel', serif; font-size: 0.5rem;
+            letter-spacing: 0.25em; color: var(--gold-dim);
+            text-transform: uppercase; margin-bottom: 0.5rem;
+        }
+        .current-god-glyph {
+            font-size: 4rem; margin-bottom: 0.3rem;
+            animation: serpentPulse 3s ease-in-out infinite;
+        }
+        .current-god-name {
+            font-family: 'Cinzel Decorative', serif;
+            font-size: 1.8rem; color: var(--gold-bright);
+            letter-spacing: 0.15em;
+        }
+        .current-god-domain {
+            font-family: 'Cinzel', serif; font-size: 0.5rem;
+            letter-spacing: 0.2em; color: var(--gold-dim);
+            text-transform: uppercase; margin-top: 0.3rem;
+        }
+        .current-focus {
+            font-size: 1rem; font-style: italic;
+            color: rgba(200,180,140,0.6);
+            margin-top: 0.8rem; line-height: 1.6;
+        }
+
+        /* ── WHEEL ── */
+        .wheel-container {
+            position: relative; width: 100%; max-width: 500px;
+            aspect-ratio: 1; margin: 0 auto;
+        }
+        .wheel-ring {
+            position: absolute; inset: 0;
+            border: 2px solid rgba(200,160,60,0.15);
+            border-radius: 50%;
+        }
+        .wheel-ring.inner {
+            inset: 15%;
+            border: 1px dashed rgba(200,160,60,0.08);
+        }
+        .wheel-ring.outer {
+            inset: -8px;
+            border: 2px solid rgba(200,160,60,0.1);
+        }
+
+        .hour-marker {
+            position: absolute;
+            width: 28px; height: 28px;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.9rem; cursor: pointer;
+            transition: all 0.3s;
+            background: rgba(10,8,6,0.8);
+            border: 1px solid rgba(200,160,60,0.15);
+        }
+        .hour-marker:hover {
+            transform: scale(1.3); z-index: 10;
+            border-color: var(--gold);
+        }
+        .hour-marker.current {
+            background: rgba(200,160,60,0.2);
+            border-color: var(--gold-bright);
+            box-shadow: 0 0 20px rgba(200,160,60,0.4);
+            font-size: 1.1rem;
+            width: 34px; height: 34px;
+            animation: currentPulse 2s ease-in-out infinite;
+        }
+        @keyframes currentPulse {
+            0%,100% { box-shadow: 0 0 15px rgba(200,160,60,0.3); }
+            50% { box-shadow: 0 0 30px rgba(200,160,60,0.6); }
+        }
+
+        .hour-label {
+            position: absolute;
+            font-family: 'Cinzel', serif; font-size: 0.4rem;
+            letter-spacing: 0.1em; color: rgba(200,160,60,0.3);
+            text-transform: uppercase; text-align: center;
+            width: 50px; pointer-events: none;
+        }
+
+        /* ── SNAKE TRAIL ── */
+        #snake-canvas {
+            position: absolute; inset: 0;
+            pointer-events: none; z-index: 5;
+        }
+
+        /* ── LEGEND ── */
+        .legend {
+            display: flex; flex-wrap: wrap; gap: 0.4rem;
+            justify-content: center; width: 100%;
+        }
+        .legend-item {
+            font-family: 'Cinzel', serif; font-size: 0.45rem;
+            letter-spacing: 0.1em; color: var(--gold-dim);
+            padding: 0.25rem 0.5rem;
+            border: 1px solid rgba(200,160,60,0.1);
+            border-radius: 2px; cursor: pointer;
+            transition: all 0.2s;
+        }
+        .legend-item:hover { border-color: var(--gold); color: var(--gold); }
+        .legend-item.current {
+            border-color: var(--gold-bright); color: var(--gold-bright);
+            background: rgba(200,160,60,0.1);
+        }
+
+        /* ── NAV ── */
+        .ouro-nav {
+            display: flex; gap: 1.5rem; justify-content: center;
+            flex-wrap: wrap; width: 100%;
+        }
+        .ouro-nav a {
+            font-family: 'Cinzel', serif; font-size: 0.55rem;
+            letter-spacing: 0.2em; text-transform: uppercase;
+            color: var(--gold-dim); text-decoration: none;
+            padding: 0.35rem 0.8rem; border: 1px solid transparent;
+            transition: all 0.2s;
+        }
+        .ouro-nav a:hover { color: var(--gold-bright); border-bottom: 1px solid var(--gold); }
+
+        .ouro-footer {
+            text-align: center; font-family: 'Cinzel', serif;
+            font-size: 0.45rem; letter-spacing: 0.2em;
+            color: rgba(200,160,60,0.15);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="content">
+
+        <header class="ouro-header">
+            <div class="ouro-glyph">🐍</div>
+            <h1 class="ouro-title">THE OUROBOROS</h1>
+            <p class="ouro-subtitle">The Olympian Hours · The Snake Draft · The Wheel of Attention</p>
+        </header>
+
+        <!-- CURRENT HOUR -->
+        <div class="current-hour" id="currentHourPanel">
+            <div class="current-time" id="currentTimeLabel">—</div>
+            <div class="current-god-glyph" id="currentGodGlyph">—</div>
+            <div class="current-god-name" id="currentGodName">—</div>
+            <div class="current-god-domain" id="currentGodDomain">—</div>
+            <div class="current-focus" id="currentFocus">—</div>
+        </div>
+
+        <!-- THE WHEEL -->
+        <div class="wheel-container" id="wheelContainer">
+            <canvas id="snake-canvas"></canvas>
+            <div class="wheel-ring outer"></div>
+            <div class="wheel-ring"></div>
+            <div class="wheel-ring inner"></div>
+            <!-- Markers populated by JS -->
+        </div>
+
+        <!-- LEGEND -->
+        <div class="legend" id="legend"></div>
+
+        <!-- NAV -->
+        <nav class="ouro-nav">
+            <a href="index.html">🌍 GAIA</a>
+        </nav>
+
+        <div class="ouro-footer">THE SERPENT EATS ITS TAIL · THE HOURS DEVOUR THEMSELVES · THE GODS RETURN</div>
+    </div>
+
+    <script>
+    // ═══════════════════════════════════
+    // THE SNAKE DRAFT WHEEL
+    // ═══════════════════════════════════
+
+    const OLYMPIANS = [
+        { name: 'Apollo',    glyph: '☀️', domain: 'Light · Prophecy',  focus: 'Shine. Broadcast. Speak truth. The sun is at its peak. What needs to be illuminated?' },
+        { name: 'Aphrodite', glyph: '💋', domain: 'Love · Desire',     focus: 'Connect. Beautify. Reach out. Who needs your attention? What needs your charm?' },
+        { name: 'Ares',      glyph: '⚔️', domain: 'War · Courage',     focus: 'Act. Decide. Strike while hot. What have you been hesitating on? Move now.' },
+        { name: 'Artemis',   glyph: '🏹', domain: 'Hunt · Sovereignty', focus: 'Focus. Aim. Protect your space. What needs your precision? What boundary needs defending?' },
+        { name: 'Athena',    glyph: '🦉', domain: 'Wisdom · Strategy',  focus: 'Plan. Reflect. Sharpen the mind. What needs a better strategy? Think before you strike.' },
+        { name: 'Demeter',   glyph: '🌾', domain: 'Harvest · Growth',   focus: 'Tend. Nurture. Check the garden. What have you planted that needs watering?' },
+        { name: 'Dionysus',  glyph: '🍇', domain: 'Ecstasy · Release',  focus: 'Pour. Celebrate. Let go. What weight are you carrying that isn\'t yours? Release it.' },
+        { name: 'Hephaestus',glyph: '🔨', domain: 'Forge · Craft',      focus: 'Build. Make. Ship the work. What needs your hands? The forge is hot.' },
+        { name: 'Hera',      glyph: '🦚', domain: 'Covenant · Binding',  focus: 'Honor commitments. Review oaths. What promise needs keeping? What boundary needs holding?' },
+        { name: 'Hermes',    glyph: '☿', domain: 'Messages · Thresholds',focus: 'Connect. Trade. Cross boundaries. What message needs sending? What door needs opening?' },
+        { name: 'Poseidon',  glyph: '🌊', domain: 'Sea · Depth',         focus: 'Dive deep. Feel. Let it flow. What emotion are you holding back? Let the wave break.' },
+        { name: 'Zeus',      glyph: '⚡', domain: 'Authority · Order',   focus: 'Rule. Decide. Close the day. What needs your final word? The thunder speaks once.' },
+    ];
+
+    // Build the snake draft: forward then reverse
+    const FORWARD = [...OLYMPIANS];
+    const REVERSE = [...OLYMPIANS].reverse();
+
+    // The full 24-hour wheel: Apollo 11am, Apollo noon, then forward through the rest, Zeus at 11pm/midnight, then reverse
+    const WHEEL = [
+        // 11 AM — Apollo (tail)
+        { hour: 11, god: OLYMPIANS[0], direction: 'tail' },
+        // 12 PM — Apollo (forward start)
+        { hour: 12, god: OLYMPIANS[0], direction: 'forward' },
+        // 1 PM - 11 PM — forward through the rest
+        { hour: 13, god: OLYMPIANS[1], direction: 'forward' },
+        { hour: 14, god: OLYMPIANS[2], direction: 'forward' },
+        { hour: 15, god: OLYMPIANS[3], direction: 'forward' },
+        { hour: 16, god: OLYMPIANS[4], direction: 'forward' },
+        { hour: 17, god: OLYMPIANS[5], direction: 'forward' },
+        { hour: 18, god: OLYMPIANS[6], direction: 'forward' },
+        { hour: 19, god: OLYMPIANS[7], direction: 'forward' },
+        { hour: 20, god: OLYMPIANS[8], direction: 'forward' },
+        { hour: 21, god: OLYMPIANS[9], direction: 'forward' },
+        { hour: 22, god: OLYMPIANS[10], direction: 'forward' },
+        { hour: 23, god: OLYMPIANS[11], direction: 'forward' },
+        // 12 AM — Zeus (head)
+        { hour: 0, god: OLYMPIANS[11], direction: 'head' },
+        // 1 AM - 10 AM — reverse back through
+        { hour: 1, god: REVERSE[1], direction: 'reverse' },
+        { hour: 2, god: REVERSE[2], direction: 'reverse' },
+        { hour: 3, god: REVERSE[3], direction: 'reverse' },
+        { hour: 4, god: REVERSE[4], direction: 'reverse' },
+        { hour: 5, god: REVERSE[5], direction: 'reverse' },
+        { hour: 6, god: REVERSE[6], direction: 'reverse' },
+        { hour: 7, god: REVERSE[7], direction: 'reverse' },
+        { hour: 8, god: REVERSE[8], direction: 'reverse' },
+        { hour: 9, god: REVERSE[9], direction: 'reverse' },
+        { hour: 10, god: REVERSE[10], direction: 'reverse' },
+        // 11 AM loops back to Apollo
+    ];
+
+    // Map hour to wheel entry
+    function getWheelEntry(hour) {
+        return WHEEL.find(w => w.hour === hour) || WHEEL[0];
+    }
+
+    function formatHour(hour) {
+        if (hour === 0) return '12 AM';
+        if (hour === 12) return '12 PM';
+        if (hour < 12) return `${hour} AM`;
+        return `${hour - 12} PM`;
+    }
+
+    // ═══════════════════════════════════
+    // BUILD WHEEL
+    // ═══════════════════════════════════
+
+    function buildWheel() {
+        const container = document.getElementById('wheelContainer');
+        const cx = container.clientWidth / 2;
+        const cy = container.clientWidth / 2;
+        const radius = container.clientWidth / 2 - 40;
+
+        // Clear old markers
+        container.querySelectorAll('.hour-marker,.hour-label').forEach(el => el.remove());
+
+        WHEEL.forEach((entry, i) => {
+            const angle = (i / 24) * Math.PI * 2 - Math.PI / 2;
+            const mx = cx + Math.cos(angle) * radius - 14;
+            const my = cy + Math.sin(angle) * radius - 14;
+
+            const marker = document.createElement('div');
+            marker.className = 'hour-marker';
+            marker.style.left = mx + 'px';
+            marker.style.top = my + 'px';
+            marker.textContent = entry.god.glyph;
+            marker.title = `${formatHour(entry.hour)} · ${entry.god.name} · ${entry.god.domain}`;
+            marker.onclick = () => showHour(entry);
+
+            const now = new Date();
+            const currentHour = now.getHours();
+            if (entry.hour === currentHour) {
+                marker.classList.add('current');
+            }
+
+            container.appendChild(marker);
+
+            // Label outside
+            const labelAngle = angle;
+            const lx = cx + Math.cos(labelAngle) * (radius + 24) - 25;
+            const ly = cy + Math.sin(labelAngle) * (radius + 24) - 6;
+            const label = document.createElement('div');
+            label.className = 'hour-label';
+            label.style.left = lx + 'px';
+            label.style.top = ly + 'px';
+            label.textContent = formatHour(entry.hour);
+            container.appendChild(label);
+        });
+
+        drawSnake(cx, cy, radius);
+    }
+
+    // ═══════════════════════════════════
+    // DRAW SNAKE TRAIL
+    // ═══════════════════════════════════
+
+    function drawSnake(cx, cy, radius) {
+        const canvas = document.getElementById('snake-canvas');
+        canvas.width = canvas.parentElement.clientWidth;
+        canvas.height = canvas.parentElement.clientWidth;
+        const ctx = canvas.getContext('2d');
+
+        const innerR = radius - 20;
+        const outerR = radius - 8;
+
+        // Draw connecting arcs between consecutive hours
+        ctx.strokeStyle = 'rgba(200,160,60,0.2)';
+        ctx.lineWidth = 1.5;
+        ctx.setLineDash([3, 8]);
+
+        for (let i = 0; i < 24; i++) {
+            const angle1 = (i / 24) * Math.PI * 2 - Math.PI / 2;
+            const angle2 = ((i + 1) / 24) * Math.PI * 2 - Math.PI / 2;
+
+            const r = i < 12 ? outerR : innerR;
+
+            ctx.beginPath();
+            ctx.arc(cx, cy, r, angle1, angle2);
+            ctx.stroke();
+        }
+
+        // Highlight current hour arc
+        const now = new Date();
+        const currentHour = now.getHours();
+        const currentIdx = WHEEL.findIndex(w => w.hour === currentHour);
+        if (currentIdx >= 0) {
+            const angle1 = (currentIdx / 24) * Math.PI * 2 - Math.PI / 2;
+            const angle2 = ((currentIdx + 1) / 24) * Math.PI * 2 - Math.PI / 2;
+            const r = currentIdx < 12 ? outerR : innerR;
+
+            ctx.strokeStyle = 'rgba(240,208,128,0.5)';
+            ctx.lineWidth = 2.5;
+            ctx.setLineDash([]);
+            ctx.beginPath();
+            ctx.arc(cx, cy, r, angle1, angle2);
+            ctx.stroke();
+        }
+
+        // Draw serpent eye at current position
+        const currentEntry = getWheelEntry(currentHour);
+        const currentWheelIdx = WHEEL.findIndex(w => w.hour === currentHour);
+        const eyeAngle = (currentWheelIdx / 24) * Math.PI * 2 - Math.PI / 2;
+        const eyeR = currentWheelIdx < 12 ? outerR : innerR;
+        const eyeX = cx + Math.cos(eyeAngle) * eyeR;
+        const eyeY = cy + Math.sin(eyeAngle) * eyeR;
+
+        ctx.beginPath();
+        ctx.arc(eyeX, eyeY, 5, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(240,208,128,0.6)';
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(eyeX, eyeY, 2, 0, Math.PI * 2);
+        ctx.fillStyle = '#0a0806';
+        ctx.fill();
+    }
+
+    // ═══════════════════════════════════
+    // SHOW HOUR
+    // ═══════════════════════════════════
+
+    function showHour(entry) {
+        document.getElementById('currentTimeLabel').textContent = formatHour(entry.hour);
+        document.getElementById('currentGodGlyph').textContent = entry.god.glyph;
+        document.getElementById('currentGodName').textContent = entry.god.name;
+        document.getElementById('currentGodDomain').textContent = entry.god.domain;
+        document.getElementById('currentFocus').textContent = `"${entry.god.focus}"`;
+    }
+
+    // ═══════════════════════════════════
+    // BUILD LEGEND
+    // ═══════════════════════════════════
+
+    function buildLegend() {
+        const container = document.getElementById('legend');
+        const now = new Date();
+        const currentEntry = getWheelEntry(now.getHours());
+
+        container.innerHTML = OLYMPIANS.map(god => {
+            const isCurrent = god.name === currentEntry.god.name;
+            return `<div class="legend-item${isCurrent ? ' current' : ''}" onclick="jumpToGod('${god.name}')">${god.glyph} ${god.name}</div>`;
+        }).join('');
+    }
+
+    function jumpToGod(name) {
+        const entry = WHEEL.find(w => w.god.name === name);
+        if (entry) showHour(entry);
+    }
+
+    // ═══════════════════════════════════
+    // INIT
+    // ═══════════════════════════════════
+
+    function init() {
+        const now = new Date();
+        const currentHour = now.getHours();
+        const entry = getWheelEntry(currentHour);
+
+        showHour(entry);
+        buildWheel();
+        buildLegend();
+
+        // Update every minute
+        setInterval(() => {
+            const newHour = new Date().getHours();
+            const newEntry = getWheelEntry(newHour);
+            showHour(newEntry);
+            buildWheel();
+            buildLegend();
+        }, 60000);
+
+        // Resize handler
+        window.addEventListener('resize', () => {
+            const entry = getWheelEntry(new Date().getHours());
+            buildWheel();
+        });
+    }
+
+    init();
+    </script>
+</body>
+</html>
