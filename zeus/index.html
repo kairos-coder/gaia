@@ -154,6 +154,20 @@
     grid-template-columns: 1fr;
     grid-template-areas: "scroll" "input";
   }
+  .throne-cta {
+  display: inline-block; margin-top: 0.8rem;
+  font-family: 'Cinzel', serif; font-size: 0.6rem;
+  letter-spacing: 0.2em; text-transform: uppercase;
+  color: var(--gold); text-decoration: none;
+  border: 1px solid var(--gold-dim);
+  padding: 0.4rem 1.2rem; border-radius: 3px;
+  transition: all 0.2s;
+}
+.throne-cta:hover {
+  border-color: var(--gold-bright);
+  color: var(--gold-bright);
+  text-shadow: 0 0 10px var(--gold);
+}
 
   @media (min-width: 760px) {
     .throne-frame {
