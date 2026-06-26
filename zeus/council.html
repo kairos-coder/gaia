@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>COUNCIL · Olympus</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&family=Cinzel:wght@400;600;700&family=IM+Fell+English:ital@0;1&display=swap" rel="stylesheet">
+    <script src="/nexus/olympian-bridge.js"></script>
+    
+    <style>
+        :root {
+            --gold: #c8970a;
+            --gold-bright: #f0c040;
+            --storm: #0a0a14;
+            --storm-mid: #11112a;
+            --white: #f5f0e0;
+        }
+        * { box-sizing: border-box; margin:0; padding:0; }
+        body {
+            background: var(--storm);
+            color: var(--white);
+            font-family: 'IM Fell English', serif;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        #bg-layer {
+            position: fixed; inset: 0; z-index: 0;
+            background: radial-gradient(circle at center, #1a1a3a 0%, #0a0a14 70%);
+        }
+        canvas#lightning { position: fixed; inset: 0; z-index: 1; pointer-events: none; opacity: 0.35; }
+
+        header {
+            position: relative; z-index: 10;
+            text-align: center;
+            padding: 2rem 1rem 1rem;
+            border-bottom: 3px double var(--gold);
+        }
+        h1 {
+            font-family: 'Cinzel Decorative', serif;
+            font-size: clamp(2.4rem, 8vw, 4.5rem);
+            background: linear-gradient(90deg, #c8970a, #f0c040, #c8970a);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .council-table {
+            position: relative; z-index: 10;
+            max-width: 1100px;
+            margin: 2.5rem auto;
+            padding: 1rem;
+        }
+        .gods-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2.5rem;
+        }
+        .god {
+            background: rgba(17,17,42,0.9);
+            border: 2px solid var(--gold);
+            border-radius: 8px;
+            padding: 1rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .god:hover {
+            border-color: var(--gold-bright);
+            transform: translateY(-8px);
+            box-shadow: 0 0 25px rgba(240, 192, 64, 0.4);
+        }
+        .god img {
+            width: 90px; height: 90px;
+            border-radius: 50%;
+            border: 2px solid #c8970a;
+            object-fit: cover;
+        }
+        .god-name {
+            font-family: 'Cinzel', serif;
+            margin-top: 0.8rem;
+            color: var(--gold);
+        }
+
+        .motion-box {
+            background: rgba(10,10,20,0.95);
+            border: 2px solid var(--gold);
+            border-radius: 8px;
+            padding: 1.8rem;
+            margin: 2rem auto;
+            max-width: 800px;
+        }
+        #motion-input {
+            width: 100%;
+            min-height: 110px;
+            background: transparent;
+            border: 1px solid var(--gold);
+            color: var(--white);
+            padding: 1rem;
+            font-size: 1.05rem;
+        }
+        button {
+            margin-top: 1rem;
+            background: var(--gold);
+            color: #000;
+            border: none;
+            padding: 1rem 3rem;
+            font-family: 'Cinzel', serif;
+            font-weight: 700;
+            letter-spacing: 0.15em;
+            cursor: pointer;
+        }
+        button:hover { background: var(--gold-bright); }
+
+        .minutes {
+            margin-top: 2rem;
+            max-width: 1100px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .minute-entry {
+            background: rgba(17,17,42,0.7);
+            border-left: 4px solid var(--gold);
+            padding: 1rem 1.2rem;
+            margin-bottom: 1rem;
+        }
+    </style>
+</head>
+<body>
+
+<div id="bg-layer"></div>
+<canvas id="lightning"></canvas>
+
+<header>
+    <h1>THE COUNCIL OF OLYMPUS</h1>
+    <p style="color:#c8970a; font-family:Cinzel; letter-spacing:0.25em;">ZEUS PRESIDING · ALL VOICES HEARD</p>
+</header>
+
+<div class="council-table">
+    <div class="gods-grid" id="gods-grid">
+        <!-- Populated by JS -->
+    </div>
+
+    <div class="motion-box">
+        <h3 style="color:var(--gold); margin-bottom:1rem;">Bring a Motion Before the Council</h3>
+        <textarea id="motion-input" placeholder="Speak the matter for judgment... (e.g. 'Shall we advance the new temple build?' or 'What counsel for the chthonic audit?')"></textarea>
+        <button onclick="callCouncil()">CALL COUNCIL ⚡</button>
+    </div>
+</div>
+
+<div class="minutes">
+    <h2 style="color:var(--gold); text-align:center; margin-bottom:1rem;">COUNCIL MINUTES</h2>
+    <div id="minutes-container">
+        <!-- Populated by JS -->
+    </div>
+</div>
+
+<footer style="text-align:center; padding:2rem; color:#666; font-size:0.8rem; position:relative; z-index:10;">
+    <a href="throne.html" style="color:var(--gold);">← Return to Throne</a> | 
+    <a href="index.html" style="color:var(--gold);">Zeus Realm</a>
+</footer>
+
+<script>
+// Lightning
+const canvas = document.getElementById('lightning');
+const ctx = canvas.getContext('2d');
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+
+function drawLightning() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    if (Math.random() > 0.8) {
+        ctx.strokeStyle = 'rgba(240, 220, 100, 0.65)';
+        ctx.lineWidth = Math.random() * 4 + 2;
+        let x = Math.random() * canvas.width;
+        ctx.beginPath();
+        ctx.moveTo(x, 0);
+        for (let i = 0; i < 10; i++) {
+            x += (Math.random() - 0.5) * 80;
+            ctx.lineTo(x, (i+1) * (canvas.height / 10));
+        }
+        ctx.stroke();
+    }
+    requestAnimationFrame(drawLightning);
+}
+drawLightning();
+window.addEventListener('resize', () => { canvas.width = window.innerWidth; canvas.height = window.innerHeight; });
+
+// Gods data
+const olympians = [
+    {name: "Athena", title: "Wisdom & Strategy", emoji: "🦉", color: "#a0c0ff"},
+    {name: "Apollo", title: "Light & Prophecy", emoji: "☀️", color: "#ffdd77"},
+    {name: "Hermes", title: "Messenger & Commerce", emoji: "🪽", color: "#88ffaa"},
+    {name: "Hephaestus", title: "Forge & Craft", emoji: "🔨", color: "#ff8866"},
+    {name: "Ares", title: "War & Courage", emoji: "⚔️", color: "#ff4444"},
+    {name: "Artemis", title: "Hunt & Wilds", emoji: "🏹", color: "#77ddaa"},
+    {name: "Demeter", title: "Harvest & Growth", emoji: "🌾", color: "#aadd77"}
+];
+
+function renderGods() {
+    const container = document.getElementById('gods-grid');
+    container.innerHTML = '';
+    olympians.forEach(god => {
+        const div = document.createElement('div');
+        div.className = 'god';
+        div.innerHTML = `
+            <div style="font-size:3.5rem; margin-bottom:0.5rem;">${god.emoji}</div>
+            <div class="god-name">${god.name}</div>
+            <div style="font-size:0.85rem; opacity:0.8;">${god.title}</div>
+        `;
+        div.onclick = () => godSpeaks(god.name);
+        container.appendChild(div);
+    });
+}
+
+function godSpeaks(name) {
+    const responses = {
+        "Athena": "Strategy demands clarity. What is the true objective?",
+        "Apollo": "The light reveals truth. Let us see the pattern in the stars.",
+        "Hermes": "Swift action is needed. The message must travel far.",
+        "Hephaestus": "It must be forged with care. Weak metal will break.",
+        "Ares": "Strike while the iron is hot. Hesitation is death.",
+        "Artemis": "Honor the wild and the hidden paths.",
+        "Demeter": "What is planted now will shape the harvest."
+    };
+    alert(`\( {name} speaks: " \){responses[name] || 'I stand with the King.'}"`);
+}
+
+let minutes = JSON.parse(localStorage.getItem('zeus_council_minutes')) || [];
+
+function saveMinutes() {
+    localStorage.setItem('zeus_council_minutes', JSON.stringify(minutes));
+}
+
+function renderMinutes() {
+    const container = document.getElementById('minutes-container');
+    container.innerHTML = minutes.length ? '' : '<div style="text-align:center; padding:3rem; opacity:0.6;">No council minutes yet. Call the first motion.</div>';
+
+    minutes.slice().reverse().forEach(m => {
+        const div = document.createElement('div');
+        div.className = 'minute-entry';
+        div.innerHTML = `
+            <strong>${new Date(m.time).toLocaleString()}</strong><br>
+            <em>Motion:</em> ${m.motion}<br>
+            <strong>Zeus decrees:</strong> ${m.decree}
+        `;
+        container.appendChild(div);
+    });
+}
+
+function callCouncil() {
+    const input = document.getElementById('motion-input');
+    const motion = input.value.trim();
+    if (!motion) return;
+
+    const decree = Math.random() > 0.35 
+        ? "The Council finds favor. Let it be enacted."
+        : "The gods are divided. Refine the motion and return.";
+
+    minutes.push({
+        time: new Date().toISOString(),
+        motion: motion,
+        decree: decree
+    });
+
+    saveMinutes();
+    renderMinutes();
+
+    // Visual flash
+    canvas.style.opacity = '0.85';
+    setTimeout(() => canvas.style.opacity = '0.35', 400);
+
+    input.value = '';
+
+    if (window.OlympianBridge) {
+        window.OlympianBridge.recordEvent('zeus', 'council_motion', { motion, decree });
+    }
+}
+
+// Init
+renderGods();
+renderMinutes();
+</script>
+</body>
+</html>
