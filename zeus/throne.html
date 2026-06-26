@@ -22,15 +22,17 @@
 
         /* ── VOID MOSAIC — tiled logos ── */
         #logo-mosaic {
-            position: fixed; inset: 0; z-index: 0; pointer-events: none;
-            display: grid; grid-template-columns: repeat(8, 1fr);
-            opacity: 0.06;
-        }
-        #logo-mosaic img {
-            width: 100%; aspect-ratio: 1;
-            object-fit: contain; padding: 20%;
-            filter: brightness(0.6) sepia(0.5);
-        }
+    position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    display: grid; grid-template-columns: repeat(8, 1fr);
+    opacity: 0.12;
+    background-color: #0a0806;
+}
+#logo-mosaic img {
+    width: 100%; aspect-ratio: 1;
+    object-fit: contain; padding: 15%;
+    filter: brightness(0.7) sepia(0.4);
+    mix-blend-mode: screen;
+}
 
         /* ── AMBIENT LIGHTNING ── */
         #lightning-canvas {
