@@ -287,7 +287,41 @@
     </style>
 </head>
 <body>
+<!-- CSS Native Trees — add inside #meadow-scene, between #meadow-horizon and #meadow-ground -->
+<style>
+    /* ── NATIVE TREE: Large Oak (left foreground) ── */
+    .native-tree-oak {
+        position: absolute;
+        z-index: 4;
+        pointer-events: none;
+    }
+    .native-tree-oak .trunk {
+        position: absolute;
+        background: linear-gradient(90deg, #2a1a0f 0%, #3d2b1a 30%, #4a3520 50%, #3d2b1a 70%, #2a1a0f 100%);
+        border-radius: 40% 40% 0 0;
+    }
+    .native-tree-oak .canopy {
+        position: absolute;
+        background: radial-gradient(ellipse at 50% 60%, rgba(80,120,40,0.55) 0%, rgba(50,80,20,0.35) 50%, transparent 70%);
+        border-radius: 50%;
+        box-shadow: 
+            0 0 40px rgba(60,100,30,0.2),
+            inset 0 0 30px rgba(100,160,40,0.15);
+    }
+    .native-tree-oak .canopy.layer2 {
+        background: radial-gradient(ellipse at 40% 50%, rgba(90,140,50,0.4) 0%, rgba(40,70,15,0.25) 60%, transparent 75%);
+    }
+    .native-tree-oak .canopy.layer3 {
+        background: radial-gradient(ellipse at 55% 45%, rgba(70,110,30,0.45) 0%, rgba(30,50,10,0.3) 55%, transparent 70%);
+    }
+</style>
 
+<div class="native-tree-oak" style="left: 40px; bottom: 32%;">
+    <div class="trunk" style="left: 38px; top: 60px; width: 26px; height: 130px;"></div>
+    <div class="canopy layer1" style="left: 0px; top: -20px; width: 130px; height: 100px;"></div>
+    <div class="canopy layer2" style="left: 20px; top: 10px; width: 100px; height: 80px;"></div>
+    <div class="canopy layer3" style="left: 10px; top: 30px; width: 85px; height: 65px;"></div>
+</div>
 <div id="meadow-scene">
     <div id="meadow-sky"></div>
 
