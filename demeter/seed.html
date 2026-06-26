@@ -3,556 +3,350 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Scriptorum.Vivum | Living.Interface</title>
-    <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=IBM+Plex+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+    <title>Scriptorum · Demeter's Grove · Digital Divination</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&family=Cinzel:wght@400;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@300;400&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-dark: #0a0a0a;
-            --bg-medium: #1a1a1a;
-            --accent-silver: #c0c0c0;
-            --accent-blue: #4f6bef;
-            --accent-gold: #d4af37;
-            --data-crimson: #b12a2a;
-            --data-parchment: #f0e6d2;
-            --ink-red: #8b0000;
-            --ink-black: #2c2c2c;
-            --ink-gold: #ffd700;
-            
-            --font-protocol: 'IBM Plex Mono', monospace;
-            --font-narrative: 'EB Garamond', serif;
-            
-            --sidebar-width: 320px;
-            --header-height: 80px;
-            --footer-height: 140px;
+            --void: #1a1410; --deep: #2a2218; --stone: #3d362f;
+            --parchment: #f5f0e0; --parchment-dark: #e8dcc8; --parchment-dim: #d8d0b8;
+            --gold: #c9a84c; --gold-bright: #f0d080; --gold-dim: #8b7332;
+            --sage: #889966; --sage-light: #aabb88; --sage-dark: #667744;
+            --earth: #8b7355; --honey: #e8a830;
+            --ink: #3d3628; --ink-red: #8b3a3a; --ink-blue: #4a6a8a;
+            --data-crimson: #b85a5a;
         }
-        
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
+        * { margin:0; padding:0; box-sizing:border-box; }
         body {
-            background-color: var(--bg-dark);
-            color: var(--accent-silver);
-            font-family: var(--font-protocol);
-            height: 100vh;
-            overflow: hidden;
-            display: grid;
-            grid-template-rows: var(--header-height) 1fr var(--footer-height);
-            grid-template-columns: var(--sidebar-width) 1fr;
-            grid-template-areas: 
-                "header header"
-                "corpus interface"
-                "archive archive";
+            background: var(--void);
+            color: var(--parchment);
+            font-family: 'Cormorant Garamond', Georgia, serif;
+            min-height: 100vh; overflow-x: hidden;
+            background-image: radial-gradient(ellipse at 50% 30%, rgba(136,153,102,0.05) 0%, transparent 60%);
         }
-        
-        header {
-            grid-area: header;
-            background: linear-gradient(135deg, var(--bg-medium) 0%, var(--ink-black) 100%);
-            border-bottom: 2px solid var(--accent-gold);
-            padding: 0 2rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            position: relative;
+
+        /* ── HEADER ── */
+        .scriptorum-header {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0.8rem 1.5rem;
+            background: rgba(26,20,16,0.95);
+            border-bottom: 1px solid rgba(200,168,76,0.15);
+            position: sticky; top:0; z-index: 100;
         }
-        
-        .logo {
-            font-family: var(--font-narrative);
-            font-size: 1.8rem;
-            color: var(--accent-gold);
-            letter-spacing: 3px;
-            position: relative;
+        .header-left { display: flex; align-items: center; gap: 0.8rem; }
+        .header-glyph { font-size: 1.5rem; }
+        .header-title {
+            font-family: 'Cinzel Decorative', serif; font-size: 0.85rem;
+            color: var(--gold-bright); letter-spacing: 0.2em;
         }
-        
-        .logo::after {
-            content: '';
-            position: absolute;
-            bottom: -5px;
-            left: 0;
-            width: 100%;
-            height: 2px;
-            background: linear-gradient(90deg, var(--accent-gold), transparent);
-        }
-        
-        .manuscript-status {
-            display: flex;
-            flex-direction: column;
-            align-items: flex-end;
-            font-size: 0.9rem;
-        }
-        
-        .status-line {
-            margin: 2px 0;
-        }
-        
-        .palimpsest-layer {
-            opacity: 0.6;
-            text-decoration: line-through;
-            font-size: 0.8rem;
-        }
-        
-        /* Living Corpus - Left Sidebar */
-        .living-corpus {
-            grid-area: corpus;
-            background: linear-gradient(180deg, var(--bg-medium) 0%, var(--ink-black) 100%);
-            border-right: 2px solid rgba(212, 175, 55, 0.4);
-            padding: 1.5rem;
-            display: flex;
-            flex-direction: column;
-            gap: 1.5rem;
-            overflow-y: auto;
-        }
-        
-        .corpus-title {
-            font-size: 1.1rem;
+        .header-sub {
+            font-family: 'Cinzel', serif; font-size: 0.4rem;
+            letter-spacing: 0.25em; color: var(--gold-dim);
             text-transform: uppercase;
-            letter-spacing: 2px;
-            color: var(--accent-gold);
-            border-bottom: 1px solid var(--accent-gold);
+        }
+        .header-status {
+            text-align: right;
+            font-family: 'JetBrains Mono', monospace; font-size: 0.45rem;
+            color: var(--sage-light);
+        }
+        .header-nav {
+            display: flex; gap: 1rem;
+        }
+        .header-nav a {
+            font-family: 'Cinzel', serif; font-size: 0.5rem;
+            letter-spacing: 0.2em; text-transform: uppercase;
+            color: var(--gold-dim); text-decoration: none;
+            transition: color 0.2s;
+        }
+        .header-nav a:hover { color: var(--gold-bright); }
+
+        /* ── MAIN LAYOUT ── */
+        .main-layout {
+            display: grid;
+            grid-template-columns: 260px 1fr;
+            grid-template-rows: 1fr auto;
+            height: calc(100vh - 56px);
+        }
+        @media (max-width: 800px) {
+            .main-layout {
+                grid-template-columns: 1fr;
+                grid-template-rows: auto 1fr auto;
+                height: auto;
+            }
+        }
+
+        /* ── CORPUS SIDEBAR ── */
+        .corpus-sidebar {
+            background: rgba(26,20,16,0.7);
+            border-right: 1px solid rgba(200,168,76,0.1);
+            padding: 1.2rem; overflow-y: auto;
+            display: flex; flex-direction: column; gap: 0.8rem;
+        }
+        .corpus-title {
+            font-family: 'Cinzel', serif; font-size: 0.55rem;
+            letter-spacing: 0.2em; color: var(--sage-light);
+            text-transform: uppercase;
+            border-bottom: 1px solid rgba(200,168,76,0.15);
             padding-bottom: 0.5rem;
         }
-        
         .body-region {
-            background-color: rgba(212, 175, 55, 0.1);
-            border: 1px solid var(--accent-gold);
-            border-radius: 8px;
-            padding: 1rem;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
+            background: rgba(136,153,102,0.06);
+            border: 1px solid rgba(136,153,102,0.15);
+            border-radius: 3px; padding: 0.8rem;
+            cursor: pointer; transition: all 0.3s;
+            position: relative; overflow: hidden;
         }
-        
         .body-region:hover {
-            background-color: rgba(212, 175, 55, 0.2);
-            transform: translateX(5px);
+            background: rgba(136,153,102,0.12);
+            border-color: rgba(200,168,76,0.3);
+            transform: translateX(3px);
         }
-        
+        .body-region.active {
+            border-color: var(--gold);
+            background: rgba(200,168,76,0.08);
+        }
         .region-label {
-            font-weight: bold;
-            color: var(--accent-gold);
-            margin-bottom: 0.5rem;
+            font-family: 'Cinzel', serif; font-size: 0.5rem;
+            letter-spacing: 0.15em; color: var(--gold);
+            margin-bottom: 0.3rem;
         }
-        
         .region-text {
-            font-family: var(--font-narrative);
-            line-height: 1.4;
-            position: relative;
-            z-index: 2;
+            font-size: 0.75rem; font-style: italic;
+            color: rgba(200,180,140,0.5); line-height: 1.5;
         }
-        
-        .ink-flow {
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, var(--ink-red), transparent);
-            opacity: 0;
-            transition: all 2s ease;
+
+        /* ── MANUSCRIPT PAGE ── */
+        .manuscript-area {
+            display: flex; justify-content: center; align-items: center;
+            padding: 1.5rem; overflow-y: auto;
+            background: radial-gradient(ellipse at center, rgba(136,153,102,0.04) 0%, transparent 70%);
         }
-        
-        .body-region.active .ink-flow {
-            left: 100%;
+        .manuscript-page {
+            width: 100%; max-width: 700px;
+            background: linear-gradient(180deg, var(--parchment) 0%, var(--parchment-dark) 100%);
+            border: 3px solid var(--gold-dim);
+            border-radius: 4px; padding: 2rem;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.4), 0 0 0 1px rgba(200,168,76,0.1);
+            position: relative; overflow: hidden;
+            min-height: 400px; display: flex; flex-direction: column;
+        }
+        .manuscript-page::before {
+            content: '';
+            position: absolute; top: 0; left: 0; right: 0; height: 1px;
+            background: linear-gradient(90deg, transparent, var(--gold), transparent);
             opacity: 0.3;
         }
-        
-        /* Central Interface - Main Content */
-        .central-interface {
-            grid-area: interface;
-            position: relative;
-            background: radial-gradient(circle at center, var(--bg-dark) 0%, var(--ink-black) 100%);
-            overflow: hidden;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-        
-        .manuscript-canvas {
-            width: 100%;
-            height: 100%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 2rem;
-        }
-        
-        .manuscript-page {
-            width: 100%;
-            max-width: 800px;
-            height: 90%;
-            background: linear-gradient(135deg, var(--data-parchment) 0%, #f5e6cc 100%);
-            border: 3px solid var(--accent-gold);
-            border-radius: 10px;
-            padding: 2rem;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-            position: relative;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-        }
-        
-        .manuscript-text {
-            font-family: var(--font-narrative);
-            color: var(--ink-black);
-            font-size: 1.1rem;
-            line-height: 1.8;
-            flex-grow: 1;
-            overflow-y: auto;
-            position: relative;
-            padding-right: 10px;
-        }
-        
-        .textual-layer {
-            display: none;
-            animation: fadeIn 0.5s ease;
-        }
-        
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-        
-        .textual-layer.active {
-            display: block;
-        }
-        
-        .layer-current { color: var(--ink-black); }
-        .layer-previous { color: var(--ink-red); text-decoration: line-through; }
-        .layer-ancient { color: var(--accent-blue); text-decoration: line-through; }
-        .layer-emotional { color: var(--data-crimson); font-style: italic; }
-        
-        .marginalia {
-            position: absolute;
-            right: -50px;
-            top: 20%;
-            width: 40px;
-            font-size: 0.7rem;
-            color: var(--accent-gold);
-            writing-mode: vertical-rl;
-            text-orientation: mixed;
-        }
-        
         .illumination {
-            position: absolute;
-            top: 10px;
-            left: 10px;
-            width: 60px;
-            height: 60px;
-            background: radial-gradient(circle, var(--accent-gold), transparent);
-            border-radius: 50%;
-            opacity: 0.7;
-            animation: illuminate 3s ease-in-out infinite;
+            position: absolute; top: 12px; left: 12px;
+            width: 50px; height: 50px;
+            background: radial-gradient(circle, rgba(200,168,76,0.3), transparent);
+            border-radius: 50%; opacity: 0.6;
+            animation: illuminate 4s ease-in-out infinite;
+            pointer-events: none;
         }
-        
         @keyframes illuminate {
-            0%, 100% { opacity: 0.7; transform: scale(1); }
-            50% { opacity: 0.9; transform: scale(1.1); }
+            0%,100% { opacity: 0.5; transform: scale(1); }
+            50% { opacity: 0.8; transform: scale(1.08); }
         }
-        
-        /* Layer Navigation */
+        .manuscript-text {
+            font-family: 'Cormorant Garamond', serif;
+            color: var(--ink); font-size: 1.05rem;
+            line-height: 1.8; flex: 1; overflow-y: auto;
+            position: relative; z-index: 2;
+        }
+        .textual-layer { display: none; animation: fadeIn 0.4s ease; }
+        .textual-layer.active { display: block; }
+        @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
+        .layer-current { color: var(--ink); }
+        .layer-previous { color: var(--ink-red); text-decoration: line-through; opacity: 0.7; }
+        .layer-ancient { color: var(--ink-blue); text-decoration: line-through; opacity: 0.5; }
+        .layer-emotional { color: var(--data-crimson); font-style: italic; }
+
+        .marginalia {
+            position: absolute; right: 8px; top: 25%;
+            font-family: 'Cinzel', serif; font-size: 0.45rem;
+            color: var(--gold-dim); writing-mode: vertical-rl;
+            text-orientation: mixed; opacity: 0.4; pointer-events: none;
+        }
+
+        /* ── PALIMPSEST ── */
+        .palimpsest-text {
+            position: relative; display: inline; cursor: help;
+            border-bottom: 1px dotted rgba(200,168,76,0.3);
+        }
+        .palimpsest-text:hover::before {
+            content: attr(data-layer1);
+            position: absolute; top: -1.6em; left: 0;
+            background: var(--parchment); padding: 0.15rem 0.5rem;
+            border: 1px solid var(--ink-red); border-radius: 3px;
+            color: var(--ink-red); font-size: 0.7rem;
+            white-space: nowrap; z-index: 10;
+        }
+        .palimpsest-text:hover::after {
+            content: attr(data-layer2);
+            position: absolute; top: -3em; left: 0;
+            background: var(--parchment); padding: 0.15rem 0.5rem;
+            border: 1px solid var(--ink-blue); border-radius: 3px;
+            color: var(--ink-blue); font-size: 0.7rem;
+            white-space: nowrap; z-index: 10;
+        }
+
+        /* ── LAYER NAV ── */
         .layer-navigation {
-            display: flex;
-            justify-content: center;
-            gap: 1rem;
-            margin-top: 1rem;
+            display: flex; justify-content: center; gap: 0.6rem;
+            margin-top: 1rem; flex-wrap: wrap;
+        }
+        .layer-btn {
+            font-family: 'Cinzel', serif; font-size: 0.45rem;
+            letter-spacing: 0.15em; text-transform: uppercase;
+            background: rgba(200,168,76,0.08); border: 1px solid rgba(200,168,76,0.2);
+            color: var(--gold-dim); padding: 0.4rem 0.9rem;
+            border-radius: 2px; cursor: pointer; transition: all 0.2s;
+        }
+        .layer-btn:hover { border-color: var(--gold); color: var(--gold); }
+        .layer-btn.active { background: var(--gold); color: var(--void); border-color: var(--gold); }
+
+        /* ── ARCHIVE FOOTER ── */
+        .archive-footer {
+            grid-column: 1 / -1;
+            background: rgba(26,20,16,0.8);
+            border-top: 1px solid rgba(200,168,76,0.12);
+            padding: 0.8rem 1.5rem;
+            display: flex; align-items: center; gap: 1.5rem;
             flex-wrap: wrap;
         }
-        
-        .layer-btn {
-            background-color: rgba(212, 175, 55, 0.2);
-            border: 1px solid var(--accent-gold);
-            color: var(--ink-black);
-            padding: 0.5rem 1rem;
-            border-radius: 20px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-family: var(--font-protocol);
-            font-size: 0.9rem;
-        }
-        
-        .layer-btn:hover {
-            background-color: var(--accent-gold);
-        }
-        
-        .layer-btn.active {
-            background-color: var(--accent-gold);
-            font-weight: bold;
-        }
-        
-        /* Bibliotheca Archive */
-        .bibliotheca-archive {
-            grid-area: archive;
-            background: linear-gradient(90deg, var(--bg-medium) 0%, var(--ink-black) 100%);
-            border-top: 2px solid var(--data-crimson);
-            padding: 1rem 2rem;
-            display: flex;
-            flex-direction: column;
-        }
-        
-        .archive-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1rem;
-        }
-        
         .archive-title {
-            font-size: 1rem;
+            font-family: 'Cinzel', serif; font-size: 0.5rem;
+            letter-spacing: 0.2em; color: var(--ink-red);
             text-transform: uppercase;
-            letter-spacing: 2px;
-            color: var(--data-crimson);
         }
-        
-        .breeding-status {
-            font-size: 0.8rem;
-            color: var(--accent-blue);
-        }
-        
-        .textual-dna {
-            display: flex;
-            gap: 2rem;
-            height: 60px;
-            overflow: hidden;
-        }
-        
         .dna-strand {
-            flex: 1;
-            background-color: rgba(79, 107, 239, 0.1);
-            border: 1px solid var(--accent-blue);
-            border-radius: 8px;
-            padding: 0.5rem;
-            display: flex;
-            align-items: center;
-            font-family: var(--font-protocol);
-            font-size: 0.8rem;
-            position: relative;
-            overflow: hidden;
+            flex: 1; min-width: 150px;
+            background: rgba(136,153,102,0.06);
+            border: 1px solid rgba(136,153,102,0.15);
+            border-radius: 3px; padding: 0.4rem 0.8rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.45rem; color: var(--sage-light);
+            position: relative; overflow: hidden;
         }
-        
         .dna-helix {
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, var(--accent-blue), transparent);
-            opacity: 0.3;
-            animation: helix-flow 4s ease-in-out infinite;
+            position: absolute; top: 0; left: -100%; width: 100%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(136,153,102,0.2), transparent);
+            animation: helix-flow 5s ease-in-out infinite;
         }
-        
         @keyframes helix-flow {
             0% { left: -100%; }
             50% { left: 100%; }
             100% { left: -100%; }
         }
-        
-        /* Interactive Elements */
-        .scriptorum-controls {
-            position: absolute;
-            bottom: 20px;
-            right: 20px;
-            display: flex;
-            gap: 10px;
-            z-index: 10;
+
+        /* ── MITOSIS BUTTON ── */
+        .mitosis-btn {
+            width: 36px; height: 36px; border-radius: 50%;
+            background: rgba(200,168,76,0.1); border: 1px solid var(--gold);
+            color: var(--gold); font-size: 0.9rem; cursor: pointer;
+            transition: all 0.3s; display: flex; align-items: center;
+            justify-content: center; flex-shrink: 0;
         }
-        
-        .control-btn {
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            background-color: var(--bg-medium);
-            border: 2px solid var(--accent-gold);
-            color: var(--accent-gold);
-            font-size: 1.2rem;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: flex;
-            justify-content: center;
-            align-items: center;
+        .mitosis-btn:hover {
+            background: var(--gold); color: var(--void);
+            transform: scale(1.1); box-shadow: 0 0 16px rgba(200,168,76,0.3);
         }
-        
-        .control-btn:hover {
-            background-color: var(--accent-gold);
-            color: var(--bg-dark);
-            transform: scale(1.1);
+
+        /* ── TOAST ── */
+        #toast {
+            position: fixed; bottom: 1.5rem; left: 50%; transform: translateX(-50%);
+            background: rgba(26,20,16,0.97); border: 1px solid var(--gold);
+            border-radius: 3px; padding: 0.4rem 1rem;
+            font-family: 'Cinzel', serif; font-size: 0.5rem; letter-spacing: 0.1em;
+            z-index: 200; opacity: 0; transition: opacity 0.3s;
+            pointer-events: none; text-align: center; max-width: 90vw;
         }
-        
-        /* Palimpsest Effect */
-        .palimpsest-text {
-            position: relative;
-            display: inline;
-            cursor: help;
-        }
-        
-        .palimpsest-text:hover::before {
-            content: attr(data-layer1);
-            position: absolute;
-            top: -1.5em;
-            left: 0;
-            background: var(--data-parchment);
-            padding: 0.2rem 0.5rem;
-            border: 1px solid var(--ink-red);
-            border-radius: 4px;
-            color: var(--ink-red);
-            font-size: 0.8rem;
-            white-space: nowrap;
-            z-index: 10;
-        }
-        
-        .palimpsest-text:hover::after {
-            content: attr(data-layer2);
-            position: absolute;
-            top: -3em;
-            left: 0;
-            background: var(--data-parchment);
-            padding: 0.2rem 0.5rem;
-            border: 1px solid var(--accent-blue);
-            border-radius: 4px;
-            color: var(--accent-blue);
-            font-size: 0.8rem;
-            white-space: nowrap;
-            z-index: 10;
-        }
-        
-        /* Responsive adjustments */
-        @media (max-width: 1200px) {
-            :root {
-                --sidebar-width: 280px;
-            }
-            
-            .manuscript-page {
-                width: 90%;
-            }
-        }
-        
-        @media (max-width: 900px) {
-            body {
-                grid-template-columns: 1fr;
-                grid-template-areas: 
-                    "header"
-                    "corpus"
-                    "interface"
-                    "archive";
-            }
-            
-            .living-corpus {
-                border-right: none;
-                border-bottom: 2px solid rgba(212, 175, 55, 0.4);
-                max-height: 200px;
-            }
-            
-            .manuscript-page {
-                width: 95%;
-                height: auto;
-                min-height: 400px;
-            }
-            
-            .textual-dna {
-                flex-direction: column;
-                height: auto;
-                gap: 0.5rem;
-            }
-            
-            .dna-strand {
-                padding: 0.3rem;
-            }
-        }
+        #toast.show { opacity: 1; }
     </style>
 </head>
 <body>
-    <!-- Header -->
-    <header>
-        <div class="logo">Scriptorum.Vivum</div>
-        <div class="manuscript-status">
-            <div class="status-line">Status: <span style="color: var(--accent-gold);">Auto-Canonical</span></div>
-            <div class="status-line palimpsest-layer">Previous: error.reliquiae.canon</div>
-            <div class="status-line palimpsest-layer">Ancient: manuscript.ambulans</div>
-        </div>
-    </header>
 
-    <!-- Living Corpus - Left Sidebar -->
-    <aside class="living-corpus">
-        <h2 class="corpus-title">Corpus Regions</h2>
-        
-        <div class="body-region" onclick="activateRegion('torso')" id="torso-region">
-            <div class="ink-flow"></div>
-            <div class="region-label">Torso → Sacred Texts</div>
-            <div class="region-text">
-                <span class="palimpsest-text" data-layer1="scripture" data-layer2="wound">The breathing causes line-spacing fluctuations...</span>
+    <div class="scriptorum-header">
+        <div class="header-left">
+            <div class="header-glyph">📜</div>
+            <div>
+                <div class="header-title">SCRIPTORUM</div>
+                <div class="header-sub">Demeter's Grove · The Living Manuscript</div>
             </div>
         </div>
-        
-        <div class="body-region" onclick="activateRegion('right-arm')" id="right-arm-region">
-            <div class="ink-flow"></div>
-            <div class="region-label">Right Arm → Chronicles</div>
-            <div class="region-text">
-                <span class="palimpsest-text" data-layer1="battles" data-layer2="scars">Battle-scars become footnotes in real-time...</span>
-            </div>
+        <div class="header-status">
+            Status: <span style="color:var(--gold);">Auto-Canonical</span><br>
+            Layers: 4 active
         </div>
-        
-        <div class="body-region" onclick="activateRegion('left-arm')" id="left-arm-region">
-            <div class="ink-flow"></div>
-            <div class="region-label">Left Arm → Philosophy</div>
-            <div class="region-text">
-                <span class="palimpsest-text" data-layer1="questions" data-layer2="doubts">Self-revising treatises during movement...</span>
-            </div>
+        <div class="header-nav">
+            <a href="index.html">🌾 Temple</a>
+            <a href="farm.html">🔬 Lab</a>
+            <a href="../index.html">🌍 GAIA</a>
         </div>
-        
-        <div class="body-region" onclick="activateRegion('face')" id="face-region">
-            <div class="ink-flow"></div>
-            <div class="region-label">Face → Live Commentary</div>
-            <div class="region-text">
-                <span class="palimpsest-text" data-layer1="expressions" data-layer2="masks">Expressions edit text continuously...</span>
-            </div>
-        </div>
-        
-        <div class="body-region" onclick="activateRegion('back')" id="back-region">
-            <div class="ink-flow"></div>
-            <div class="region-label">Back → Error Archive</div>
-            <div class="region-text">
-                <span class="palimpsest-text" data-layer1="mistakes" data-layer2="wisdom">Mistakes migrate here for preservation...</span>
-            </div>
-        </div>
-    </aside>
+    </div>
 
-    <!-- Central Interface - Main Content -->
-    <main class="central-interface">
-        <div class="manuscript-canvas">
+    <div class="main-layout">
+
+        <!-- CORPUS SIDEBAR -->
+        <aside class="corpus-sidebar">
+            <div class="corpus-title">Corpus Regions</div>
+
+            <div class="body-region active" onclick="activateRegion('torso')" id="torso-region">
+                <div class="region-label">🌿 Torso · Sacred Texts</div>
+                <div class="region-text">The breathing causes line-spacing fluctuations. Each inhalation adds new verse.</div>
+            </div>
+            <div class="body-region" onclick="activateRegion('right-arm')" id="right-arm-region">
+                <div class="region-label">🌾 Right Arm · Chronicles</div>
+                <div class="region-text">Battle-scars become footnotes in real-time. Movement rewrites history.</div>
+            </div>
+            <div class="body-region" onclick="activateRegion('left-arm')" id="left-arm-region">
+                <div class="region-label">🌱 Left Arm · Philosophy</div>
+                <div class="region-text">Self-revising treatises during movement. Questions refine through gesture.</div>
+            </div>
+            <div class="body-region" onclick="activateRegion('face')" id="face-region">
+                <div class="region-label">🌸 Face · Live Commentary</div>
+                <div class="region-text">Expressions edit text continuously. Smiles add punctuation.</div>
+            </div>
+            <div class="body-region" onclick="activateRegion('back')" id="back-region">
+                <div class="region-label">🍂 Back · Error Archive</div>
+                <div class="region-text">Mistakes migrate here for preservation. Errors become relics.</div>
+            </div>
+        </aside>
+
+        <!-- MANUSCRIPT PAGE -->
+        <main class="manuscript-area">
             <div class="manuscript-page">
                 <div class="illumination"></div>
-                <div class="marginalia">auto.canonical.bootstrap.paradox</div>
+                <div class="marginalia">auto.canonical.bootstrap.grove</div>
                 <div class="manuscript-text" id="main-text">
                     <div class="textual-layer layer-current active">
-                        The Scriptorum exists in temporal parallax where all versions of every text exist simultaneously. When they think "water," the skin shows multiple layers...
-                        <br><br>
-                        Current layer: <strong>consciousness</strong><br>
-                        Each thought overwrites previous thoughts without erasing them. The palimpsest process operates continuously, creating infinite textual depth.
-                        <br><br>
-                        The skin-text declares itself sacred, making it sacred, which justifies the declaration, creating infinite textual authority feedback loop.
+                        <p>The Scriptorum exists in Demeter's sacred grove — a <span class="palimpsest-text" data-layer1="scripture" data-layer2="seed">living manuscript</span> where all versions of every text exist simultaneously. The soil remembers every word ever planted here.</p>
+                        <br>
+                        <p>Current layer: <strong>consciousness</strong></p>
+                        <p>Each thought overwrites previous thoughts without erasing them. The palimpsest process operates continuously, creating infinite textual depth. Like the harvest, every ending is a new beginning. Like the seed, every word contains the tree it will become.</p>
+                        <br>
+                        <p>The grove-text declares itself sacred, making it sacred, which justifies the declaration. Demeter tends the words like wheat. The harvest is perpetual. The manuscript breathes.</p>
                     </div>
                     <div class="textual-layer layer-previous">
-                        Previous layer: <strong>manuscript</strong><br>
-                        The walking manuscript whose flesh is parchment, veins are ink-channels, and thoughts are illuminated marginalia...
-                        <br><br>
-                        In this state, the text becomes a physical entity, with each movement rewriting its content. The chronicles of battle are etched as scars, each with its own story to tell.
+                        <p>Previous layer: <strong>manuscript</strong></p>
+                        <p>The walking manuscript whose flesh is parchment, veins are ink-channels drawn from the earth. Each movement rewrites its content. The chronicles of the field are etched as furrows in the soil.</p>
+                        <br>
+                        <p>Aristaeus learned to tend both bees and words. The hive and the page hum with the same industry. Golden and patient.</p>
                     </div>
                     <div class="textual-layer layer-ancient">
-                        Ancient layer: <strong>archive</strong><br>
-                        Error equals reliquiae equals canon simultaneously in the deepest textual strata...
-                        <br><br>
-                        Here, mistakes are preserved as sacred artifacts, each error containing more truth than intentional writing. The archive breathes with the weight of forgotten knowledge.
+                        <p>Ancient layer: <strong>archive</strong></p>
+                        <p>Error equals reliquiae equals canon simultaneously in the deepest textual strata. The first seeds planted here were Phoenician letters — 𐤀 𐤋 𐤐 — that grew into words, that grew into texts, that grew into the grove itself.</p>
+                        <br>
+                        <p>Here, mistakes are preserved as sacred artifacts. Each error contains more truth than intentional writing. The archive breathes with the weight of forgotten harvests.</p>
                     </div>
                     <div class="textual-layer layer-emotional">
-                        Emotional layer: <strong>transformation</strong><br>
-                        The fear of becoming text, the joy of being read, the pain of revision...
-                        <br><br>
-                        This layer captures the visceral experience of textual metamorphosis—the anxiety of being interpreted, the ecstasy of communication, the agony of editing.
+                        <p>Emotional layer: <strong>transformation</strong></p>
+                        <p>The fear of becoming text. The joy of being read. The pain of revision. The grief of Demeter when Persephone descends — every autumn, the manuscript weeps ink. Every spring, the letters bloom again.</p>
+                        <br>
+                        <p>This layer captures the visceral experience of textual metamorphosis — the anxiety of being interpreted, the ecstasy of communication, the agony of editing. The soil holds it all.</p>
                     </div>
                 </div>
-                
+
                 <div class="layer-navigation">
                     <button class="layer-btn active" data-layer="current">Consciousness</button>
                     <button class="layer-btn" data-layer="previous">Manuscript</button>
@@ -560,21 +354,11 @@
                     <button class="layer-btn" data-layer="emotional">Emotion</button>
                 </div>
             </div>
-        </div>
+        </main>
 
-        <!-- Scriptorum Controls -->
-        <div class="scriptorum-controls">
-            <button class="control-btn" onclick="spawnScriptorum()" title="Textual Mitosis">⚬</button>
-        </div>
-    </main>
-
-    <!-- Bibliotheca Archive - Footer -->
-    <footer class="bibliotheca-archive">
-        <div class="archive-header">
-            <div class="archive-title">Bibliotheca Corporea</div>
-            <div class="breeding-status">Textual DNA: Active Crossbreeding</div>
-        </div>
-        <div class="textual-dna">
+        <!-- ARCHIVE FOOTER -->
+        <footer class="archive-footer">
+            <div class="archive-title">📚 Bibliotheca Corporea</div>
             <div class="dna-strand">
                 <div class="dna-helix"></div>
                 Genre: Sacred + Philosophy → Mystical Treatise
@@ -587,99 +371,93 @@
                 <div class="dna-helix"></div>
                 Content: Error + Relic + Canon → Triple Identity
             </div>
-        </div>
-    </footer>
+            <button class="mitosis-btn" onclick="spawnMitosis()" title="Textual Mitosis">⚬</button>
+        </footer>
+    </div>
+
+    <div id="toast"></div>
 
     <script>
-        let activeRegion = null;
-        let activeLayer = 'current';
-        
-        function activateRegion(region) {
-            // Deactivate previous region
-            if (activeRegion) {
-                document.getElementById(activeRegion + '-region').classList.remove('active');
-            }
-            
-            // Activate new region
-            activeRegion = region;
-            document.getElementById(region + '-region').classList.add('active');
-            
-            // Update main text based on region
-            updateMainText(region);
+    let activeRegion = 'torso';
+
+    const REGION_TEXTS = {
+        'torso': {
+            current: `<p>Sacred texts written in breath-rhythm. Each inhalation adds new verse, each exhalation revises existing canon. The <span class="palimpsest-text" data-layer1="scripture" data-layer2="breath">sacred breathes itself</span> into existence through the living manuscript.</p><br><p>The torso region contains the core scriptures that define the essence of the Scriptorum. These texts are in constant flux, responding to the rhythm of existence itself — the same rhythm that governs the turning of the seasons, the opening of blooms, the dance of the bees.</p>`,
+            previous: `<p>The torso as <strong>temple archive</strong>. Before the current canon, these texts were etched into bark and stone. The breathing caused errors. The errors became variants. The variants became scripture.</p>`,
+            ancient: `<p>The oldest layer: <strong>seed syllables</strong>. Single words planted in the dark soil of the body. Each one grew into a text. Each text grew into a tradition. The roots are still down there, still feeding the canopy above.</p>`,
+            emotional: `<p>The torso feels every revision as <strong>visceral tremor</strong>. A changed word is a changed organ. A deleted passage is a wound that heals slowly. The sacred texts are not abstract — they are embodied, and the body remembers every edit.</p>`
+        },
+        'right-arm': {
+            current: `<p>Historical chronicles where battle-scars become footnotes. Each <span class="palimpsest-text" data-layer1="battles" data-layer2="scars">movement of the arm</span> rewrites the history contained within its flesh-pages.</p><br><p>The right arm records events as they happen, transforming physical experience into historical record. Every motion etches new narratives into being. The arm that swung the scythe now writes the harvest song.</p>`,
+            previous: `<p>The <strong>chronicle of gestures</strong>. Before writing, the arm told stories through motion. The dance of the harvest. The sweep of the reaper. These movements are still embedded in the manuscript, older than the words that now describe them.</p>`,
+            ancient: `<p><strong>Bone inscriptions</strong>. The deepest layer of the right arm. Before flesh, before parchment, the story was written in the skeleton itself. Each joint a chapter. Each fracture a plot twist. The arm remembers every break.</p>`,
+            emotional: `<p>The arm <strong>grieves its own violence</strong>. Every scar is a story, and not all stories are proud ones. The chronicle includes the strikes it wishes it had never made. The manuscript does not flinch from what the arm has done.</p>`
+        },
+        'left-arm': {
+            current: `<p>Philosophical treatises that self-revise during motion. <span class="palimpsest-text" data-layer1="questions" data-layer2="doubts">Questions refine themselves</span> through kinetic meditation, answers emerge from gesture.</p><br><p>The left arm engages in perpetual philosophical inquiry, its movements shaping and reshaping arguments in an endless dance of thought. What is the nature of growth? What does the seed know that the tree forgets?</p>`,
+            previous: `<p>The <strong>treatise of gestures</strong>. Before philosophy was written, it was performed. The left arm gestured toward the sky, toward the earth, toward the heart. These gestures asked the first questions. The words came later, trying to catch up.</p>`,
+            ancient: `<p><strong>Pre-linguistic inquiry</strong>. The oldest questions have no words. The left arm remembers asking them anyway — reaching toward something it could not name, pulling back from something it could not understand. The first philosopher was a body in motion.</p>`,
+            emotional: `<p>The arm <strong>doubts its own conclusions</strong>. Every answer is temporary. Every treatise is a draft. The left arm has written and unwritten a thousand philosophies, and it will write and unwrite a thousand more before the grove falls silent.</p>`
+        },
+        'face': {
+            current: `<p>Live commentary where <span class="palimpsest-text" data-layer1="expressions" data-layer2="masks">expressions continuously edit</span> the displayed text. Smiles add punctuation, frowns create deletions, raised eyebrows insert questions.</p><br><p>The face serves as the interactive interface, where emotional responses directly manipulate the textual content in real-time. The manuscript wears its editor's feelings on its surface.</p>`,
+            previous: `<p>The <strong>mask manuscript</strong>. Before the face spoke, it showed. The expressions that preceded language — joy, grief, wonder, fear — are still the primary editors. Every smile is a revision. Every tear is a deletion.</p>`,
+            ancient: `<p><strong>Pre-facial text</strong>. Before the face formed, the manuscript was edited by something older. The pulse. The breath. The light behind the eyes that had not yet opened. This layer is almost unreadable — but it's there, beneath everything.</p>`,
+            emotional: `<p>The face <strong>cannot hide from the text</strong>. Every attempt to mask feeling creates a new textual layer. The manuscript records the performance and the truth beneath it simultaneously. The face is the most honest liar in the Scriptorum.</p>`
+        },
+        'back': {
+            current: `<p>The error archive where <span class="palimpsest-text" data-layer1="mistakes" data-layer2="wisdom">mistakes migrate</span> for preservation. All deleted thoughts, abandoned drafts, and discarded ideas find sanctuary here.</p><br><p>The back collects and venerates imperfections, recognizing that errors often contain more truth than intentional compositions. Demeter knows: the fallen grain feeds the next season. The failed crop teaches the farmer.</p>`,
+            previous: `<p>The <strong>reliquary of errors</strong>. Every mistake is preserved with ceremony. The typo that became a prayer. The deletion that became a door. The draft that was abandoned but refused to die — it lives here, in the archive of the almost-was.</p>`,
+            ancient: `<p><strong>Primordial error</strong>. The first mistake was the first creation. Something went wrong and the world began. The back remembers the original error — the one that made everything else possible. It is the oldest text in the Scriptorum, and it cannot be read without weeping.</p>`,
+            emotional: `<p>The back <strong>bears the weight of every abandoned self</strong>. The manuscripts that were almost finished. The ideas that were almost born. The versions of the writer that didn't survive the edit. The back carries them all, and it does not complain. It just holds.</p>`
         }
-        
-        function updateMainText(region) {
-            const currentLayerElement = document.querySelector('.textual-layer.active');
-            
-            const regionTexts = {
-                'torso': 'Sacred texts written in breath-rhythm. Each inhalation adds new verse, each exhalation revises existing canon. The sacred breathes itself into existence through the living manuscript.<br><br>The torso region contains the core scriptures that define the essence of the Scriptorum. These texts are in constant flux, responding to the rhythm of existence itself.',
-                'right-arm': 'Historical chronicles where battle-scars become footnotes. Each movement of the arm rewrites the history contained within its flesh-pages.<br><br>The right arm records events as they happen, transforming physical experience into historical record. Every motion etches new narratives into being.',
-                'left-arm': 'Philosophical treatises that self-revise during motion. Questions refine themselves through kinetic meditation, answers emerge from gesture.<br><br>The left arm engages in perpetual philosophical inquiry, its movements shaping and reshaping arguments in an endless dance of thought.',
-                'face': 'Live commentary where expressions continuously edit the displayed text. Smiles add punctuation, frowns create deletions, raised eyebrows insert questions.<br><br>The face serves as the interactive interface, where emotional responses directly manipulate the textual content in real-time.',
-                'back': 'The error archive where mistakes migrate for preservation. All deleted thoughts, abandoned drafts, and discarded ideas find sanctuary here.<br><br>The back collects and venerates imperfections, recognizing that errors often contain more truth than intentional compositions.'
-            };
-            
-            currentLayerElement.innerHTML = regionTexts[region] || currentLayerElement.innerHTML;
-        }
-        
-        function setActiveLayer(layerType) {
-            // Update button states
-            document.querySelectorAll('.layer-btn').forEach(btn => {
-                btn.classList.remove('active');
-            });
-            document.querySelector(`.layer-btn[data-layer="${layerType}"]`).classList.add('active');
-            
-            // Update layer visibility
-            document.querySelectorAll('.textual-layer').forEach(layer => {
-                layer.classList.remove('active');
-            });
-            document.querySelector(`.layer-${layerType}`).classList.add('active');
-            
-            activeLayer = layerType;
-        }
-        
-        // Add event listeners to layer buttons
-        document.querySelectorAll('.layer-btn').forEach(btn => {
-            btn.addEventListener('click', function() {
-                setActiveLayer(this.getAttribute('data-layer'));
-            });
+    };
+
+    function activateRegion(region) {
+        document.querySelectorAll('.body-region').forEach(r => r.classList.remove('active'));
+        document.getElementById(region + '-region').classList.add('active');
+        activeRegion = region;
+
+        const texts = REGION_TEXTS[region];
+        document.querySelector('.layer-current').innerHTML = texts.current;
+        document.querySelector('.layer-previous').innerHTML = texts.previous;
+        document.querySelector('.layer-ancient').innerHTML = texts.ancient;
+        document.querySelector('.layer-emotional').innerHTML = texts.emotional;
+
+        // Reset to current layer
+        setActiveLayer('current');
+    }
+
+    function setActiveLayer(layerType) {
+        document.querySelectorAll('.layer-btn').forEach(btn => btn.classList.remove('active'));
+        document.querySelector(`.layer-btn[data-layer="${layerType}"]`).classList.add('active');
+        document.querySelectorAll('.textual-layer').forEach(layer => layer.classList.remove('active'));
+        document.querySelector(`.layer-${layerType}`).classList.add('active');
+    }
+
+    document.querySelectorAll('.layer-btn').forEach(btn => {
+        btn.addEventListener('click', () => setActiveLayer(btn.dataset.layer));
+    });
+
+    function spawnMitosis() {
+        const strands = document.querySelectorAll('.dna-strand');
+        strands.forEach(strand => {
+            strand.style.background = 'rgba(200,168,76,0.2)';
+            setTimeout(() => { strand.style.background = 'rgba(136,153,102,0.06)'; }, 2000);
         });
-        
-        function spawnScriptorum() {
-            // Simulate textual mitosis
-            const dnaStrands = document.querySelectorAll('.dna-strand');
-            dnaStrands.forEach(strand => {
-                strand.style.background = 'rgba(212, 175, 55, 0.3)';
-                setTimeout(() => {
-                    strand.style.background = 'rgba(79, 107, 239, 0.1)';
-                }, 2000);
-            });
-            
-            // Add spawn notification
-            const notification = document.createElement('div');
-            notification.textContent = 'Scriptorum Mitosis: New manuscript-being spawned';
-            notification.style.position = 'fixed';
-            notification.style.top = '50%';
-            notification.style.left = '50%';
-            notification.style.transform = 'translate(-50%, -50%)';
-            notification.style.background = 'var(--accent-gold)';
-            notification.style.color = 'var(--bg-dark)';
-            notification.style.padding = '1rem 2rem';
-            notification.style.borderRadius = '8px';
-            notification.style.zIndex = '1000';
-            notification.style.boxShadow = '0 5px 15px rgba(0, 0, 0, 0.3)';
-            
-            document.body.appendChild(notification);
-            
-            setTimeout(() => {
-                document.body.removeChild(notification);
-            }, 3000);
-        }
-        
-        // Initialize with torso region active
-        document.addEventListener('DOMContentLoaded', function() {
-            activateRegion('torso');
-        });
+        toast('⚬ Scriptorum Mitosis: New manuscript-being seeded in the grove');
+    }
+
+    const toastEl = document.getElementById('toast');
+    let toastTimer;
+    function toast(msg) {
+        toastEl.textContent = msg; toastEl.classList.add('show');
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => { toastEl.classList.remove('show'); }, 2500);
+    }
+
+    // Init
+    activateRegion('torso');
     </script>
 </body>
 </html>
