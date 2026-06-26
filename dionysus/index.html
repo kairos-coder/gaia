@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Vineyard · Dionysus · Digital Divination</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&family=Cinzel:wght@400;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --void: #0a0608; --deep: #1a0a14; --stone: #2a1820;
+            --gold: #c9a84c; --gold-bright: #f0d080; --gold-dim: #6b5520;
+            --vine: #8844aa; --vine-bright: #bb66dd; --vine-dim: #442255;
+            --amber: #e8a840; --leaf: #66aa44; --marble: #d8c8d0;
+            --wine: #661144;
+        }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body {
+            background: var(--void);
+            color: var(--marble);
+            font-family: 'Cormorant Garamond', Georgia, serif;
+            min-height: 100vh; overflow-x: hidden;
+            display: flex; flex-direction: column; align-items: center;
+            background-image: radial-gradient(ellipse at 50% 30%, rgba(136,68,170,0.06) 0%, transparent 60%);
+        }
+
+        /* ── VOID MOSAIC — grape leaves / thyrsus ── */
+        #vine-mosaic {
+            position: fixed; inset: 0; z-index: 0; pointer-events: none;
+            display: grid; grid-template-columns: repeat(8, 1fr);
+            opacity: 0.06;
+        }
+        #vine-mosaic div {
+            width: 100%; aspect-ratio: 1;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 2rem; color: var(--vine-bright);
+            filter: blur(0.5px);
+        }
+
+        /* ── AMBIENT ── */
+        #ambient-canvas {
+            position: fixed; inset: 0; z-index: 1; pointer-events: none; opacity: 0.5;
+        }
+
+        #vignette {
+            position: fixed; inset: 0; z-index: 1; pointer-events: none;
+            background: radial-gradient(ellipse at 50% 40%, transparent 30%, rgba(10,6,8,0.9) 90%);
+        }
+
+        .content {
+            position: relative; z-index: 10;
+            max-width: 700px; width: 100%; padding: 2rem 1.5rem 4rem;
+            display: flex; flex-direction: column; align-items: center; gap: 1.5rem;
+        }
+
+        /* ── HEADER ── */
+        .vine-header { text-align: center; }
+        .vine-sigil {
+            font-size: 3rem; margin-bottom: 0.3rem;
+            animation: sigilPulse 3s ease-in-out infinite;
+            filter: drop-shadow(0 0 20px rgba(136,68,170,0.4));
+        }
+        @keyframes sigilPulse {
+            0%,100% { filter: drop-shadow(0 0 15px rgba(136,68,170,0.3)); }
+            50% { filter: drop-shadow(0 0 35px rgba(187,102,221,0.6)); }
+        }
+        .vine-title {
+            font-family: 'Cinzel Decorative', serif;
+            font-size: clamp(1.8rem, 5vw, 2.8rem);
+            color: var(--vine-bright); letter-spacing: 0.2em;
+            text-shadow: 0 0 30px rgba(136,68,170,0.3);
+        }
+        .vine-subtitle {
+            font-family: 'Cinzel', serif; font-size: 0.5rem;
+            letter-spacing: 0.3em; color: var(--vine-dim);
+            text-transform: uppercase; margin-top: 0.3rem;
+        }
+
+        /* ── GOD RELIEF ── */
+        .god-relief {
+            position: relative; width: 100%; max-width: 450px;
+        }
+        .relief-frame {
+            width: 100%; aspect-ratio: 1/1;
+            border: 3px solid rgba(136,68,170,0.2);
+            box-shadow: 0 0 40px rgba(0,0,0,0.5), 0 0 0 1px rgba(136,68,170,0.2), 0 0 60px rgba(136,68,170,0.06);
+            overflow: hidden; position: relative; border-radius: 50%;
+        }
+        .relief-frame img {
+            width: 100%; height: 100%; object-fit: cover; display: block;
+            filter: brightness(0.9) saturate(1.1);
+        }
+        .relief-frame::after {
+            content: '';
+            position: absolute; inset: 0;
+            box-shadow: inset 0 0 60px rgba(0,0,0,0.5);
+            border-radius: 50%; pointer-events: none;
+        }
+        .relief-inscription {
+            text-align: center; margin-top: 0.5rem;
+            font-family: 'Cinzel', serif; font-size: 0.5rem;
+            letter-spacing: 0.2em; color: rgba(136,68,170,0.3);
+            text-transform: uppercase;
+        }
+
+        /* ── INVITATION BANNER ── */
+        .invitation-banner {
+            width: 100%; text-align: center;
+            padding: 0.8rem; background: rgba(26,10,20,0.7);
+            border: 1px solid rgba(136,68,170,0.15);
+            border-radius: 3px;
+        }
+        .invitation-label {
+            font-family: 'Cinzel', serif; font-size: 0.5rem;
+            letter-spacing: 0.25em; color: var(--vine-dim);
+            text-transform: uppercase; margin-bottom: 0.3rem;
+        }
+        .invitation-text {
+            font-size: 0.9rem; font-style: italic; color: rgba(200,160,200,0.6);
+            line-height: 1.5;
+        }
+
+        /* ── OFFERING BOWL ── */
+        .offering-bowl {
+            width: 100%; background: rgba(26,10,20,0.8);
+            border: 1px solid rgba(136,68,170,0.2);
+            border-radius: 3px; padding: 1.5rem;
+        }
+        .bowl-heading {
+            font-family: 'Cinzel Decorative', serif; font-size: 0.8rem;
+            color: var(--vine-bright); letter-spacing: 0.15em;
+            text-align: center; margin-bottom: 1rem;
+        }
+        #offering-input {
+            width: 100%; min-height: 90px;
+            background: rgba(10,6,8,0.6); border: 1px solid rgba(136,68,170,0.2);
+            color: var(--marble); padding: 1rem;
+            font-family: 'Cormorant Garamond', serif; font-size: 0.9rem;
+            resize: vertical; outline: none;
+            transition: border-color 0.2s;
+        }
+        #offering-input:focus { border-color: var(--vine-bright); }
+        #offering-input::placeholder { color: rgba(180,140,200,0.25); font-style: italic; }
+
+        .bowl-actions {
+            display: flex; gap: 0.8rem; justify-content: center;
+            margin-top: 1rem; flex-wrap: wrap;
+        }
+        .bowl-btn {
+            font-family: 'Cinzel', serif; font-size: 0.6rem;
+            letter-spacing: 0.2em; text-transform: uppercase;
+            padding: 0.6rem 1.5rem; border-radius: 2px;
+            cursor: pointer; transition: all 0.2s;
+        }
+        .btn-pour {
+            background: linear-gradient(135deg, var(--vine-dim), var(--vine));
+            border: none; color: var(--marble);
+        }
+        .btn-pour:hover { box-shadow: 0 4px 16px rgba(136,68,170,0.3); transform: translateY(-1px); }
+        .btn-sip {
+            background: transparent; border: 1px solid rgba(136,68,170,0.25);
+            color: var(--vine-dim);
+        }
+        .btn-sip:hover { border-color: var(--vine-bright); color: var(--vine-bright); }
+
+        /* ── ECSTATIC LOG ── */
+        .ecstatic-log {
+            width: 100%;
+        }
+        .log-heading {
+            font-family: 'Cinzel Decorative', serif; font-size: 0.7rem;
+            color: var(--vine-bright); letter-spacing: 0.15em;
+            text-align: center; margin-bottom: 0.8rem;
+        }
+        .log-entry {
+            background: rgba(26,10,20,0.6);
+            border-left: 3px solid var(--vine-dim);
+            padding: 0.6rem 0.8rem; margin-bottom: 0.4rem;
+            border-radius: 0 2px 2px 0;
+            font-size: 0.8rem; font-style: italic;
+            color: rgba(200,160,200,0.5); line-height: 1.5;
+        }
+        .log-empty {
+            text-align: center; padding: 1.5rem;
+            color: rgba(136,68,170,0.2); font-style: italic;
+        }
+
+        /* ── NAV ── */
+        .vine-nav {
+            display: flex; gap: 1.5rem; justify-content: center;
+            flex-wrap: wrap; width: 100%;
+        }
+        .vine-nav a {
+            font-family: 'Cinzel', serif; font-size: 0.55rem;
+            letter-spacing: 0.2em; text-transform: uppercase;
+            color: var(--vine-dim); text-decoration: none;
+            padding: 0.35rem 0.8rem; border: 1px solid transparent;
+            transition: all 0.2s;
+        }
+        .vine-nav a:hover { color: var(--vine-bright); border-bottom: 1px solid var(--vine-bright); }
+
+        .vine-footer {
+            text-align: center; font-family: 'Cinzel', serif;
+            font-size: 0.45rem; letter-spacing: 0.2em;
+            color: rgba(136,68,170,0.2);
+        }
+
+        @keyframes particleRise { 0%{opacity:0.8;transform:translateY(0) translateX(0) scale(1)} 100%{opacity:0;transform:translateY(-120px) translateX(var(--dx)) scale(0)} }
+
+        @media (max-width: 600px) {
+            .content { padding: 1.5rem 1rem 3rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="vine-mosaic"></div>
+    <canvas id="ambient-canvas"></canvas>
+    <div id="vignette"></div>
+
+    <div class="content">
+
+        <header class="vine-header">
+            <div class="vine-sigil">🍇</div>
+            <h1 class="vine-title">THE VINEYARD</h1>
+            <p class="vine-subtitle">Dionysus · The Fool · The Twice-Born · Breaker of Chains</p>
+        </header>
+
+        <!-- GOD RELIEF -->
+        <div class="god-relief">
+            <div class="relief-frame">
+                <img src="images/dionysus.jpg" alt="Dionysus" onerror="this.parentElement.style.background='radial-gradient(circle, var(--vine-dim), var(--void))';this.style.opacity='0.3';">
+            </div>
+            <div class="relief-inscription">0 · The Fool · "The vine does not ask permission to climb."</div>
+        </div>
+
+        <!-- INVITATION -->
+        <div class="invitation-banner">
+            <div class="invitation-label">The God Speaks</div>
+            <div class="invitation-text" id="god-words">"Come. The wine is poured. The madness is optional. The truth is not."</div>
+        </div>
+
+        <!-- OFFERING BOWL -->
+        <div class="offering-bowl">
+            <div class="bowl-heading">🍇 POUR INTO THE BOWL</div>
+            <textarea id="offering-input" placeholder="Speak your ecstasy. Confess your madness. Offer your truth. The vine listens..."></textarea>
+            <div class="bowl-actions">
+                <button class="bowl-btn btn-pour" onclick="pourOffering()">Pour 🍇</button>
+                <button class="bowl-btn btn-sip" onclick="receiveWisdom()">Sip 🍷</button>
+            </div>
+        </div>
+
+        <!-- ECSTATIC LOG -->
+        <div class="ecstatic-log">
+            <div class="log-heading">🍷 THE ECSTATIC LOG</div>
+            <div id="log-container">
+                <div class="log-empty">No offerings yet. The bowl is empty. The vine waits.</div>
+            </div>
+        </div>
+
+        <!-- NAVIGATION -->
+        <nav class="vine-nav">
+            <a href="realm.html">🍇 Vineyard</a>
+            <a href="throne.html">🎭 Theater</a>
+            <a href="../index.html">🌍 GAIA</a>
+        </nav>
+
+        <div class="vine-footer">ORDER OF OLYMPUS · THE VINEYARD · THE GOD POURS</div>
+    </div>
+
+    <script>
+    // ═══════════════════════════════════
+    // VINE MOSAIC
+    // ═══════════════════════════════════
+    function buildMosaic() {
+        const mosaic = document.getElementById('vine-mosaic');
+        const glyphs = ['🍇','🍷','🌿','✨','🍇','🍷','🌿','🔮'];
+        const cells = [];
+        for (let i = 0; i < 64; i++) {
+            const g = glyphs[Math.floor(Math.random() * glyphs.length)];
+            cells.push(`<div>${g}</div>`);
+        }
+        mosaic.innerHTML = cells.join('');
+    }
+    buildMosaic();
+    setInterval(() => {
+        const cells = document.querySelectorAll('#vine-mosaic div');
+        if (!cells.length) return;
+        const idx = Math.floor(Math.random() * cells.length);
+        const glyphs = ['🍇','🍷','🌿','✨','🍇','🍷','🌿','🔮'];
+        cells[idx].style.opacity = '0.2';
+        setTimeout(() => {
+            cells[idx].textContent = glyphs[Math.floor(Math.random() * glyphs.length)];
+            cells[idx].style.opacity = '';
+        }, 600);
+    }, 6000);
+
+    // ═══════════════════════════════════
+    // AMBIENT PARTICLES
+    // ═══════════════════════════════════
+    const canvas = document.getElementById('ambient-canvas');
+    const ctx = canvas.getContext('2d');
+    function resizeCanvas() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
+
+    const particles = [];
+    for (let i = 0; i < 30; i++) {
+        particles.push({
+            x: Math.random() * canvas.width,
+            y: Math.random() * canvas.height,
+            r: Math.random() * 2 + 0.5,
+            speed: 0.3 + Math.random() * 0.7,
+            opacity: Math.random() * 0.4 + 0.1,
+            hue: Math.random() > 0.5 ? 280 : 40
+        });
+    }
+
+    function drawParticles() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        particles.forEach(p => {
+            p.y -= p.speed;
+            if (p.y < -10) { p.y = canvas.height + 10; p.x = Math.random() * canvas.width; }
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+            ctx.fillStyle = `hsla(${p.hue}, 60%, 60%, ${p.opacity})`;
+            ctx.fill();
+        });
+        requestAnimationFrame(drawParticles);
+    }
+    drawParticles();
+
+    // ═══════════════════════════════════
+    // OFFERINGS
+    // ═══════════════════════════════════
+    const DIONYSUS_WISDOM = [
+        "The vine does not ask permission to climb it. Neither should you.",
+        "Madness is not the absence of wisdom. Sometimes it is wisdom with the lid off.",
+        "Where Ares burns, I pour. One destroys. One transforms.",
+        "The wine knows the truth the sober mind conceals. Drink. Speak. Release.",
+        "You were torn apart and remade. The fire that destroyed you also birthed you.",
+        "I am the twice-born. You are the many-born. Every ending is a new vine.",
+        "The mask is not a lie. The mask is a truth the face cannot yet speak.",
+        "Ecstasy is not escape. Ecstasy is arrival. You have arrived."
+    ];
+
+    let offerings = JSON.parse(localStorage.getItem('dionysus_offerings')) || [];
+
+    function saveOfferings() {
+        localStorage.setItem('dionysus_offerings', JSON.stringify(offerings));
+    }
+
+    function renderLog() {
+        const container = document.getElementById('log-container');
+        if (!offerings.length) {
+            container.innerHTML = '<div class="log-empty">No offerings yet. The bowl is empty. The vine waits.</div>';
+            return;
+        }
+        container.innerHTML = offerings.slice().reverse().slice(0, 20).map(o => `
+            <div class="log-entry">"${o.text}"<br><span style="font-size:0.6rem;opacity:0.5;">— ${new Date(o.time).toLocaleTimeString()}</span></div>
+        `).join('');
+    }
+
+    function pourOffering() {
+        const input = document.getElementById('offering-input');
+        const text = input.value.trim();
+        if (!text) return;
+
+        offerings.push({ text: text.substring(0, 200), time: new Date().toISOString() });
+        if (offerings.length > 100) offerings = offerings.slice(-100);
+        saveOfferings();
+        renderLog();
+
+        // Sparkle burst
+        for (let i = 0; i < 15; i++) {
+            particles.push({
+                x: canvas.width/2 + (Math.random()-0.5)*200,
+                y: canvas.height/2,
+                r: Math.random()*3+1,
+                speed: 1.5 + Math.random()*2,
+                opacity: 0.8,
+                hue: Math.random() > 0.5 ? 280 : 40
+            });
+            if (particles.length > 80) particles.shift();
+        }
+
+        const wisdom = DIONYSUS_WISDOM[Math.floor(Math.random() * DIONYSUS_WISDOM.length)];
+        document.getElementById('god-words').textContent = `"${wisdom}"`;
+
+        input.value = '';
+    }
+
+    function receiveWisdom() {
+        const wisdom = DIONYSUS_WISDOM[Math.floor(Math.random() * DIONYSUS_WISDOM.length)];
+        document.getElementById('god-words').textContent = `"${wisdom}"`;
+
+        // Gentle sparkle
+        for (let i = 0; i < 8; i++) {
+            particles.push({
+                x: canvas.width/2 + (Math.random()-0.5)*150,
+                y: canvas.height/2,
+                r: Math.random()*2+0.5,
+                speed: 0.8 + Math.random()*1.5,
+                opacity: 0.6,
+                hue: 280
+            });
+            if (particles.length > 80) particles.shift();
+        }
+    }
+
+    document.getElementById('offering-input').addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && e.ctrlKey) pourOffering();
+    });
+
+    // ═══════════════════════════════════
+    // INIT
+    // ═══════════════════════════════════
+    renderLog();
+    </script>
+</body>
+</html>
