@@ -4,12 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>The Ouroboros · Olympian Hours · Digital Divination</title>
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&family=Cinzel:wght@400;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&family=Cinzel:wght@400;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@300;400&display=swap" rel="stylesheet">
     <style>
         :root {
             --void: #0a0806; --deep: #1a1410; --stone: #2a2218;
             --gold: #c9a84c; --gold-bright: #f0d080; --gold-dim: #6b5520;
-            --marble: #c8c0b0; --serpent: #889966; --serpent-eye: #ffcc44;
+            --marble: #c8c0b0; --serpent: #889966;
+            --olympian: #d4a840; --chthonic: #9966cc;
         }
         * { margin:0; padding:0; box-sizing:border-box; }
         body {
@@ -17,63 +18,169 @@
             color: var(--marble);
             font-family: 'Cormorant Garamond', Georgia, serif;
             min-height: 100vh; overflow-x: hidden;
-            display: flex; flex-direction: column; align-items: center;
             background-image: radial-gradient(ellipse at 50% 50%, rgba(136,153,102,0.04) 0%, transparent 70%);
         }
 
-        /* ── GROVE SCENE ── */
+        /* ── HEADER RIBBON ── */
+        .ribbon {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0.6rem 1.5rem;
+            background: rgba(10,8,6,0.94);
+            border-bottom: 1px solid rgba(200,160,60,0.12);
+            position: sticky; top:0; z-index: 100;
+        }
+        .ribbon-title {
+            font-family: 'Cinzel Decorative', serif; font-size: 0.75rem;
+            color: var(--gold-bright); letter-spacing: 0.2em;
+        }
+        .ribbon-meta {
+            font-family: 'Cinzel', serif; font-size: 0.5rem;
+            letter-spacing: 0.15em; color: var(--gold-dim);
+        }
+        .ribbon-nav a {
+            font-family: 'Cinzel', serif; font-size: 0.5rem;
+            letter-spacing: 0.2em; text-transform: uppercase;
+            color: var(--gold-dim); text-decoration: none;
+            margin-left: 1rem; transition: color 0.2s;
+        }
+        .ribbon-nav a:hover { color: var(--gold-bright); }
+
+        /* ── MAIN LAYOUT ── */
+        .main-layout {
+            display: grid;
+            grid-template-columns: 1fr 380px;
+            max-width: 1200px; margin: 0 auto; padding: 1rem;
+            gap: 1rem;
+        }
+        @media (max-width: 900px) {
+            .main-layout { grid-template-columns: 1fr; }
+        }
+
+        /* ── GROVE + CLOCK ── */
+        .grove-panel {
+            background: rgba(26,20,16,0.5);
+            border: 1px solid rgba(200,160,60,0.1);
+            border-radius: 4px; overflow: hidden;
+            min-height: 600px; position: relative;
+        }
         #grove-scene {
-            position: relative; width: 820px; max-width: 98vw;
-            height: 820px; margin: 0 auto; overflow: hidden;
-            background: linear-gradient(180deg, #1a1810 0%, #0a0806 40%, #0a0806 100%);
-            border-left: 4px solid var(--stone);
-            border-right: 4px solid var(--stone);
-            box-shadow: 0 0 120px rgba(0,0,0,0.6), 0 0 240px rgba(0,0,0,0.3);
+            width: 100%; height: 600px; position: relative;
         }
-        @media (max-width: 840px) {
-            #grove-scene { width: 98vw; height: calc(98vw * 1.0); }
+        @media (max-width: 900px) {
+            #grove-scene { height: 500px; }
         }
 
-        /* ── CLOCK OVERLAY ── */
-        #clock-overlay {
-            position: absolute; inset: 0; z-index: 20;
-            pointer-events: none;
-            display: flex; flex-direction: column; align-items: center;
-            justify-content: center;
+        /* ── SIDEBAR ── */
+        .sidebar {
+            display: flex; flex-direction: column; gap: 0.8rem;
         }
-        #clock-overlay .zone { pointer-events: auto; }
 
-        .current-hour-panel {
-            text-align: center; pointer-events: auto;
-            margin-top: 20px;
+        .side-panel {
+            background: rgba(26,20,16,0.7);
+            border: 1px solid rgba(200,160,60,0.12);
+            border-radius: 3px; padding: 0.8rem;
         }
-        .current-time-label {
-            font-family: 'Cinzel', serif; font-size: 0.55rem;
-            letter-spacing: 0.25em; color: var(--gold-dim);
+        .side-heading {
+            font-family: 'Cinzel Decorative', serif; font-size: 0.6rem;
+            color: var(--gold); letter-spacing: 0.15em;
+            text-align: center; margin-bottom: 0.6rem;
+            padding-bottom: 0.4rem;
+            border-bottom: 1px solid rgba(200,160,60,0.1);
+        }
+
+        /* ── CURRENT GOD ── */
+        .god-display {
+            text-align: center;
+        }
+        .god-glyph-large {
+            font-size: 3rem;
+            filter: drop-shadow(0 0 15px rgba(200,160,60,0.4));
+            animation: godPulse 3s ease-in-out infinite;
+        }
+        @keyframes godPulse {
+            0%,100% { filter: drop-shadow(0 0 12px rgba(200,160,60,0.3)); }
+            50% { filter: drop-shadow(0 0 28px rgba(240,208,128,0.6)); }
+        }
+        .god-name-large {
+            font-family: 'Cinzel Decorative', serif;
+            font-size: 1.2rem; color: var(--gold-bright);
+            letter-spacing: 0.15em; margin: 0.3rem 0;
+        }
+        .god-hour {
+            font-family: 'Cinzel', serif; font-size: 0.5rem;
+            letter-spacing: 0.2em; color: var(--gold-dim);
             text-transform: uppercase;
         }
-        .current-god-glyph {
-            font-size: 2.5rem; margin: 0.3rem 0;
-            filter: drop-shadow(0 0 12px rgba(200,160,60,0.5));
-        }
-        .current-god-name {
-            font-family: 'Cinzel Decorative', serif;
-            font-size: 1.3rem; color: var(--gold-bright);
-            letter-spacing: 0.15em;
-        }
-        .current-focus {
+        .god-focus-text {
             font-size: 0.8rem; font-style: italic;
-            color: rgba(200,180,140,0.5);
-            margin-top: 0.3rem; max-width: 300px;
-            line-height: 1.5;
+            color: rgba(200,180,140,0.55);
+            margin-top: 0.5rem; line-height: 1.6;
+        }
+        .god-realm-link {
+            display: inline-block; margin-top: 0.6rem;
+            font-family: 'Cinzel', serif; font-size: 0.45rem;
+            letter-spacing: 0.15em; text-transform: uppercase;
+            color: var(--gold-dim); text-decoration: none;
+            border: 1px solid rgba(200,160,60,0.2);
+            padding: 0.3rem 0.7rem; border-radius: 2px;
+            transition: all 0.2s;
+        }
+        .god-realm-link:hover { border-color: var(--gold); color: var(--gold-bright); }
+
+        /* ── SKY STRIP ── */
+        .sky-strip {
+            display: flex; gap: 0.5rem; justify-content: center;
+        }
+        .sky-item {
+            text-align: center; flex: 1;
+            font-family: 'Cinzel', serif; font-size: 0.45rem;
+            letter-spacing: 0.1em; color: var(--gold-dim);
+        }
+        .sky-item .sky-val {
+            font-size: 0.7rem; color: var(--gold); display: block;
+        }
+
+        /* ── PLANET ROW ── */
+        .planet-mini {
+            display: flex; align-items: center; gap: 0.3rem;
+            padding: 0.2rem 0; border-bottom: 1px solid rgba(200,160,60,0.04);
+            font-size: 0.65rem;
+        }
+        .planet-mini:last-child { border-bottom: none; }
+        .pm-glyph { width: 18px; text-align: center; flex-shrink: 0; }
+        .pm-god {
+            font-family: 'Cinzel', serif; font-size: 0.45rem;
+            letter-spacing: 0.08em; width: 55px; flex-shrink: 0;
+        }
+        .pm-sign { flex: 1; }
+        .pm-degree {
+            font-family: 'JetBrains Mono', monospace; font-size: 0.4rem;
+            color: rgba(200,160,60,0.35);
+        }
+
+        /* ── WAR STRIP ── */
+        .war-mini {
+            display: flex; align-items: center; gap: 0.5rem;
+            font-family: 'Cinzel', serif; font-size: 0.5rem;
+        }
+        .war-mini .wm-count { font-weight: 700; }
+        .war-mini .olympian { color: var(--olympian); }
+        .war-mini .chthonic { color: var(--chthonic); }
+        .war-bar-mini {
+            flex: 1; height: 3px; background: rgba(0,0,0,0.4);
+            border-radius: 1px; overflow: hidden;
+        }
+        .war-bar-fill {
+            height: 100%; background: linear-gradient(90deg, var(--olympian), #aaccff);
+            border-radius: 1px; transition: width 1s;
         }
 
         /* ── TOAST ── */
         #toast {
             position: fixed; bottom: 1.5rem; left: 50%; transform: translateX(-50%);
             background: rgba(10,8,6,0.96); border: 1px solid var(--gold);
-            border-radius: 4px; padding: 0.5rem 1.2rem;
-            font-family: 'Cinzel', serif; font-size: 0.55rem; letter-spacing: 0.1em;
+            border-radius: 4px; padding: 0.4rem 1rem;
+            font-family: 'Cinzel', serif; font-size: 0.5rem; letter-spacing: 0.1em;
             z-index: 200; opacity: 0; transition: opacity 0.3s;
             pointer-events: none; text-align: center; max-width: 90vw;
         }
@@ -92,84 +199,124 @@
 </head>
 <body>
 
-    <div id="grove-scene">
-        <div id="clock-overlay">
-            <div class="current-hour-panel" id="hourPanel">
-                <div class="current-time-label" id="currentTimeLabel">—</div>
-                <div class="current-god-glyph" id="currentGodGlyph">—</div>
-                <div class="current-god-name" id="currentGodName">—</div>
-                <div class="current-focus" id="currentFocus">—</div>
+    <div class="ribbon">
+        <div>
+            <div class="ribbon-title">🐍 THE OUROBOROS</div>
+            <div class="ribbon-meta">The Olympian Hours · The Snake Draft · The Wheel of Attention</div>
+        </div>
+        <div class="ribbon-nav">
+            <span class="ribbon-meta" id="ribbonSky" style="margin-right:1rem;">Sky: loading...</span>
+            <a href="index.html">🌍 GAIA</a>
+        </div>
+    </div>
+
+    <div class="main-layout">
+
+        <!-- GROVE + CLOCK -->
+        <div class="grove-panel">
+            <div id="grove-scene"></div>
+        </div>
+
+        <!-- SIDEBAR -->
+        <div class="sidebar">
+
+            <!-- CURRENT GOD -->
+            <div class="side-panel">
+                <div class="god-display">
+                    <div class="god-glyph-large" id="godGlyphLarge">—</div>
+                    <div class="god-name-large" id="godNameLarge">—</div>
+                    <div class="god-hour" id="godHour">—</div>
+                    <div class="god-focus-text" id="godFocusText">—</div>
+                    <a class="god-realm-link" id="godRealmLink" href="#">Enter Realm →</a>
+                </div>
             </div>
+
+            <!-- SKY STRIP -->
+            <div class="side-panel">
+                <div class="side-heading">☀️ THE SKY RIGHT NOW</div>
+                <div class="sky-strip">
+                    <div class="sky-item"><span class="sky-val" id="skySun">—</span>Sun</div>
+                    <div class="sky-item"><span class="sky-val" id="skyMoon">—</span>Moon</div>
+                    <div class="sky-item"><span class="sky-val" id="skyPeriod">—</span>Period</div>
+                    <div class="sky-item"><span class="sky-val" id="skyAsc">—</span>Asc</div>
+                </div>
+            </div>
+
+            <!-- CELESTIAL COURT -->
+            <div class="side-panel">
+                <div class="side-heading">🏛️ CELESTIAL COURT</div>
+                <div id="planetList"></div>
+            </div>
+
+            <!-- WAR REPORT -->
+            <div class="side-panel">
+                <div class="side-heading">⚔️ WAR REPORT</div>
+                <div class="war-mini">
+                    <span class="olympian">⚡ <span class="wm-count" id="warOly">—</span></span>
+                    <div class="war-bar-mini"><div class="war-bar-fill" id="warBar" style="width:50%;"></div></div>
+                    <span class="chthonic"><span class="wm-count" id="warChth">—</span> 🌑</span>
+                </div>
+                <div style="text-align:center;margin-top:0.3rem;font-family:'Cinzel',serif;font-size:0.45rem;letter-spacing:0.1em;color:rgba(200,160,60,0.4);" id="warVerdict">—</div>
+            </div>
+
         </div>
     </div>
 
     <div id="toast"></div>
 
+    <script src="https://cdn.jsdelivr.net/npm/astronomy-engine@2.1.8/astronomy.browser.min.js"></script>
     <script src="js/gaia-mason.js"></script>
+    <script src="js/gaia-celestial.js"></script>
+    <script src="js/gaia-suncalc.js"></script>
+    <script src="js/gaia-astronomy.js"></script>
+    <script src="js/chthonic.js"></script>
+
     <script>
     // ═══════════════════════════════════
     // THE SNAKE DRAFT WHEEL
     // ═══════════════════════════════════
 
     const OLYMPIANS = [
-        { name: 'Apollo',    glyph: '☀️', domain: 'Light · Prophecy',  focus: 'Shine. Broadcast. Speak truth. The sun is at its peak.', color: '#ffaa44' },
-        { name: 'Aphrodite', glyph: '💋', domain: 'Love · Desire',     focus: 'Connect. Beautify. Reach out. Who needs your attention?', color: '#ff88aa' },
-        { name: 'Ares',      glyph: '⚔️', domain: 'War · Courage',     focus: 'Act. Decide. Strike while hot. Move now.', color: '#d04030' },
-        { name: 'Artemis',   glyph: '🏹', domain: 'Hunt · Sovereignty', focus: 'Focus. Aim. Protect your space. What boundary needs defending?', color: '#aaccaa' },
-        { name: 'Athena',    glyph: '🦉', domain: 'Wisdom · Strategy',  focus: 'Plan. Reflect. Sharpen the mind. Think before you strike.', color: '#aa88ee' },
-        { name: 'Demeter',   glyph: '🌾', domain: 'Harvest · Growth',   focus: 'Tend. Nurture. Check the garden. What needs watering?', color: '#88bb66' },
-        { name: 'Dionysus',  glyph: '🍇', domain: 'Ecstasy · Release',  focus: 'Pour. Celebrate. Let go. Release what isn\'t yours.', color: '#cc88cc' },
-        { name: 'Hephaestus',glyph: '🔨', domain: 'Forge · Craft',      focus: 'Build. Make. Ship the work. The forge is hot.', color: '#ff8833' },
-        { name: 'Hera',      glyph: '🦚', domain: 'Covenant · Binding',  focus: 'Honor commitments. Review oaths. What promise needs keeping?', color: '#55aabb' },
-        { name: 'Hermes',    glyph: '☿', domain: 'Messages · Thresholds',focus: 'Connect. Trade. Cross boundaries. What door needs opening?', color: '#ccb888' },
-        { name: 'Poseidon',  glyph: '🌊', domain: 'Sea · Depth',         focus: 'Dive deep. Feel. Let it flow. Let the wave break.', color: '#44aaaa' },
-        { name: 'Zeus',      glyph: '⚡', domain: 'Authority · Order',   focus: 'Rule. Decide. Close the day. The thunder speaks once.', color: '#ddcc88' },
+        { name: 'Apollo',    glyph: '☀️', domain: 'Light · Prophecy',  focus: 'Shine. Broadcast. Speak truth. The sun is at its peak.', color: '#ffaa44', realm: 'apollo/index.html' },
+        { name: 'Aphrodite', glyph: '💋', domain: 'Love · Desire',     focus: 'Connect. Beautify. Reach out. Who needs your attention?', color: '#ff88aa', realm: 'aphrodite/index.html' },
+        { name: 'Ares',      glyph: '⚔️', domain: 'War · Courage',     focus: 'Act. Decide. Strike while hot. Move now.', color: '#d04030', realm: 'ares/index.html' },
+        { name: 'Artemis',   glyph: '🏹', domain: 'Hunt · Sovereignty', focus: 'Focus. Aim. Protect your space. What boundary needs defending?', color: '#aaccaa', realm: 'artemis/index.html' },
+        { name: 'Athena',    glyph: '🦉', domain: 'Wisdom · Strategy',  focus: 'Plan. Reflect. Sharpen the mind. Think before you strike.', color: '#aa88ee', realm: 'athena/index.html' },
+        { name: 'Demeter',   glyph: '🌾', domain: 'Harvest · Growth',   focus: 'Tend. Nurture. Check the garden. What needs watering?', color: '#88bb66', realm: 'demeter/index.html' },
+        { name: 'Dionysus',  glyph: '🍇', domain: 'Ecstasy · Release',  focus: 'Pour. Celebrate. Let go. Release what isn\'t yours.', color: '#cc88cc', realm: 'dionysus/index.html' },
+        { name: 'Hephaestus',glyph: '🔨', domain: 'Forge · Craft',      focus: 'Build. Make. Ship the work. The forge is hot.', color: '#ff8833', realm: 'hephaestus/index.html' },
+        { name: 'Hera',      glyph: '🦚', domain: 'Covenant · Binding',  focus: 'Honor commitments. Review oaths. What promise needs keeping?', color: '#55aabb', realm: 'hera/index.html' },
+        { name: 'Hermes',    glyph: '☿', domain: 'Messages · Thresholds',focus: 'Connect. Trade. Cross boundaries. What door needs opening?', color: '#ccb888', realm: 'hermes/index.html' },
+        { name: 'Poseidon',  glyph: '🌊', domain: 'Sea · Depth',         focus: 'Dive deep. Feel. Let it flow. Let the wave break.', color: '#44aaaa', realm: 'poseidon/index.html' },
+        { name: 'Zeus',      glyph: '⚡', domain: 'Authority · Order',   focus: 'Rule. Decide. Close the day. The thunder speaks once.', color: '#ddcc88', realm: 'zeus/index.html' },
     ];
 
     const REVERSE = [...OLYMPIANS].reverse();
 
     const WHEEL = [
-        { hour: 11, god: OLYMPIANS[0] },
-        { hour: 12, god: OLYMPIANS[0] },
-        { hour: 13, god: OLYMPIANS[1] },
-        { hour: 14, god: OLYMPIANS[2] },
-        { hour: 15, god: OLYMPIANS[3] },
-        { hour: 16, god: OLYMPIANS[4] },
-        { hour: 17, god: OLYMPIANS[5] },
-        { hour: 18, god: OLYMPIANS[6] },
-        { hour: 19, god: OLYMPIANS[7] },
-        { hour: 20, god: OLYMPIANS[8] },
-        { hour: 21, god: OLYMPIANS[9] },
-        { hour: 22, god: OLYMPIANS[10] },
-        { hour: 23, god: OLYMPIANS[11] },
-        { hour: 0,  god: OLYMPIANS[11] },
-        { hour: 1,  god: REVERSE[1] },
-        { hour: 2,  god: REVERSE[2] },
-        { hour: 3,  god: REVERSE[3] },
-        { hour: 4,  god: REVERSE[4] },
-        { hour: 5,  god: REVERSE[5] },
-        { hour: 6,  god: REVERSE[6] },
-        { hour: 7,  god: REVERSE[7] },
-        { hour: 8,  god: REVERSE[8] },
-        { hour: 9,  god: REVERSE[9] },
-        { hour: 10, god: REVERSE[10] },
+        { hour: 11, god: OLYMPIANS[0] },{ hour: 12, god: OLYMPIANS[0] },
+        { hour: 13, god: OLYMPIANS[1] },{ hour: 14, god: OLYMPIANS[2] },
+        { hour: 15, god: OLYMPIANS[3] },{ hour: 16, god: OLYMPIANS[4] },
+        { hour: 17, god: OLYMPIANS[5] },{ hour: 18, god: OLYMPIANS[6] },
+        { hour: 19, god: OLYMPIANS[7] },{ hour: 20, god: OLYMPIANS[8] },
+        { hour: 21, god: OLYMPIANS[9] },{ hour: 22, god: OLYMPIANS[10] },
+        { hour: 23, god: OLYMPIANS[11] },{ hour: 0, god: OLYMPIANS[11] },
+        { hour: 1, god: REVERSE[1] },{ hour: 2, god: REVERSE[2] },
+        { hour: 3, god: REVERSE[3] },{ hour: 4, god: REVERSE[4] },
+        { hour: 5, god: REVERSE[5] },{ hour: 6, god: REVERSE[6] },
+        { hour: 7, god: REVERSE[7] },{ hour: 8, god: REVERSE[8] },
+        { hour: 9, god: REVERSE[9] },{ hour: 10, god: REVERSE[10] },
     ];
 
-    function getWheelEntry(hour) {
-        return WHEEL.find(w => w.hour === hour) || WHEEL[0];
-    }
-
+    function getWheelEntry(hour) { return WHEEL.find(w => w.hour === hour) || WHEEL[0]; }
     function formatHour(hour) {
-        if (hour === 0) return '12 AM';
-        if (hour === 12) return '12 PM';
-        if (hour < 12) return `${hour} AM`;
-        return `${hour - 12} PM`;
+        if (hour === 0) return '12 AM'; if (hour === 12) return '12 PM';
+        if (hour < 12) return `${hour} AM`; return `${hour - 12} PM`;
     }
 
     // ═══════════════════════════════════
     // TOAST
     // ═══════════════════════════════════
-
     const toastEl = document.getElementById('toast');
     let toastTimer;
     function toast(msg) {
@@ -179,30 +326,89 @@
     }
 
     function showHour(entry) {
-        document.getElementById('currentTimeLabel').textContent = formatHour(entry.hour);
-        document.getElementById('currentGodGlyph').textContent = entry.god.glyph;
-        document.getElementById('currentGodName').textContent = entry.god.name;
-        document.getElementById('currentFocus').textContent = `"${entry.god.focus}"`;
+        document.getElementById('godGlyphLarge').textContent = entry.god.glyph;
+        document.getElementById('godNameLarge').textContent = entry.god.name;
+        document.getElementById('godHour').textContent = formatHour(entry.hour);
+        document.getElementById('godFocusText').textContent = `"${entry.god.focus}"`;
+        const realmLink = document.getElementById('godRealmLink');
+        realmLink.href = entry.god.realm;
+        realmLink.textContent = `🏛️ Enter ${entry.god.name}'s Realm →`;
     }
 
     // ═══════════════════════════════════
-    // BUILD THE GROVE + CLOCK
+    // SKY DATA
+    // ═══════════════════════════════════
+    const PLANET_ORDER = ['mercury','venus','mars','jupiter','saturn','uranus','neptune','pluto'];
+
+    async function loadSkyData() {
+        try {
+            const planets = GaiaAstronomy.getAllPlanets(new Date(), 40.7, -74.0);
+            const sun = planets.sun;
+            const moon = planets.moon;
+
+            document.getElementById('skySun').textContent = sun ? `${sun.signGlyph||''} ${sun.sign}` : '—';
+            document.getElementById('skyMoon').textContent = moon ? `${moon.signGlyph||''} ${moon.sign}` : '—';
+            document.getElementById('skyPeriod').textContent = (sun && sun.aboveHorizon) ? '☀️ SOLAR' : '🌙 LUNAR';
+            document.getElementById('skyAsc').textContent = '—'; // Ascendant if available
+
+            document.getElementById('ribbonSky').textContent = 
+                `☀️ ${sun?.sign||'—'} · 🌙 ${moon?.sign||'—'}`;
+
+            // Planet list
+            const list = document.getElementById('planetList');
+            list.innerHTML = PLANET_ORDER.map(p => {
+                const pos = planets[p];
+                if (!pos) return '';
+                const celestial = (typeof GAIA_CELESTIAL !== 'undefined') ? GAIA_CELESTIAL[p] : null;
+                return `<div class="planet-mini">
+                    <div class="pm-glyph">${pos.glyph||'·'}</div>
+                    <div class="pm-god" style="color:${celestial?.color||'var(--marble)'}">${pos.god||p}</div>
+                    <div class="pm-sign">${pos.signGlyph||''} ${pos.sign}</div>
+                    <div class="pm-degree">${pos.degree?.toFixed(1)||'—'}°</div>
+                </div>`;
+            }).join('');
+
+            // War report
+            if (typeof Chthonic !== 'undefined') {
+                const planetData = {};
+                Object.entries(planets).forEach(([name, pos]) => {
+                    if (pos && pos.sign) planetData[name] = { sign: pos.sign, degree: pos.degree };
+                });
+                const war = Chthonic.getWarReport(planetData);
+                document.getElementById('warOly').textContent = war.olympianHouses;
+                document.getElementById('warChth').textContent = war.chthonicHouses;
+                const pct = Math.round((war.olympianHouses / 12) * 100);
+                document.getElementById('warBar').style.width = pct + '%';
+                document.getElementById('warVerdict').textContent = 
+                    war.dominant === 'Olympian' ? '⚡ OLYMPUS HOLDS' : '🌑 UNDERWORLD RISES';
+            }
+
+            setTimeout(loadSkyData, 5 * 60 * 1000);
+        } catch(e) {
+            console.warn('Sky load failed:', e);
+            setTimeout(loadSkyData, 30000);
+        }
+    }
+
+    // ═══════════════════════════════════
+    // BUILD GROVE + CLOCK
     // ═══════════════════════════════════
 
     function buildGrove() {
         const container = document.getElementById('grove-scene');
+        container.innerHTML = '';
         const m = new GaiaMason('grove-scene');
         const W = container.clientWidth;
-        const CX = W / 2, CY = 410;
+        const CX = W / 2, CY = 300;
 
-        // ── Custom materials ──
+        // Materials
         GaiaMason.MATERIALS['grove_earth'] = {
             chars: ['▓','░','▒','▓','░'], textColor:'#5c4f42', mortarColor:'#3a3028',
             fontSize:34, lineHeight:0.47, letterSpacing:-2, fontFamily:"'Georgia',serif", weathering:0.12
         };
         GaiaMason.MATERIALS['ancient_bark'] = {
             chars: ['║','╫','║','╫','║'], textColor:'#4a3525', mortarColor:'#2a1f15',
-            fontSize:28, lineHeight:0.5, letterSpacing:-2, fontFamily:"'UnifrakturMaguntia','Georgia',serif", weathering:0.1
+            fontSize:26, lineHeight:0.5, letterSpacing:-2, fontFamily:"'UnifrakturMaguntia','Georgia',serif", weathering:0.1
         };
         GaiaMason.MATERIALS['serpent_scale'] = {
             chars: ['≋','≈','≋','≈','≋'], textColor:'#889966', mortarColor:'#556633',
@@ -217,166 +423,130 @@
             fontSize:18, lineHeight:0.5, letterSpacing:0, fontFamily:"'Georgia',serif", weathering:0.01
         };
 
-        // ── FLOOR ──
+        // Floor
         m.buildFloor({
             ...GaiaMason.mat('grove_earth'),
-            x: 10, y: 660, width: W - 20, height: 120, z: 0,
-            perspectiveStrength: 6,
+            x: 10, y: 530, width: W - 20, height: 70, z: 0,
+            perspectiveStrength: 5,
             glyphCarving: {
                 text: '🐍  ☀️  🌙  ⚡  🐍',
-                x: W/2 - 90, y: 50,
-                size: 16, spacing: 28,
+                x: W/2 - 90, y: 25,
+                size: 14, spacing: 26,
                 color: 'rgba(200,168,76,0.05)'
             }
         });
 
-        // ── ANCIENT TREES — ring around the clock ──
-        const treeCount = 12;
-        for (let i = 0; i < treeCount; i++) {
-            const angle = (i / treeCount) * Math.PI * 2 - Math.PI / 2;
-            const treeR = 300;
-            const tx = CX + Math.cos(angle) * treeR - 16;
-            const ty = CY + Math.sin(angle) * treeR - 100;
-
-            // Trunk
+        // Twelve trees
+        for (let i = 0; i < 12; i++) {
+            const angle = (i / 12) * Math.PI * 2 - Math.PI / 2;
+            const treeR = 260;
+            const tx = CX + Math.cos(angle) * treeR - 14;
+            const ty = CY + Math.sin(angle) * treeR - 80;
             m.buildPillar({
                 ...GaiaMason.mat('ancient_bark'),
-                x: tx, y: ty, width: 24, height: 200, z: 3
+                x: tx, y: ty, width: 20, height: 160, z: 3
             });
-
-            // Canopy
             m.buildWall({
                 chars: ['▲','◆','▲','▼','▲'],
                 textColor: '#3d5a2a', mortarColor: '#1a2a0f',
-                fontSize: 28, lineHeight: 0.38, letterSpacing: -2,
+                fontSize: 24, lineHeight: 0.38, letterSpacing: -2,
                 fontFamily: 'monospace',
-                x: tx - 40, y: ty - 35,
-                width: 100, height: 55, z: 5, weathering: 0.05
+                x: tx - 35, y: ty - 30,
+                width: 90, height: 48, z: 5, weathering: 0.05
             });
         }
 
-        // ═══════════════════════════════════
-        // THE SERPENT COIL — at the center of the clock
-        // ═══════════════════════════════════
-
-        const coilCX = CX, coilCY = CY;
-        const coilCount = 4; // Number of spiral loops
-        const maxRadius = 160;
-        const minRadius = 50;
+        // ── SERPENT COIL ──
+        const coilCount = 5;
+        const maxRadius = 150, minRadius = 40;
 
         for (let loop = 0; loop < coilCount; loop++) {
-            const segments = 24;
+            const segments = 30;
             const r1 = maxRadius - (loop / coilCount) * (maxRadius - minRadius);
             const r2 = maxRadius - ((loop + 1) / coilCount) * (maxRadius - minRadius);
 
             for (let s = 0; s < segments; s++) {
-                const a1 = (s / segments) * Math.PI * 2 + loop * 0.8;
-                const a2 = ((s + 1) / segments) * Math.PI * 2 + loop * 0.8;
-                const progress = (loop * segments + s) / (coilCount * segments);
-
-                // Alternate scale and belly for serpent pattern
-                const material = s % 3 === 0 ? 'serpent_belly' : 'serpent_scale';
-
+                const a1 = (s / segments) * Math.PI * 2 + loop * 0.7;
+                const a2 = ((s + 1) / segments) * Math.PI * 2 + loop * 0.7;
+                const material = (loop + s) % 4 === 0 ? 'serpent_belly' : 'serpent_scale';
                 const sr = r1 + (r2 - r1) * (s / segments);
-                const sx = coilCX + Math.cos(a1 + (a2 - a1) * 0.5) * sr;
-                const sy = coilCY + Math.sin(a1 + (a2 - a1) * 0.5) * sr;
-
+                const sx = CX + Math.cos(a1 + (a2 - a1) * 0.5) * sr;
+                const sy = CY + Math.sin(a1 + (a2 - a1) * 0.5) * sr;
                 m.buildWall({
                     ...GaiaMason.mat(material),
-                    x: sx - 8, y: sy - 6,
-                    width: 16, height: 12, z: 8,
-                    weathering: 0.02
+                    x: sx - 7, y: sy - 5,
+                    width: 14, height: 10, z: 8
                 });
             }
         }
 
-        // ── SERPENT HEAD — at the current hour position ──
+        // ── SERPENT HEAD ──
         const now = new Date();
         const currentHour = now.getHours();
         const currentIdx = WHEEL.findIndex(w => w.hour === currentHour);
         const headAngle = (currentIdx / 24) * Math.PI * 2 - Math.PI / 2;
-        const headR = maxRadius - 10;
-        const headX = coilCX + Math.cos(headAngle) * headR;
-        const headY = coilCY + Math.sin(headAngle) * headR;
+        const headR = maxRadius - 5;
+        const headX = CX + Math.cos(headAngle) * headR;
+        const headY = CY + Math.sin(headAngle) * headR;
 
-        // Head body
         m.buildWall({
             ...GaiaMason.mat('serpent_scale'),
             x: headX - 14, y: headY - 10,
             width: 28, height: 20, z: 10
         });
-
-        // Eyes
         m.buildInscription({
-            text: '◉',
-            x: headX - 6, y: headY - 10,
-            fontSize: 14, color: '#ffcc44',
-            fontFamily: "'Georgia',serif", z: 11
+            text: '◉', x: headX - 6, y: headY - 10,
+            fontSize: 14, color: '#ffcc44', fontFamily: "'Georgia',serif", z: 11
         });
         m.buildInscription({
-            text: '◉',
-            x: headX + 6, y: headY - 10,
-            fontSize: 14, color: '#ffcc44',
-            fontFamily: "'Georgia',serif", z: 11
+            text: '◉', x: headX + 6, y: headY - 10,
+            fontSize: 14, color: '#ffcc44', fontFamily: "'Georgia',serif", z: 11
         });
-
-        // Tongue
         m.buildInscription({
-            text: '≋',
-            x: headX + 12, y: headY - 4,
-            fontSize: 12, color: '#cc6644',
-            fontFamily: "'Georgia',serif", z: 11
+            text: '≋', x: headX + 12, y: headY - 4,
+            fontSize: 12, color: '#cc6644', fontFamily: "'Georgia',serif", z: 11
         });
 
-        // ═══════════════════════════════════
-        // THE GOLD RINGS — hour markers
-        // ═══════════════════════════════════
-
+        // ── HOUR RINGS ──
         const ringRadius = maxRadius + 30;
         for (let i = 0; i < 24; i++) {
             const angle = (i / 24) * Math.PI * 2 - Math.PI / 2;
-            const rx = coilCX + Math.cos(angle) * ringRadius;
-            const ry = coilCY + Math.sin(angle) * ringRadius;
+            const rx = CX + Math.cos(angle) * ringRadius;
+            const ry = CY + Math.sin(angle) * ringRadius;
             const entry = WHEEL[i];
             const isCurrent = entry.hour === currentHour;
 
-            // Ring stone
-            const ringMat = isCurrent ? 'gold_ring' : 'serpent_scale';
             m.buildWall({
-                ...GaiaMason.mat(ringMat),
-                x: rx - 10, y: ry - 8,
-                width: 20, height: 16, z: 6,
-                shape: 'circle',
-                weathering: 0.02
+                ...GaiaMason.mat(isCurrent ? 'gold_ring' : 'serpent_scale'),
+                x: rx - 9, y: ry - 7,
+                width: 18, height: 14, z: 6,
+                shape: 'circle'
             });
 
-            // Hour glyph
             m.buildInscription({
                 text: entry.god.glyph,
-                x: rx - 8, y: ry - 2,
-                fontSize: isCurrent ? 12 : 8,
-                color: isCurrent ? '#0a0806' : 'rgba(200,180,140,0.4)',
+                x: rx - 7, y: ry - 1,
+                fontSize: isCurrent ? 11 : 7,
+                color: isCurrent ? '#0a0806' : 'rgba(200,180,140,0.35)',
                 fontFamily: "'Georgia',serif", z: 7
             });
 
-            // Click zone
             if (isCurrent) {
                 const glowDiv = document.createElement('div');
                 glowDiv.style.cssText = `
-                    position:absolute; left:${rx - 16}px; top:${ry - 14}px;
-                    width:32px; height:28px; border-radius:50%;
-                    background:radial-gradient(circle, rgba(240,208,128,0.2), transparent);
+                    position:absolute; left:${rx-14}px; top:${ry-12}px;
+                    width:28px; height:24px; border-radius:50%;
+                    background:radial-gradient(circle, rgba(240,208,128,0.25), transparent);
                     z-index:6; pointer-events:none;
                     animation:serpentPulse 2s ease-in-out infinite;
                 `;
                 container.appendChild(glowDiv);
             }
 
-            // Make clickable
             const zone = document.createElement('div');
             zone.className = 'zone';
             zone.title = `${formatHour(entry.hour)} · ${entry.god.name}`;
-            zone.style.cssText = `position:absolute;left:${rx-14}px;top:${ry-12}px;width:28px;height:24px;z-index:25;`;
+            zone.style.cssText = `position:absolute;left:${rx-12}px;top:${ry-10}px;width:24px;height:20px;z-index:25;`;
             zone.addEventListener('click', () => {
                 showHour(entry);
                 toast(`${entry.god.glyph} ${entry.god.name} · ${formatHour(entry.hour)} · ${entry.god.domain}`);
@@ -387,51 +557,37 @@
         // ── CENTER INSCRIPTION ──
         m.buildInscription({
             text: 'THE OUROBOROS',
-            x: CX - 70, y: CY + 55,
+            x: CX - 70, y: CY + maxRadius + 50,
             fontSize: 9, color: 'rgba(200,168,76,0.3)',
             fontFamily: "'Cinzel Decorative',serif", z: 6
         });
-        m.buildInscription({
-            text: 'The serpent eats its tail · The hours devour themselves',
-            x: CX - 140, y: CY + 70,
-            fontSize: 6, color: 'rgba(200,168,76,0.15)',
-            fontFamily: "'Cinzel',serif", z: 6
-        });
 
-        // ── PORTAL TO GAIA ──
+        // ── GAIA PORTAL ──
         m.buildArch({
             ...GaiaMason.mat('gold_ring'),
-            cx: CX, cy: 760, innerRadius: 38,
-            stoneCount: 10, stoneDepth: 16, z: 10,
+            cx: CX, cy: CY + maxRadius + 110, innerRadius: 30,
+            stoneCount: 9, stoneDepth: 12, z: 10,
             keystoneChar: '🌍', keystoneOversize: 1.3
-        });
-        m.buildInscription({
-            text: 'GAIA',
-            x: CX - 18, y: 802,
-            fontSize: 6, color: 'rgba(200,168,76,0.4)',
-            fontFamily: "'Cinzel',serif", z: 11
         });
         const gaiaZone = document.createElement('div');
         gaiaZone.className = 'zone';
-        gaiaZone.title = 'Return to GAIA';
-        gaiaZone.style.cssText = `position:absolute;left:${CX-40}px;top:740px;width:80px;height:55px;z-index:25;`;
+        gaiaZone.style.cssText = `position:absolute;left:${CX-35}px;top:${CY+maxRadius+88}px;width:70px;height:50px;z-index:25;`;
         gaiaZone.addEventListener('click', () => {
             toast('🌍 Returning to GAIA...');
             setTimeout(() => { window.location.href = 'index.html?from=ouroboros'; }, 800);
         });
         container.appendChild(gaiaZone);
 
-        // ── LIGHTS ──
-        m.buildLight({ color: '#889966', radius: 80, x: CX, y: CY, pulse: true, z: 0 });
-        m.buildLight({ color: '#ffcc44', radius: 50, x: headX, y: headY, pulse: true, z: 0 });
+        // Lights
+        m.buildLight({ color: '#889966', radius: 70, x: CX, y: CY, pulse: true, z: 0 });
+        m.buildLight({ color: '#ffcc44', radius: 40, x: headX, y: headY, pulse: true, z: 0 });
 
-        // ── AMBIENT PARTICLES ──
+        // Particles
         m.spawnAmbientFall({
-            count: 6,
-            color: 'rgba(136,153,102,0.08)',
+            count: 5,
+            color: 'rgba(136,153,102,0.06)',
             minSize: 1, maxSize: 2,
-            speedMin: 18, speedMax: 35,
-            z: 8
+            speedMin: 18, speedMax: 35, z: 8
         });
     }
 
@@ -444,16 +600,13 @@
         const entry = getWheelEntry(now.getHours());
         showHour(entry);
         buildGrove();
+        loadSkyData();
 
-        // Update every minute
         setInterval(() => {
             const newHour = new Date().getHours();
             const newEntry = getWheelEntry(newHour);
             showHour(newEntry);
-            // Rebuild grove to update serpent position
-            document.getElementById('grove-scene').innerHTML = '<div id="clock-overlay"><div class="current-hour-panel" id="hourPanel"><div class="current-time-label" id="currentTimeLabel">—</div><div class="current-god-glyph" id="currentGodGlyph">—</div><div class="current-god-name" id="currentGodName">—</div><div class="current-focus" id="currentFocus">—</div></div></div>';
             buildGrove();
-            showHour(newEntry);
         }, 60000);
     }
 
