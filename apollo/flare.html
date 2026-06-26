@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Solar Flare Oracle · Apollo · Digital Divination</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&family=Cinzel:wght@400;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@300;400&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --void: #0a0806; --deep: #0f0d1a; --stone: #1a1814;
+            --gold: #c9a84c; --gold-bright: #f0d080; --gold-dim: #6b5520;
+            --marble: #c8c0b0; --corona: #ffdd88;
+            --flare-b: #aaccff; --flare-c: #ffdd88; --flare-m: #ffaa44; --flare-x: #ff4422;
+            --solar-bg: #0a0a14;
+        }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body {
+            background: var(--solar-bg);
+            color: var(--marble);
+            font-family: 'Cormorant Garamond', Georgia, serif;
+            min-height: 100vh; overflow-x: hidden;
+            display: flex; flex-direction: column; align-items: center;
+            background-image: radial-gradient(ellipse at 50% 0%, rgba(255,200,60,0.06) 0%, transparent 50%);
+        }
+
+        /* ── HEADER ── */
+        .flare-header {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0.7rem 1.5rem; width: 100%;
+            background: rgba(10,8,6,0.94);
+            border-bottom: 1px solid rgba(200,160,60,0.12);
+            position: sticky; top:0; z-index: 100;
+        }
+        .header-left { display: flex; align-items: center; gap: 0.6rem; }
+        .header-glyph { font-size: 1.6rem; }
+        .header-title {
+            font-family: 'Cinzel Decorative', serif; font-size: 0.8rem;
+            color: var(--gold-bright); letter-spacing: 0.18em;
+        }
+        .header-sub {
+            font-family: 'Cinzel', serif; font-size: 0.4rem;
+            letter-spacing: 0.2em; color: var(--gold-dim);
+            text-transform: uppercase;
+        }
+        .header-nav {
+            display: flex; gap: 1rem; align-items: center;
+        }
+        .header-nav a {
+            font-family: 'Cinzel', serif; font-size: 0.5rem;
+            letter-spacing: 0.18em; text-transform: uppercase;
+            color: var(--gold-dim); text-decoration: none;
+            transition: color 0.2s;
+        }
+        .header-nav a:hover { color: var(--gold-bright); }
+        .live-dot {
+            width: 6px; height: 6px; border-radius: 50%;
+            background: #44cc88; box-shadow: 0 0 8px #44cc88;
+            animation: livePulse 1.5s infinite;
+        }
+        @keyframes livePulse {
+            0%,100% { opacity: 1; } 50% { opacity: 0.3; }
+        }
+
+        /* ── MAIN ── */
+        .flare-main {
+            max-width: 800px; width: 100%; padding: 1.5rem;
+            display: flex; flex-direction: column; gap: 1.5rem;
+        }
+
+        /* ── CURRENT FLARE ── */
+        .current-flare {
+            text-align: center; padding: 3rem 2rem;
+            background: radial-gradient(ellipse at 50% 30%, rgba(255,200,60,0.08) 0%, transparent 60%);
+            border: 1px solid rgba(200,160,60,0.12);
+            border-radius: 6px; position: relative; overflow: hidden;
+        }
+        .corona-ring {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            width: 300px; height: 300px; border-radius: 50%;
+            border: 1px solid rgba(255,200,60,0.08);
+            pointer-events: none;
+        }
+        .corona-ring:nth-child(2) { width: 220px; height: 220px; border-style: dashed; }
+        .corona-ring:nth-child(3) { width: 140px; height: 140px; }
+
+        .flare-class-display {
+            font-family: 'Cinzel Decorative', serif;
+            font-size: 5rem; font-weight: 900;
+            letter-spacing: 0.1em; line-height: 1;
+            transition: all 0.5s;
+        }
+        .flare-class-display.b { color: var(--flare-b); text-shadow: 0 0 30px rgba(170,204,255,0.4); }
+        .flare-class-display.c { color: var(--flare-c); text-shadow: 0 0 30px rgba(255,221,136,0.4); }
+        .flare-class-display.m { color: var(--flare-m); text-shadow: 0 0 40px rgba(255,170,68,0.5); animation: flarePulse 1s ease-in-out infinite; }
+        .flare-class-display.x { color: var(--flare-x); text-shadow: 0 0 60px rgba(255,68,34,0.7); animation: flarePulse 0.5s ease-in-out infinite; }
+        @keyframes flarePulse {
+            0%,100% { text-shadow: 0 0 40px currentColor; }
+            50% { text-shadow: 0 0 80px currentColor, 0 0 120px currentColor; }
+        }
+
+        .flare-oracle-label {
+            font-family: 'Cinzel', serif; font-size: 0.55rem;
+            letter-spacing: 0.3em; color: var(--gold-dim);
+            text-transform: uppercase; margin-bottom: 0.8rem;
+        }
+        .flare-message {
+            font-size: 1.2rem; font-style: italic;
+            color: rgba(255,220,140,0.7);
+            margin-top: 1rem; line-height: 1.6; max-width: 500px; margin-left: auto; margin-right: auto;
+        }
+        .flare-meta {
+            font-family: 'JetBrains Mono', monospace; font-size: 0.5rem;
+            color: rgba(200,160,60,0.35); margin-top: 0.8rem;
+        }
+        .flare-synthetic {
+            font-family: 'Cinzel', serif; font-size: 0.45rem;
+            letter-spacing: 0.15em; color: rgba(200,160,60,0.25);
+            margin-top: 0.4rem;
+        }
+
+        /* ── STORM PANELS ── */
+        .storm-grid {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem;
+        }
+        @media (max-width: 600px) {
+            .storm-grid { grid-template-columns: 1fr; }
+        }
+        .storm-panel {
+            background: rgba(15,13,26,0.6);
+            border: 1px solid rgba(200,160,60,0.08);
+            border-radius: 4px; padding: 1rem; text-align: center;
+        }
+        .storm-panel.active {
+            border-color: rgba(255,170,68,0.3);
+            box-shadow: 0 0 20px rgba(255,170,68,0.06);
+        }
+        .storm-heading {
+            font-family: 'Cinzel Decorative', serif; font-size: 0.6rem;
+            color: var(--gold); letter-spacing: 0.12em; margin-bottom: 0.5rem;
+        }
+        .storm-value {
+            font-family: 'Cinzel', serif; font-size: 1.2rem; color: var(--marble);
+            letter-spacing: 0.1em;
+        }
+        .storm-level {
+            font-family: 'JetBrains Mono', monospace; font-size: 0.5rem;
+            margin-top: 0.3rem;
+        }
+        .storm-message {
+            font-size: 0.7rem; font-style: italic;
+            color: rgba(200,180,140,0.45); margin-top: 0.4rem; line-height: 1.5;
+        }
+        .storm-inactive {
+            font-size: 0.7rem; font-style: italic;
+            color: rgba(200,180,140,0.2); margin-top: 0.4rem;
+        }
+
+        /* ── FLARE ARCHIVE ── */
+        .flare-archive {
+            background: rgba(15,13,26,0.4);
+            border: 1px solid rgba(200,160,60,0.06);
+            border-radius: 4px; padding: 1rem;
+        }
+        .archive-heading {
+            font-family: 'Cinzel Decorative', serif; font-size: 0.6rem;
+            color: var(--gold); letter-spacing: 0.12em;
+            text-align: center; margin-bottom: 0.6rem;
+        }
+        .archive-list {
+            max-height: 250px; overflow-y: auto;
+            display: flex; flex-direction: column; gap: 0.3rem;
+        }
+        .archive-entry {
+            display: flex; align-items: center; gap: 0.6rem;
+            padding: 0.4rem 0.5rem; border-bottom: 1px solid rgba(200,160,60,0.03);
+            font-size: 0.7rem;
+        }
+        .archive-class {
+            font-family: 'Cinzel Decorative', serif; font-size: 0.7rem;
+            font-weight: 700; width: 35px; text-align: center; flex-shrink: 0;
+        }
+        .archive-class.b { color: var(--flare-b); }
+        .archive-class.c { color: var(--flare-c); }
+        .archive-class.m { color: var(--flare-m); }
+        .archive-class.x { color: var(--flare-x); }
+        .archive-time {
+            font-family: 'JetBrains Mono', monospace; font-size: 0.45rem;
+            color: rgba(200,160,60,0.3); width: 70px; flex-shrink: 0;
+        }
+        .archive-message {
+            font-style: italic; color: rgba(200,180,140,0.4); flex: 1;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+
+        /* ── NAV ── */
+        .flare-nav {
+            display: flex; gap: 1.5rem; justify-content: center;
+            flex-wrap: wrap; width: 100%; padding: 0 1.5rem 2rem;
+        }
+        .flare-nav a {
+            font-family: 'Cinzel', serif; font-size: 0.55rem;
+            letter-spacing: 0.2em; text-transform: uppercase;
+            color: var(--gold-dim); text-decoration: none;
+            padding: 0.35rem 0.8rem; border: 1px solid transparent;
+            transition: all 0.2s;
+        }
+        .flare-nav a:hover { color: var(--gold-bright); border-bottom: 1px solid var(--gold); }
+
+        .flare-footer {
+            text-align: center; font-family: 'Cinzel', serif;
+            font-size: 0.45rem; letter-spacing: 0.2em;
+            color: rgba(200,160,60,0.15); padding-bottom: 2rem;
+        }
+
+        #toast {
+            position: fixed; bottom: 1.5rem; left: 50%; transform: translateX(-50%);
+            background: rgba(10,8,6,0.96); border: 1px solid var(--gold);
+            border-radius: 3px; padding: 0.4rem 1rem;
+            font-family: 'Cinzel', serif; font-size: 0.5rem; letter-spacing: 0.1em;
+            z-index: 200; opacity: 0; transition: opacity 0.3s;
+            pointer-events: none; text-align: center; max-width: 90vw;
+        }
+        #toast.show { opacity: 1; }
+    </style>
+</head>
+<body>
+
+    <div class="flare-header">
+        <div class="header-left">
+            <div class="header-glyph">☀️</div>
+            <div>
+                <div class="header-title">SOLAR FLARE ORACLE</div>
+                <div class="header-sub">Apollo's Corona · Live from the Sun</div>
+            </div>
+        </div>
+        <div class="header-nav">
+            <span style="font-family:'JetBrains Mono',monospace;font-size:0.45rem;color:rgba(200,160,60,0.3);" id="fetchTime">—</span>
+            <span class="live-dot"></span>
+            <a href="index.html">☀️ Apollo</a>
+            <a href="../index.html">🌍 GAIA</a>
+        </div>
+    </div>
+
+    <div class="flare-main">
+
+        <!-- CURRENT FLARE -->
+        <div class="current-flare" id="currentFlarePanel">
+            <div class="corona-ring"></div>
+            <div class="corona-ring"></div>
+            <div class="corona-ring"></div>
+            <div class="flare-oracle-label">The Corona Speaks</div>
+            <div class="flare-class-display" id="flareClass">—</div>
+            <div class="flare-message" id="flareMessage">Awaiting solar signal...</div>
+            <div class="flare-meta" id="flareMeta"></div>
+            <div class="flare-synthetic" id="flareSynthetic"></div>
+        </div>
+
+        <!-- STORM PANELS -->
+        <div class="storm-grid">
+            <div class="storm-panel" id="protonPanel">
+                <div class="storm-heading">☢️ PROTON STORM</div>
+                <div class="storm-value" id="protonValue">—</div>
+                <div class="storm-level" id="protonLevel"></div>
+                <div class="storm-inactive" id="protonMessage">The solar wind is calm.</div>
+            </div>
+            <div class="storm-panel" id="geomagneticPanel">
+                <div class="storm-heading">🌍 GEOMAGNETIC STORM</div>
+                <div class="storm-value" id="geomagValue">—</div>
+                <div class="storm-level" id="geomagLevel"></div>
+                <div class="storm-inactive" id="geomagMessage">The magnetosphere is quiet.</div>
+            </div>
+        </div>
+
+        <!-- FLARE ARCHIVE -->
+        <div class="flare-archive">
+            <div class="archive-heading">📜 FLARE ARCHIVE</div>
+            <div class="archive-list" id="archiveList">
+                <div style="text-align:center;color:rgba(200,180,140,0.15);padding:1.5rem;font-style:italic;">No flares recorded yet.</div>
+            </div>
+        </div>
+
+    </div>
+
+    <nav class="flare-nav">
+        <a href="index.html">☀️ Apollo</a>
+        <a href="../ouroboros.html">🐍 Hours</a>
+        <a href="../index.html">🌍 GAIA</a>
+    </nav>
+
+    <div class="flare-footer">SOLAR FLARE ORACLE · APOLLO'S CORONA · NOAA SPACE WEATHER PREDICTION CENTER</div>
+
+    <div id="toast"></div>
+
+    <script src="js/solarOracle.js"></script>
+    <script>
+    // ═══════════════════════════════════
+    // SOLAR FLARE ORACLE · DISPLAY
+    // ═══════════════════════════════════
+
+    const toastEl = document.getElementById('toast');
+    function toast(msg) {
+        toastEl.textContent = msg; toastEl.classList.add('show');
+        setTimeout(() => toastEl.classList.remove('show'), 2500);
+    }
+
+    function renderFlare(flare) {
+        if (!flare) return;
+        
+        const interpreted = SolarOracle.interpretFlare(flare);
+        if (!interpreted) return;
+        
+        const oracle = interpreted.oracle;
+        const flareClass = flare.class?.charAt(0)?.toLowerCase() || 'b';
+        
+        // Update flare display
+        const classEl = document.getElementById('flareClass');
+        classEl.textContent = flare.class || '—';
+        classEl.className = 'flare-class-display ' + flareClass;
+        
+        document.getElementById('flareMessage').textContent = flare.message || '';
+        document.getElementById('flareMeta').textContent = 
+            `Active Region: ${flare.activeRegion || 'Unknown'} · Intensity: ${flare.intensity || '—'} · ${new Date(flare.time).toLocaleTimeString()}`;
+        
+        document.getElementById('flareSynthetic').textContent = 
+            flare.synthetic ? '⚡ Synthesized by Apollo (NOAA link unavailable)' : '📡 Live from NOAA Space Weather Prediction Center';
+        
+        document.getElementById('fetchTime').textContent = 
+            new Date(SolarOracle.getLastFetch()).toLocaleTimeString();
+        
+        // Show toast for significant flares
+        if (interpreted.significance >= 3 && interpreted.isRecent) {
+            toast(`${oracle.glyph} ${oracle.name}: ${flare.class} Flare! ${flare.message}`);
+        }
+    }
+
+    function renderProtonStorm(storm) {
+        const panel = document.getElementById('protonPanel');
+        if (!storm || !storm.active) {
+            panel.classList.remove('active');
+            document.getElementById('protonValue').textContent = 'QUIET';
+            document.getElementById('protonLevel').textContent = '';
+            document.getElementById('protonMessage').textContent = 'The solar wind is calm.';
+            return;
+        }
+        panel.classList.add('active');
+        document.getElementById('protonValue').textContent = storm.flux > 100 ? 'ACTIVE ⚠️' : 'ELEVATED';
+        document.getElementById('protonLevel').textContent = `${storm.flux?.toFixed(1) || '—'} pfu · ${storm.energy || '>10 MeV'}`;
+        document.getElementById('protonMessage').textContent = storm.message || '';
+        document.getElementById('protonMessage').className = 'storm-message';
+    }
+
+    function renderGeomagneticStorm(storm) {
+        const panel = document.getElementById('geomagneticPanel');
+        if (!storm || !storm.active) {
+            panel.classList.remove('active');
+            document.getElementById('geomagValue').textContent = 'QUIET';
+            document.getElementById('geomagLevel').textContent = '';
+            document.getElementById('geomagMessage').textContent = 'The magnetosphere is quiet.';
+            return;
+        }
+        panel.classList.add('active');
+        document.getElementById('geomagValue').textContent = storm.level || 'ACTIVE';
+        document.getElementById('geomagLevel').textContent = `Kp ${storm.kp?.toFixed(1) || '—'}`;
+        document.getElementById('geomagMessage').textContent = storm.message || '';
+        document.getElementById('geomagMessage').className = 'storm-message';
+    }
+
+    function renderArchive() {
+        const history = SolarOracle.getFlareHistory();
+        const container = document.getElementById('archiveList');
+        if (!history.length) {
+            container.innerHTML = '<div style="text-align:center;color:rgba(200,180,140,0.15);padding:1.5rem;font-style:italic;">No flares recorded yet.</div>';
+            return;
+        }
+        container.innerHTML = history.slice(0, 30).map(flare => {
+            const flareClass = flare.class?.charAt(0)?.toLowerCase() || 'b';
+            return `
+            <div class="archive-entry">
+                <span class="archive-class ${flareClass}">${flare.class || '?'}</span>
+                <span class="archive-time">${new Date(flare.time).toLocaleTimeString()}</span>
+                <span class="archive-message">${flare.message || ''}</span>
+            </div>`;
+        }).join('');
+    }
+
+    // ═══════════════════════════════════
+    // INIT
+    // ═══════════════════════════════════
+
+    async function init() {
+        // Fetch immediately
+        const data = await SolarOracle.fetchAll();
+        if (data.flare) renderFlare(data.flare);
+        if (data.proton) renderProtonStorm(data.proton);
+        if (data.geomagnetic) renderGeomagneticStorm(data.geomagnetic);
+        renderArchive();
+        
+        // Subscribe to new flares
+        SolarOracle.onFlare((flare) => {
+            renderFlare(flare);
+            renderArchive();
+        });
+        
+        SolarOracle.onProtonStorm((storm) => {
+            renderProtonStorm(storm);
+        });
+        
+        SolarOracle.onGeomagneticStorm((storm) => {
+            renderGeomagneticStorm(storm);
+        });
+        
+        // Start polling every 60 seconds
+        SolarOracle.startPolling(60);
+        
+        // Refresh display every 30 seconds
+        setInterval(() => {
+            const flare = SolarOracle.getCurrentFlare();
+            if (flare) renderFlare(flare);
+            const proton = SolarOracle.getProtonStorm();
+            if (proton) renderProtonStorm(proton);
+            const geomag = SolarOracle.getGeomagneticStorm();
+            if (geomag) renderGeomagneticStorm(geomag);
+            renderArchive();
+        }, 30000);
+    }
+
+    init();
+    </script>
+</body>
+</html>
