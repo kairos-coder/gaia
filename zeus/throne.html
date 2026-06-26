@@ -11,7 +11,7 @@
             --gold: #c9a84c; --gold-bright: #f0d080; --gold-dim: #6b5520;
             --lightning: #8899dd; --marble: #c8c0b0;
             --fire: #c05030; --earth: #5a7a30; --air: #7a68b8; --water: #3878a8;
-            --olympian: #d4a840; --chthonic: #9966cc; --hearth: #c44f1c;
+            --olympian: #d4a840; --chthonic: #9966cc;
         }
         * { margin:0; padding:0; box-sizing:border-box; }
         body {
@@ -25,12 +25,12 @@
         #logo-mosaic {
             position: fixed; inset: 0; z-index: 0; pointer-events: none;
             display: grid; grid-template-columns: repeat(8, 1fr);
-            opacity: 0.06;
+            opacity: 0.08;
         }
         #logo-mosaic img {
             width: 100%; aspect-ratio: 1;
             object-fit: contain; padding: 25%;
-            filter: brightness(0.7) sepia(0.4);
+            filter: brightness(1.2) sepia(0.3);
         }
 
         #lightning-canvas {
@@ -39,7 +39,7 @@
 
         #vignette {
             position: fixed; inset: 0; z-index: 1; pointer-events: none;
-            background: radial-gradient(ellipse at 50% 40%, transparent 30%, rgba(10,8,6,0.85) 85%);
+            background: radial-gradient(ellipse at 50% 35%, transparent 25%, rgba(10,8,6,0.9) 90%);
         }
 
         .content {
@@ -74,6 +74,33 @@
             font-family: 'Cinzel', serif; font-size: 0.5rem;
             letter-spacing: 0.15em; color: rgba(200,160,60,0.3);
             margin-top: 0.2rem;
+        }
+
+        /* ── THRONE RELIEF ── */
+        .throne-relief {
+            position: relative; width: 100%; max-width: 500px;
+        }
+        .relief-frame {
+            width: 100%; aspect-ratio: 4/3;
+            border: 3px solid var(--deep-stone);
+            box-shadow: 0 0 40px rgba(0,0,0,0.5), 0 0 0 1px rgba(200,160,60,0.2), 0 0 80px rgba(200,160,60,0.08);
+            overflow: hidden; position: relative;
+        }
+        .relief-frame img {
+            width: 100%; height: 100%; object-fit: cover; display: block;
+            filter: sepia(0.25) brightness(0.85) contrast(1.05);
+        }
+        .relief-frame::after {
+            content: '';
+            position: absolute; inset: 0;
+            box-shadow: inset 0 0 60px rgba(0,0,0,0.5);
+            pointer-events: none;
+        }
+        .relief-inscription {
+            text-align: center; margin-top: 0.5rem;
+            font-family: 'Cinzel', serif; font-size: 0.5rem;
+            letter-spacing: 0.2em; color: rgba(200,160,60,0.3);
+            text-transform: uppercase;
         }
 
         /* ── WAR BANNER ── */
@@ -177,7 +204,7 @@
             color: rgba(200,160,60,0.5); margin-top: 0.2rem;
         }
 
-        /* ── ARES TRIAD ── */
+        /* ── ARES TRIAD / CHTHONIC ── */
         .triad-card {
             display: flex; align-items: center; gap: 0.6rem;
             padding: 0.6rem 0; border-bottom: 1px solid rgba(200,160,60,0.06);
@@ -237,6 +264,14 @@
             <p class="war-meta" id="warMeta">Sky: loading...</p>
         </header>
 
+        <!-- THRONE RELIEF -->
+        <div class="throne-relief">
+            <div class="relief-frame">
+                <img src="images/zeus.jpg" alt="The Throne of Zeus">
+            </div>
+            <div class="relief-inscription">IV · The Emperor · Seated in Judgment · The King Watches the Field</div>
+        </div>
+
         <!-- WAR BANNER -->
         <div class="war-banner" id="warBanner">
             <div class="war-side olympian"><span class="war-side-icon">⚡</span><span class="war-side-count" id="olyCount">—</span><span class="war-side-label">Olympus</span></div>
@@ -265,7 +300,7 @@
                 <div id="triadPanel"></div>
             </div>
 
-            <!-- EMPTY HOUSES / CHTHONIC CLAIMS -->
+            <!-- CHTHONIC CLAIMS -->
             <div class="panel">
                 <div class="panel-heading">🌑 CHTHONIC CLAIMS</div>
                 <div id="chthonicPanel"></div>
@@ -284,7 +319,6 @@
         <div class="war-footer">ORDER OF OLYMPUS · THE WAR COUNCIL · THE KING COMMANDS</div>
     </div>
 
-    <!-- SCRIPTS -->
     <script src="https://cdn.jsdelivr.net/npm/astronomy-engine@2.1.8/astronomy.browser.min.js"></script>
     <script src="../js/gaia-celestial.js"></script>
     <script src="../js/gaia-suncalc.js"></script>
@@ -295,7 +329,6 @@
     // ═══════════════════════════════════
     // VOID MOSAIC
     // ═══════════════════════════════════
-
     function buildMosaic() {
         const mosaic = document.getElementById('logo-mosaic');
         const cells = [];
@@ -320,7 +353,6 @@
     // ═══════════════════════════════════
     // LIGHTNING
     // ═══════════════════════════════════
-
     const canvas = document.getElementById('lightning-canvas');
     const ctx = canvas.getContext('2d');
     function resizeCanvas() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
@@ -369,24 +401,19 @@
     // ═══════════════════════════════════
     // WAR COUNCIL LOGIC
     // ═══════════════════════════════════
-
     const PLANET_ORDER = ['mercury','venus','mars','jupiter','saturn','uranus','neptune','pluto'];
     const SIGN_GLYPHS = ['♈','♉','♊','♋','♌','♍','♎','♏','♐','♑','♒','♓'];
     const SIGN_NAMES = ['Aries','Taurus','Gemini','Cancer','Leo','Virgo','Libra','Scorpio','Sagittarius','Capricorn','Aquarius','Pisces'];
 
     async function loadWarCouncil() {
         try {
-            // Get live sky
             const planets = GaiaAstronomy.getAllPlanets(new Date(), 40.7, -74.0);
             
-            // Get war report from Chthonic engine
             let warReport = null;
             if (typeof Chthonic !== 'undefined') {
                 const planetData = {};
                 Object.entries(planets).forEach(([name, pos]) => {
-                    if (pos && pos.sign) {
-                        planetData[name] = { sign: pos.sign, degree: pos.degree };
-                    }
+                    if (pos && pos.sign) planetData[name] = { sign: pos.sign, degree: pos.degree };
                 });
                 warReport = Chthonic.getWarReport(planetData);
             }
@@ -397,14 +424,11 @@
             renderAresTriad(planets);
             renderChthonicClaims(warReport);
 
-            // Meta
             const sun = planets.sun;
             document.getElementById('warMeta').textContent = 
                 `☀️ Sun in ${sun?.sign||'—'} ${sun?.signGlyph||''} · Live from the Throne`;
 
-            // Refresh every 5 minutes
             setTimeout(loadWarCouncil, 5 * 60 * 1000);
-
         } catch(e) {
             console.warn('War Council failed:', e);
             document.getElementById('warMeta').textContent = 'Sky: engine error — retrying...';
@@ -435,9 +459,7 @@
         const signCount = {};
         SIGN_NAMES.forEach(s => { signCount[s] = []; });
         Object.entries(planets).forEach(([name, pos]) => {
-            if (pos && pos.sign && signCount[pos.sign]) {
-                signCount[pos.sign].push(pos.god || name);
-            }
+            if (pos && pos.sign && signCount[pos.sign]) signCount[pos.sign].push(pos.god || name);
         });
 
         const container = document.getElementById('housesGrid');
@@ -485,7 +507,6 @@
             container.innerHTML = '<div style="text-align:center;padding:1rem;color:rgba(200,160,60,0.2);font-style:italic;">Ares is beyond the horizon. The Triad waits.</div>';
             return;
         }
-
         const marsGlyph = mars.signGlyph || '';
         container.innerHTML = `
             <div class="triad-card">
@@ -499,14 +520,14 @@
                 <div class="triad-icon">🍇</div>
                 <div>
                     <div class="triad-name">Dionysus as Eros · The Fool (0)</div>
-                    <div class="triad-role">Desire follows the spear. Where Ares strikes, Dionysus pours. One destroys. One transforms.</div>
+                    <div class="triad-role">Desire follows the spear. Where Ares strikes, Dionysus pours.</div>
                 </div>
             </div>
             <div class="triad-card">
                 <div class="triad-icon">🦉</div>
                 <div>
                     <div class="triad-name">Athena as Phobos · Justice (VIII)</div>
-                    <div class="triad-role">Strategic fear. Athena rides with Ares so the war god remembers what victory costs.</div>
+                    <div class="triad-role">Strategic fear. She rides with Ares so the war god remembers what victory costs.</div>
                 </div>
             </div>
         `;
@@ -518,13 +539,11 @@
             container.innerHTML = '<div style="text-align:center;padding:1rem;color:rgba(200,160,60,0.2);font-style:italic;">War report unavailable</div>';
             return;
         }
-
         const claims = warReport.claims.filter(c => c.chthonic);
         if (!claims.length) {
             container.innerHTML = '<div style="text-align:center;padding:1rem;color:rgba(200,160,60,0.3);">All houses held by Olympus. The Underworld bides its time.</div>';
             return;
         }
-
         container.innerHTML = claims.map(c => `
             <div class="triad-card">
                 <div class="triad-icon">${c.chthonic.glyph||'🌑'}</div>
@@ -539,7 +558,6 @@
     // ═══════════════════════════════════
     // INIT
     // ═══════════════════════════════════
-
     loadWarCouncil();
     </script>
 </body>
