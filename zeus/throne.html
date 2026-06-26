@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DECREES · Throne of Zeus</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&family=Cinzel:wght@400;600;700&family=IM+Fell+English:ital@0;1&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+    <script src="/nexus/olympian-bridge.js"></script>
+    
+    <style>
+        :root {
+            --gold: #c8970a;
+            --gold-bright: #f0c040;
+            --storm: #0a0a14;
+            --storm-mid: #11112a;
+            --white: #f5f0e0;
+        }
+        * { box-sizing: border-box; margin:0; padding:0; }
+        body {
+            background: var(--storm);
+            color: var(--white);
+            font-family: 'IM Fell English', serif;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        #bg-layer {
+            position: fixed; inset: 0; z-index: 0;
+            background: linear-gradient(#0a0a14, #1a1a3a);
+            opacity: 0.9;
+        }
+        canvas#lightning { position: fixed; inset: 0; z-index: 1; pointer-events: none; opacity: 0.4; }
+
+        header {
+            position: relative; z-index: 10;
+            text-align: center;
+            padding: 2rem 1rem 1.5rem;
+            border-bottom: 2px solid var(--gold);
+        }
+        .bolt { font-size: 3.5rem; animation: boltPulse 4s infinite; }
+        @keyframes boltPulse { 50% { opacity: 0.6; } }
+
+        h1 {
+            font-family: 'Cinzel Decorative', serif;
+            font-size: clamp(2.2rem, 7vw, 4rem);
+            background: linear-gradient(90deg, #c8970a, #f0c040, #c8970a);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: 0.15em;
+        }
+
+        .ledger {
+            position: relative; z-index: 10;
+            max-width: 960px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+        .decree {
+            background: rgba(17,17,42,0.85);
+            border: 1px solid var(--gold);
+            border-radius: 6px;
+            padding: 1.25rem;
+            margin-bottom: 1.5rem;
+            position: relative;
+        }
+        .decree-header {
+            display: flex; justify-content: space-between;
+            font-family: 'Cinzel', serif;
+            font-size: 0.75rem;
+            color: var(--gold);
+            margin-bottom: 0.8rem;
+            border-bottom: 1px dotted rgba(200,151,10,0.3);
+            padding-bottom: 0.6rem;
+        }
+        .verdict-lawful { color: #44ddaa; }
+        .verdict-overruled { color: #ff6644; }
+
+        .petition-box {
+            position: relative; z-index: 10;
+            max-width: 960px;
+            margin: 2rem auto;
+            padding: 1.5rem;
+            background: rgba(10,10,20,0.95);
+            border: 2px solid var(--gold);
+            border-radius: 8px;
+        }
+        #petition-input {
+            width: 100%;
+            background: transparent;
+            border: 1px solid var(--gold-dim);
+            color: var(--white);
+            padding: 1rem;
+            font-family: 'IM Fell English', serif;
+            font-size: 1.05rem;
+            min-height: 120px;
+            resize: vertical;
+        }
+        button {
+            margin-top: 1rem;
+            background: var(--gold);
+            color: #000;
+            border: none;
+            padding: 0.9rem 2.5rem;
+            font-family: 'Cinzel', serif;
+            font-weight: 700;
+            letter-spacing: 0.2em;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        button:hover { background: #f0c040; transform: scale(1.03); }
+
+        .empty-ledger {
+            text-align: center;
+            font-style: italic;
+            color: #888;
+            padding: 3rem;
+        }
+    </style>
+</head>
+<body>
+
+<div id="bg-layer"></div>
+<canvas id="lightning"></canvas>
+
+<header>
+    <div class="bolt">⚡</div>
+    <h1>DECREES OF ZEUS</h1>
+    <p style="font-family:Cinzel; color:#c8970a; letter-spacing:0.3em;">LIVING LEDGER · THRONE OF OLYMPUS</p>
+</header>
+
+<div class="ledger">
+    <h2 style="font-family:Cinzel; color:var(--gold); margin-bottom:1rem; text-align:center;">BINDING JUDGMENTS</h2>
+    <div id="decrees-container">
+        <!-- Populated by JS -->
+    </div>
+</div>
+
+<div class="petition-box">
+    <h3 style="color:var(--gold); margin-bottom:0.8rem; font-family:Cinzel;">Issue a Petition</h3>
+    <textarea id="petition-input" placeholder="Speak your will, mortal... (e.g. 'Judge the grounding of the new temple' or 'Bind the succession of this project')"></textarea>
+    <button onclick="issueDecree()">SEAL DECREE ⚡</button>
+</div>
+
+<footer style="text-align:center; padding:2rem; color:#666; font-size:0.75rem; z-index:10; position:relative;">
+    <a href="index.html" style="color:var(--gold);">← Return to Throne</a>
+</footer>
+
+<script>
+// Lightning canvas
+const canvas = document.getElementById('lightning');
+const ctx = canvas.getContext('2d');
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+
+function drawLightning() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    if (Math.random() > 0.85) {
+        ctx.strokeStyle = 'rgba(240, 220, 100, 0.7)';
+        ctx.lineWidth = 3;
+        let x = Math.random() * canvas.width;
+        ctx.beginPath();
+        ctx.moveTo(x, 0);
+        for (let i = 0; i < 8; i++) {
+            x += (Math.random() - 0.5) * 60;
+            ctx.lineTo(x, i * (canvas.height / 8));
+        }
+        ctx.stroke();
+    }
+    requestAnimationFrame(drawLightning);
+}
+drawLightning();
+window.addEventListener('resize', () => {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+});
+
+// Ledger Management
+let decrees = JSON.parse(localStorage.getItem('zeus_decrees')) || [];
+
+function saveDecrees() {
+    localStorage.setItem('zeus_decrees', JSON.stringify(decrees));
+}
+
+function renderDecrees() {
+    const container = document.getElementById('decrees-container');
+    container.innerHTML = '';
+
+    if (decrees.length === 0) {
+        container.innerHTML = `<div class="empty-ledger">No decrees yet. The King awaits your petition.</div>`;
+        return;
+    }
+
+    decrees.slice().reverse().forEach((d, i) => {
+        const div = document.createElement('div');
+        div.className = 'decree';
+        div.innerHTML = `
+            <div class="decree-header">
+                <span>#${decrees.length - i}</span>
+                <span>${new Date(d.timestamp).toLocaleString()}</span>
+                <span class="\( {d.verdict === 'LAWFUL' ? 'verdict-lawful' : 'verdict-overruled'}"> \){d.verdict}</span>
+            </div>
+            <div style="margin-bottom:0.8rem; font-size:1.05rem;">${d.petition}</div>
+            <div style="font-size:0.9rem; opacity:0.85;">${d.response}</div>
+        `;
+        container.appendChild(div);
+    });
+}
+
+function issueDecree() {
+    const input = document.getElementById('petition-input');
+    const petition = input.value.trim();
+    
+    if (!petition) return;
+
+    // Simple but flavorful judgment logic
+    const isLawful = !/overthrow|destroy|chaos|defy|betray/i.test(petition);
+    const verdict = isLawful ? 'LAWFUL' : 'OVERRULED';
+    
+    const response = isLawful 
+        ? "The King finds this petition in accordance with the order of Olympus. Let it be bound and witnessed."
+        : "The petition stirs discord in the high halls. It is overruled by the Thunderer.";
+
+    const decree = {
+        timestamp: new Date().toISOString(),
+        petition: petition,
+        verdict: verdict,
+        response: response
+    };
+
+    decrees.push(decree);
+    saveDecrees();
+    renderDecrees();
+
+    // Flash effect
+    canvas.style.opacity = '0.9';
+    setTimeout(() => canvas.style.opacity = '0.4', 280);
+
+    input.value = '';
+    
+    // Optional: Bridge integration
+    if (window.OlympianBridge) {
+        window.OlympianBridge.recordEvent('zeus', 'decree', { verdict, petition });
+    }
+}
+
+// Initialize
+renderDecrees();
+</script>
+
+</body>
+</html>
