@@ -4,14 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>The Vineyard · Dionysus · Digital Divination</title>
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&family=Cinzel:wght@400;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&family=Cinzel:wght@400;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=UnifrakturMaguntia&display=swap" rel="stylesheet">
     <style>
         :root {
             --void: #0a0608; --deep: #1a0a14; --stone: #2a1820;
             --gold: #c9a84c; --gold-bright: #f0d080; --gold-dim: #6b5520;
             --vine: #8844aa; --vine-bright: #bb66dd; --vine-dim: #442255;
             --amber: #e8a840; --leaf: #66aa44; --marble: #d8c8d0;
-            --wine: #661144;
+            --wine: #661144; --ivy: #338844;
         }
         * { margin:0; padding:0; box-sizing:border-box; }
         body {
@@ -20,103 +20,111 @@
             font-family: 'Cormorant Garamond', Georgia, serif;
             min-height: 100vh; overflow-x: hidden;
             display: flex; flex-direction: column; align-items: center;
-            background-image: radial-gradient(ellipse at 50% 30%, rgba(136,68,170,0.06) 0%, transparent 60%);
+            background-image: radial-gradient(ellipse at 50% 30%, rgba(136,68,170,0.08) 0%, transparent 60%);
         }
 
-        /* ── VOID MOSAIC — grape leaves / thyrsus ── */
+        /* ── VINE MOSAIC ── */
         #vine-mosaic {
             position: fixed; inset: 0; z-index: 0; pointer-events: none;
-            display: grid; grid-template-columns: repeat(8, 1fr);
-            opacity: 0.06;
+            display: grid; grid-template-columns: repeat(10, 1fr);
+            opacity: 0.1;
         }
         #vine-mosaic div {
             width: 100%; aspect-ratio: 1;
             display: flex; align-items: center; justify-content: center;
-            font-size: 2rem; color: var(--vine-bright);
-            filter: blur(0.5px);
+            font-size: 1.8rem;
+            filter: blur(0.3px);
+            transition: all 0.6s;
         }
 
         /* ── AMBIENT ── */
         #ambient-canvas {
-            position: fixed; inset: 0; z-index: 1; pointer-events: none; opacity: 0.5;
+            position: fixed; inset: 0; z-index: 1; pointer-events: none; opacity: 0.6;
         }
-
         #vignette {
             position: fixed; inset: 0; z-index: 1; pointer-events: none;
-            background: radial-gradient(ellipse at 50% 40%, transparent 30%, rgba(10,6,8,0.9) 90%);
+            background: radial-gradient(ellipse at 50% 35%, transparent 20%, rgba(10,6,8,0.9) 90%);
         }
 
         .content {
             position: relative; z-index: 10;
-            max-width: 700px; width: 100%; padding: 2rem 1.5rem 4rem;
-            display: flex; flex-direction: column; align-items: center; gap: 1.5rem;
+            max-width: 720px; width: 100%; padding: 2rem 1.5rem 4rem;
+            display: flex; flex-direction: column; align-items: center; gap: 1.8rem;
         }
 
         /* ── HEADER ── */
         .vine-header { text-align: center; }
         .vine-sigil {
-            font-size: 3rem; margin-bottom: 0.3rem;
+            font-size: 3.5rem; margin-bottom: 0.3rem;
             animation: sigilPulse 3s ease-in-out infinite;
-            filter: drop-shadow(0 0 20px rgba(136,68,170,0.4));
+            filter: drop-shadow(0 0 25px rgba(136,68,170,0.5));
         }
         @keyframes sigilPulse {
             0%,100% { filter: drop-shadow(0 0 15px rgba(136,68,170,0.3)); }
-            50% { filter: drop-shadow(0 0 35px rgba(187,102,221,0.6)); }
+            50% { filter: drop-shadow(0 0 40px rgba(187,102,221,0.7)); }
         }
         .vine-title {
-            font-family: 'Cinzel Decorative', serif;
-            font-size: clamp(1.8rem, 5vw, 2.8rem);
-            color: var(--vine-bright); letter-spacing: 0.2em;
-            text-shadow: 0 0 30px rgba(136,68,170,0.3);
+            font-family: 'UnifrakturMaguntia', cursive;
+            font-size: clamp(2.2rem, 6vw, 3.5rem);
+            color: var(--vine-bright); letter-spacing: 0.15em;
+            text-shadow: 0 0 40px rgba(136,68,170,0.4), 0 0 80px rgba(136,68,170,0.1);
         }
         .vine-subtitle {
-            font-family: 'Cinzel', serif; font-size: 0.5rem;
+            font-family: 'Cinzel', serif; font-size: 0.55rem;
             letter-spacing: 0.3em; color: var(--vine-dim);
-            text-transform: uppercase; margin-top: 0.3rem;
+            text-transform: uppercase; margin-top: 0.4rem;
         }
 
-        /* ── GOD RELIEF ── */
-        .god-relief {
-            position: relative; width: 100%; max-width: 450px;
+        /* ── RELIEF CARDS ── */
+        .cards-display {
+            display: flex; gap: 1rem; justify-content: center;
+            flex-wrap: wrap; width: 100%;
         }
-        .relief-frame {
-            width: 100%; aspect-ratio: 1/1;
-            border: 3px solid rgba(136,68,170,0.2);
-            box-shadow: 0 0 40px rgba(0,0,0,0.5), 0 0 0 1px rgba(136,68,170,0.2), 0 0 60px rgba(136,68,170,0.06);
-            overflow: hidden; position: relative; border-radius: 50%;
+        .card-relief {
+            width: 140px; aspect-ratio: 2/3;
+            border: 2px solid rgba(136,68,170,0.2);
+            box-shadow: 0 0 30px rgba(0,0,0,0.4), 0 0 0 1px rgba(136,68,170,0.1);
+            overflow: hidden; position: relative;
+            border-radius: 6px; transition: all 0.3s;
         }
-        .relief-frame img {
+        .card-relief:hover {
+            border-color: rgba(136,68,170,0.5);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.5), 0 0 30px rgba(136,68,170,0.15);
+            transform: translateY(-4px);
+        }
+        .card-relief img {
             width: 100%; height: 100%; object-fit: cover; display: block;
-            filter: brightness(0.9) saturate(1.1);
+            filter: brightness(0.85) saturate(1.1);
         }
-        .relief-frame::after {
+        .card-relief::after {
             content: '';
             position: absolute; inset: 0;
-            box-shadow: inset 0 0 60px rgba(0,0,0,0.5);
-            border-radius: 50%; pointer-events: none;
+            box-shadow: inset 0 0 40px rgba(0,0,0,0.4);
+            pointer-events: none;
         }
-        .relief-inscription {
-            text-align: center; margin-top: 0.5rem;
-            font-family: 'Cinzel', serif; font-size: 0.5rem;
-            letter-spacing: 0.2em; color: rgba(136,68,170,0.3);
+        .card-label {
+            text-align: center; margin-top: 0.3rem;
+            font-family: 'Cinzel', serif; font-size: 0.45rem;
+            letter-spacing: 0.15em; color: rgba(136,68,170,0.3);
             text-transform: uppercase;
         }
 
-        /* ── INVITATION BANNER ── */
-        .invitation-banner {
+        /* ── GOD SPEAKS ── */
+        .god-speaks {
             width: 100%; text-align: center;
-            padding: 0.8rem; background: rgba(26,10,20,0.7);
+            padding: 1rem 1.5rem;
+            background: rgba(26,10,20,0.7);
             border: 1px solid rgba(136,68,170,0.15);
             border-radius: 3px;
         }
-        .invitation-label {
+        .speaks-label {
             font-family: 'Cinzel', serif; font-size: 0.5rem;
             letter-spacing: 0.25em; color: var(--vine-dim);
-            text-transform: uppercase; margin-bottom: 0.3rem;
+            text-transform: uppercase; margin-bottom: 0.4rem;
         }
-        .invitation-text {
-            font-size: 0.9rem; font-style: italic; color: rgba(200,160,200,0.6);
-            line-height: 1.5;
+        .speaks-text {
+            font-size: 1rem; font-style: italic; color: rgba(200,160,200,0.65);
+            line-height: 1.6; transition: opacity 0.4s;
         }
 
         /* ── OFFERING BOWL ── */
@@ -131,7 +139,7 @@
             text-align: center; margin-bottom: 1rem;
         }
         #offering-input {
-            width: 100%; min-height: 90px;
+            width: 100%; min-height: 80px;
             background: rgba(10,6,8,0.6); border: 1px solid rgba(136,68,170,0.2);
             color: var(--marble); padding: 1rem;
             font-family: 'Cormorant Garamond', serif; font-size: 0.9rem;
@@ -197,17 +205,20 @@
             transition: all 0.2s;
         }
         .vine-nav a:hover { color: var(--vine-bright); border-bottom: 1px solid var(--vine-bright); }
-
         .vine-footer {
             text-align: center; font-family: 'Cinzel', serif;
             font-size: 0.45rem; letter-spacing: 0.2em;
             color: rgba(136,68,170,0.2);
         }
 
-        @keyframes particleRise { 0%{opacity:0.8;transform:translateY(0) translateX(0) scale(1)} 100%{opacity:0;transform:translateY(-120px) translateX(var(--dx)) scale(0)} }
+        @keyframes particleRise { 
+            0%{opacity:0.8;transform:translateY(0) translateX(0) scale(1)} 
+            100%{opacity:0;transform:translateY(-140px) translateX(var(--dx)) scale(0)} 
+        }
 
         @media (max-width: 600px) {
             .content { padding: 1.5rem 1rem 3rem; }
+            .card-relief { width: 110px; }
         }
     </style>
 </head>
@@ -221,22 +232,36 @@
 
         <header class="vine-header">
             <div class="vine-sigil">🍇</div>
-            <h1 class="vine-title">THE VINEYARD</h1>
-            <p class="vine-subtitle">Dionysus · The Fool · The Twice-Born · Breaker of Chains</p>
+            <h1 class="vine-title">The Vineyard</h1>
+            <p class="vine-subtitle">Dionysus · 0 · The Fool · The Twice-Born · Breaker of Chains</p>
         </header>
 
-        <!-- GOD RELIEF -->
-        <div class="god-relief">
-            <div class="relief-frame">
-                <img src="images/dionysus.jpg" alt="Dionysus" onerror="this.parentElement.style.background='radial-gradient(circle, var(--vine-dim), var(--void))';this.style.opacity='0.3';">
+        <!-- TAROT CARDS -->
+        <div class="cards-display">
+            <div>
+                <div class="card-relief">
+                    <img src="images/fool.png" alt="0 · The Fool" onerror="this.parentElement.style.background='radial-gradient(circle, var(--vine-dim), var(--void))';this.style.opacity='0.3';">
+                </div>
+                <div class="card-label">0 · The Fool</div>
             </div>
-            <div class="relief-inscription">0 · The Fool · "The vine does not ask permission to climb."</div>
+            <div>
+                <div class="card-relief">
+                    <img src="images/dionysus-card.jpg" alt="Dionysus" onerror="this.parentElement.style.background='radial-gradient(circle, var(--vine-dim), var(--void))';this.style.opacity='0.3';">
+                </div>
+                <div class="card-label">Dionysus</div>
+            </div>
+            <div>
+                <div class="card-relief">
+                    <img src="images/dionysus-tarot.jpg" alt="Dionysus Tarot" onerror="this.parentElement.style.background='radial-gradient(circle, var(--vine-dim), var(--void))';this.style.opacity='0.3';">
+                </div>
+                <div class="card-label">Eros · The Fool</div>
+            </div>
         </div>
 
-        <!-- INVITATION -->
-        <div class="invitation-banner">
-            <div class="invitation-label">The God Speaks</div>
-            <div class="invitation-text" id="god-words">"Come. The wine is poured. The madness is optional. The truth is not."</div>
+        <!-- GOD SPEAKS -->
+        <div class="god-speaks">
+            <div class="speaks-label">The God Pours</div>
+            <div class="speaks-text" id="god-words">"Come. The wine is poured. The madness is optional. The truth is not."</div>
         </div>
 
         <!-- OFFERING BOWL -->
@@ -259,7 +284,7 @@
 
         <!-- NAVIGATION -->
         <nav class="vine-nav">
-            <a href="realm.html">🍇 Vineyard</a>
+            <a href="realm.html">🍇 Realm</a>
             <a href="throne.html">🎭 Theater</a>
             <a href="../index.html">🌍 GAIA</a>
         </nav>
@@ -271,13 +296,14 @@
     // ═══════════════════════════════════
     // VINE MOSAIC
     // ═══════════════════════════════════
+    const MOSAIC_GLYPHS = ['🍇','🍷','🌿','✨','🍇','🍷','🌿','🔮','🍇','🍷','🌿','✨','🍇','🍷','🌿','🔮','🍇','🍷','🌿','✨'];
+
     function buildMosaic() {
         const mosaic = document.getElementById('vine-mosaic');
-        const glyphs = ['🍇','🍷','🌿','✨','🍇','🍷','🌿','🔮'];
         const cells = [];
-        for (let i = 0; i < 64; i++) {
-            const g = glyphs[Math.floor(Math.random() * glyphs.length)];
-            cells.push(`<div>${g}</div>`);
+        for (let i = 0; i < 100; i++) {
+            const g = MOSAIC_GLYPHS[Math.floor(Math.random() * MOSAIC_GLYPHS.length)];
+            cells.push(`<div style="color:${Math.random()>0.5?'#bb66dd':'#66aa44'};">${g}</div>`);
         }
         mosaic.innerHTML = cells.join('');
     }
@@ -286,16 +312,18 @@
         const cells = document.querySelectorAll('#vine-mosaic div');
         if (!cells.length) return;
         const idx = Math.floor(Math.random() * cells.length);
-        const glyphs = ['🍇','🍷','🌿','✨','🍇','🍷','🌿','🔮'];
-        cells[idx].style.opacity = '0.2';
+        cells[idx].style.opacity = '0.15';
+        cells[idx].style.transform = 'scale(0.8)';
         setTimeout(() => {
-            cells[idx].textContent = glyphs[Math.floor(Math.random() * glyphs.length)];
+            cells[idx].textContent = MOSAIC_GLYPHS[Math.floor(Math.random() * MOSAIC_GLYPHS.length)];
+            cells[idx].style.color = Math.random() > 0.5 ? '#bb66dd' : '#66aa44';
             cells[idx].style.opacity = '';
-        }, 600);
-    }, 6000);
+            cells[idx].style.transform = '';
+        }, 500);
+    }, 5000);
 
     // ═══════════════════════════════════
-    // AMBIENT PARTICLES
+    // AMBIENT PARTICLES — fireflies & spores
     // ═══════════════════════════════════
     const canvas = document.getElementById('ambient-canvas');
     const ctx = canvas.getContext('2d');
@@ -304,25 +332,35 @@
     window.addEventListener('resize', resizeCanvas);
 
     const particles = [];
-    for (let i = 0; i < 30; i++) {
+    for (let i = 0; i < 40; i++) {
         particles.push({
             x: Math.random() * canvas.width,
             y: Math.random() * canvas.height,
-            r: Math.random() * 2 + 0.5,
-            speed: 0.3 + Math.random() * 0.7,
-            opacity: Math.random() * 0.4 + 0.1,
-            hue: Math.random() > 0.5 ? 280 : 40
+            r: Math.random() * 2.5 + 0.5,
+            speed: 0.2 + Math.random() * 0.6,
+            opacity: Math.random() * 0.5 + 0.15,
+            hue: Math.random() > 0.5 ? 280 : 120,
+            phase: Math.random() * Math.PI * 2
         });
     }
 
+    let time = 0;
     function drawParticles() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        particles.forEach(p => {
+        time += 0.01;
+        particles.forEach((p, i) => {
             p.y -= p.speed;
+            p.x += Math.sin(time + p.phase) * 0.3;
             if (p.y < -10) { p.y = canvas.height + 10; p.x = Math.random() * canvas.width; }
+            const twinkle = 0.5 + 0.5 * Math.sin(time * 3 + p.phase);
             ctx.beginPath();
             ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-            ctx.fillStyle = `hsla(${p.hue}, 60%, 60%, ${p.opacity})`;
+            ctx.fillStyle = `hsla(${p.hue}, 60%, 60%, ${p.opacity * twinkle})`;
+            ctx.fill();
+            // Glow
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, p.r * 2.5, 0, Math.PI * 2);
+            ctx.fillStyle = `hsla(${p.hue}, 60%, 60%, ${p.opacity * twinkle * 0.2})`;
             ctx.fill();
         });
         requestAnimationFrame(drawParticles);
@@ -340,7 +378,9 @@
         "You were torn apart and remade. The fire that destroyed you also birthed you.",
         "I am the twice-born. You are the many-born. Every ending is a new vine.",
         "The mask is not a lie. The mask is a truth the face cannot yet speak.",
-        "Ecstasy is not escape. Ecstasy is arrival. You have arrived."
+        "Ecstasy is not escape. Ecstasy is arrival. You have arrived.",
+        "The theater is not a stage. The theater is the world. Play your part. Then tear off the mask.",
+        "I was born from Zeus's thigh. I was born from Semele's ashes. I am the god of the impossible birth."
     ];
 
     let offerings = JSON.parse(localStorage.getItem('dionysus_offerings')) || [];
@@ -355,9 +395,25 @@
             container.innerHTML = '<div class="log-empty">No offerings yet. The bowl is empty. The vine waits.</div>';
             return;
         }
-        container.innerHTML = offerings.slice().reverse().slice(0, 20).map(o => `
-            <div class="log-entry">"${o.text}"<br><span style="font-size:0.6rem;opacity:0.5;">— ${new Date(o.time).toLocaleTimeString()}</span></div>
+        container.innerHTML = offerings.slice().reverse().slice(0, 15).map(o => `
+            <div class="log-entry">"${o.text}"<br><span style="font-size:0.55rem;opacity:0.4;">— ${new Date(o.time).toLocaleTimeString()}</span></div>
         `).join('');
+    }
+
+    function spawnBurst(count, hue) {
+        for (let i = 0; i < count; i++) {
+            particles.push({
+                x: canvas.width/2 + (Math.random()-0.5)*250,
+                y: canvas.height * 0.55,
+                r: Math.random()*3.5+1,
+                speed: 1.2 + Math.random()*2.5,
+                opacity: 0.9,
+                hue: hue,
+                phase: Math.random() * Math.PI * 2
+            });
+        }
+        // Trim
+        while (particles.length > 100) particles.shift();
     }
 
     function pourOffering() {
@@ -365,46 +421,22 @@
         const text = input.value.trim();
         if (!text) return;
 
-        offerings.push({ text: text.substring(0, 200), time: new Date().toISOString() });
+        offerings.push({ text: text.substring(0, 250), time: new Date().toISOString() });
         if (offerings.length > 100) offerings = offerings.slice(-100);
         saveOfferings();
         renderLog();
 
-        // Sparkle burst
-        for (let i = 0; i < 15; i++) {
-            particles.push({
-                x: canvas.width/2 + (Math.random()-0.5)*200,
-                y: canvas.height/2,
-                r: Math.random()*3+1,
-                speed: 1.5 + Math.random()*2,
-                opacity: 0.8,
-                hue: Math.random() > 0.5 ? 280 : 40
-            });
-            if (particles.length > 80) particles.shift();
-        }
-
         const wisdom = DIONYSUS_WISDOM[Math.floor(Math.random() * DIONYSUS_WISDOM.length)];
         document.getElementById('god-words').textContent = `"${wisdom}"`;
 
+        spawnBurst(20, 280);
         input.value = '';
     }
 
     function receiveWisdom() {
         const wisdom = DIONYSUS_WISDOM[Math.floor(Math.random() * DIONYSUS_WISDOM.length)];
         document.getElementById('god-words').textContent = `"${wisdom}"`;
-
-        // Gentle sparkle
-        for (let i = 0; i < 8; i++) {
-            particles.push({
-                x: canvas.width/2 + (Math.random()-0.5)*150,
-                y: canvas.height/2,
-                r: Math.random()*2+0.5,
-                speed: 0.8 + Math.random()*1.5,
-                opacity: 0.6,
-                hue: 280
-            });
-            if (particles.length > 80) particles.shift();
-        }
+        spawnBurst(8, 120);
     }
 
     document.getElementById('offering-input').addEventListener('keydown', (e) => {
