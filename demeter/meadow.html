@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Meadow · Demeter's Realm · GAIA</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Cinzel+Decorative&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background: #0a0e06;
+            color: #c8b890;
+            font-family: 'Cinzel', Georgia, serif;
+            overflow: hidden;
+            width: 100vw;
+            height: 100vh;
+        }
+
+        /* ── MEADOW SCENE ── */
+        #meadow-scene {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Sky gradient */
+        #meadow-sky {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(
+                180deg,
+                #1a2a0a 0%,
+                #2a3a10 30%,
+                #3a4a18 55%,
+                #4a5a20 70%,
+                #5a6a28 100%
+            );
+            z-index: 0;
+        }
+
+        /* Ground */
+        #meadow-ground {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 45%;
+            background: linear-gradient(
+                180deg,
+                #2a3a10 0%,
+                #3a4e18 20%,
+                #4a5e20 60%,
+                #3a4a14 100%
+            );
+            z-index: 1;
+        }
+
+        /* Grass texture overlay */
+        #meadow-ground::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: repeating-linear-gradient(
+                90deg,
+                transparent 0px,
+                transparent 8px,
+                rgba(80,100,30,0.15) 8px,
+                rgba(80,100,30,0.15) 9px
+            );
+        }
+
+        /* Horizon line */
+        #meadow-horizon {
+            position: absolute;
+            bottom: 44%;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(
+                90deg,
+                transparent,
+                rgba(140,160,60,0.4) 20%,
+                rgba(180,200,80,0.6) 50%,
+                rgba(140,160,60,0.4) 80%,
+                transparent
+            );
+            z-index: 2;
+        }
+
+        /* GaiaMason temple in background */
+        #temple-container {
+            position: absolute;
+            inset: 0;
+            z-index: 3;
+            pointer-events: none;
+        }
+
+        /* Hare container — meadow zone */
+        #hare-field {
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: 5%;
+            height: 48%;
+            z-index: 10;
+        }
+
+        /* ── CONTROL PANEL ── */
+        #control-panel {
+            position: fixed;
+            top: 16px;
+            left: 16px;
+            z-index: 100;
+            background: rgba(10,14,6,0.92);
+            border: 1px solid rgba(140,160,60,0.3);
+            border-radius: 4px;
+            padding: 14px 18px;
+            min-width: 240px;
+        }
+
+        #control-panel h2 {
+            font-family: 'Cinzel Decorative', serif;
+            font-size: 11px;
+            color: rgba(180,200,80,0.8);
+            letter-spacing: 3px;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+        }
+
+        .ctrl-section {
+            margin-bottom: 14px;
+        }
+
+        .ctrl-label {
+            font-size: 8px;
+            letter-spacing: 2px;
+            color: rgba(140,160,60,0.6);
+            text-transform: uppercase;
+            margin-bottom: 6px;
+        }
+
+        .ctrl-row {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
+        .ctrl-btn {
+            background: rgba(30,40,10,0.8);
+            border: 1px solid rgba(140,160,60,0.3);
+            color: rgba(180,200,80,0.8);
+            font-family: 'Cinzel', serif;
+            font-size: 9px;
+            letter-spacing: 1px;
+            padding: 5px 10px;
+            cursor: pointer;
+            border-radius: 2px;
+            transition: all 0.2s;
+        }
+
+        .ctrl-btn:hover {
+            background: rgba(60,80,20,0.8);
+            border-color: rgba(180,200,80,0.6);
+            color: #c8d880;
+        }
+
+        .ctrl-btn.active {
+            background: rgba(80,100,20,0.9);
+            border-color: rgba(200,220,80,0.7);
+            color: #d8e890;
+        }
+
+        .ctrl-btn.danger {
+            border-color: rgba(160,60,40,0.4);
+            color: rgba(200,100,80,0.7);
+        }
+
+        .ctrl-btn.danger:hover {
+            background: rgba(80,20,10,0.8);
+            border-color: rgba(200,80,60,0.6);
+        }
+
+        /* Variant description */
+        #variant-desc {
+            font-size: 9px;
+            color: rgba(140,160,60,0.55);
+            letter-spacing: 1px;
+            line-height: 1.6;
+            margin-top: 6px;
+            font-style: italic;
+        }
+
+        /* Hare count */
+        #hare-count {
+            font-size: 9px;
+            color: rgba(140,160,60,0.5);
+            letter-spacing: 2px;
+            margin-top: 10px;
+        }
+
+        /* ── HARE GALLERY (bottom) ── */
+        #hare-gallery {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+            background: rgba(10,14,6,0.95);
+            border-top: 1px solid rgba(140,160,60,0.2);
+            padding: 8px 16px;
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            overflow-x: auto;
+        }
+
+        #hare-gallery .gallery-label {
+            font-size: 8px;
+            letter-spacing: 2px;
+            color: rgba(140,160,60,0.5);
+            text-transform: uppercase;
+            white-space: nowrap;
+            margin-right: 4px;
+        }
+
+        .gallery-hare {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 3px;
+            cursor: pointer;
+            opacity: 0.7;
+            transition: opacity 0.2s;
+            flex-shrink: 0;
+        }
+
+        .gallery-hare:hover { opacity: 1; }
+
+        .gallery-hare img {
+            width: 44px;
+            height: 44px;
+            object-fit: contain;
+            border: 1px solid rgba(140,160,60,0.2);
+            border-radius: 3px;
+            background: rgba(20,28,8,0.8);
+        }
+
+        .gallery-hare span {
+            font-size: 7px;
+            letter-spacing: 1px;
+            color: rgba(140,160,60,0.6);
+            text-align: center;
+            max-width: 50px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        /* ── INFO TOAST ── */
+        #hare-toast {
+            position: fixed;
+            bottom: 80px;
+            right: 20px;
+            background: rgba(10,14,6,0.95);
+            border: 1px solid rgba(140,160,60,0.3);
+            color: #c8d880;
+            font-family: 'Cinzel', serif;
+            font-size: 10px;
+            padding: 10px 14px;
+            border-radius: 3px;
+            z-index: 200;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s;
+            letter-spacing: 1px;
+        }
+
+        #hare-toast.visible { opacity: 1; }
+
+        /* Scrollbar */
+        #hare-gallery::-webkit-scrollbar { height: 3px; }
+        #hare-gallery::-webkit-scrollbar-track { background: transparent; }
+        #hare-gallery::-webkit-scrollbar-thumb { background: rgba(140,160,60,0.3); }
+    </style>
+</head>
+<body>
+
+<div id="meadow-scene">
+    <div id="meadow-sky"></div>
+
+    <!-- GaiaMason temple background -->
+    <div id="temple-container"></div>
+
+    <div id="meadow-horizon"></div>
+    <div id="meadow-ground"></div>
+
+    <!-- Hares live here -->
+    <div id="hare-field"></div>
+</div>
+
+<!-- CONTROL PANEL -->
+<div id="control-panel">
+    <h2>✦ The Meadow</h2>
+
+    <div class="ctrl-section">
+        <div class="ctrl-label">Spawn</div>
+        <div class="ctrl-row">
+            <button class="ctrl-btn" onclick="spawnRandom()">+ Random</button>
+            <button class="ctrl-btn" onclick="spawnAll()">All 11</button>
+            <button class="ctrl-btn" onclick="spawnPack()">Pack ×5</button>
+            <button class="ctrl-btn danger" onclick="clearAll()">Clear</button>
+        </div>
+    </div>
+
+    <div class="ctrl-section">
+        <div class="ctrl-label">Movement Variant</div>
+        <div class="ctrl-row" id="variant-btns">
+            <button class="ctrl-btn active" onclick="setVariant('meadow', this)">Meadow</button>
+            <button class="ctrl-btn" onclick="setVariant('nervous', this)">Nervous</button>
+            <button class="ctrl-btn" onclick="setVariant('dream', this)">Dream</button>
+            <button class="ctrl-btn" onclick="setVariant('king', this)">King</button>
+            <button class="ctrl-btn" onclick="setVariant('chaos', this)">Chaos</button>
+        </div>
+        <div id="variant-desc">Natural grazing hop. Pause, burst, pause.</div>
+    </div>
+
+    <div class="ctrl-section">
+        <div class="ctrl-label">Playback</div>
+        <div class="ctrl-row">
+            <button class="ctrl-btn" id="pause-btn" onclick="togglePause()">Pause</button>
+        </div>
+    </div>
+
+    <div id="hare-count">0 hares in the meadow</div>
+</div>
+
+<!-- HARE GALLERY -->
+<div id="hare-gallery">
+    <div class="gallery-label">Spawn ↓</div>
+    <!-- populated by JS -->
+</div>
+
+<!-- TOAST -->
+<div id="hare-toast"></div>
+
+<script src="../js/gaia-mason.js"></script>
+<script src="js/hare-builder.js"></script>
+<script>
+
+// ─── INIT GAIA MASON (meadow temple) ───
+
+const mason = new GaiaMason('temple-container');
+
+// Background stone wall — distant temple of Demeter
+mason.buildWall({
+    ...GaiaMason.mat('marble_veined'),
+    x: 260, y: 40,
+    width: 360, height: 220,
+    z: 1,
+    perspective: 0,
+    openings: [
+        { x: 60,  y: 20, width: 80, height: 160, arch: true },
+        { x: 220, y: 20, width: 80, height: 160, arch: true },
+    ],
+});
+
+// Left pillar pair
+mason.buildPillar({ ...GaiaMason.mat('marble_white'), x: 240, y: 40, width: 22, height: 200, z: 2, capital: true });
+mason.buildPillar({ ...GaiaMason.mat('marble_white'), x: 270, y: 40, width: 18, height: 200, z: 2, capital: true });
+
+// Right pillar pair
+mason.buildPillar({ ...GaiaMason.mat('marble_white'), x: 590, y: 40, width: 18, height: 200, z: 2, capital: true });
+mason.buildPillar({ ...GaiaMason.mat('marble_white'), x: 612, y: 40, width: 22, height: 200, z: 2, capital: true });
+
+// Temple steps
+mason.buildFloor({
+    ...GaiaMason.mat('marble_veined'),
+    x: 200, y: 240,
+    width: 480, height: 40,
+    z: 3,
+    perspectiveStrength: 6,
+    glyphCarving: {
+        text: '𐤃 𐤀 𐤕 𐤔 𐤐 𐤌 𐤇',
+        x: 60, y: 8,
+        size: 14,
+        color: 'rgba(180,160,80,0.12)',
+        spacing: 22,
+    },
+});
+
+// Demeter inscription
+mason.buildInscription({
+    text: 'ΔΗΜΗΤΗΡ · THE EARTH HOLDS',
+    x: 310, y: 260,
+    fontSize: 9,
+    color: 'rgba(180,200,80,0.4)',
+    z: 10,
+});
+
+// Soft golden light over temple
+mason.buildLight({ color: '#88aa44', radius: 280, x: '50%', y: '38%', pulse: true, z: 0 });
+mason.buildLight({ color: '#d4af37', radius: 120, x: '50%', y: '30%', pulse: false, z: 0 });
+
+// Ambient ash/pollen particles
+mason.spawnAmbientFall({
+    count: 20,
+    color: 'rgba(200,220,100,0.3)',
+    minSize: 1, maxSize: 3,
+    speedMin: 8, speedMax: 18,
+    z: 5,
+});
+
+// ─── INIT HARE BUILDER ───
+
+const hares = new HareBuilder('hare-field', {
+    imagePath: 'images/',
+    variant: 'meadow',
+});
+
+// ─── GALLERY ───
+
+const gallery = document.getElementById('hare-gallery');
+for (const [type, def] of Object.entries(HareBuilder.HARES)) {
+    const item = document.createElement('div');
+    item.className = 'gallery-hare';
+    item.title = def.label;
+    item.innerHTML = `
+        <img src="images/${def.file}" alt="${def.label}">
+        <span>${def.label}</span>
+    `;
+    item.addEventListener('click', () => {
+        hares.spawn({ type });
+        updateCount();
+        showToast(`${def.label} enters the meadow`);
+    });
+    gallery.appendChild(item);
+}
+
+// ─── CONTROLS ───
+
+function spawnRandom() {
+    hares.spawn({});
+    updateCount();
+}
+
+function spawnAll() {
+    hares.spawnAll({ stagger: 300 });
+    setTimeout(updateCount, 300 * 11 + 500);
+}
+
+function spawnPack() {
+    hares.spawnPack(5);
+    setTimeout(updateCount, 1800);
+}
+
+function clearAll() {
+    hares.clear();
+    updateCount();
+}
+
+let paused = false;
+function togglePause() {
+    paused = !paused;
+    const btn = document.getElementById('pause-btn');
+    if (paused) {
+        hares.pause();
+        btn.textContent = 'Resume';
+        btn.classList.add('active');
+    } else {
+        hares.resume();
+        btn.textContent = 'Pause';
+        btn.classList.remove('active');
+    }
+}
+
+function setVariant(name, btn) {
+    hares.setVariant(name);
+    // Update buttons
+    document.querySelectorAll('#variant-btns .ctrl-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    // Update description
+    const v = HareBuilder.VARIANTS[name];
+    document.getElementById('variant-desc').textContent = v ? v.description : '';
+}
+
+function updateCount() {
+    const n = hares.hares.length;
+    document.getElementById('hare-count').textContent =
+        `${n} hare${n !== 1 ? 's' : ''} in the meadow`;
+}
+
+// ─── TOAST ───
+
+let toastTimer;
+function showToast(msg) {
+    const t = document.getElementById('hare-toast');
+    t.textContent = msg;
+    t.classList.add('visible');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => t.classList.remove('visible'), 2200);
+}
+
+// ─── HARE CLICK ───
+
+document.getElementById('hare-field').addEventListener('hare-click', (e) => {
+    showToast(`${e.detail.def.label} · domain: ${e.detail.def.domain}`);
+});
+
+// ─── SPAWN A FEW TO START ───
+
+setTimeout(() => {
+    hares.spawn({ type: 'real' });
+    hares.spawn({ type: 'grass' });
+    hares.spawn({ type: 'mythic' });
+    updateCount();
+}, 600);
+
+</script>
+</body>
+</html>
