@@ -3,13 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Throne · Zeus · Digital Divination</title>
+    <title>The War Council · Throne of Zeus · Digital Divination</title>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&family=Cinzel:wght@400;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
     <style>
         :root {
             --void: #0a0806; --deep-stone: #1a1410; --stone: #2a2218;
             --gold: #c9a84c; --gold-bright: #f0d080; --gold-dim: #6b5520;
-            --lightning: #8899dd; --marble: #c8c0b0; --basalt: #1a1612;
+            --lightning: #8899dd; --marble: #c8c0b0;
+            --fire: #c05030; --earth: #5a7a30; --air: #7a68b8; --water: #3878a8;
+            --olympian: #d4a840; --chthonic: #9966cc; --hearth: #c44f1c;
         }
         * { margin:0; padding:0; box-sizing:border-box; }
         body {
@@ -20,42 +22,36 @@
             display: flex; flex-direction: column; align-items: center;
         }
 
-        /* ── VOID MOSAIC — tiled logos ── */
         #logo-mosaic {
-    position: fixed; inset: 0; z-index: 0; pointer-events: none;
-    display: grid; grid-template-columns: repeat(8, 1fr);
-    opacity: 0.25;
-    background-color: #0a0806;
-}
-#logo-mosaic img {
-    width: 100%; aspect-ratio: 1;
-    object-fit: contain; padding: 15%;
-    filter: brightness(1.2) sepia(0.4);
-    mix-blend-mode: screen;
-}
-
-        /* ── AMBIENT LIGHTNING ── */
-        #lightning-canvas {
-            position: fixed; inset: 0; z-index: 1; pointer-events: none; opacity: 0.4;
+            position: fixed; inset: 0; z-index: 0; pointer-events: none;
+            display: grid; grid-template-columns: repeat(8, 1fr);
+            opacity: 0.06;
+        }
+        #logo-mosaic img {
+            width: 100%; aspect-ratio: 1;
+            object-fit: contain; padding: 25%;
+            filter: brightness(0.7) sepia(0.4);
         }
 
-        /* ── VIGNETTE ── */
+        #lightning-canvas {
+            position: fixed; inset: 0; z-index: 1; pointer-events: none; opacity: 0.35;
+        }
+
         #vignette {
             position: fixed; inset: 0; z-index: 1; pointer-events: none;
             background: radial-gradient(ellipse at 50% 40%, transparent 30%, rgba(10,8,6,0.85) 85%);
         }
 
-        /* ── CONTENT ── */
         .content {
             position: relative; z-index: 10;
-            max-width: 700px; width: 100%; padding: 2rem 1.5rem 4rem;
-            display: flex; flex-direction: column; align-items: center; gap: 2rem;
+            max-width: 800px; width: 100%; padding: 2rem 1.5rem 4rem;
+            display: flex; flex-direction: column; align-items: center; gap: 1.5rem;
         }
 
         /* ── HEADER ── */
-        .throne-header { text-align: center; }
-        .throne-sigil {
-            font-size: 3rem; margin-bottom: 0.5rem;
+        .war-header { text-align: center; }
+        .war-sigil {
+            font-size: 3rem; margin-bottom: 0.3rem;
             animation: sigilPulse 3s ease-in-out infinite;
             filter: drop-shadow(0 0 20px rgba(200,160,60,0.4));
         }
@@ -63,198 +59,241 @@
             0%,100% { filter: drop-shadow(0 0 15px rgba(200,160,60,0.3)); }
             50% { filter: drop-shadow(0 0 35px rgba(240,208,128,0.6)); }
         }
-        .throne-title {
+        .war-title {
             font-family: 'Cinzel Decorative', serif;
-            font-size: clamp(1.8rem, 5vw, 2.8rem);
-            color: var(--gold-bright);
-            letter-spacing: 0.2em;
+            font-size: clamp(1.6rem, 4vw, 2.4rem);
+            color: var(--gold-bright); letter-spacing: 0.2em;
             text-shadow: 0 0 30px rgba(200,160,60,0.3);
         }
-        .throne-subtitle {
-            font-family: 'Cinzel', serif; font-size: 0.6rem;
+        .war-subtitle {
+            font-family: 'Cinzel', serif; font-size: 0.5rem;
             letter-spacing: 0.3em; color: var(--gold-dim);
-            text-transform: uppercase; margin-top: 0.4rem;
+            text-transform: uppercase; margin-top: 0.3rem;
         }
-
-        /* ── THRONE RELIEF ── */
-        .throne-relief {
-            position: relative; width: 100%; max-width: 500px;
-        }
-        .relief-frame {
-            width: 100%; aspect-ratio: 4/3;
-            border: 3px solid var(--deep-stone);
-            box-shadow: 0 0 40px rgba(0,0,0,0.5), 0 0 0 1px rgba(200,160,60,0.2), 0 0 80px rgba(200,160,60,0.08);
-            overflow: hidden; position: relative;
-        }
-        .relief-frame img {
-            width: 100%; height: 100%; object-fit: cover; display: block;
-            filter: sepia(0.25) brightness(0.85) contrast(1.05);
-        }
-        .relief-frame::after {
-            content: '';
-            position: absolute; inset: 0;
-            box-shadow: inset 0 0 60px rgba(0,0,0,0.5);
-            pointer-events: none;
-        }
-        .relief-inscription {
-            text-align: center; margin-top: 0.5rem;
+        .war-meta {
             font-family: 'Cinzel', serif; font-size: 0.5rem;
-            letter-spacing: 0.2em; color: rgba(200,160,60,0.3);
-            text-transform: uppercase;
+            letter-spacing: 0.15em; color: rgba(200,160,60,0.3);
+            margin-top: 0.2rem;
         }
 
-        /* ── DECREE BANNER ── */
-        .decree-banner {
-            width: 100%; text-align: center;
-            padding: 0.8rem; background: rgba(26,20,16,0.7);
-            border: 1px solid rgba(200,160,60,0.15);
-            border-radius: 2px;
-        }
-        .decree-label {
-            font-family: 'Cinzel', serif; font-size: 0.5rem;
-            letter-spacing: 0.25em; color: var(--gold-dim);
-            text-transform: uppercase; margin-bottom: 0.3rem;
-        }
-        .decree-text {
-            font-size: 0.9rem; font-style: italic; color: rgba(200,180,140,0.6);
-            line-height: 1.5;
-        }
-
-        /* ── PETITION ALTAR ── */
-        .petition-altar {
-            width: 100%; background: rgba(26,20,16,0.8);
+        /* ── WAR BANNER ── */
+        .war-banner {
+            width: 100%; display: flex; align-items: center; gap: 1rem;
+            padding: 1rem 1.5rem;
+            background: rgba(26,20,16,0.8);
             border: 1px solid rgba(200,160,60,0.2);
-            border-radius: 3px; padding: 1.5rem;
+            border-radius: 3px; flex-wrap: wrap; justify-content: center;
         }
-        .altar-heading {
-            font-family: 'Cinzel Decorative', serif; font-size: 0.8rem;
-            color: var(--gold); letter-spacing: 0.15em;
-            text-align: center; margin-bottom: 1rem;
+        .war-side {
+            display: flex; align-items: center; gap: 0.5rem;
+            font-family: 'Cinzel Decorative', serif;
         }
-        #petition-input {
-            width: 100%; min-height: 100px;
-            background: rgba(10,8,6,0.6); border: 1px solid rgba(200,160,60,0.2);
-            color: var(--marble); padding: 1rem;
-            font-family: 'Cormorant Garamond', serif; font-size: 0.95rem;
-            resize: vertical; outline: none;
-            transition: border-color 0.2s;
+        .war-side.olympian { color: var(--olympian); }
+        .war-side.chthonic { color: var(--chthonic); }
+        .war-side-icon { font-size: 1.2rem; }
+        .war-side-count { font-size: 1.8rem; font-weight: 700; }
+        .war-side-label { font-family: 'Cinzel', serif; font-size: 0.5rem; letter-spacing: 0.2em; text-transform: uppercase; }
+        .war-divider { font-family: 'Cinzel Decorative', serif; font-size: 1.2rem; color: rgba(200,160,60,0.3); }
+        .war-bar-wrap { flex: 1; min-width: 100px; height: 4px; background: rgba(0,0,0,0.4); border-radius: 2px; overflow: hidden; }
+        .war-bar { height: 100%; background: linear-gradient(90deg, var(--olympian), #aaccff); border-radius: 2px; transition: width 1s; }
+        .war-verdict {
+            width: 100%; text-align: center; font-family: 'Cinzel', serif;
+            font-size: 0.6rem; letter-spacing: 0.2em; text-transform: uppercase;
+            margin-top: 0.4rem; padding-top: 0.4rem;
+            border-top: 1px solid rgba(200,160,60,0.1);
         }
-        #petition-input:focus { border-color: var(--gold); }
-        #petition-input::placeholder { color: rgba(200,180,140,0.25); font-style: italic; }
 
-        .altar-actions {
-            display: flex; gap: 0.8rem; justify-content: center;
-            margin-top: 1rem; flex-wrap: wrap;
+        /* ── PANELS ── */
+        .panel-grid {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; width: 100%;
         }
-        .altar-btn {
-            font-family: 'Cinzel', serif; font-size: 0.6rem;
-            letter-spacing: 0.2em; text-transform: uppercase;
-            padding: 0.6rem 1.5rem; border-radius: 2px;
-            cursor: pointer; transition: all 0.2s;
+        .panel {
+            background: rgba(26,20,16,0.7);
+            border: 1px solid rgba(200,160,60,0.12);
+            border-radius: 3px; padding: 1rem; overflow: hidden;
         }
-        .btn-speak {
-            background: linear-gradient(135deg, var(--gold-dim), var(--gold));
-            border: none; color: var(--void);
+        .panel.full { grid-column: 1 / -1; }
+        .panel-heading {
+            font-family: 'Cinzel Decorative', serif; font-size: 0.65rem;
+            color: var(--gold); letter-spacing: 0.15em;
+            text-align: center; margin-bottom: 0.8rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid rgba(200,160,60,0.1);
         }
-        .btn-speak:hover { box-shadow: 0 4px 16px rgba(200,160,60,0.3); transform: translateY(-1px); }
-        .btn-silence {
-            background: transparent; border: 1px solid rgba(200,160,60,0.25);
-            color: var(--gold-dim);
+
+        /* ── COURT TABLE ── */
+        .court-row {
+            display: flex; align-items: center; gap: 0.5rem;
+            padding: 0.3rem 0; border-bottom: 1px solid rgba(200,160,60,0.05);
+            font-size: 0.8rem;
         }
-        .btn-silence:hover { border-color: var(--gold); color: var(--gold); }
+        .court-row:last-child { border-bottom: none; }
+        .court-glyph { width: 22px; text-align: center; font-size: 0.9rem; flex-shrink: 0; }
+        .court-god {
+            font-family: 'Cinzel', serif; font-size: 0.55rem;
+            letter-spacing: 0.1em; width: 70px; flex-shrink: 0;
+        }
+        .court-sign { flex: 1; }
+        .court-degree {
+            font-family: 'Cinzel', serif; font-size: 0.5rem;
+            color: rgba(200,160,60,0.4); margin-left: auto;
+        }
+        .court-arcana {
+            font-family: 'Cinzel', serif; font-size: 0.45rem;
+            color: rgba(200,160,60,0.3); margin-left: 0.3rem; white-space: nowrap;
+        }
+        .court-horizon {
+            width: 5px; height: 5px; border-radius: 50%; margin-left: 0.3rem; flex-shrink: 0;
+        }
+        .horizon-above { background: #44cc88; box-shadow: 0 0 4px #44cc88; }
+        .horizon-below { background: rgba(100,100,100,0.3); }
+
+        /* ── HOUSES ── */
+        .houses-grid {
+            display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.4rem;
+        }
+        .house-cell {
+            text-align: center; padding: 0.5rem 0.3rem;
+            border-radius: 2px; font-size: 0.7rem;
+            background: rgba(0,0,0,0.3);
+            border: 1px solid rgba(200,160,60,0.08);
+        }
+        .house-cell.occupied {
+            border-color: rgba(212,168,64,0.3);
+            background: rgba(212,168,64,0.06);
+        }
+        .house-cell.stellium {
+            border-color: var(--gold);
+            background: rgba(200,160,60,0.1);
+            box-shadow: 0 0 10px rgba(200,160,60,0.1);
+        }
+        .house-glyph { font-size: 0.9rem; }
+        .house-name {
+            font-family: 'Cinzel', serif; font-size: 0.4rem;
+            letter-spacing: 0.1em; text-transform: uppercase; margin-top: 0.1rem;
+        }
+        .house-gods {
+            font-size: 0.5rem; font-style: italic;
+            color: rgba(200,160,60,0.5); margin-top: 0.2rem;
+        }
+
+        /* ── ARES TRIAD ── */
+        .triad-card {
+            display: flex; align-items: center; gap: 0.6rem;
+            padding: 0.6rem 0; border-bottom: 1px solid rgba(200,160,60,0.06);
+        }
+        .triad-card:last-child { border-bottom: none; }
+        .triad-icon { font-size: 1.2rem; width: 28px; text-align: center; flex-shrink: 0; }
+        .triad-name {
+            font-family: 'Cinzel Decorative', serif; font-size: 0.65rem;
+            color: var(--gold); letter-spacing: 0.1em;
+        }
+        .triad-role {
+            font-size: 0.7rem; font-style: italic;
+            color: rgba(200,180,140,0.5); margin-top: 0.1rem;
+        }
 
         /* ── NAV ── */
-        .throne-nav {
+        .war-nav {
             display: flex; gap: 1.5rem; justify-content: center;
             flex-wrap: wrap; width: 100%;
         }
-        .throne-nav a {
+        .war-nav a {
             font-family: 'Cinzel', serif; font-size: 0.55rem;
             letter-spacing: 0.2em; text-transform: uppercase;
             color: var(--gold-dim); text-decoration: none;
             padding: 0.35rem 0.8rem; border: 1px solid transparent;
             transition: all 0.2s;
         }
-        .throne-nav a:hover { color: var(--gold-bright); border-bottom: 1px solid var(--gold); }
+        .war-nav a:hover { color: var(--gold-bright); border-bottom: 1px solid var(--gold); }
 
-        /* ── FOOTER ── */
-        .throne-footer {
+        .war-footer {
             text-align: center; font-family: 'Cinzel', serif;
             font-size: 0.45rem; letter-spacing: 0.2em;
-            color: rgba(200,160,60,0.2); margin-top: 1rem;
+            color: rgba(200,160,60,0.2);
         }
 
-        @keyframes lightningBolt {
-            0%{opacity:0;transform:scaleY(0)} 10%{opacity:1} 20%{opacity:0} 100%{opacity:0}
-        }
-        @keyframes thunderFlash {
-            0%{opacity:0} 30%{opacity:0.3} 100%{opacity:0}
-        }
+        @keyframes lightningBolt { 0%{opacity:0;transform:scaleY(0)} 10%{opacity:1} 20%{opacity:0} 100%{opacity:0} }
 
-        @media (max-width: 600px) {
+        @media (max-width: 700px) {
+            .panel-grid { grid-template-columns: 1fr; }
+            .houses-grid { grid-template-columns: repeat(3, 1fr); }
             .content { padding: 1.5rem 1rem 3rem; }
-            .throne-nav { gap: 0.8rem; }
         }
     </style>
 </head>
 <body>
 
-    <!-- VOID MOSAIC BACKGROUND -->
     <div id="logo-mosaic"></div>
-
-    <!-- LIGHTNING CANVAS -->
     <canvas id="lightning-canvas"></canvas>
-
-    <!-- VIGNETTE -->
     <div id="vignette"></div>
 
-    <!-- CONTENT -->
     <div class="content">
 
-        <header class="throne-header">
-            <div class="throne-sigil">⚡</div>
-            <h1 class="throne-title">THE THRONE</h1>
-            <p class="throne-subtitle">King of the Gods · Lord of Olympus · The Thunderer</p>
+        <header class="war-header">
+            <div class="war-sigil">⚡🛡️⚡</div>
+            <h1 class="war-title">THE WAR COUNCIL</h1>
+            <p class="war-subtitle">Zeus Presiding · Ares at the Right Hand · The Small Council</p>
+            <p class="war-meta" id="warMeta">Sky: loading...</p>
         </header>
 
-        <!-- THRONE RELIEF -->
-        <div class="throne-relief">
-            <div class="relief-frame">
-                <img src="images/zeus.jpg" alt="The Throne of Zeus">
-            </div>
-            <div class="relief-inscription">IV · The Emperor · Seated in Judgment</div>
+        <!-- WAR BANNER -->
+        <div class="war-banner" id="warBanner">
+            <div class="war-side olympian"><span class="war-side-icon">⚡</span><span class="war-side-count" id="olyCount">—</span><span class="war-side-label">Olympus</span></div>
+            <div class="war-bar-wrap"><div class="war-bar" id="warBar" style="width:50%;"></div></div>
+            <div class="war-side chthonic"><span class="war-side-icon">🌑</span><span class="war-side-count" id="chthCount">—</span><span class="war-side-label">Underworld</span></div>
+            <div class="war-verdict" id="warVerdict">—</div>
         </div>
 
-        <!-- DECREE BANNER -->
-        <div class="decree-banner">
-            <div class="decree-label">Last Decree</div>
-            <div class="decree-text" id="last-decree">The King watches. The scales of Olympus await your words.</div>
-        </div>
+        <div class="panel-grid">
 
-        <!-- PETITION ALTAR -->
-        <div class="petition-altar">
-            <div class="altar-heading">⚡ SPEAK TO THE THUNDERER</div>
-            <textarea id="petition-input" placeholder="Address the King... (e.g. 'Judge the progress of the GAIA field' or 'Grant strength to the new temple')"></textarea>
-            <div class="altar-actions">
-                <button class="altar-btn btn-speak" onclick="issuePetition()">Speak & Seal ⚡</button>
-                <button class="altar-btn btn-silence" onclick="clearPetition()">Silence</button>
+            <!-- CELESTIAL COURT -->
+            <div class="panel">
+                <div class="panel-heading">☀️ THE CELESTIAL COURT</div>
+                <div id="courtList"></div>
             </div>
+
+            <!-- THE HOUSES -->
+            <div class="panel">
+                <div class="panel-heading">🏛️ THE TWELVE HOUSES</div>
+                <div class="houses-grid" id="housesGrid"></div>
+            </div>
+
+            <!-- ARES TRIAD -->
+            <div class="panel">
+                <div class="panel-heading">⚔️ THE ARES TRIAD</div>
+                <div id="triadPanel"></div>
+            </div>
+
+            <!-- EMPTY HOUSES / CHTHONIC CLAIMS -->
+            <div class="panel">
+                <div class="panel-heading">🌑 CHTHONIC CLAIMS</div>
+                <div id="chthonicPanel"></div>
+            </div>
+
         </div>
 
         <!-- NAVIGATION -->
-        <nav class="throne-nav">
+        <nav class="war-nav">
             <a href="index.html">⚡ Audience</a>
             <a href="realm.html">🏔️ Olympus</a>
             <a href="council.html">🏛️ Council</a>
             <a href="../index.html">🌍 GAIA</a>
         </nav>
 
-        <div class="throne-footer">ORDER OF OLYMPUS · THE THRONE CHAMBER · THE KING PRESIDES</div>
+        <div class="war-footer">ORDER OF OLYMPUS · THE WAR COUNCIL · THE KING COMMANDS</div>
     </div>
+
+    <!-- SCRIPTS -->
+    <script src="https://cdn.jsdelivr.net/npm/astronomy-engine@2.1.8/astronomy.browser.min.js"></script>
+    <script src="../js/gaia-celestial.js"></script>
+    <script src="../js/gaia-suncalc.js"></script>
+    <script src="../js/gaia-astronomy.js"></script>
+    <script src="../js/chthonic.js"></script>
 
     <script>
     // ═══════════════════════════════════
-    // VOID MOSAIC — tiled logos
+    // VOID MOSAIC
     // ═══════════════════════════════════
 
     function buildMosaic() {
@@ -262,12 +301,11 @@
         const cells = [];
         for (let i = 0; i < 64; i++) {
             const logo = Math.random() > 0.5 ? 'images/zeus-logo.jpg' : 'images/zeus-logo-alt.jpg';
-            cells.push(`<img src="${logo}" alt="" loading="lazy">`);
+            cells.push(`<img src="${logo}" alt="" loading="lazy" onerror="this.style.opacity='0'">`);
         }
         mosaic.innerHTML = cells.join('');
     }
     buildMosaic();
-    // Rotate one random cell every 8 seconds
     setInterval(() => {
         const imgs = document.querySelectorAll('#logo-mosaic img');
         if (!imgs.length) return;
@@ -280,7 +318,7 @@
     }, 8000);
 
     // ═══════════════════════════════════
-    // LIGHTNING CANVAS
+    // LIGHTNING
     // ═══════════════════════════════════
 
     const canvas = document.getElementById('lightning-canvas');
@@ -300,10 +338,10 @@
             if (frame < flashes * 6) {
                 if (frame % 6 < 3) {
                     const sx = Math.random() * canvas.width * 0.4 + canvas.width * 0.3;
-                    ctx.strokeStyle = 'rgba(200,210,255,0.7)';
+                    ctx.strokeStyle = 'rgba(200,210,255,0.6)';
                     ctx.lineWidth = 2;
                     ctx.shadowColor = '#c8d0ff';
-                    ctx.shadowBlur = 18;
+                    ctx.shadowBlur = 16;
                     ctx.beginPath();
                     let x = sx;
                     ctx.moveTo(x, 0);
@@ -323,54 +361,186 @@
         }
         requestAnimationFrame(step);
     }
-
     function scheduleLightning() {
-        setTimeout(() => {
-            spawnBolt();
-            scheduleLightning();
-        }, 5000 + Math.random() * 15000);
+        setTimeout(() => { spawnBolt(); scheduleLightning(); }, 5000 + Math.random() * 15000);
     }
     scheduleLightning();
 
     // ═══════════════════════════════════
-    // PETITION HANDLING
+    // WAR COUNCIL LOGIC
     // ═══════════════════════════════════
 
-    const DECREES = [
-        "The King hears and binds this petition. Let it echo across Olympus.",
-        "Thunder approves. The will of the petitioner shall be tested in the field.",
-        "So it is decreed from the high throne. The matter is sealed.",
-        "A worthy address. The scales tilt in your favor. Go with the storm at your back.",
-        "I have weighed your words. The mountains themselves have taken note.",
-        "Your petition is received. The council will be informed. The throne remembers.",
-        "Bold words. The thunder answers boldness with attention. You have mine.",
-        "The King does not promise. The King decrees. Your petition is noted in the ledger of Olympus."
-    ];
+    const PLANET_ORDER = ['mercury','venus','mars','jupiter','saturn','uranus','neptune','pluto'];
+    const SIGN_GLYPHS = ['♈','♉','♊','♋','♌','♍','♎','♏','♐','♑','♒','♓'];
+    const SIGN_NAMES = ['Aries','Taurus','Gemini','Cancer','Leo','Virgo','Libra','Scorpio','Sagittarius','Capricorn','Aquarius','Pisces'];
 
-    function issuePetition() {
-        const input = document.getElementById('petition-input');
-        const text = input.value.trim();
-        if (!text) return;
+    async function loadWarCouncil() {
+        try {
+            // Get live sky
+            const planets = GaiaAstronomy.getAllPlanets(new Date(), 40.7, -74.0);
+            
+            // Get war report from Chthonic engine
+            let warReport = null;
+            if (typeof Chthonic !== 'undefined') {
+                const planetData = {};
+                Object.entries(planets).forEach(([name, pos]) => {
+                    if (pos && pos.sign) {
+                        planetData[name] = { sign: pos.sign, degree: pos.degree };
+                    }
+                });
+                warReport = Chthonic.getWarReport(planetData);
+            }
 
-        const decree = DECREES[Math.floor(Math.random() * DECREES.length)];
-        document.getElementById('last-decree').textContent = `"${text.substring(0, 80)}${text.length > 80 ? '...' : ''}" — ${decree}`;
+            renderCourt(planets);
+            renderHouses(planets);
+            renderWarBanner(warReport);
+            renderAresTriad(planets);
+            renderChthonicClaims(warReport);
 
-        spawnBolt();
+            // Meta
+            const sun = planets.sun;
+            document.getElementById('warMeta').textContent = 
+                `☀️ Sun in ${sun?.sign||'—'} ${sun?.signGlyph||''} · Live from the Throne`;
 
-        if (typeof OlympianBridge !== 'undefined') {
-            OlympianBridge.recordEvent('zeus', 'throne_petition', { petition: text });
+            // Refresh every 5 minutes
+            setTimeout(loadWarCouncil, 5 * 60 * 1000);
+
+        } catch(e) {
+            console.warn('War Council failed:', e);
+            document.getElementById('warMeta').textContent = 'Sky: engine error — retrying...';
+            setTimeout(loadWarCouncil, 30000);
+        }
+    }
+
+    function renderCourt(planets) {
+        const container = document.getElementById('courtList');
+        container.innerHTML = PLANET_ORDER.map(p => {
+            const pos = planets[p];
+            if (!pos) return '';
+            const celestial = (typeof GAIA_CELESTIAL !== 'undefined') ? GAIA_CELESTIAL[p] : null;
+            const above = pos.aboveHorizon !== false;
+            const arcanaStr = pos.arcana ? `${pos.arcana.number||''} ${pos.arcana.name||''}` : '';
+            return `<div class="court-row">
+                <div class="court-glyph">${pos.glyph||'·'}</div>
+                <div class="court-god" style="color:${celestial?.color||'var(--marble)'}">${pos.god||p}</div>
+                <div class="court-sign">${pos.signGlyph||''} ${pos.sign}</div>
+                <div class="court-degree">${pos.degree?.toFixed(1)||'—'}°</div>
+                <div class="court-arcana">${arcanaStr}</div>
+                <div class="court-horizon ${above?'horizon-above':'horizon-below'}"></div>
+            </div>`;
+        }).join('');
+    }
+
+    function renderHouses(planets) {
+        const signCount = {};
+        SIGN_NAMES.forEach(s => { signCount[s] = []; });
+        Object.entries(planets).forEach(([name, pos]) => {
+            if (pos && pos.sign && signCount[pos.sign]) {
+                signCount[pos.sign].push(pos.god || name);
+            }
+        });
+
+        const container = document.getElementById('housesGrid');
+        container.innerHTML = SIGN_NAMES.map(sign => {
+            const gods = signCount[sign];
+            const count = gods.length;
+            let cls = 'house-cell';
+            if (count >= 3) cls += ' stellium';
+            else if (count > 0) cls += ' occupied';
+            const glyph = SIGN_GLYPHS[SIGN_NAMES.indexOf(sign)];
+            return `<div class="${cls}">
+                <div class="house-glyph">${glyph}</div>
+                <div class="house-name">${sign}</div>
+                <div class="house-gods">${count > 0 ? gods.join(', ') : 'empty'}</div>
+            </div>`;
+        }).join('');
+    }
+
+    function renderWarBanner(warReport) {
+        if (!warReport) {
+            document.getElementById('olyCount').textContent = '—';
+            document.getElementById('chthCount').textContent = '—';
+            document.getElementById('warVerdict').textContent = 'War report unavailable';
+            return;
+        }
+        document.getElementById('olyCount').textContent = warReport.olympianHouses;
+        document.getElementById('chthCount').textContent = warReport.chthonicHouses;
+        const pct = Math.round((warReport.olympianHouses / 12) * 100);
+        document.getElementById('warBar').style.width = pct + '%';
+        
+        const verdicts = {
+            'Olympian': '⚡ OLYMPUS HOLDS THE SKY — The King commands, the gods advance',
+            'Chthonic': '🌑 THE UNDERWORLD RISES — The void claims what the gods abandon'
+        };
+        document.getElementById('warVerdict').textContent = 
+            verdicts[warReport.dominant] || '⚖️ THE WAR HANGS IN BALANCE';
+        document.getElementById('warVerdict').style.color = 
+            warReport.dominant === 'Olympian' ? 'var(--olympian)' : 'var(--chthonic)';
+    }
+
+    function renderAresTriad(planets) {
+        const mars = planets.mars;
+        const container = document.getElementById('triadPanel');
+        if (!mars) {
+            container.innerHTML = '<div style="text-align:center;padding:1rem;color:rgba(200,160,60,0.2);font-style:italic;">Ares is beyond the horizon. The Triad waits.</div>';
+            return;
         }
 
-        input.value = '';
+        const marsGlyph = mars.signGlyph || '';
+        container.innerHTML = `
+            <div class="triad-card">
+                <div class="triad-icon">♂</div>
+                <div>
+                    <div class="triad-name">Ares · The Hierophant (V)</div>
+                    <div class="triad-role">War god. Stationed in ${mars.sign} ${marsGlyph} at ${mars.degree?.toFixed(1)}°. The spear knows where to strike.</div>
+                </div>
+            </div>
+            <div class="triad-card">
+                <div class="triad-icon">🍇</div>
+                <div>
+                    <div class="triad-name">Dionysus as Eros · The Fool (0)</div>
+                    <div class="triad-role">Desire follows the spear. Where Ares strikes, Dionysus pours. One destroys. One transforms.</div>
+                </div>
+            </div>
+            <div class="triad-card">
+                <div class="triad-icon">🦉</div>
+                <div>
+                    <div class="triad-name">Athena as Phobos · Justice (VIII)</div>
+                    <div class="triad-role">Strategic fear. Athena rides with Ares so the war god remembers what victory costs.</div>
+                </div>
+            </div>
+        `;
     }
 
-    function clearPetition() {
-        document.getElementById('petition-input').value = '';
+    function renderChthonicClaims(warReport) {
+        const container = document.getElementById('chthonicPanel');
+        if (!warReport) {
+            container.innerHTML = '<div style="text-align:center;padding:1rem;color:rgba(200,160,60,0.2);font-style:italic;">War report unavailable</div>';
+            return;
+        }
+
+        const claims = warReport.claims.filter(c => c.chthonic);
+        if (!claims.length) {
+            container.innerHTML = '<div style="text-align:center;padding:1rem;color:rgba(200,160,60,0.3);">All houses held by Olympus. The Underworld bides its time.</div>';
+            return;
+        }
+
+        container.innerHTML = claims.map(c => `
+            <div class="triad-card">
+                <div class="triad-icon">${c.chthonic.glyph||'🌑'}</div>
+                <div>
+                    <div class="triad-name">${c.chthonic.name} · ${c.chthonic.title||''}</div>
+                    <div class="triad-role">Claims ${c.sign} ${SIGN_GLYPHS[SIGN_NAMES.indexOf(c.sign)]||''} · ${c.chthonic.river||''} · "${c.chthonic.whisper||''}"</div>
+                </div>
+            </div>
+        `).join('');
     }
 
-    document.getElementById('petition-input').addEventListener('keydown', (e) => {
-        if (e.key === 'Enter' && e.ctrlKey) issuePetition();
-    });
+    // ═══════════════════════════════════
+    // INIT
+    // ═══════════════════════════════════
+
+    loadWarCouncil();
     </script>
 </body>
 </html>
