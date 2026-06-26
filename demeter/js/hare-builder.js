@@ -145,12 +145,29 @@ class HareBuilder {
             userSelect: 'none',
         });
 
+        // Unique SVG feather filter per hare
+        const filterId = `hare-feather-${Date.now()}-${Math.floor(Math.random()*9999)}`;
+        const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        svg.style.cssText = 'position:absolute;width:0;height:0;pointer-events:none;';
+        svg.innerHTML = `
+            <defs>
+                <filter id="${filterId}" x="-20%" y="-20%" width="140%" height="140%">
+                    <feGaussianBlur in="SourceAlpha" stdDeviation="7" result="blur"/>
+                    <feComposite in="SourceGraphic" in2="blur" operator="atop"/>
+                </filter>
+            </defs>
+        `;
+        document.body.appendChild(svg);
+        el._svgFilter = svg;
+
         Object.assign(img.style, {
             width: '100%',
             height: '100%',
             objectFit: 'contain',
             transform: flip ? 'scaleX(-1)' : 'scaleX(1)',
-            filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.4))',
+            filter: `url(#${filterId}) drop-shadow(0 4px 8px rgba(0,0,0,0.4))`,
+            clipPath: 'ellipse(44% 46% at 50% 48%)',
+            WebkitClipPath: 'ellipse(44% 46% at 50% 48%)',
             borderRadius: '4px',
         });
 
@@ -302,7 +319,10 @@ class HareBuilder {
 
     clear() {
         this.pause();
-        this.hares.forEach(h => h.el.remove());
+        this.hares.forEach(h => {
+            if (h.el._svgFilter) h.el._svgFilter.remove();
+            h.el.remove();
+        });
         this.hares = [];
     }
 
@@ -310,6 +330,7 @@ class HareBuilder {
         clearTimeout(hare._timer);
         hare.el.style.opacity = '0';
         setTimeout(() => {
+            if (hare.el._svgFilter) hare.el._svgFilter.remove();
             hare.el.remove();
             this.hares = this.hares.filter(h => h !== hare);
         }, 400);
@@ -321,8 +342,10 @@ class HareBuilder {
 
     _getBounds() {
         if (this.bounds) return this.bounds;
-        const rect = this.container.getBoundingClientRect();
-        return { x: 0, y: 0, width: rect.width || 860, height: rect.height || 500 };
+        // Use offsetWidth/Height which are available after layout
+        const w = this.container.offsetWidth || window.innerWidth;
+        const h = this.container.offsetHeight || 300;
+        return { x: 20, y: 0, width: w - 40, height: h - 20 };
     }
 
     _randomType() {
