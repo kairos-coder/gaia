@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>💀 Iapetos — Mortality & Consequence</title>
+<style>
+  :root { --gold: #c9a84c; --deep: #05050f; --mist: #e8e0d0; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--deep); color: var(--mist); font-family: monospace; padding: 2rem; max-width: 800px; margin: 0 auto; font-size: 0.8rem; line-height: 1.6; }
+  h1 { color: var(--gold); font-size: 1.2rem; margin-bottom: 0.3rem; }
+  .subtitle { color: rgba(180,160,100,0.5); margin-bottom: 1.5rem; }
+  .section { margin-bottom: 1.5rem; }
+  .section-title { color: var(--gold); font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 0.5rem; }
+  pre { background: rgba(255,255,255,0.04); border: 1px solid rgba(180,160,100,0.15); padding: 0.8rem; border-radius: 4px; overflow-x: auto; white-space: pre-wrap; word-break: break-all; }
+  .burden { color: #cc8844; }
+  .hazard { color: #ff4444; }
+  .safe { color: #44cc88; }
+  .back { display: inline-block; margin-top: 1.5rem; color: rgba(201,168,76,0.5); text-decoration: none; font-size: 0.7rem; }
+  .back:hover { color: var(--gold); }
+</style>
+</head>
+<body>
+
+<h1>💀 IAPETOS</h1>
+<div class="subtitle">Mortality & Consequence · Earth · Gate: Ares · Burden-Bearer</div>
+
+<div class="section">
+  <div class="section-title">Current Signal — NASA NEO Feed</div>
+  <pre id="signal">Gathering...</pre>
+</div>
+
+<div class="section">
+  <div class="section-title">Burden Counter</div>
+  <pre id="burden">Calculating...</pre>
+</div>
+
+<div class="section">
+  <div class="section-title">Local Memory (last 3 events)</div>
+  <pre id="memory">Loading...</pre>
+</div>
+
+<div class="section">
+  <div class="section-title">Full Export</div>
+  <pre id="export">—</pre>
+</div>
+
+<a href="../../index.html" class="back">← Return to GAIA</a>
+
+<script src="identity.js"></script>
+<script src="remember.js"></script>
+<script>
+
+// ═══════════════════════════════════
+// BURDEN COUNTER
+// Persists across boots. Accumulates weight.
+// ═══════════════════════════════════
+function getBurden() {
+  try {
+    const stored = localStorage.getItem('iapetos_burden');
+    if (stored) return JSON.parse(stored);
+  } catch(e) {}
+  return { count: 0, first_boot: new Date().toISOString(), last_boot: null };
+}
+
+function incrementBurden(burden) {
+  burden.count++;
+  burden.last_boot = new Date().toISOString();
+  try {
+    localStorage.setItem('iapetos_burden', JSON.stringify(burden));
+  } catch(e) {}
+  return burden;
+}
+
+// ═══════════════════════════════════
+// WITNESS TRAIL
+// Records boot event to shared Gaia witness
+// ═══════════════════════════════════
+function recordWitness(burden) {
+  try {
+    const trail = JSON.parse(localStorage.getItem('gaia_witness') || '[]');
+    trail.push({
+      titan: 'iapetos',
+      event: 'boot',
+      burden: burden.count,
+      timestamp: new Date().toISOString()
+    });
+    if (trail.length > 100) trail.shift();
+    localStorage.setItem('gaia_witness', JSON.stringify(trail));
+  } catch(e) {}
+}
+
+// ═══════════════════════════════════
+// BOOT
+// ═══════════════════════════════════
+(async function boot() {
+  await IapetosMemory.init();
+
+  // ── BURDEN ──
+  const burden = incrementBurden(getBurden());
+  recordWitness(burden);
+  
+  document.getElementById('burden').innerHTML = 
+    `<span class="burden">Boot #${burden.count} · First boot: ${burden.first_boot} · Last: ${burden.last_boot}</span>`;
+
+  // ── FETCH NEO DATA ──
+  let signalData = null;
+  let signalText = 'No data';
+
+  try {
+    // NASA NEO Feed — closest approaches today
+    const today = new Date().toISOString().split('T')[0];
+    const resp = await fetch(
+      `https://api.nasa.gov/neo/rest/v1/feed?start_date=${today}&end_date=${today}&api_key=DEMO_KEY`
+    );
+    
+    if (resp.ok) {
+      const data = await resp.json();
+      const nearEarthObjects = data.near_earth_objects?.[today] || [];
+      
+      if (nearEarthObjects.length > 0) {
+        // Find the closest approach
+        const closest = nearEarthObjects.reduce((prev, curr) => {
+          const prevDist = parseFloat(prev.close_approach_data[0]?.miss_distance?.kilometers || Infinity);
+          const currDist = parseFloat(curr.close_approach_data[0]?.miss_distance?.kilometers || Infinity);
+          return currDist < prevDist ? curr : prev;
+        });
+        
+        const approach = closest.close_approach_data[0];
+        const missKm = parseFloat(approach?.miss_distance?.kilometers || 0);
+        const missLunar = parseFloat(approach?.miss_distance?.lunar || 0);
+        const velocityKmh = parseFloat(approach?.relative_velocity?.kilometers_per_hour || 0);
+        const isHazardous = closest.is_potentially_hazardous_asteroid;
+        const estimatedDiameter = closest.estimated_diameter?.meters?.estimated_diameter_max || null;
+        
+        signalData = {
+          name: closest.name,
+          neo_id: closest.id,
+          approach_date: today,
+          miss_distance_km: missKm,
+          miss_distance_lunar: missLunar,
+          velocity_kmh: velocityKmh,
+          estimated_diameter_m: estimatedDiameter,
+          is_potentially_hazardous: isHazardous,
+          magnitude: closest.absolute_magnitude_h,
+          total_objects_today: nearEarthObjects.length,
+          source: 'NASA NEO API'
+        };
+        
+        signalText = JSON.stringify(signalData, null, 2);
+      } else {
+        signalText = `No near-Earth objects approaching today (${today}).`;
+        signalData = { approach_date: today, total_objects_today: 0, source: 'NASA NEO API' };
+      }
+    } else {
+      signalText = 'NASA NEO API unreachable.';
+      signalData = { error: 'fetch_failed', status: resp.status };
+    }
+  } catch (e) {
+    signalText = 'NASA NEO API unreachable (network error).';
+    signalData = { error: 'fetch_failed', message: e.message };
+  }
+
+  // ── DISPLAY ──
+  if (signalData?.is_potentially_hazardous) {
+    document.getElementById('signal').innerHTML = 
+      `<span class="hazard">${signalText}</span>`;
+  } else if (signalData?.name) {
+    document.getElementById('signal').innerHTML = 
+      `<span class="safe">${signalText}</span>`;
+  } else {
+    document.getElementById('signal').textContent = signalText;
+  }
+
+  // ── DISPLAY MEMORY ──
+  const localEvents = IapetosMemory.layers.local?.events || [];
+  const recentEvents = localEvents.slice(-3).reverse();
+  document.getElementById('memory').textContent = recentEvents.length > 0
+    ? JSON.stringify(recentEvents, null, 2)
+    : 'No events recorded yet.';
+
+  // ── REMEMBER ──
+  if (signalData) {
+    try {
+      await IapetosMemory.remember({
+        tick: Date.now(),
+        charge_type: 'neo_reading',
+        coherence: signalData.is_potentially_hazardous ? 0.7 : 1,
+        signal: signalData,
+        burden: burden.count
+      });
+    } catch (e) {
+      console.warn('Iapetos could not record:', e.message);
+    }
+  }
+
+  // ── FULL EXPORT PREVIEW ──
+  document.getElementById('export').textContent = JSON.stringify({
+    titan: 'iapetos',
+    signal: signalData,
+    burden: burden.count,
+    memory_events: localEvents.length
+  }, null, 2);
+
+  // ── TITAN EXPORT (for cascade) ──
+  window.TitanExport = function () {
+    return {
+      titan: 'iapetos',
+      title: 'Mortality & Consequence',
+      reflect: (typeof IapetosIdentity !== 'undefined' && IapetosIdentity.reflect)
+        ? IapetosIdentity.reflect() : '💀 Iapetos: The Burden-Bearer. Ever-weighing.',
+      signal: signalData,
+      burden: burden.count,
+      fast: IapetosMemory.layers.fast,
+      local: IapetosMemory.layers.local,
+      exported_at: new Date().toISOString()
+    };
+  };
+
+  if (window.parent !== window) {
+    window.parent.postMessage({ type: 'titan-ready', titan: 'iapetos' }, '*');
+  }
+})();
+</script>
+
+</body>
+</html>
