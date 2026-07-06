@@ -1,0 +1,454 @@
+{
+  "generated_at": "2026-07-06T01:42:28.620Z",
+  "titans": {
+    "kronos": {
+      "titan": "kronos",
+      "title": "The Accountant",
+      "reflect": "⏳ Kronos: The Accountant. Tick 0. inevitable.",
+      "fast": {
+        "lessons": [],
+        "patterns": [],
+        "totals": {}
+      },
+      "local": {
+        "events": [],
+        "last_tick": 0,
+        "total_events": 0
+      },
+      "exported_at": "2026-07-06T01:42:29.021Z"
+    },
+    "rhea": {
+      "titan": "rhea",
+      "title": "Rhythm & Tremors",
+      "reflect": "🌊 Rhea: The Flowing One. 0 tremors felt. ever-feeling.",
+      "signal": {
+        "count_24h": 213,
+        "strongest_mag": 5.8,
+        "strongest_place": "274 km SE of Levuka, Fiji"
+      },
+      "fast": {
+        "registry": [],
+        "stats": {
+          "total_tremors": null
+        }
+      },
+      "local": {
+        "events": [],
+        "last_tick": 0,
+        "total_events": 0
+      },
+      "exported_at": "2026-07-06T01:42:30.141Z"
+    },
+    "hyperion": {
+      "titan": "hyperion",
+      "title": "Light & Illumination",
+      "reflect": "🔆 Hyperion: The Watcher Above. 0 illuminations. ever-watching.",
+      "signal": {
+        "flux": 0.000002687242840693216,
+        "class": "C2.7",
+        "observed_at": "2026-07-06T01:39:00Z"
+      },
+      "fast": {
+        "index": [
+          {
+            "tick": 1783302151281,
+            "charge_type": "solar_reading",
+            "coherence": 1,
+            "voice": "Current solar X-ray flux: class C2.7 (2.69e-6 W/m²).",
+            "signal": {
+              "flux": 0.000002687242840693216,
+              "class": "C2.7",
+              "observed_at": "2026-07-06T01:39:00Z"
+            }
+          }
+        ],
+        "stats": {
+          "total_illuminations": null
+        }
+      },
+      "local": {
+        "events": [
+          {
+            "tick": 1783302151281,
+            "charge_type": "solar_reading",
+            "coherence": 1,
+            "voice": "Current solar X-ray flux: class C2.7 (2.69e-6 W/m²).",
+            "signal": {
+              "flux": 0.000002687242840693216,
+              "class": "C2.7",
+              "observed_at": "2026-07-06T01:39:00Z"
+            }
+          }
+        ],
+        "last_tick": 1783302151281,
+        "total_events": 1
+      },
+      "exported_at": "2026-07-06T01:42:31.381Z"
+    },
+    "tethys": {
+      "titan": "tethys",
+      "title": "Nourishment & Purification",
+      "reflect": "💧 Tethys: The Nourisher. 0 nourishments. ever-giving.",
+      "signal": {
+        "precipitation_mm": 0,
+        "humidity_pct": 63,
+        "location": "Bucksport, ME"
+      },
+      "fast": {
+        "log": [],
+        "stats": {
+          "total_events": null
+        }
+      },
+      "local": {
+        "events": [],
+        "last_tick": 0,
+        "total_events": 0
+      },
+      "exported_at": "2026-07-06T01:42:40.914Z"
+    },
+    "theia": {
+      "titan": "theia",
+      "title": "Sight & Vision",
+      "reflect": "👁️ Theia: The Clear-Seeing. 0 visions. ever-beholding.",
+      "signal": {
+        "title": "Saturn's Iapetus: Painted Moon",
+        "date": "2026-07-05",
+        "media_type": "image"
+      },
+      "fast": {
+        "visions": [
+          {
+            "tick": 1783302163950,
+            "charge_type": "vision_reading",
+            "coherence": 1,
+            "voice": "Beheld today: \"Saturn's Iapetus: Painted Moon\"",
+            "signal": {
+              "title": "Saturn's Iapetus: Painted Moon",
+              "date": "2026-07-05",
+              "media_type": "image"
+            }
+          }
+        ],
+        "stats": {
+          "total_visions": null
+        }
+      },
+      "local": {
+        "events": [
+          {
+            "tick": 1783302163950,
+            "charge_type": "vision_reading",
+            "coherence": 1,
+            "voice": "Beheld today: \"Saturn's Iapetus: Painted Moon\"",
+            "signal": {
+              "title": "Saturn's Iapetus: Painted Moon",
+              "date": "2026-07-05",
+              "media_type": "image"
+            }
+          }
+        ],
+        "last_tick": 1783302163950,
+        "total_events": 1
+      },
+      "exported_at": "2026-07-06T01:42:44.005Z"
+    },
+    "phoibe": {
+      "titan": "phoibe",
+      "title": "Prophecy & Naming",
+      "reflect": "🔮 Phoibe: The Oracle. 0 prophecies. ever-foreseeing.",
+      "signal": {
+        "phase": 0.7046457816223727,
+        "phase_name": "Waning Gibbous",
+        "read_at": "2026-07-06T01:42:44.548Z"
+      },
+      "fast": {
+        "prophecies": [
+          {
+            "tick": 1783302164549,
+            "charge_type": "prophecy_reading",
+            "coherence": 1,
+            "voice": "The oracle reads the sky: Waning Gibbous (70.5% through the cycle).",
+            "signal": {
+              "phase": 0.7046457816223727,
+              "phase_name": "Waning Gibbous",
+              "read_at": "2026-07-06T01:42:44.548Z"
+            }
+          }
+        ],
+        "stats": {
+          "total_prophecies": null
+        }
+      },
+      "local": {
+        "events": [
+          {
+            "tick": 1783302164549,
+            "charge_type": "prophecy_reading",
+            "coherence": 1,
+            "voice": "The oracle reads the sky: Waning Gibbous (70.5% through the cycle).",
+            "signal": {
+              "phase": 0.7046457816223727,
+              "phase_name": "Waning Gibbous",
+              "read_at": "2026-07-06T01:42:44.548Z"
+            }
+          }
+        ],
+        "last_tick": 1783302164549,
+        "total_events": 1
+      },
+      "exported_at": "2026-07-06T01:42:44.613Z"
+    },
+    "themis": {
+      "titan": "themis",
+      "title": "Law & Binding",
+      "reflect": "⚖️ Themis: The Lawgiver. 0 bindings. ever-weighing.",
+      "signal": {
+        "present": 3,
+        "total": 9,
+        "coherence": 0.3333333333333333,
+        "rows": [
+          {
+            "name": "kronos",
+            "hasEvents": false,
+            "count": 0
+          },
+          {
+            "name": "rhea",
+            "hasEvents": false,
+            "count": 0
+          },
+          {
+            "name": "hyperion",
+            "hasEvents": true,
+            "count": 1
+          },
+          {
+            "name": "oceanus",
+            "hasEvents": false,
+            "count": 0
+          },
+          {
+            "name": "tethys",
+            "hasEvents": false,
+            "count": 0
+          },
+          {
+            "name": "theia",
+            "hasEvents": true,
+            "count": 1
+          },
+          {
+            "name": "phoibe",
+            "hasEvents": true,
+            "count": 1
+          },
+          {
+            "name": "mnemosyne",
+            "hasEvents": false,
+            "count": 0
+          },
+          {
+            "name": "koios",
+            "hasEvents": false,
+            "count": 0
+          }
+        ]
+      },
+      "fast": {
+        "laws": [
+          {
+            "tick": 1783302164885,
+            "charge_type": "coherence_weighing",
+            "coherence": 0.3333333333333333,
+            "voice": "3 of 9 Titans hold living memory. Coherence: 33%.",
+            "signal": {
+              "present": 3,
+              "total": 9,
+              "coherence": 0.3333333333333333,
+              "rows": [
+                {
+                  "name": "kronos",
+                  "hasEvents": false,
+                  "count": 0
+                },
+                {
+                  "name": "rhea",
+                  "hasEvents": false,
+                  "count": 0
+                },
+                {
+                  "name": "hyperion",
+                  "hasEvents": true,
+                  "count": 1
+                },
+                {
+                  "name": "oceanus",
+                  "hasEvents": false,
+                  "count": 0
+                },
+                {
+                  "name": "tethys",
+                  "hasEvents": false,
+                  "count": 0
+                },
+                {
+                  "name": "theia",
+                  "hasEvents": true,
+                  "count": 1
+                },
+                {
+                  "name": "phoibe",
+                  "hasEvents": true,
+                  "count": 1
+                },
+                {
+                  "name": "mnemosyne",
+                  "hasEvents": false,
+                  "count": 0
+                },
+                {
+                  "name": "koios",
+                  "hasEvents": false,
+                  "count": 0
+                }
+              ]
+            }
+          }
+        ],
+        "stats": {
+          "total_laws": null
+        }
+      },
+      "local": {
+        "events": [
+          {
+            "tick": 1783302164885,
+            "charge_type": "coherence_weighing",
+            "coherence": 0.3333333333333333,
+            "voice": "3 of 9 Titans hold living memory. Coherence: 33%.",
+            "signal": {
+              "present": 3,
+              "total": 9,
+              "coherence": 0.3333333333333333,
+              "rows": [
+                {
+                  "name": "kronos",
+                  "hasEvents": false,
+                  "count": 0
+                },
+                {
+                  "name": "rhea",
+                  "hasEvents": false,
+                  "count": 0
+                },
+                {
+                  "name": "hyperion",
+                  "hasEvents": true,
+                  "count": 1
+                },
+                {
+                  "name": "oceanus",
+                  "hasEvents": false,
+                  "count": 0
+                },
+                {
+                  "name": "tethys",
+                  "hasEvents": false,
+                  "count": 0
+                },
+                {
+                  "name": "theia",
+                  "hasEvents": true,
+                  "count": 1
+                },
+                {
+                  "name": "phoibe",
+                  "hasEvents": true,
+                  "count": 1
+                },
+                {
+                  "name": "mnemosyne",
+                  "hasEvents": false,
+                  "count": 0
+                },
+                {
+                  "name": "koios",
+                  "hasEvents": false,
+                  "count": 0
+                }
+              ]
+            }
+          }
+        ],
+        "last_tick": 1783302164885,
+        "total_events": 1
+      },
+      "exported_at": "2026-07-06T01:42:44.959Z"
+    },
+    "mnemosyne": {
+      "titan": "mnemosyne",
+      "title": "The Rememberer",
+      "reflect": "📜 Mnemosyne: The Rememberer. 0 memories. ever-recording.",
+      "fast": {
+        "narratives": [],
+        "stats": {}
+      },
+      "local": {
+        "events": [],
+        "last_tick": 0,
+        "total_events": 0
+      },
+      "exported_at": "2026-07-06T01:42:45.307Z"
+    },
+    "koios": {
+      "titan": "koios",
+      "title": "Intellect & Questioning",
+      "reflect": "⚗️ Koios: The Questioner. 0 questions. ever-questioning.",
+      "signal": {
+        "question": "Who is the leader of the Brotherhood of Nod in the Command and Conquer series?",
+        "category": "Entertainment: Video Games",
+        "difficulty": "easy",
+        "correct_answer": "Kane"
+      },
+      "fast": {
+        "questions": [
+          {
+            "tick": 1783302166384,
+            "charge_type": "question_reading",
+            "coherence": 1,
+            "voice": "Koios asks (Entertainment: Video Games, easy): \"Who is the leader of the Brotherhood of Nod in the Command and Conquer series?\"",
+            "signal": {
+              "question": "Who is the leader of the Brotherhood of Nod in the Command and Conquer series?",
+              "category": "Entertainment: Video Games",
+              "difficulty": "easy",
+              "correct_answer": "Kane"
+            }
+          }
+        ],
+        "stats": {
+          "total_questions": null
+        }
+      },
+      "local": {
+        "events": [
+          {
+            "tick": 1783302166384,
+            "charge_type": "question_reading",
+            "coherence": 1,
+            "voice": "Koios asks (Entertainment: Video Games, easy): \"Who is the leader of the Brotherhood of Nod in the Command and Conquer series?\"",
+            "signal": {
+              "question": "Who is the leader of the Brotherhood of Nod in the Command and Conquer series?",
+              "category": "Entertainment: Video Games",
+              "difficulty": "easy",
+              "correct_answer": "Kane"
+            }
+          }
+        ],
+        "last_tick": 1783302166384,
+        "total_events": 1
+      },
+      "exported_at": "2026-07-06T01:42:46.486Z"
+    }
+  }
+}
