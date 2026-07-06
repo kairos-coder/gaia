@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🌊 Rhea — Rhythm & Tremors</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=EB+Garamond:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
+<style>
+  :root { --gold: #c9a84c; --deep: #05050f; --mist: #e8e0d0; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--deep); color: var(--mist); font-family: 'EB Garamond', Georgia, serif; padding: 2rem; max-width: 700px; margin: 0 auto; }
+  h1 { font-family: 'Cinzel', serif; color: var(--gold); letter-spacing: 0.1em; font-size: 1.4rem; margin-bottom: 0.3rem; }
+  .subtitle { color: rgba(180,160,100,0.5); font-style: italic; margin-bottom: 1.5rem; }
+  #status { background: rgba(180,160,100,0.06); border-left: 3px solid var(--gold); padding: 0.8rem 1rem; margin-bottom: 1rem; font-style: italic; }
+  .section-label { font-family: 'Cinzel', serif; font-size: 0.8rem; letter-spacing: 0.15em; color: var(--gold); margin-bottom: 0.5rem; margin-top: 1rem; }
+  .signal-box { background: rgba(180,160,100,0.04); border: 1px solid rgba(180,160,100,0.15); border-radius: 4px; padding: 0.9rem; margin-bottom: 1rem; }
+  pre { background: rgba(255,255,255,0.04); border: 1px solid rgba(180,160,100,0.15); padding: 1rem; border-radius: 4px; overflow: auto; max-height: 260px; font-size: 0.75rem; color: rgba(232,224,208,0.8); }
+  .back { display: inline-block; margin-top: 1.5rem; font-family: 'Cinzel', serif; font-size: 0.65rem; letter-spacing: 0.2em; color: rgba(201,168,76,0.6); text-decoration: none; }
+  .back:hover { color: var(--gold); }
+</style>
+</head>
+<body>
+
+<h1>🌊 RHEA</h1>
+<div class="subtitle">Rhythm & Tremors · Flow / Tick Gate</div>
+
+<div id="status">Waking...</div>
+
+<div class="section-label">SIGNAL — USGS Live Tremors</div>
+<div id="signal" class="signal-box">Gathering...</div>
+
+<div class="section-label">LOCAL MEMORY</div>
+<pre id="output">Loading...</pre>
+
+<a href="../../index.html" class="back">← Return to GAIA</a>
+
+<script src="identity.js"></script>
+<script src="remember.js"></script>
+<script>
+(async function boot() {
+  await RheaMemory.init();
+
+  let signalText = 'The ground could not be read.';
+  let signalData = null;
+
+  try {
+    const resp = await fetch('https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_day.geojson');
+    const geo = await resp.json();
+    const quakes = geo.features || [];
+    const strongest = quakes.reduce((max, f) =>
+      (f.properties.mag > (max?.properties.mag ?? -Infinity) ? f : max), null);
+
+    signalData = {
+      count_24h: quakes.length,
+      strongest_mag: strongest?.properties.mag ?? null,
+      strongest_place: strongest?.properties.place ?? null
+    };
+
+    signalText = quakes.length
+      ? `${quakes.length} tremor(s) felt in the last day. Strongest: M${strongest.properties.mag} near ${strongest.properties.place}.`
+      : 'No tremors recorded in the last day. The field is still.';
+  } catch (e) {
+    signalText = 'The ground could not be read (USGS feed unreachable).';
+  }
+
+  document.getElementById('status').textContent =
+    (typeof RheaIdentity !== 'undefined' && RheaIdentity.reflect)
+      ? RheaIdentity.reflect() : '🌊 Rhea: Rhythm & Tremors. She feels what moves.';
+  document.getElementById('signal').textContent = signalText;
+  document.getElementById('output').textContent = JSON.stringify(RheaMemory.layers.local, null, 2);
+
+  if (signalData) {
+    try {
+      await RheaMemory.remember({
+        tick: Date.now(),
+        charge_type: 'tremor_reading',
+        coherence: 1,
+        voice: signalText,
+        signal: signalData
+      });
+    } catch (e) { console.warn('Rhea could not record the tremor:', e.message); }
+  }
+
+  window.TitanExport = function () {
+    return {
+      titan: 'rhea',
+      title: 'Rhythm & Tremors',
+      reflect: (typeof RheaIdentity !== 'undefined' && RheaIdentity.reflect) ? RheaIdentity.reflect() : null,
+      signal: signalData,
+      fast: RheaMemory.layers.fast,
+      local: RheaMemory.layers.local,
+      exported_at: new Date().toISOString()
+    };
+  };
+
+  if (window.parent !== window) {
+    window.parent.postMessage({ type: 'titan-ready', titan: 'rhea' }, '*');
+  }
+})();
+</script>
+
+</body>
+</html>
