@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>⚖️ Themis — Law & Binding</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=EB+Garamond:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
+<style>
+  :root { --gold: #c9a84c; --deep: #05050f; --mist: #e8e0d0; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--deep); color: var(--mist); font-family: 'EB Garamond', Georgia, serif; padding: 2rem; max-width: 700px; margin: 0 auto; }
+  h1 { font-family: 'Cinzel', serif; color: var(--gold); letter-spacing: 0.1em; font-size: 1.4rem; margin-bottom: 0.3rem; }
+  .subtitle { color: rgba(180,160,100,0.5); font-style: italic; margin-bottom: 1.5rem; }
+  #status { background: rgba(180,160,100,0.06); border-left: 3px solid var(--gold); padding: 0.8rem 1rem; margin-bottom: 1rem; font-style: italic; }
+  .section-label { font-family: 'Cinzel', serif; font-size: 0.8rem; letter-spacing: 0.15em; color: var(--gold); margin-bottom: 0.5rem; margin-top: 1rem; }
+  .signal-box { background: rgba(180,160,100,0.04); border: 1px solid rgba(180,160,100,0.15); border-radius: 4px; padding: 0.9rem; margin-bottom: 1rem; }
+  .titan-row { display: flex; justify-content: space-between; font-size: 0.8rem; padding: 0.2rem 0; border-bottom: 1px solid rgba(180,160,100,0.08); }
+  .titan-row.live { color: var(--gold); }
+  .titan-row.silent { color: rgba(180,160,100,0.3); }
+  pre { background: rgba(255,255,255,0.04); border: 1px solid rgba(180,160,100,0.15); padding: 1rem; border-radius: 4px; overflow: auto; max-height: 260px; font-size: 0.75rem; color: rgba(232,224,208,0.8); }
+  .back { display: inline-block; margin-top: 1.5rem; font-family: 'Cinzel', serif; font-size: 0.65rem; letter-spacing: 0.2em; color: rgba(201,168,76,0.6); text-decoration: none; }
+  .back:hover { color: var(--gold); }
+</style>
+</head>
+<body>
+
+<h1>⚖️ THEMIS</h1>
+<div class="subtitle">Law & Binding · Ascension Gate</div>
+
+<div id="status">Waking...</div>
+
+<div class="section-label">SIGNAL — Weighing the Pantheon</div>
+<div id="signal" class="signal-box">Weighing...</div>
+
+<div class="section-label">LOCAL MEMORY</div>
+<pre id="output">Loading...</pre>
+
+<a href="../../index.html" class="back">← Return to GAIA</a>
+
+<script src="identity.js"></script>
+<script src="remember.js"></script>
+<script>
+// Themis takes no external signal — she is the judge, not a sensor.
+// Since every Titan page shares this origin, she reads their
+// localStorage directly and weighs how much of the pantheon
+// currently holds living memory.
+const TITAN_NAMES = ['kronos', 'rhea', 'hyperion', 'oceanus', 'tethys', 'theia', 'phoibe', 'mnemosyne', 'koios'];
+
+(async function boot() {
+  await ThemisMemory.init();
+
+  const rows = TITAN_NAMES.map(name => {
+    let hasEvents = false;
+    let count = 0;
+    try {
+      const raw = localStorage.getItem(`${name}_memory`);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        count = parsed?.events?.length ?? 0;
+        hasEvents = count > 0;
+      }
+    } catch (e) { /* corrupted or absent — treat as silent */ }
+    return { name, hasEvents, count };
+  });
+
+  const present = rows.filter(r => r.hasEvents).length;
+  const total = TITAN_NAMES.length;
+  const coherence = total ? present / total : 0;
+
+  const signalData = { present, total, coherence, rows };
+  const signalText = `${present} of ${total} Titans hold living memory. Coherence: ${(coherence * 100).toFixed(0)}%.`;
+
+  const signalEl = document.getElementById('signal');
+  signalEl.innerHTML = signalText + '<div style="margin-top:0.6rem;">' +
+    rows.map(r => `<div class="titan-row ${r.hasEvents ? 'live' : 'silent'}">
+      <span>${r.name}</span><span>${r.hasEvents ? r.count + ' events' : 'silent'}</span>
+    </div>`).join('') + '</div>';
+
+  document.getElementById('status').textContent =
+    (typeof ThemisIdentity !== 'undefined' && ThemisIdentity.reflect)
+      ? ThemisIdentity.reflect() : '⚖️ Themis: Law & Binding. She weighs what remains.';
+  document.getElementById('output').textContent = JSON.stringify(ThemisMemory.layers.local, null, 2);
+
+  try {
+    await ThemisMemory.remember({
+      tick: Date.now(),
+      charge_type: 'coherence_weighing',
+      coherence,
+      voice: signalText,
+      signal: signalData
+    });
+  } catch (e) { console.warn('Themis could not record the weighing:', e.message); }
+
+  window.TitanExport = function () {
+    return {
+      titan: 'themis',
+      title: 'Law & Binding',
+      reflect: (typeof ThemisIdentity !== 'undefined' && ThemisIdentity.reflect) ? ThemisIdentity.reflect() : null,
+      signal: signalData,
+      fast: ThemisMemory.layers.fast,
+      local: ThemisMemory.layers.local,
+      exported_at: new Date().toISOString()
+    };
+  };
+
+  if (window.parent !== window) {
+    window.parent.postMessage({ type: 'titan-ready', titan: 'themis' }, '*');
+  }
+})();
+</script>
+
+</body>
+</html>
