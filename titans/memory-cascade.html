@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GAIA — Memory Cascade</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700;900&family=Cinzel:wght@400;600&family=EB+Garamond:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --gold: #c9a84c;
+    --gold-bright: #f0d080;
+    --deep: #05050f;
+    --mist: #e8e0d0;
+    --locked: #44cc88;
+    --fail: #cc4444;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: var(--deep);
+    color: var(--mist);
+    font-family: 'EB Garamond', Georgia, serif;
+    padding: 2rem;
+    max-width: 720px;
+    margin: 0 auto;
+  }
+  h1 {
+    font-family: 'Cinzel Decorative', serif;
+    color: var(--gold);
+    letter-spacing: 0.15em;
+    font-size: 1.6rem;
+    margin-bottom: 0.3rem;
+  }
+  .subtitle {
+    color: rgba(180,160,100,0.5);
+    font-style: italic;
+    margin-bottom: 2rem;
+  }
+  button {
+    font-family: 'Cinzel', serif;
+    font-size: 0.7rem;
+    letter-spacing: 0.15em;
+    background: rgba(180,160,100,0.08);
+    border: 1px solid rgba(180,160,100,0.3);
+    color: var(--gold);
+    padding: 0.7rem 1.4rem;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-right: 0.8rem;
+    margin-bottom: 1rem;
+  }
+  button:hover { background: rgba(180,160,100,0.16); border-color: var(--gold); }
+  button:disabled { opacity: 0.4; cursor: not-allowed; }
+  #log {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(180,160,100,0.15);
+    border-radius: 4px;
+    padding: 1rem;
+    min-height: 200px;
+    max-height: 400px;
+    overflow-y: auto;
+    font-size: 0.85rem;
+    line-height: 1.7;
+  }
+  .log-line { border-bottom: 1px solid rgba(180,160,100,0.06); padding: 0.2rem 0; }
+  .log-ok { color: var(--locked); }
+  .log-fail { color: var(--fail); }
+  .log-info { color: rgba(180,160,100,0.6); }
+  .back {
+    display: inline-block;
+    margin-top: 1.5rem;
+    font-family: 'Cinzel', serif;
+    font-size: 0.65rem;
+    letter-spacing: 0.2em;
+    color: rgba(201,168,76,0.6);
+    text-decoration: none;
+  }
+  .back:hover { color: var(--gold); }
+</style>
+</head>
+<body>
+
+<h1>🏛️ MEMORY CASCADE</h1>
+<div class="subtitle">Walks each Titan in turn, gathers their local memory, and prepares a single export for commit.</div>
+
+<button id="runBtn">▶ Run Cascade</button>
+<button id="downloadBtn" disabled>⬇ Download Consolidated Export</button>
+
+<div id="log"><div class="log-line log-info">Ready. Press Run Cascade.</div></div>
+
+<a href="index.html" class="back">← Return to Titans</a>
+
+<script>
+// Active Titans only — mirrors TITAN_PIPELINE status in titans/index.js.
+// iapetos and kreios are still 'planned' and have no folder contents yet.
+// Each Titan's TitanExport() now also returns a `signal` field — the live
+// domain reading (earthquake data, solar flux, wave height, etc.) gathered
+// the moment their page loaded.
+const TITANS = [
+  'kronos', 'rhea', 'hyperion', 'oceanus', 'tethys',
+  'theia', 'phoibe', 'themis', 'mnemosyne', 'koios'
+];
+
+let consolidated = null;
+
+function log(msg, cls = 'log-info') {
+  const el = document.getElementById('log');
+  const line = document.createElement('div');
+  line.className = `log-line ${cls}`;
+  line.textContent = msg;
+  el.appendChild(line);
+  el.scrollTop = el.scrollHeight;
+}
+
+function loadTitan(name, timeoutMs = 8000) {
+  return new Promise((resolve, reject) => {
+    const iframe = document.createElement('iframe');
+    iframe.style.display = 'none';
+    iframe.src = `./${name}/index.html`;
+
+    let settled = false;
+    const timer = setTimeout(() => {
+      if (settled) return;
+      settled = true;
+      cleanup();
+      reject(new Error('timed out waiting for TitanExport'));
+    }, timeoutMs);
+
+    function cleanup() {
+      clearTimeout(timer);
+      iframe.remove();
+    }
+
+    iframe.onload = () => {
+      // The Titan page's own boot() is async (awaits Memory.init()),
+      // so TitanExport may not exist the instant onload fires. Poll briefly.
+      const poll = setInterval(() => {
+        if (settled) { clearInterval(poll); return; }
+        try {
+          const win = iframe.contentWindow;
+          if (win && typeof win.TitanExport === 'function') {
+            clearInterval(poll);
+            settled = true;
+            const data = win.TitanExport();
+            cleanup();
+            resolve(data);
+          }
+        } catch (e) {
+          clearInterval(poll);
+          settled = true;
+          cleanup();
+          reject(e);
+        }
+      }, 150);
+    };
+
+    iframe.onerror = () => {
+      if (settled) return;
+      settled = true;
+      cleanup();
+      reject(new Error('failed to load index.html'));
+    };
+
+    document.body.appendChild(iframe);
+  });
+}
+
+async function runCascade() {
+  document.getElementById('runBtn').disabled = true;
+  document.getElementById('downloadBtn').disabled = true;
+  document.getElementById('log').innerHTML = '';
+
+  consolidated = { generated_at: new Date().toISOString(), titans: {} };
+
+  for (const name of TITANS) {
+    log(`→ Visiting ${name}...`);
+    try {
+      const data = await loadTitan(name);
+      consolidated.titans[name] = data;
+      const count = data?.local?.events?.length ?? 0;
+      log(`✓ ${name} — ${count} local event(s) gathered`, 'log-ok');
+    } catch (e) {
+      log(`✗ ${name} — ${e.message}`, 'log-fail');
+    }
+  }
+
+  log('Cascade complete.', 'log-info');
+  document.getElementById('runBtn').disabled = false;
+  document.getElementById('downloadBtn').disabled = false;
+}
+
+document.getElementById('runBtn').addEventListener('click', runCascade);
+
+document.getElementById('downloadBtn').addEventListener('click', () => {
+  if (!consolidated) return;
+  const blob = new Blob([JSON.stringify(consolidated, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `gaia-memory-export-${Date.now()}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+});
+</script>
+
+</body>
+</html>
