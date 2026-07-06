@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🌍 Scene · The Living World</title>
+<style>
+  :root { --overlay: rgba(5, 5, 15, 0.78); }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  
+  body {
+    font-family: 'Georgia', serif; color: #e8e0d0; min-height: 100vh;
+    background-size: cover; background-position: center; background-attachment: fixed;
+    transition: background-image 1s ease; position: relative; overflow-x: hidden;
+  }
+  body::before { content: ''; position: fixed; inset: 0; background: var(--overlay); z-index: 0; }
+  
+  .content {
+    position: relative; z-index: 1; max-width: 820px; margin: 0 auto;
+    padding: 40px 28px; min-height: 100vh; display: flex; flex-direction: column;
+  }
+  
+  .header { text-align: center; margin-bottom: 20px; }
+  .header .sigil { font-size: 44px; margin-bottom: 6px; }
+  .header h1 { font-size: 26px; letter-spacing: 0.1em; color: #c9a84c; margin-bottom: 4px; }
+  .header .date { font-size: 12px; color: rgba(200,180,140,0.5); letter-spacing: 0.08em; text-transform: uppercase; }
+  
+  .world-state {
+    display: grid; grid-template-columns: repeat(5, 1fr); gap: 2px;
+    background: rgba(200,160,80,0.1); border: 1px solid rgba(200,160,80,0.15); margin-bottom: 20px;
+  }
+  .ws-item { background: rgba(10, 8, 4, 0.7); padding: 10px 8px; text-align: center; }
+  .ws-label { font-size: 8px; color: rgba(200,160,100,0.5); letter-spacing: 0.08em; text-transform: uppercase; }
+  .ws-value { font-size: 20px; color: #c9a84c; margin: 4px 0; }
+  .ws-bar { height: 3px; background: rgba(200,160,80,0.1); border-radius: 1px; overflow: hidden; }
+  .ws-fill { height: 100%; transition: width 1s ease; }
+  .ws-fill.vitality { background: #44cc88; } .ws-fill.luminosity { background: #ffd700; }
+  .ws-fill.chaos { background: #ff4444; } .ws-fill.harmony { background: #4488ff; }
+  .ws-fill.memory { background: #cc88ff; }
+  
+  .scene-description {
+    background: rgba(10, 8, 4, 0.7); border: 1px solid rgba(200,160,80,0.2);
+    border-left: 3px solid #c9a84c; padding: 24px; margin-bottom: 24px;
+    font-size: 20px; line-height: 1.7; font-style: italic;
+    color: rgba(220,200,160,0.9); text-align: center; min-height: 60px;
+  }
+  .scene-description.loading { color: rgba(180,160,100,0.4); font-style: normal; }
+  
+  /* Character Generator */
+  .char-gen {
+    display: none; background: rgba(10, 8, 4, 0.7); border: 1px solid rgba(200,160,80,0.2);
+    border-left: 3px solid #4488ff; padding: 24px; margin-bottom: 24px; text-align: center;
+  }
+  .char-gen h3 { font-size: 12px; color: #4488ff; letter-spacing: 0.1em; margin-bottom: 16px; text-transform: uppercase; }
+  .char-gen .char-details { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-bottom: 16px; }
+  .char-gen .char-field { text-align: left; }
+  .char-gen .char-field strong { color: #c9a84c; font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; display: block; margin-bottom: 4px; }
+  .char-gen .char-field span { font-size: 16px; color: rgba(220,200,160,0.9); font-style: italic; }
+  .char-gen img { max-width: 300px; max-height: 300px; object-fit: contain; border: 1px solid rgba(200,160,80,0.1); background: rgba(0,0,0,0.5); }
+  
+  .character-section {
+    background: rgba(10, 8, 4, 0.7); border: 1px solid rgba(200,160,80,0.2);
+    border-left: 3px solid #c9a84c; padding: 20px; margin-bottom: 24px; text-align: center;
+  }
+  .character-label { font-size: 11px; color: rgba(200,160,100,0.5); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 10px; }
+  .character-stage { font-size: 10px; color: #c9a84c; letter-spacing: 0.06em; margin-bottom: 4px; }
+  .character-card img {
+    width: 100%; max-height: 360px; object-fit: contain;
+    border: 1px solid rgba(200,160,80,0.1); background: rgba(0,0,0,0.5); transition: opacity 1s ease;
+  }
+  .character-card img.loading-img { opacity: 0.4; }
+  .character-desc { font-size: 15px; font-style: italic; color: rgba(200,180,140,0.75); margin-top: 12px; min-height: 40px; line-height: 1.6; }
+  
+  .choices-section { display: none; margin-top: 16px; }
+  .choices-label { font-size: 10px; color: rgba(200,160,100,0.5); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 10px; }
+  .choices-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .choice-card {
+    background: rgba(10, 8, 4, 0.8); border: 1px solid rgba(200,160,80,0.2);
+    padding: 14px; cursor: pointer; text-align: center; transition: all 0.3s;
+  }
+  .choice-card:hover { background: rgba(40, 30, 15, 0.8); border-color: #c9a84c; }
+  .choice-emoji { font-size: 28px; margin-bottom: 6px; }
+  .choice-title { font-size: 12px; color: #c9a84c; letter-spacing: 0.06em; margin-bottom: 4px; }
+  .choice-desc { font-size: 11px; color: rgba(200,180,140,0.6); font-style: italic; line-height: 1.5; }
+  
+  .writer-input { display: none; margin-top: 16px; }
+  .writer-input textarea {
+    width: 100%; background: rgba(0,0,0,0.5); border: 1px solid rgba(200,160,80,0.3);
+    color: #e8e0d0; padding: 14px; font-family: 'Georgia', serif; font-size: 15px;
+    resize: vertical; min-height: 70px; line-height: 1.6;
+  }
+  .writer-input textarea:focus { outline: none; border-color: #c9a84c; }
+  .writer-input textarea::placeholder { color: rgba(180,160,100,0.3); font-style: italic; }
+  .writer-row { display: flex; gap: 10px; align-items: center; justify-content: center; margin-top: 10px; flex-wrap: wrap; }
+  .writer-timer { font-size: 12px; color: rgba(200,160,100,0.6); letter-spacing: 0.06em; min-width: 60px; }
+  .writer-timer.urgent { color: #ff4444; animation: pulse 1s infinite; }
+  
+  .story-export {
+    display: none; background: rgba(10, 8, 4, 0.7); border: 1px solid rgba(200,160,80,0.2);
+    border-left: 3px solid #44cc88; padding: 24px; margin-bottom: 24px; text-align: center;
+  }
+  .story-export h3 { font-size: 13px; color: #44cc88; letter-spacing: 0.1em; margin-bottom: 14px; text-transform: uppercase; }
+  .story-text {
+    background: rgba(0,0,0,0.4); border: 1px solid rgba(200,160,80,0.1); padding: 20px;
+    font-size: 15px; line-height: 1.8; color: rgba(200,180,140,0.8); text-align: left;
+    max-height: 400px; overflow-y: auto; margin-bottom: 14px;
+  }
+  .story-text .human-line { color: #44cc88; }
+  .story-text .stage-marker { color: #c9a84c; font-size: 11px; letter-spacing: 0.08em; display: block; margin-top: 16px; margin-bottom: 4px; }
+  .story-text .choice-marker { color: #4488ff; font-size: 11px; display: block; margin-bottom: 4px; }
+  
+  .elements {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px;
+  }
+  .element-card {
+    background: rgba(10, 8, 4, 0.7); border: 1px solid rgba(200,160,80,0.15); padding: 12px; text-align: center;
+  }
+  .element-card img {
+    width: 100%; aspect-ratio: 16/10; object-fit: cover;
+    border: 1px solid rgba(200,160,80,0.1); background: rgba(0,0,0,0.5);
+  }
+  .element-label { font-size: 10px; color: rgba(200,160,100,0.5); letter-spacing: 0.08em; text-transform: uppercase; margin-top: 8px; }
+  
+  .data-bar {
+    background: rgba(10, 8, 4, 0.7); border: 1px solid rgba(200,160,80,0.15); padding: 16px;
+    margin-top: auto; font-family: monospace; font-size: 10px; color: rgba(180,160,100,0.5);
+    display: none; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px;
+  }
+  .data-bar.visible { display: grid; }
+  .data-item strong { color: #c9a84c; display: block; font-size: 9px; letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 2px; }
+  
+  .btn-row { display: flex; gap: 8px; justify-content: center; margin-bottom: 20px; flex-wrap: wrap; }
+  .btn {
+    background: rgba(20, 15, 8, 0.8); border: 1px solid rgba(200,160,80,0.3);
+    color: #c9a84c; padding: 10px 20px; font-family: 'Georgia', serif;
+    font-size: 13px; cursor: pointer; letter-spacing: 0.06em; transition: all 0.3s;
+  }
+  .btn:hover { background: rgba(40, 30, 15, 0.8); border-color: #c9a84c; color: #e0c860; }
+  .btn.continue-btn { border-color: #44cc88; color: #44cc88; font-weight: bold; }
+  .btn.continue-btn:hover { background: #44cc88; color: #05050f; }
+  .btn.finish-btn { border-color: #cc88ff; color: #cc88ff; }
+  .btn.finish-btn:hover { background: #cc88ff; color: #05050f; }
+  
+  .stats-row { text-align: center; font-size: 11px; color: rgba(200,180,140,0.4); letter-spacing: 0.06em; margin-bottom: 16px; }
+  .stats-row span { color: #c9a84c; }
+  
+  @media (max-width: 500px) {
+    .world-state { grid-template-columns: repeat(3, 1fr); }
+    .choices-grid { grid-template-columns: 1fr; }
+    .scene-description { font-size: 17px; }
+  }
+</style>
+</head>
+<body id="sceneBody">
+
+<div class="content">
+  
+  <div class="header">
+    <div class="sigil">🌍</div>
+    <h1>The Living World</h1>
+    <div class="date" id="sceneDate"></div>
+  </div>
+  
+  <div class="stats-row">
+    Stories written: <span id="statsStories">0</span> · 
+    Stages journeyed: <span id="statsContributions">0</span>
+  </div>
+  
+  <div class="btn-row">
+    <button class="btn" onclick="generateScene()">⟳ New Scene</button>
+    <button class="btn" id="cascadeBtn" onclick="toggleCascade()">▶ Start Writing</button>
+    <button class="btn" onclick="toggleDataBar()">📊 Toggle Data</button>
+    <button class="btn" id="droneToggle" onclick="toggleDrone()">🎧 Ambient Tone: off</button>
+  </div>
+
+  <div class="world-state" id="worldState">
+    <div class="ws-item"><div class="ws-label">Vitality</div><div class="ws-value" id="wsVitality">—</div><div class="ws-bar"><div class="ws-fill vitality" id="wsBarVitality" style="width:0%"></div></div></div>
+    <div class="ws-item"><div class="ws-label">Luminosity</div><div class="ws-value" id="wsLuminosity">—</div><div class="ws-bar"><div class="ws-fill luminosity" id="wsBarLuminosity" style="width:0%"></div></div></div>
+    <div class="ws-item"><div class="ws-label">Chaos</div><div class="ws-value" id="wsChaos">—</div><div class="ws-bar"><div class="ws-fill chaos" id="wsBarChaos" style="width:0%"></div></div></div>
+    <div class="ws-item"><div class="ws-label">Harmony</div><div class="ws-value" id="wsHarmony">—</div><div class="ws-bar"><div class="ws-fill harmony" id="wsBarHarmony" style="width:0%"></div></div></div>
+    <div class="ws-item"><div class="ws-label">Memory</div><div class="ws-value" id="wsMemory">—</div><div class="ws-bar"><div class="ws-fill memory" id="wsBarMemory" style="width:0%"></div></div></div>
+  </div>
+  
+  <div class="scene-description loading" id="sceneDesc">The world assembles itself. One moment.</div>
+  
+  <!-- Character Generator -->
+  <div class="char-gen" id="charGen">
+    <h3>✦ Character Generated ✦</h3>
+    <div class="char-details">
+      <div class="char-field"><strong>Name</strong><span id="charName">—</span></div>
+      <div class="char-field"><strong>Setting</strong><span id="charSetting">—</span></div>
+      <div class="char-field"><strong>Object</strong><span id="charObject">—</span></div>
+    </div>
+    <img id="charPortrait" src="" alt="Character Portrait" style="display:none;">
+    <div id="charPortraitPlaceholder" style="height:150px; display:flex; align-items:center; justify-content:center; color:rgba(180,160,100,0.3); font-style:italic;">Generating portrait...</div>
+  </div>
+  
+  <!-- Story Export -->
+  <div class="story-export" id="storyExport">
+    <h3>✦ Your Story ✦</h3>
+    <div class="story-text" id="storyText"></div>
+    <div class="btn-row">
+      <button class="btn" onclick="copyStory()">📋 Copy Story</button>
+      <button class="btn" onclick="downloadStory()">⬇ Download</button>
+      <button class="btn" onclick="generateScene()">⟳ New Scene</button>
+    </div>
+  </div>
+  
+  <!-- Character Section -->
+  <div class="character-section" id="characterSection">
+    <div class="character-label">✦ <span id="characterNameLabel">The Wanderer</span> ✦</div>
+    <div class="character-stage" id="characterStage">Stage 1 · The Arrival</div>
+    <div class="character-card">
+      <img id="characterImg" src="" alt="Character" class="loading-img" style="display:none;">
+      <div id="characterPlaceholder" style="height:200px; display:flex; align-items:center; justify-content:center; color:rgba(180,160,100,0.3); font-style:italic; font-size:16px;">The wanderer has not yet arrived.</div>
+    </div>
+    <div class="character-desc" id="characterDesc"></div>
+    
+    <div class="choices-section" id="choicesSection">
+      <div class="choices-label">Where next?</div>
+      <div class="choices-grid" id="choicesGrid"></div>
+    </div>
+    
+    <div class="writer-input" id="writerInput">
+      <textarea id="writerTextarea" placeholder="What happens? Write a line of dialogue or action..."></textarea>
+      <div class="writer-row">
+        <button class="btn continue-btn" onclick="submitWriting()">▶ Continue</button>
+        <button class="btn finish-btn" onclick="finishStory()">✦ Finish Story</button>
+        <span class="writer-timer" id="writerTimer">60s</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="elements" id="elementsGrid"></div>
+  
+  <div class="data-bar" id="dataBar">
+    <div class="data-item"><strong>Background</strong><span id="dataBg">—</span></div>
+    <div class="data-item"><strong>Solar</strong><span id="dataSolar">—</span></div>
+    <div class="data-item"><strong>Moon</strong><span id="dataMoon">—</span></div>
+    <div class="data-item"><strong>Weather</strong><span id="dataWeather">—</span></div>
+    <div class="data-item"><strong>UV Index</strong><span id="dataUv">—</span></div>
+    <div class="data-item"><strong>Sun</strong><span id="dataSun">—</span></div>
+    <div class="data-item"><strong>Tide</strong><span id="dataTide">—</span></div>
+    <div class="data-item"><strong>Earthquakes</strong><span id="dataQuakes">—</span></div>
+    <div class="data-item"><strong>ISS</strong><span id="dataIss">—</span></div>
+    <div class="data-item"><strong>Quote</strong><span id="dataQuote">—</span></div>
+    <div class="data-item"><strong>Cascade</strong><span id="dataCascade">—</span></div>
+  </div>
+
+</div>
+
+<script>
+// ═══════════════════════════════════
+// CONFIG & STATE
+// ═══════════════════════════════════
+const LAT=44.5734,LON=-68.7956,NOAA_TIDE_STATION='8414684';
+const WRITE_TIME=60;
+const MEMORY_KEY='gaia_world_memory',STATS_KEY='gaia_writer_stats',GENDER_KEY='gaia_wanderer_gender';
+let lastBackgroundUrl=null,renderGuard=false;
+const pollinationsImg=p=>`https://image.pollinations.ai/prompt/${encodeURIComponent(p)}?width=800&height=500&nologo=true`;
+const picsum=s=>`https://picsum.photos/seed/${s}/800/500`;
+
+let cascadeRunning=false,countdownTimer=null,cascadeStage=0;
+let characterHistory=[],humanLines=[],choiceHistory=[],sceneData=null,worldState=null;
+let currentCountdown=0,characterData=null;
+
+// ═══════════════════════════════════
+// GENDER TRACKING
+// ═══════════════════════════════════
+function getWandererGender(){try{return localStorage.getItem(GENDER_KEY)||'she';}catch(e){return'she';}}
+function flipWandererGender(){const g=getWandererGender()==='she'?'he':'she';try{localStorage.setItem(GENDER_KEY,g);}catch(e){}return g;}
+function getPronouns(g){return{subj:g,obj:g==='she'?'her':'him',poss:g==='she'?'her':'his',refl:g==='she'?'herself':'himself'};}
+
+// ═══════════════════════════════════
+// WRITER STATS
+// ═══════════════════════════════════
+function getWriterStats(){try{return JSON.parse(localStorage.getItem(STATS_KEY))||{stories:0,contributions:0};}catch(e){return{stories:0,contributions:0};}}
+function incrementStories(){const s=getWriterStats();s.stories++;try{localStorage.setItem(STATS_KEY,JSON.stringify(s));}catch(e){}return s;}
+function incrementContributions(){const s=getWriterStats();s.contributions++;try{localStorage.setItem(STATS_KEY,JSON.stringify(s));}catch(e){}return s;}
+function updateStatsDisplay(){const s=getWriterStats();document.getElementById('statsStories').textContent=s.stories;document.getElementById('statsContributions').textContent=s.contributions;}
+
+// ═══════════════════════════════════
+// WORLD STATE ENGINE
+// ═══════════════════════════════════
+function clamp(v,lo,hi){return Math.max(lo,Math.min(hi,v));}
+function normalize(v){return Math.round(clamp(v,0,1)*100);}
+function getMemoryState(){try{const s=JSON.parse(localStorage.getItem(MEMORY_KEY));if(s)return s;}catch(e){}return{daysVisited:0,pastStates:[],lastVisit:null};}
+function updateMemoryState(ws){const m=getMemoryState();const today=new Date().toISOString().split('T')[0];if(m.lastVisit!==today){m.daysVisited++;m.lastVisit=today;m.pastStates.push({date:today,vitality:ws.vitality,luminosity:ws.luminosity,chaos:ws.chaos,harmony:ws.harmony});if(m.pastStates.length>30)m.pastStates.shift();}try{localStorage.setItem(MEMORY_KEY,JSON.stringify(m));}catch(e){}return m;}
+function calculateWorldState(solar,moon,weather,tide,quakes,iss){const isDaytime=weather?.sunrise&&weather?.sunset?new Date()>=new Date(weather.sunrise)&&new Date()<=new Date(weather.sunset):new Date().getHours()>=6&&new Date().getHours()<20;const solarRank=solar?.class?.charAt(0)==='X'?5:solar?.class?.charAt(0)==='M'?4:solar?.class?.charAt(0)==='C'?3:solar?.class?.charAt(0)==='B'?2:1;const moonIllum=moon?.phase?parseFloat(moon.phase)/100:0.5;const vitality=normalize((weather?.uv||3)/11*0.4+(weather?.temp>15?0.3:weather?.temp>5?0.2:0.1)*0.4+(moonIllum>0.5?0.2:0.1)*0.2);const luminosity=normalize(solarRank/5*0.4+moonIllum*0.3+(isDaytime?0.3:0.1));const chaos=normalize((weather?.wind||10)/60*0.3+(solarRank>=4?0.4:solarRank===3?0.2:0)*0.3+(quakes?.count24h>50?0.3:quakes?.count24h>10?0.15:0)*0.2+(tide?.state==='rising'&&(weather?.wind||0)>30?0.2:0.1)*0.2);const harmony=normalize((1-chaos/100)*0.5+((weather?.temp||15)>10&&(weather?.temp||15)<25?0.3:0.1)*0.3+(moonIllum>0.3&&moonIllum<0.7?0.2:0.1)*0.2);const memoryObj=getMemoryState();const memoryVal=normalize(Math.min(memoryObj.daysVisited/30,1)*0.5+(memoryObj.pastStates.length>0?0.5:0));return{vitality,luminosity,chaos,harmony,memory:memoryVal,memoryObj,isDaytime,solarRank,moonIllum};}
+function updateWorldDisplay(ws){document.getElementById('wsVitality').textContent=ws.vitality+'%';document.getElementById('wsLuminosity').textContent=ws.luminosity+'%';document.getElementById('wsChaos').textContent=ws.chaos+'%';document.getElementById('wsHarmony').textContent=ws.harmony+'%';document.getElementById('wsMemory').textContent=ws.memory+'%';document.getElementById('wsBarVitality').style.width=ws.vitality+'%';document.getElementById('wsBarLuminosity').style.width=ws.luminosity+'%';document.getElementById('wsBarChaos').style.width=ws.chaos+'%';document.getElementById('wsBarHarmony').style.width=ws.harmony+'%';document.getElementById('wsBarMemory').style.width=ws.memory+'%';document.getElementById('wsChaos').style.color=ws.chaos>60?'#ff4444':ws.chaos>30?'#cc8844':'#c9a84c';document.getElementById('wsVitality').style.color=ws.vitality>60?'#44cc88':ws.vitality>30?'#88aa44':'#c9a84c';}
+function worldStateToNarrative(ws){const p=[];if(ws.vitality>70)p.push('The land pulses with life.');else if(ws.vitality>40)p.push('The world breathes steadily.');else p.push('The land is thin. Survival is earned.');if(ws.luminosity>70)p.push('Light floods every corner.');else if(ws.luminosity>40)p.push('Shadows and light trade places.');else p.push('Darkness holds sway.');if(ws.chaos>70)p.push('The world churns. Storms gather.');else if(ws.chaos>40)p.push('Unrest simmers beneath.');else p.push('Stillness reigns.');if(ws.harmony>70)p.push('All things find their place.');else if(ws.harmony>40)p.push('Balance holds, barely.');else p.push('Discord threads through every alliance.');if(ws.memory>70)p.push('The past is thick here.');else if(ws.memory>30)p.push('Echoes of past days linger.');else p.push('This place is young.');return p.join(' ');}
+
+// ═══════════════════════════════════
+// DATA FETCHERS
+// ═══════════════════════════════════
+async function fetchAPOD(){const today=new Date().toISOString().split('T')[0];try{const c=JSON.parse(localStorage.getItem('apod_cache')||'null');if(c&&c.date===today&&c.url)return c;}catch(e){}try{const r=await fetch('https://api.nasa.gov/planetary/apod?api_key=DEMO_KEY');const d=await r.json();if(r.ok&&d.media_type==='image'&&d.url){const res={url:d.url,title:d.title,date:today};try{localStorage.setItem('apod_cache',JSON.stringify(res));}catch(e){}return res;}throw new Error('APOD unavailable');}catch(e){return{url:pollinationsImg(`deep space nebula, cosmic, stars, seed ${today}`),title:'Cosmic backdrop',date:today};}}
+function preloadImage(url){return new Promise(r=>{if(!url)return r(null);const i=new Image();i.onload=()=>r(url);i.onerror=()=>r(null);i.src=url;});}
+async function fetchSolarData(){try{const r=await fetch('https://services.swpc.noaa.gov/json/goes/primary/xrays-6-hour.json');const rows=await r.json();const lr=rows.filter(r=>r.energy==='0.1-0.8nm');if(lr.length>0){const l=lr[lr.length-1],f=l.flux;return{class:f<1e-7?`A${(f/1e-8).toFixed(1)}`:f<1e-6?`B${(f/1e-7).toFixed(1)}`:f<1e-5?`C${(f/1e-6).toFixed(1)}`:f<1e-4?`M${(f/1e-5).toFixed(1)}`:`X${(f/1e-4).toFixed(1)}`,flux:f?.toExponential(2),time:l.time_tag};}}catch(e){}return null;}
+async function fetchMoonPhase(){try{const n=new Date(),lp=2551443,nm=new Date(2026,4,18).getTime(),p=((n.getTime()-nm)%lp)/lp;const names=['New Moon','Waxing Crescent','First Quarter','Waxing Gibbous','Full Moon','Waning Gibbous','Last Quarter','Waning Crescent'];const idx=Math.floor(p*8)%8;return{phase:(p*100).toFixed(1),name:names[idx],emoji:['🌑','🌒','🌓','🌔','🌕','🌖','🌗','🌘'][idx]};}catch(e){}return null;}
+async function fetchWeather(){try{const r=await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${LAT}&longitude=${LON}&current=temperature_2m,wind_speed_10m,uv_index&daily=sunrise,sunset&timezone=auto`);const d=await r.json(),cur=d.current||{},daily=d.daily||{};return{temp:cur.temperature_2m,wind:cur.wind_speed_10m,uv:cur.uv_index,sunrise:daily.sunrise?.[0],sunset:daily.sunset?.[0]};}catch(e){}return null;}
+function uvLabel(uv){if(uv==null)return null;return uv<3?'low':uv<6?'moderate':uv<8?'high':uv<11?'very high':'extreme';}
+function formatClockTime(iso){return iso?new Date(iso).toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'}):null;}
+async function fetchTide(){const base=`https://api.tidesandcurrents.noaa.gov/api/prod/datagetter?product=predictions&application=hera&station=${NOAA_TIDE_STATION}&time_zone=lst_ld&units=english&interval=hilo&format=json&date=today`;for(const datum of['MLLW','STND']){try{const r=await fetch(`${base}&datum=${datum}`),d=await r.json();if(!r.ok||d.error)continue;const preds=d.predictions||[];if(!preds.length)continue;const now=new Date();let next=null;for(const p of preds){if(new Date(p.t.replace(' ','T'))>now){next=p;break;}}return{state:next?(next.type==='H'?'rising':'falling'):'unknown',nextType:next?.type==='H'?'high':'low',nextTime:next?formatClockTime(next.t.replace(' ','T')):null,nextHeight:next?parseFloat(next.v).toFixed(1):null};}catch(e){}}return null;}
+async function fetchEarthquakes(){try{const r=await fetch('https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_day.geojson'),d=await r.json();const q=d.features||[],s=q.length>0?q.reduce((a,b)=>b.properties.mag>a.properties.mag?b:a):null;return{count24h:q.length,strongest_mag:s?.properties?.mag,strongest_place:s?.properties?.place};}catch(e){}return null;}
+async function fetchISS(){try{const r=await fetch('http://api.open-notify.org/iss-now.json'),d=await r.json();return{lat:parseFloat(d.iss_position.latitude).toFixed(1),lon:parseFloat(d.iss_position.longitude).toFixed(1),overhead:Math.abs(parseFloat(d.iss_position.latitude)-LAT)<15&&Math.abs(parseFloat(d.iss_position.longitude)-LON)<15};}catch(e){}return null;}
+async function fetchQuote(){try{const r=await fetch('https://api.quotable.io/random?maxLength=80'),d=await r.json();return{content:d.content,author:d.author};}catch(e){}return null;}
+
+// ═══════════════════════════════════
+// BINAURAL AMBIENT TONE
+// ═══════════════════════════════════
+let audioCtx=null,droneOscL=null,droneOscR=null,droneGain=null,dronePlaying=false,currentBeatHz=10,currentBand='alpha';
+function ensureAudioCtx(){if(!audioCtx)audioCtx=new(window.AudioContext||window.webkitAudioContext)();return audioCtx;}
+function computeBrainwaveTarget(solar,weather,tide){const isDaytime=weather?.sunrise&&weather?.sunset?new Date()>=new Date(weather.sunrise)&&new Date()<=new Date(weather.sunset):new Date().getHours()>=6&&new Date().getHours()<20;const band=isDaytime?'alpha':'theta',[lo,hi]=band==='alpha'?[8,12]:[4,8];let solarPos=solar?.class?.startsWith('X')||solar?.class?.startsWith('M')?0.9:solar?.class?.startsWith('C')?0.6:0.2;const tideNudge=tide?.state==='rising'?0.05:tide?.state==='falling'?-0.05:0;return{band,hz:Math.round((lo+(hi-lo)*Math.min(1,Math.max(0,solarPos+tideNudge)))*10)/10};}
+function startDrone(carrierHz,beatHz){const ctx=ensureAudioCtx();droneOscL=ctx.createOscillator();droneOscR=ctx.createOscillator();const pL=ctx.createStereoPanner(),pR=ctx.createStereoPanner();pL.pan.value=-1;pR.pan.value=1;droneGain=ctx.createGain();droneGain.gain.value=0;droneOscL.type='sine';droneOscR.type='sine';droneOscL.frequency.value=carrierHz;droneOscR.frequency.value=carrierHz+beatHz;droneOscL.connect(pL).connect(droneGain);droneOscR.connect(pR).connect(droneGain);droneGain.connect(ctx.destination);droneOscL.start();droneOscR.start();droneGain.gain.linearRampToValueAtTime(0.04,ctx.currentTime+2);dronePlaying=true;}
+function stopDrone(){if(!dronePlaying||!droneGain)return;droneGain.gain.linearRampToValueAtTime(0,ensureAudioCtx().currentTime+1);setTimeout(()=>{try{droneOscL.stop();droneOscR.stop();}catch(e){}},1100);dronePlaying=false;}
+function updateDroneFrequency(carrierHz,beatHz){if(!dronePlaying||!droneOscR)return;droneOscR.frequency.linearRampToValueAtTime(carrierHz+beatHz,ensureAudioCtx().currentTime+3);}
+function toggleDrone(){const btn=document.getElementById('droneToggle');if(dronePlaying){stopDrone();btn.textContent='🎧 Ambient Tone: off';}else{startDrone(180,currentBeatHz);btn.textContent=`🎧 Ambient Tone: ${currentBand} ${currentBeatHz}Hz`;}}
+
+// ═══════════════════════════════════
+// POLLINATIONS
+// ═══════════════════════════════════
+async function pollinationsText(prompt){try{const r=await fetch('https://text.pollinations.ai/',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:[{role:'user',content:prompt}],model:'openai',temperature:0.9,max_tokens:250})});if(r.ok)return(await r.text()).trim();}catch(e){}return null;}
+
+// ═══════════════════════════════════
+// CHARACTER GENERATOR
+// ═══════════════════════════════════
+async function generateCharacter(){
+  if(!sceneData||!worldState)return null;
+  const gender=flipWandererGender();
+  const pr=getPronouns(gender);
+  const narrative=worldStateToNarrative(worldState);
+  const apod=sceneData.apod;
+  
+  const prompt=`Create a character for a fantasy story. The world: ${narrative}. The sky shows "${apod?.title||'the cosmos'}". Generate: 1. A name for this character (not "the Wanderer" — a real name). 2. A specific setting where ${pr.subj} begins ${pr.poss} journey (a location in this world). 3. A unique object that ${pr.subj} carries. 4. A brief physical description of ${pr.subj} (appearance, clothing, posture). 5. Gender: ${gender}. Format as: Name: [name] | Setting: [setting] | Object: [object] | Description: [description] | Gender: ${gender}`;
+  
+  const result=await pollinationsText(prompt);
+  if(!result)return null;
+  
+  // Parse the result
+  const name=(result.match(/Name:\s*(.+?)(?:\s*[|\n]|$)/i)||[])[1]?.trim()||'The Wanderer';
+  const setting=(result.match(/Setting:\s*(.+?)(?:\s*[|\n]|$)/i)||[])[1]?.trim()||'an unknown land';
+  const object=(result.match(/Object:\s*(.+?)(?:\s*[|\n]|$)/i)||[])[1]?.trim()||'a weathered compass';
+  const description=(result.match(/Description:\s*(.+?)(?:\s*[|\n]|$)/i)||[])[1]?.trim()||result;
+  
+  const charData={name,setting,object,description,gender};
+  
+  // Generate portrait
+  const imagePrompt=`Portrait of ${name}: ${description}. Fantasy character, digital painting, atmospheric, cinematic, no text.`;
+  const imageUrl=pollinationsImg(imagePrompt);
+  
+  // Display character generator
+  document.getElementById('charName').textContent=name;
+  document.getElementById('charSetting').textContent=setting;
+  document.getElementById('charObject').textContent=object;
+  document.getElementById('characterNameLabel').textContent=name;
+  
+  if(imageUrl){
+    const loadedUrl=await preloadImage(imageUrl);
+    if(loadedUrl){
+      document.getElementById('charPortrait').src=loadedUrl;
+      document.getElementById('charPortrait').style.display='block';
+      document.getElementById('charPortraitPlaceholder').style.display='none';
+    }
+  }
+  
+  document.getElementById('charGen').style.display='block';
+  return{...charData,imageUrl};
+}
+
+// ═══════════════════════════════════
+// CHOICE GENERATOR
+// ═══════════════════════════════════
+async function generateChoices(stage,prevDesc,humanInput,charData){
+  if(!sceneData||!worldState)return null;
+  const pr=getPronouns(charData.gender);
+  const narrative=worldStateToNarrative(worldState);
+  
+  const prompt=`${charData.name} (${pr.subj}) is on a journey. Previously: "${prevDesc}". ${humanInput?`${pr.subj} did this: "${humanInput}".`:''} ${pr.subj} carries ${charData.object}. The world state: ${narrative}. This is Stage ${stage+1}. Generate THREE distinct choices for where ${pr.subj} goes next. Each choice should be a short location name and a one-sentence description. Format: "Choice 1: [Location] — [Description]. Choice 2: [Location] — [Description]. Choice 3: [Location] — [Description]." Be specific and varied.`;
+  
+  const result=await pollinationsText(prompt);
+  if(!result)return null;
+  
+  const choices=[];
+  const lines=result.split(/\d+\.\s*|Choice\s*\d+:\s*/i).filter(l=>l.trim().length>10);
+  for(let i=0;i<Math.min(3,lines.length);i++){
+    const line=lines[i].trim();
+    const dashIdx=line.indexOf('—');
+    if(dashIdx>0){choices.push({title:line.substring(0,dashIdx).trim(),desc:line.substring(dashIdx+1).trim()});}
+    else{choices.push({title:`Path ${i+1}`,desc:line});}
+  }
+  while(choices.length<3){
+    const defaults=[['The Tower','A light burns in the highest window.'],['The Forest','An older path opens between the trees.'],['The Hearth','Smoke rises from a chimney nearby.']];
+    choices.push({title:defaults[choices.length][0],desc:defaults[choices.length][1]});
+  }
+  return choices;
+}
+
+function showChoices(choices){
+  const section=document.getElementById('choicesSection');
+  const grid=document.getElementById('choicesGrid');
+  const emojis=['🏰','🌲','🔥'];
+  grid.innerHTML=choices.map((c,i)=>`<div class="choice-card" onclick="selectChoice(${i})"><div class="choice-emoji">${emojis[i]||'🚪'}</div><div class="choice-title">${c.title}</div><div class="choice-desc">${c.desc}</div></div>`).join('');
+  section.style.display='block';
+}
+function hideChoices(){document.getElementById('choicesSection').style.display='none';}
+
+// ═══════════════════════════════════
+// WRITER INPUT
+// ═══════════════════════════════════
+function showWriterInput(){
+  const input=document.getElementById('writerInput');
+  const textarea=document.getElementById('writerTextarea');
+  input.style.display='block';textarea.value='';textarea.focus();startCountdown();
+}
+function hideWriterInput(){document.getElementById('writerInput').style.display='none';stopCountdown();}
+function startCountdown(){
+  currentCountdown=WRITE_TIME;
+  const timerEl=document.getElementById('writerTimer');
+  timerEl.textContent=currentCountdown+'s';timerEl.classList.remove('urgent');
+  if(countdownTimer)clearInterval(countdownTimer);
+  countdownTimer=setInterval(()=>{
+    currentCountdown--;timerEl.textContent=currentCountdown+'s';
+    if(currentCountdown<=15)timerEl.classList.add('urgent');
+    if(currentCountdown<=0){clearInterval(countdownTimer);countdownTimer=null;submitWriting(true);}
+  },1000);
+}
+function stopCountdown(){if(countdownTimer){clearInterval(countdownTimer);countdownTimer=null;}document.getElementById('writerTimer').classList.remove('urgent');}
+
+// ═══════════════════════════════════
+// CASCADE ENGINE (INFINITE LOOP)
+// ═══════════════════════════════════
+let currentChoices=null;
+
+async function selectChoice(index){
+  if(!currentChoices||index>=currentChoices.length)return;
+  const choice=currentChoices[index];choiceHistory.push(choice);hideChoices();showWriterInput();
+}
+
+function submitWriting(isAuto=false){
+  stopCountdown();
+  const textarea=document.getElementById('writerTextarea');
+  const humanInput=textarea.value.trim();
+  if(humanInput){humanLines.push(humanInput);incrementContributions();updateStatsDisplay();}
+  else if(isAuto){humanLines.push('[The writer watched in silence.]');}
+  hideWriterInput();
+  advanceCascade(humanInput||null);
+}
+
+function finishStory(){
+  stopCountdown();hideWriterInput();hideChoices();
+  stopCascade();showStoryExport();
+}
+
+async function generateCharacterStage(stage,humanInput=null,choice=null){
+  if(!sceneData||!worldState||!characterData)return null;
+  const pr=getPronouns(characterData.gender);
+  const narrative=worldStateToNarrative(worldState);
+  const {name,object,description:baseDesc}=characterData;
+  
+  let prompt;
+  if(stage===0){
+    prompt=`${name} (${pr.subj}) is a character in a living world. ${pr.subj} begins at ${characterData.setting}, carrying ${object}. Appearance: ${baseDesc}. The world state: ${narrative}. Describe ${pr.subj} in this moment—${pr.poss} appearance, posture, what ${pr.subj} carries, what ${pr.subj} is doing. Be vivid and specific. 2-3 sentences. Use "${pr.subj}" pronoun. Reference the object ${pr.subj} carries: ${object}.`;
+  }else{
+    const prevDesc=characterHistory[characterHistory.length-1]||baseDesc;
+    let context=`${name} (${pr.subj}) carries ${object}. `;
+    if(choice){context+=`${pr.subj} chose to go to: "${choice.title} — ${choice.desc}". `;}
+    if(humanInput){context+=`${pr.subj} did this: "${humanInput}". Incorporate this. `;}
+    prompt=`${name} (${pr.subj}) is on a journey. Previously: "${prevDesc}". ${context}The world state: ${narrative}. This is Stage ${stage+1}. Describe how ${pr.subj} has CHANGED from the previous description. What has ${pr.subj} acquired? What changed about ${pr.poss} appearance, possessions, posture, or the object ${pr.subj} carries? The core identity (name: ${name}, object: ${object}) stays the same but evolves. Be vivid. 2-3 sentences. Use "${pr.subj}" pronoun.`;
+  }
+  
+  const textDesc=await pollinationsText(prompt);
+  if(!textDesc)return null;
+  characterHistory.push(textDesc);
+  
+  const imagePrompt=`Same character as before: ${name}, ${baseDesc}. Now: ${textDesc}. Fantasy character evolution, consistent identity, digital painting, atmospheric, no text.`;
+  const imageUrl=pollinationsImg(imagePrompt);
+  return{textDesc,imageUrl};
+}
+
+async function advanceCascade(humanInput=null){
+  if(!cascadeRunning)return;
+  
+  const choice=cascadeStage>0&&choiceHistory.length>0?choiceHistory[choiceHistory.length-1]:null;
+  const result=await generateCharacterStage(cascadeStage,humanInput,choice);
+  
+  if(result){
+    const img=document.getElementById('characterImg');
+    const placeholder=document.getElementById('characterPlaceholder');
+    const loadedUrl=await preloadImage(result.imageUrl);
+    if(loadedUrl){img.src=loadedUrl;img.style.display='block';img.classList.remove('loading-img');placeholder.style.display='none';}
+    document.getElementById('characterDesc').textContent=result.textDesc;
+    document.getElementById('characterStage').textContent=`Stage ${cascadeStage+1}`;
+    document.getElementById('dataCascade').textContent=`Stage ${cascadeStage+1}`;
+  }
+  
+  cascadeStage++;
+  
+  // Generate new choices
+  const prevDesc=characterHistory[characterHistory.length-1]||characterData.description;
+  currentChoices=await generateChoices(cascadeStage,prevDesc,humanInput,characterData);
+  if(currentChoices){showChoices(currentChoices);}
+  else{showWriterInput();}
+}
+
+function showStoryExport(){
+  document.getElementById('storyExport').style.display='block';
+  document.getElementById('characterSection').style.display='none';
+  document.getElementById('charGen').style.display='none';
+  document.getElementById('dataCascade').textContent=`Complete · ${cascadeStage} stages`;
+  
+  const storyText=document.getElementById('storyText');
+  let html='';
+  if(characterData){
+    html+=`<span class="stage-marker">— ${characterData.name} —</span>\n`;
+    html+=`Setting: ${characterData.setting} · Object: ${characterData.object}\n\n`;
+  }
+  for(let i=0;i<characterHistory.length;i++){
+    html+=`<span class="stage-marker">— Stage ${i+1} —</span>\n`;
+    if(choiceHistory[i]){html+=`<span class="choice-marker">🚪 Chose: ${choiceHistory[i].title} — ${choiceHistory[i].desc}</span>\n`;}
+    html+=`${characterHistory[i]}\n`;
+    if(humanLines[i]){html+=`<span class="human-line">✏️ ${humanLines[i]}</span>\n`;}
+  }
+  storyText.innerHTML=html;
+  incrementStories();updateStatsDisplay();
+}
+
+function copyStory(){const t=document.getElementById('storyText').innerText;navigator.clipboard.writeText(t).then(()=>alert('Story copied!')).catch(()=>alert('Could not copy.'));}
+function downloadStory(){const t=document.getElementById('storyText').innerText;const b=new Blob([t],{type:'text/plain'});const u=URL.createObjectURL(b);const a=document.createElement('a');a.href=u;a.download=`living-world-${Date.now()}.txt`;a.click();URL.revokeObjectURL(u);}
+
+function toggleCascade(){cascadeRunning?stopCascade():startCascade();}
+
+async function startCascade(){
+  if(!sceneData)return;
+  cascadeRunning=true;cascadeStage=0;characterHistory=[];humanLines=[];choiceHistory=[];currentChoices=null;
+  
+  // Generate character first
+  characterData=await generateCharacter();
+  if(!characterData){alert('Could not generate character. Try again.');cascadeRunning=false;return;}
+  
+  document.getElementById('storyExport').style.display='none';
+  document.getElementById('characterSection').style.display='';
+  document.getElementById('characterImg').style.display='none';
+  document.getElementById('characterPlaceholder').style.display='flex';
+  document.getElementById('characterPlaceholder').textContent='The wanderer approaches...';
+  document.getElementById('characterDesc').textContent='';
+  hideChoices();hideWriterInput();
+  document.getElementById('cascadeBtn').textContent='⏹ Stop Writing';
+  document.getElementById('dataCascade').textContent='Generating character...';
+  advanceCascade(null);
+}
+
+function stopCascade(){
+  cascadeRunning=false;stopCountdown();hideWriterInput();hideChoices();
+  document.getElementById('cascadeBtn').textContent='▶ Start Writing';
+  document.getElementById('cascadeTimer').textContent='Stopped';
+  document.getElementById('dataCascade').textContent=`Stopped · ${cascadeStage} stages`;
+}
+
+// ═══════════════════════════════════
+// RENDER SCENE
+// ═══════════════════════════════════
+async function generateScene(){
+  if(renderGuard)return;renderGuard=true;
+  if(cascadeRunning)stopCascade();
+  
+  const desc=document.getElementById('sceneDesc');desc.classList.add('loading');desc.textContent='The world assembles itself...';
+  
+  const[apod,solar,moon,weather,tide,quakes,iss,quote]=await Promise.all([fetchAPOD(),fetchSolarData(),fetchMoonPhase(),fetchWeather(),fetchTide(),fetchEarthquakes(),fetchISS(),fetchQuote()]);
+  sceneData={apod,solar,moon,weather,tide,quakes,iss,quote};
+  worldState=calculateWorldState(solar,moon,weather,tide,quakes,iss);
+  const memory=updateMemoryState(worldState);worldState.memoryObj=memory;
+  updateWorldDisplay(worldState);updateStatsDisplay();
+  
+  if(apod?.url&&apod.url!==lastBackgroundUrl){const loadedUrl=await preloadImage(apod.url);if(loadedUrl){document.getElementById('sceneBody').style.backgroundImage=`url(${loadedUrl})`;lastBackgroundUrl=loadedUrl;}}
+  
+  const narrative=worldStateToNarrative(worldState);
+  const issOverhead=iss?.overhead?' The ISS passes silently overhead.':'';
+  let sceneText=await pollinationsText(`Describe this scene in 3-4 poetic sentences. Use vivid imagery. ${narrative}.${issOverhead} The sky shows "${apod?.title||'the cosmos'}".`);
+  if(!sceneText)sceneText=`The Witch's Foot under a ${moon?.name||'shifting'} sky. ${narrative}`;
+  desc.classList.remove('loading');desc.textContent=sceneText;
+  
+  document.getElementById('charGen').style.display='none';
+  document.getElementById('characterImg').style.display='none';
+  document.getElementById('characterPlaceholder').style.display='flex';
+  document.getElementById('characterPlaceholder').textContent='The wanderer has not yet arrived.';
+  document.getElementById('characterDesc').textContent='';
+  document.getElementById('characterStage').textContent='Stage 1 · The Arrival';
+  document.getElementById('characterNameLabel').textContent='The Wanderer';
+  document.getElementById('storyExport').style.display='none';
+  document.getElementById('characterSection').style.display='';
+  hideChoices();hideWriterInput();
+  document.getElementById('cascadeBtn').textContent='▶ Start Writing';
+  document.getElementById('dataCascade').textContent='Not started';
+  characterData=null;characterHistory=[];humanLines=[];choiceHistory=[];
+  
+  document.getElementById('elementsGrid').innerHTML=[{label:'The Tower',prompt:`Ancient stone tower. ${narrative}. Atmospheric digital painting.`},{label:'The Forest',prompt:`Dark pine forest. ${narrative}. Mist, moonlight.`},{label:'The Hearth',prompt:`Small campfire. ${narrative}. Embers rising.`}].map(el=>`<div class="element-card"><img src="${pollinationsImg(el.prompt)}" alt="${el.label}" loading="lazy" onerror="this.src='${picsum(el.label.replace(/\\s/g,''))}'"><div class="element-label">${el.label}</div></div>`).join('');
+  
+  document.getElementById('dataBg').textContent=apod?.title||'—';
+  document.getElementById('dataSolar').textContent=solar?.class||'—';
+  document.getElementById('dataMoon').textContent=moon?`${moon.emoji} ${moon.name} (${moon.phase}%)`:'—';
+  document.getElementById('dataWeather').textContent=weather?`${weather.temp}°C, wind ${weather.wind}km/h`:'—';
+  document.getElementById('dataUv').textContent=weather?.uv!=null?`${weather.uv} (${uvLabel(weather.uv)})`:'—';
+  document.getElementById('dataSun').textContent=weather?`↑${formatClockTime(weather.sunrise)||'—'} ↓${formatClockTime(weather.sunset)||'—'}`:'—';
+  document.getElementById('dataTide').textContent=tide?`${tide.state}, next ${tide.nextType} ${tide.nextTime} (${tide.nextHeight}ft)`:'—';
+  document.getElementById('dataQuakes').textContent=quakes?`${quakes.count24h} today, strongest M${quakes.strongest_mag} ${quakes.strongest_place||''}`.trim():'—';
+  document.getElementById('dataIss').textContent=iss?`${iss.lat},${iss.lon}${iss.overhead?' · OVERHEAD':''}`:'—';
+  document.getElementById('dataQuote').textContent=quote?`"${quote.content}" —${quote.author}`:'—';
+  document.getElementById('sceneDate').textContent=new Date().toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+  
+  renderGuard=false;
+}
+
+function toggleDataBar(){document.getElementById('dataBar').classList.toggle('visible');}
+generateScene();
+</script>
+
+</body>
+</html>
