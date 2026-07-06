@@ -225,26 +225,52 @@ const IMAGE_SERVICES = {
 const LAT = 44.5734;
 const LON = -68.7956;
 const NOAA_TIDE_STATION = '8414684'; // Bucksport, ME
+let lastBackgroundUrl = null;
 
 // ═══════════════════════════════════
 // DATA FETCHERS
 // ═══════════════════════════════════
 
 async function fetchAPOD() {
+  // APOD only changes once per day — cache it so "New Scene" doesn't
+  // re-download and re-decode the same image every click.
+  const today = new Date().toISOString().split('T')[0];
+  try {
+    const cached = JSON.parse(localStorage.getItem('apod_cache') || 'null');
+    if (cached && cached.date === today) return cached;
+  } catch(e) {}
+
   try {
     const resp = await fetch('https://api.nasa.gov/planetary/apod?api_key=DEMO_KEY');
     const data = await resp.json();
+    let result;
     if (data.media_type === 'image') {
-      return { url: data.url, title: data.title, date: data.date };
+      result = { url: data.url, title: data.title, date: data.date };
+    } else {
+      // Fallback: yesterday's image
+      const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
+      const fallbackResp = await fetch(`https://api.nasa.gov/planetary/apod?api_key=DEMO_KEY&date=${yesterday}`);
+      const fallback = await fallbackResp.json();
+      result = { url: fallback.url, title: fallback.title, date: fallback.date };
     }
-    // Fallback: yesterday's image
-    const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
-    const fallbackResp = await fetch(`https://api.nasa.gov/planetary/apod?api_key=DEMO_KEY&date=${yesterday}`);
-    const fallback = await fallbackResp.json();
-    return { url: fallback.url, title: fallback.title, date: fallback.date };
+    result.date = today; // cache key, not necessarily APOD's own date field
+    try { localStorage.setItem('apod_cache', JSON.stringify(result)); } catch(e) {}
+    return result;
   } catch(e) {
     return null;
   }
+}
+
+// Preload an image and resolve only once it's actually decoded —
+// avoids a flash/lag when swapping the background.
+function preloadImage(url) {
+  return new Promise((resolve) => {
+    if (!url) return resolve(null);
+    const img = new Image();
+    img.onload = () => resolve(url);
+    img.onerror = () => resolve(null);
+    img.src = url;
+  });
 }
 
 async function fetchSolarData() {
@@ -530,9 +556,14 @@ async function generateScene() {
     fetchTide()
   ]);
   
-  // Set background
-  if (apod?.url) {
-    document.getElementById('sceneBody').style.backgroundImage = `url(${apod.url})`;
+  // Set background — skip re-applying if it's the same image already showing,
+  // and preload so the swap doesn't cause a lag/flash.
+  if (apod?.url && apod.url !== lastBackgroundUrl) {
+    const loadedUrl = await preloadImage(apod.url);
+    if (loadedUrl) {
+      document.getElementById('sceneBody').style.backgroundImage = `url(${loadedUrl})`;
+      lastBackgroundUrl = loadedUrl;
+    }
   }
   
   // Build scene prompt
