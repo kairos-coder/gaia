@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🏛️ Hera · The Paper-Chaser</title>
+<style>
+  :root {
+    --stone: #0F0C0A;
+    --panel: #1A1510;
+    --panel-lit: #221C15;
+    --gold: #D4A832;
+    --gold-dim: #8A7020;
+    --ember: #9B4522;
+    --ember-lit: #D46A3A;
+    --bone: #F0E8D8;
+    --bone-dim: #9B907C;
+    --line: #2E261C;
+    --locked: #44cc88;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: var(--stone);
+    color: var(--bone);
+    font-family: 'Georgia', serif;
+    font-size: 15px;
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+  .wrap { max-width: 900px; margin: 0 auto; padding: 24px; }
+
+  /* Header */
+  .header {
+    text-align: center;
+    padding: 32px 0 24px;
+    border-bottom: 1px solid var(--line);
+    margin-bottom: 24px;
+  }
+  .sigil { font-size: 36px; color: var(--gold); margin-bottom: 8px; }
+  h1 { font-size: 24px; color: var(--gold); letter-spacing: 0.08em; margin-bottom: 4px; }
+  .subtitle { font-size: 11px; color: var(--bone-dim); letter-spacing: 0.12em; text-transform: uppercase; }
+
+  /* Status Bar */
+  .status-bar {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 2px;
+    background: var(--line);
+    border: 1px solid var(--line);
+    margin-bottom: 24px;
+  }
+  .status-card {
+    background: var(--panel);
+    padding: 14px 16px;
+    text-align: center;
+  }
+  .status-value {
+    font-size: 22px;
+    color: var(--gold);
+    font-weight: bold;
+  }
+  .status-label {
+    font-size: 9px;
+    color: var(--bone-dim);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-top: 4px;
+  }
+
+  /* Survey Queue */
+  .section-title {
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    color: var(--bone-dim);
+    text-transform: uppercase;
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--line);
+  }
+  .survey-list {
+    margin-bottom: 24px;
+  }
+  .survey-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 14px;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    margin-bottom: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .survey-row:hover { background: var(--panel-lit); border-color: var(--gold-dim); }
+  .survey-row.completed { opacity: 0.4; text-decoration: line-through; }
+  .survey-name { flex: 1; font-size: 14px; }
+  .survey-payout { color: var(--gold); font-weight: bold; margin: 0 16px; }
+  .survey-platform { font-size: 10px; color: var(--bone-dim); letter-spacing: 0.06em; }
+  .survey-status { font-size: 10px; margin-left: 12px; }
+  .survey-status.done { color: var(--locked); }
+  .survey-status.pending { color: var(--bone-dim); }
+
+  /* Actions */
+  .actions {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+  }
+  .btn {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    color: var(--bone);
+    padding: 10px 20px;
+    font-family: 'Georgia', serif;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.3s;
+    letter-spacing: 0.04em;
+  }
+  .btn:hover { background: var(--panel-lit); border-color: var(--gold-dim); color: var(--gold); }
+  .btn.primary { border-color: var(--ember-lit); color: var(--ember-lit); }
+  .btn.primary:hover { background: var(--ember-lit); color: var(--stone); }
+
+  /* Add Survey Form */
+  .add-form {
+    display: none;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    padding: 16px;
+    margin-bottom: 24px;
+  }
+  .add-form.visible { display: block; }
+  .form-row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 8px;
+    flex-wrap: wrap;
+  }
+  .form-row input, .form-row select {
+    background: var(--stone);
+    border: 1px solid var(--line);
+    color: var(--bone);
+    padding: 8px 12px;
+    font-family: 'Georgia', serif;
+    font-size: 13px;
+    flex: 1;
+    min-width: 120px;
+  }
+  .form-row input:focus, .form-row select:focus {
+    outline: none;
+    border-color: var(--gold);
+  }
+
+  /* Chronicle */
+  .chronicle {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    padding: 16px;
+    max-height: 300px;
+    overflow-y: auto;
+    margin-bottom: 24px;
+  }
+  .chronicle-entry {
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.03);
+    font-size: 12px;
+    color: var(--bone-dim);
+    display: flex;
+    justify-content: space-between;
+  }
+  .chronicle-entry .ce-platform { color: var(--gold-dim); margin-right: 12px; }
+  .chronicle-entry .ce-payout { color: var(--locked); }
+  .chronicle-empty { color: var(--bone-dim); font-style: italic; font-size: 13px; }
+
+  /* Footer */
+  .footer {
+    text-align: center;
+    padding: 20px 0;
+    border-top: 1px solid var(--line);
+    font-size: 11px;
+    color: var(--bone-dim);
+    letter-spacing: 0.06em;
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+  <!-- Header -->
+  <div class="header">
+    <div class="sigil">🏛️</div>
+    <h1>Hera · Paper-Chaser</h1>
+    <div class="subtitle">Covenant-Keeper · Survey Altar · Chronicle of Completions</div>
+  </div>
+
+  <!-- Status Bar -->
+  <div class="status-bar">
+    <div class="status-card">
+      <div class="status-value" id="stat-total">$0.00</div>
+      <div class="status-label">Total Earned</div>
+    </div>
+    <div class="status-card">
+      <div class="status-value" id="stat-today">$0.00</div>
+      <div class="status-label">Today</div>
+    </div>
+    <div class="status-card">
+      <div class="status-value" id="stat-surveys">0</div>
+      <div class="status-label">Surveys Done</div>
+    </div>
+    <div class="status-card">
+      <div class="status-value" id="stat-pace">—</div>
+      <div class="status-label">Pace / Hr</div>
+    </div>
+    <div class="status-card">
+      <div class="status-value" id="stat-session">00:00</div>
+      <div class="status-label">Session Time</div>
+    </div>
+  </div>
+
+  <!-- Survey Queue -->
+  <div class="section-title">📋 Survey Queue</div>
+  <div class="survey-list" id="surveyList">
+    <div class="chronicle-empty">No surveys in queue. Add one below or load from a platform.</div>
+  </div>
+
+  <!-- Actions -->
+  <div class="actions">
+    <button class="btn primary" onclick="toggleAddForm()">+ Add Survey</button>
+    <button class="btn" onclick="logCompletion()">✓ Log Completion</button>
+    <button class="btn" onclick="endSession()">⏹ End Session</button>
+    <button class="btn" onclick="exportLedger()">⬇ Export</button>
+    <button class="btn" onclick="clearAll()">Clear</button>
+  </div>
+
+  <!-- Add Survey Form -->
+  <div class="add-form" id="addForm">
+    <div class="form-row">
+      <input type="text" id="addName" placeholder="Survey name / ID">
+      <input type="text" id="addPayout" placeholder="Payout ($)">
+      <select id="addPlatform">
+        <option value="">Platform...</option>
+        <option value="Eureka">Eureka</option>
+        <option value="Survey Junkie">Survey Junkie</option>
+        <option value="Branded Surveys">Branded Surveys</option>
+        <option value="Prime Opinion">Prime Opinion</option>
+        <option value="Five Surveys">Five Surveys</option>
+        <option value="InboxDollars">InboxDollars</option>
+        <option value="Freecash">Freecash</option>
+        <option value="Other">Other</option>
+      </select>
+      <button class="btn primary" onclick="addSurvey()">Add</button>
+    </div>
+  </div>
+
+  <!-- Chronicle -->
+  <div class="section-title">📜 Chronicle</div>
+  <div class="chronicle" id="chronicle">
+    <div class="chronicle-empty">No completions yet. The chronicle awaits.</div>
+  </div>
+
+  <!-- Footer -->
+  <div class="footer">
+    Not a script. Not a bot. An altar. Hera amplifies. The fire holds.
+  </div>
+
+</div>
+
+<script>
+// ═══════════════════════════════════
+// HERA LEDGER
+// ═══════════════════════════════════
+
+const LEDGER_KEY = 'hera_ledger';
+const QUEUE_KEY = 'hera_queue';
+const SESSION_KEY = 'hera_session';
+
+function getLedger() {
+  try { return JSON.parse(localStorage.getItem(LEDGER_KEY)) || []; }
+  catch(e) { return []; }
+}
+
+function saveLedger(ledger) {
+  localStorage.setItem(LEDGER_KEY, JSON.stringify(ledger));
+}
+
+function getQueue() {
+  try { return JSON.parse(localStorage.getItem(QUEUE_KEY)) || []; }
+  catch(e) { return []; }
+}
+
+function saveQueue(queue) {
+  localStorage.setItem(QUEUE_KEY, JSON.stringify(queue));
+}
+
+function getSession() {
+  try { return JSON.parse(localStorage.getItem(SESSION_KEY)); }
+  catch(e) { return null; }
+}
+
+function startSession() {
+  const session = { start: new Date().toISOString(), completions: 0, earnings: 0 };
+  localStorage.setItem(SESSION_KEY, JSON.stringify(session));
+  return session;
+}
+
+function updateSession(earnings) {
+  let session = getSession();
+  if (!session) session = startSession();
+  session.completions++;
+  session.earnings += earnings;
+  localStorage.setItem(SESSION_KEY, JSON.stringify(session));
+  return session;
+}
+
+// ═══════════════════════════════════
+// RENDER
+// ═══════════════════════════════════
+
+function renderAll() {
+  renderQueue();
+  renderChronicle();
+  renderStats();
+}
+
+function renderQueue() {
+  const queue = getQueue();
+  const list = document.getElementById('surveyList');
+  
+  if (queue.length === 0) {
+    list.innerHTML = '<div class="chronicle-empty">No surveys in queue. Add one below or load from a platform.</div>';
+    return;
+  }
+  
+  // Sort by payout (highest first)
+  const sorted = [...queue].sort((a, b) => b.payout - a.payout);
+  
+  list.innerHTML = sorted.map((s, i) => `
+    <div class="survey-row ${s.completed ? 'completed' : ''}" onclick="completeSurvey(${i})">
+      <span class="survey-name">${s.name}</span>
+      <span class="survey-platform">${s.platform || ''}</span>
+      <span class="survey-payout">$${s.payout.toFixed(2)}</span>
+      <span class="survey-status ${s.completed ? 'done' : 'pending'}">${s.completed ? '✓' : '—'}</span>
+    </div>
+  `).join('');
+}
+
+function renderChronicle() {
+  const ledger = getLedger();
+  const chronicle = document.getElementById('chronicle');
+  
+  if (ledger.length === 0) {
+    chronicle.innerHTML = '<div class="chronicle-empty">No completions yet. The chronicle awaits.</div>';
+    return;
+  }
+  
+  // Most recent first
+  const recent = [...ledger].reverse().slice(0, 50);
+  
+  chronicle.innerHTML = recent.map(entry => `
+    <div class="chronicle-entry">
+      <span>
+        <span class="ce-platform">[${entry.platform || '?'}]</span>
+        ${entry.name}
+      </span>
+      <span>
+        ${new Date(entry.timestamp).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})} · 
+        <span class="ce-payout">$${entry.payout.toFixed(2)}</span>
+        ${entry.timeSpent ? ` · ${entry.timeSpent}min` : ''}
+      </span>
+    </div>
+  `).join('');
+}
+
+function renderStats() {
+  const ledger = getLedger();
+  const session = getSession();
+  
+  // Total earned
+  const total = ledger.reduce((sum, e) => sum + e.payout, 0);
+  document.getElementById('stat-total').textContent = `$${total.toFixed(2)}`;
+  
+  // Today
+  const today = new Date().toDateString();
+  const todayEntries = ledger.filter(e => new Date(e.timestamp).toDateString() === today);
+  const todayTotal = todayEntries.reduce((sum, e) => sum + e.payout, 0);
+  document.getElementById('stat-today').textContent = `$${todayTotal.toFixed(2)}`;
+  
+  // Surveys done
+  document.getElementById('stat-surveys').textContent = ledger.length;
+  
+  // Pace
+  if (session && session.start) {
+    const hours = (Date.now() - new Date(session.start).getTime()) / 3600000;
+    if (hours > 0.1 && session.earnings > 0) {
+      document.getElementById('stat-pace').textContent = `$${(session.earnings / hours).toFixed(2)}`;
+    }
+  }
+  
+  // Session time
+  if (session && session.start) {
+    const mins = Math.floor((Date.now() - new Date(session.start).getTime()) / 60000);
+    const h = Math.floor(mins / 60);
+    const m = mins % 60;
+    document.getElementById('stat-session').textContent = 
+      `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
+  }
+}
+
+// ═══════════════════════════════════
+// ACTIONS
+// ═══════════════════════════════════
+
+function toggleAddForm() {
+  document.getElementById('addForm').classList.toggle('visible');
+}
+
+function addSurvey() {
+  const name = document.getElementById('addName').value.trim();
+  const payout = parseFloat(document.getElementById('addPayout').value);
+  const platform = document.getElementById('addPlatform').value;
+  
+  if (!name || isNaN(payout)) return;
+  
+  const queue = getQueue();
+  queue.push({ name, payout, platform, completed: false, added: new Date().toISOString() });
+  saveQueue(queue);
+  
+  document.getElementById('addName').value = '';
+  document.getElementById('addPayout').value = '';
+  renderAll();
+}
+
+function completeSurvey(index) {
+  const queue = getQueue();
+  if (index >= queue.length) return;
+  
+  const survey = queue[index];
+  if (survey.completed) return; // Already done
+  
+  // Mark complete
+  survey.completed = true;
+  survey.completedAt = new Date().toISOString();
+  saveQueue(queue);
+  
+  // Log to ledger
+  const ledger = getLedger();
+  ledger.push({
+    name: survey.name,
+    platform: survey.platform,
+    payout: survey.payout,
+    timestamp: new Date().toISOString()
+  });
+  saveLedger(ledger);
+  
+  // Update session
+  updateSession(survey.payout);
+  
+  // Remove from queue (completed items)
+  const filtered = queue.filter(s => !s.completed);
+  saveQueue(filtered);
+  
+  renderAll();
+}
+
+function logCompletion() {
+  // Quick log without a queue entry
+  const name = prompt('Survey name / ID:');
+  if (!name) return;
+  const payout = parseFloat(prompt('Payout ($):'));
+  if (isNaN(payout)) return;
+  const platform = prompt('Platform (Eureka, Survey Junkie, etc.):') || '';
+  
+  const ledger = getLedger();
+  ledger.push({
+    name,
+    platform,
+    payout,
+    timestamp: new Date().toISOString()
+  });
+  saveLedger(ledger);
+  updateSession(payout);
+  renderAll();
+}
+
+function endSession() {
+  if (confirm('End current session? This resets the timer.')) {
+    localStorage.removeItem(SESSION_KEY);
+    startSession();
+    renderAll();
+  }
+}
+
+function exportLedger() {
+  const ledger = getLedger();
+  const session = getSession();
+  const queue = getQueue();
+  
+  const exportData = {
+    exported_at: new Date().toISOString(),
+    session,
+    total_earned: ledger.reduce((sum, e) => sum + e.payout, 0),
+    total_surveys: ledger.length,
+    queue_remaining: queue.filter(s => !s.completed).length,
+    ledger
+  };
+  
+  const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `hera-export-${Date.now()}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function clearAll() {
+  if (confirm('Clear ALL data? Ledger, queue, and session will be wiped.')) {
+    localStorage.removeItem(LEDGER_KEY);
+    localStorage.removeItem(QUEUE_KEY);
+    localStorage.removeItem(SESSION_KEY);
+    startSession();
+    renderAll();
+  }
+}
+
+// ═══════════════════════════════════
+// INIT
+// ═══════════════════════════════════
+function init() {
+  if (!getSession()) startSession();
+  renderAll();
+  
+  // Update stats every 10 seconds
+  setInterval(renderStats, 10000);
+}
+
+init();
+</script>
+
+</body>
+</html>
