@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🔮 Phoibe — Prophecy & Naming</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=EB+Garamond:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
+<style>
+  :root { --gold: #c9a84c; --deep: #05050f; --mist: #e8e0d0; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--deep); color: var(--mist); font-family: 'EB Garamond', Georgia, serif; padding: 2rem; max-width: 700px; margin: 0 auto; }
+  h1 { font-family: 'Cinzel', serif; color: var(--gold); letter-spacing: 0.1em; font-size: 1.4rem; margin-bottom: 0.3rem; }
+  .subtitle { color: rgba(180,160,100,0.5); font-style: italic; margin-bottom: 1.5rem; }
+  #status { background: rgba(180,160,100,0.06); border-left: 3px solid var(--gold); padding: 0.8rem 1rem; margin-bottom: 1rem; font-style: italic; }
+  .section-label { font-family: 'Cinzel', serif; font-size: 0.8rem; letter-spacing: 0.15em; color: var(--gold); margin-bottom: 0.5rem; margin-top: 1rem; }
+  .signal-box { background: rgba(180,160,100,0.04); border: 1px solid rgba(180,160,100,0.15); border-radius: 4px; padding: 0.9rem; margin-bottom: 1rem; }
+  pre { background: rgba(255,255,255,0.04); border: 1px solid rgba(180,160,100,0.15); padding: 1rem; border-radius: 4px; overflow: auto; max-height: 260px; font-size: 0.75rem; color: rgba(232,224,208,0.8); }
+  .back { display: inline-block; margin-top: 1.5rem; font-family: 'Cinzel', serif; font-size: 0.65rem; letter-spacing: 0.2em; color: rgba(201,168,76,0.6); text-decoration: none; }
+  .back:hover { color: var(--gold); }
+</style>
+</head>
+<body>
+
+<h1>🔮 PHOIBE</h1>
+<div class="subtitle">Prophecy & Naming · The Oracle</div>
+
+<div id="status">Waking...</div>
+
+<div class="section-label">SIGNAL — The Lunar Oracle</div>
+<div id="signal" class="signal-box">Gathering...</div>
+
+<div class="section-label">LOCAL MEMORY</div>
+<pre id="output">Loading...</pre>
+
+<a href="../../index.html" class="back">← Return to GAIA</a>
+
+<script src="identity.js"></script>
+<script src="remember.js"></script>
+<script>
+// Self-contained lunar phase calculation — no external fetch.
+// Phoibe is an oracle, not a sensor; she reads the sky herself.
+function moonPhase(date) {
+  const synodicMonth = 2551443; // seconds
+  const knownNewMoon = Date.UTC(2000, 0, 6, 18, 14) / 1000;
+  let phase = ((date.getTime() / 1000) - knownNewMoon) % synodicMonth;
+  if (phase < 0) phase += synodicMonth;
+  return phase / synodicMonth; // 0 = new, 0.5 = full
+}
+
+const PHASE_NAMES = [
+  'New Moon', 'Waxing Crescent', 'First Quarter', 'Waxing Gibbous',
+  'Full Moon', 'Waning Gibbous', 'Last Quarter', 'Waning Crescent'
+];
+
+(async function boot() {
+  await PhoibeMemory.init();
+
+  const phase = moonPhase(new Date());
+  const idx = Math.floor(phase * 8) % 8;
+  const phaseName = PHASE_NAMES[idx];
+
+  const signalData = { phase, phase_name: phaseName, read_at: new Date().toISOString() };
+  const signalText = `The oracle reads the sky: ${phaseName} (${(phase * 100).toFixed(1)}% through the cycle).`;
+
+  document.getElementById('status').textContent =
+    (typeof PhoibeIdentity !== 'undefined' && PhoibeIdentity.reflect)
+      ? PhoibeIdentity.reflect() : '🔮 Phoibe: Prophecy & Naming. She future-casts.';
+  document.getElementById('signal').textContent = signalText;
+  document.getElementById('output').textContent = JSON.stringify(PhoibeMemory.layers.local, null, 2);
+
+  try {
+    await PhoibeMemory.remember({
+      tick: Date.now(),
+      charge_type: 'prophecy_reading',
+      coherence: 1,
+      voice: signalText,
+      signal: signalData
+    });
+  } catch (e) { console.warn('Phoibe could not record the prophecy:', e.message); }
+
+  window.TitanExport = function () {
+    return {
+      titan: 'phoibe',
+      title: 'Prophecy & Naming',
+      reflect: (typeof PhoibeIdentity !== 'undefined' && PhoibeIdentity.reflect) ? PhoibeIdentity.reflect() : null,
+      signal: signalData,
+      fast: PhoibeMemory.layers.fast,
+      local: PhoibeMemory.layers.local,
+      exported_at: new Date().toISOString()
+    };
+  };
+
+  if (window.parent !== window) {
+    window.parent.postMessage({ type: 'titan-ready', titan: 'phoibe' }, '*');
+  }
+})();
+</script>
+
+</body>
+</html>
