@@ -996,7 +996,7 @@ function loadTitanSignal(name, timeoutMs = 8000) {
     return new Promise((resolve, reject) => {
         const iframe = document.createElement('iframe');
         iframe.style.display = 'none';
-        iframe.src = `./${name}/index.html`;
+        iframe.src = `./titans/${name}/index.html`;
         
         let settled = false;
         const timer = setTimeout(() => {
