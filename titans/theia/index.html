@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>👁️ Theia — Sight & Vision</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=EB+Garamond:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
+<style>
+  :root { --gold: #c9a84c; --deep: #05050f; --mist: #e8e0d0; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--deep); color: var(--mist); font-family: 'EB Garamond', Georgia, serif; padding: 2rem; max-width: 700px; margin: 0 auto; }
+  h1 { font-family: 'Cinzel', serif; color: var(--gold); letter-spacing: 0.1em; font-size: 1.4rem; margin-bottom: 0.3rem; }
+  .subtitle { color: rgba(180,160,100,0.5); font-style: italic; margin-bottom: 1.5rem; }
+  #status { background: rgba(180,160,100,0.06); border-left: 3px solid var(--gold); padding: 0.8rem 1rem; margin-bottom: 1rem; font-style: italic; }
+  .section-label { font-family: 'Cinzel', serif; font-size: 0.8rem; letter-spacing: 0.15em; color: var(--gold); margin-bottom: 0.5rem; margin-top: 1rem; }
+  .signal-box { background: rgba(180,160,100,0.04); border: 1px solid rgba(180,160,100,0.15); border-radius: 4px; padding: 0.9rem; margin-bottom: 1rem; }
+  .signal-box img { max-width: 100%; border-radius: 4px; margin-top: 0.6rem; display: block; }
+  pre { background: rgba(255,255,255,0.04); border: 1px solid rgba(180,160,100,0.15); padding: 1rem; border-radius: 4px; overflow: auto; max-height: 260px; font-size: 0.75rem; color: rgba(232,224,208,0.8); }
+  .back { display: inline-block; margin-top: 1.5rem; font-family: 'Cinzel', serif; font-size: 0.65rem; letter-spacing: 0.2em; color: rgba(201,168,76,0.6); text-decoration: none; }
+  .back:hover { color: var(--gold); }
+</style>
+</head>
+<body>
+
+<h1>👁️ THEIA</h1>
+<div class="subtitle">Sight & Vision · Visual Truth</div>
+
+<div id="status">Waking...</div>
+
+<div class="section-label">SIGNAL — What Was Beheld Today</div>
+<div id="signal" class="signal-box">Gathering...</div>
+
+<div class="section-label">LOCAL MEMORY</div>
+<pre id="output">Loading...</pre>
+
+<a href="../../index.html" class="back">← Return to GAIA</a>
+
+<script src="identity.js"></script>
+<script src="remember.js"></script>
+<script>
+(async function boot() {
+  await TheiaMemory.init();
+
+  let signalText = 'The sky could not be beheld.';
+  let signalData = null;
+  let imageHtml = '';
+
+  try {
+    // DEMO_KEY is rate-limited (30/hr, 50/day). Swap in a free personal
+    // key from api.nasa.gov if this page gets heavier traffic.
+    const resp = await fetch('https://api.nasa.gov/planetary/apod?api_key=DEMO_KEY');
+    const data = await resp.json();
+
+    signalData = { title: data?.title ?? null, date: data?.date ?? null, media_type: data?.media_type ?? null };
+    signalText = data?.title ? `Beheld today: "${data.title}"` : 'The sky offers nothing today.';
+
+    if (data?.media_type === 'image' && data?.url) {
+      imageHtml = `<img src="${data.url}" alt="${data.title}">`;
+    }
+  } catch (e) {
+    signalText = 'The sky could not be beheld (NASA APOD feed unreachable).';
+  }
+
+  document.getElementById('status').textContent =
+    (typeof TheiaIdentity !== 'undefined' && TheiaIdentity.reflect)
+      ? TheiaIdentity.reflect() : '👁️ Theia: Sight & Vision. She records what was beheld.';
+  document.getElementById('signal').innerHTML = signalText + imageHtml;
+  document.getElementById('output').textContent = JSON.stringify(TheiaMemory.layers.local, null, 2);
+
+  if (signalData) {
+    try {
+      await TheiaMemory.remember({
+        tick: Date.now(),
+        charge_type: 'vision_reading',
+        coherence: 1,
+        voice: signalText,
+        signal: signalData
+      });
+    } catch (e) { console.warn('Theia could not record the vision:', e.message); }
+  }
+
+  window.TitanExport = function () {
+    return {
+      titan: 'theia',
+      title: 'Sight & Vision',
+      reflect: (typeof TheiaIdentity !== 'undefined' && TheiaIdentity.reflect) ? TheiaIdentity.reflect() : null,
+      signal: signalData,
+      fast: TheiaMemory.layers.fast,
+      local: TheiaMemory.layers.local,
+      exported_at: new Date().toISOString()
+    };
+  };
+
+  if (window.parent !== window) {
+    window.parent.postMessage({ type: 'titan-ready', titan: 'theia' }, '*');
+  }
+})();
+</script>
+
+</body>
+</html>
