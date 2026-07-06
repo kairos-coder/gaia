@@ -2,7 +2,773 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0"><!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🌍 Scene · The Living World</title>
+<style>
+  :root { --overlay: rgba(5, 5, 15, 0.75); }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  
+  body {
+    font-family: 'Georgia', serif;
+    color: #e8e0d0;
+    min-height: 100vh;
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    transition: background-image 1s ease;
+    position: relative;
+    overflow-x: hidden;
+  }
+  body::before { content: ''; position: fixed; inset: 0; background: var(--overlay); z-index: 0; }
+  
+  .content {
+    position: relative; z-index: 1; max-width: 800px; margin: 0 auto;
+    padding: 40px 24px; min-height: 100vh; display: flex; flex-direction: column;
+  }
+  
+  .header { text-align: center; margin-bottom: 24px; }
+  .header .sigil { font-size: 40px; margin-bottom: 8px; }
+  .header h1 { font-size: 22px; letter-spacing: 0.1em; color: #c9a84c; margin-bottom: 4px; }
+  .header .date { font-size: 11px; color: rgba(200,180,140,0.5); letter-spacing: 0.08em; text-transform: uppercase; }
+  
+  /* World State Bar */
+  .world-state {
+    display: grid; grid-template-columns: repeat(5, 1fr); gap: 2px;
+    background: rgba(200,160,80,0.1); border: 1px solid rgba(200,160,80,0.15); margin-bottom: 20px;
+  }
+  .ws-item { background: rgba(10, 8, 4, 0.7); padding: 10px 8px; text-align: center; }
+  .ws-label { font-size: 8px; color: rgba(200,160,100,0.5); letter-spacing: 0.08em; text-transform: uppercase; }
+  .ws-value { font-size: 20px; color: #c9a84c; margin: 4px 0; }
+  .ws-bar { height: 3px; background: rgba(200,160,80,0.1); border-radius: 1px; overflow: hidden; }
+  .ws-fill { height: 100%; transition: width 1s ease; }
+  .ws-fill.vitality { background: #44cc88; }
+  .ws-fill.luminosity { background: #ffd700; }
+  .ws-fill.chaos { background: #ff4444; }
+  .ws-fill.harmony { background: #4488ff; }
+  .ws-fill.memory { background: #cc88ff; }
+  
+  .scene-description {
+    background: rgba(10, 8, 4, 0.7); border: 1px solid rgba(200,160,80,0.2);
+    border-left: 3px solid #c9a84c; padding: 24px; margin-bottom: 24px;
+    font-size: 17px; line-height: 1.7; font-style: italic;
+    color: rgba(220,200,160,0.9); text-align: center; min-height: 60px;
+  }
+  .scene-description.loading { color: rgba(180,160,100,0.4); font-style: normal; }
+  
+  /* Character Section */
+  .character-section {
+    background: rgba(10, 8, 4, 0.7); border: 1px solid rgba(200,160,80,0.2);
+    border-left: 3px solid #c9a84c; padding: 20px; margin-bottom: 24px; text-align: center;
+  }
+  .character-label { font-size: 10px; color: rgba(200,160,100,0.5); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 12px; }
+  .character-stage { font-size: 9px; color: #c9a84c; letter-spacing: 0.06em; margin-bottom: 4px; }
+  .character-card img {
+    width: 100%; max-height: 350px; object-fit: contain;
+    border: 1px solid rgba(200,160,80,0.1); background: rgba(0,0,0,0.5); transition: opacity 1s ease;
+  }
+  .character-card img.loading-img { opacity: 0.4; }
+  .character-desc { font-size: 13px; font-style: italic; color: rgba(200,180,140,0.7); margin-top: 10px; min-height: 40px; }
+  
+  /* Writer Input */
+  .writer-input {
+    display: none; margin-top: 16px;
+  }
+  .writer-input textarea {
+    width: 100%; background: rgba(0,0,0,0.5); border: 1px solid rgba(200,160,80,0.3);
+    color: #e8e0d0; padding: 12px; font-family: 'Georgia', serif; font-size: 14px;
+    resize: vertical; min-height: 60px; line-height: 1.5;
+  }
+  .writer-input textarea:focus { outline: none; border-color: #c9a84c; }
+  .writer-input textarea::placeholder { color: rgba(180,160,100,0.3); font-style: italic; }
+  .writer-row {
+    display: flex; gap: 10px; align-items: center; justify-content: center; margin-top: 10px; flex-wrap: wrap;
+  }
+  .writer-timer { font-size: 11px; color: rgba(200,160,100,0.6); letter-spacing: 0.06em; min-width: 60px; }
+  .writer-timer.urgent { color: #ff4444; animation: pulse 1s infinite; }
+  
+  /* Story Export */
+  .story-export {
+    display: none; background: rgba(10, 8, 4, 0.7); border: 1px solid rgba(200,160,80,0.2);
+    border-left: 3px solid #44cc88; padding: 20px; margin-bottom: 24px; text-align: center;
+  }
+  .story-export h3 { font-size: 12px; color: #44cc88; letter-spacing: 0.1em; margin-bottom: 12px; text-transform: uppercase; }
+  .story-text {
+    background: rgba(0,0,0,0.4); border: 1px solid rgba(200,160,80,0.1); padding: 16px;
+    font-size: 13px; line-height: 1.7; color: rgba(200,180,140,0.8); text-align: left;
+    max-height: 300px; overflow-y: auto; margin-bottom: 12px; font-style: italic;
+  }
+  .story-text .human-line { color: #44cc88; font-style: normal; }
+  .story-text .ai-line { color: rgba(200,180,140,0.7); }
+  .story-text .stage-marker { color: #c9a84c; font-size: 10px; letter-spacing: 0.08em; display: block; margin-top: 12px; }
+  
+  /* Cascade Status */
+  .cascade-status {
+    display: flex; align-items: center; justify-content: center; gap: 12px;
+    margin-bottom: 24px; font-size: 10px; color: rgba(200,160,100,0.5); letter-spacing: 0.06em; flex-wrap: wrap;
+  }
+  .cascade-dot {
+    width: 8px; height: 8px; border-radius: 50%; background: rgba(200,160,100,0.3); transition: all 0.5s;
+  }
+  .cascade-dot.active { background: #44cc88; box-shadow: 0 0 8px #44cc88; }
+  .cascade-dot.generating { background: #c9a84c; animation: pulse 1s infinite; }
+  .cascade-dot.human { background: #4488ff; box-shadow: 0 0 8px #4488ff; }
+  @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+  
+  .elements {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px;
+  }
+  .element-card {
+    background: rgba(10, 8, 4, 0.7); border: 1px solid rgba(200,160,80,0.15); padding: 12px; text-align: center;
+  }
+  .element-card img {
+    width: 100%; aspect-ratio: 16/10; object-fit: cover;
+    border: 1px solid rgba(200,160,80,0.1); background: rgba(0,0,0,0.5);
+  }
+  .element-label { font-size: 10px; color: rgba(200,160,100,0.5); letter-spacing: 0.08em; text-transform: uppercase; margin-top: 8px; }
+  
+  .data-bar {
+    background: rgba(10, 8, 4, 0.7); border: 1px solid rgba(200,160,80,0.15); padding: 16px;
+    margin-top: auto; font-family: monospace; font-size: 10px; color: rgba(180,160,100,0.5);
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px;
+  }
+  .data-item strong { color: #c9a84c; display: block; font-size: 9px; letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 2px; }
+  
+  .btn-row { display: flex; gap: 8px; justify-content: center; margin-bottom: 20px; flex-wrap: wrap; }
+  .btn {
+    background: rgba(20, 15, 8, 0.8); border: 1px solid rgba(200,160,80,0.3);
+    color: #c9a84c; padding: 10px 20px; font-family: 'Georgia', serif;
+    font-size: 12px; cursor: pointer; letter-spacing: 0.06em; transition: all 0.3s;
+  }
+  .btn:hover { background: rgba(40, 30, 15, 0.8); border-color: #c9a84c; color: #e0c860; }
+  .btn.continue-btn { border-color: #44cc88; color: #44cc88; font-weight: bold; }
+  .btn.continue-btn:hover { background: #44cc88; color: #05050f; }
+  
+  .stats-row {
+    text-align: center; font-size: 10px; color: rgba(200,180,140,0.4); letter-spacing: 0.06em; margin-bottom: 16px;
+  }
+  .stats-row span { color: #c9a84c; }
+  
+  .character-evolution-log {
+    background: rgba(10, 8, 4, 0.7); border: 1px solid rgba(200,160,80,0.15);
+    padding: 12px; margin-bottom: 24px; font-family: monospace; font-size: 9px;
+    color: rgba(180,160,100,0.4); max-height: 120px; overflow-y: auto; display: none;
+  }
+  .character-evolution-log .log-entry { padding: 2px 0; border-bottom: 1px solid rgba(255,255,255,0.02); }
+  
+  @media (max-width: 500px) {
+    .world-state { grid-template-columns: repeat(3, 1fr); }
+  }
+</style>
+</head>
+<body id="sceneBody">
+
+<div class="content">
+  
+  <div class="header">
+    <div class="sigil">🌍</div>
+    <h1>The Living World</h1>
+    <div class="date" id="sceneDate"></div>
+  </div>
+  
+  <div class="stats-row">
+    Stories written: <span id="statsStories">0</span> · 
+    Total contributions: <span id="statsContributions">0</span>
+  </div>
+  
+  <div class="btn-row">
+    <button class="btn" onclick="generateScene()">⟳ New Scene</button>
+    <button class="btn" id="cascadeBtn" onclick="toggleCascade()">▶ Start Writing</button>
+    <button class="btn" onclick="toggleDataBar()">📊 Toggle Data</button>
+    <button class="btn" id="droneToggle" onclick="toggleDrone()">🎧 Ambient Tone: off</button>
+  </div>
+
+  <!-- World State -->
+  <div class="world-state" id="worldState">
+    <div class="ws-item"><div class="ws-label">Vitality</div><div class="ws-value" id="wsVitality">—</div><div class="ws-bar"><div class="ws-fill vitality" id="wsBarVitality" style="width:0%"></div></div></div>
+    <div class="ws-item"><div class="ws-label">Luminosity</div><div class="ws-value" id="wsLuminosity">—</div><div class="ws-bar"><div class="ws-fill luminosity" id="wsBarLuminosity" style="width:0%"></div></div></div>
+    <div class="ws-item"><div class="ws-label">Chaos</div><div class="ws-value" id="wsChaos">—</div><div class="ws-bar"><div class="ws-fill chaos" id="wsBarChaos" style="width:0%"></div></div></div>
+    <div class="ws-item"><div class="ws-label">Harmony</div><div class="ws-value" id="wsHarmony">—</div><div class="ws-bar"><div class="ws-fill harmony" id="wsBarHarmony" style="width:0%"></div></div></div>
+    <div class="ws-item"><div class="ws-label">Memory</div><div class="ws-value" id="wsMemory">—</div><div class="ws-bar"><div class="ws-fill memory" id="wsBarMemory" style="width:0%"></div></div></div>
+  </div>
+
+  <div class="cascade-status" id="cascadeStatus">
+    <div class="cascade-dot" id="cascadeDot0"></div><span>→</span>
+    <div class="cascade-dot" id="cascadeDot1"></div><span>→</span>
+    <div class="cascade-dot" id="cascadeDot2"></div><span>→</span>
+    <div class="cascade-dot" id="cascadeDot3"></div>
+    <span id="cascadeTimer" style="margin-left:8px;">—</span>
+  </div>
+  
+  <div class="scene-description loading" id="sceneDesc">The world assembles itself. One moment.</div>
+  
+  <!-- Story Export (shown when cascade completes) -->
+  <div class="story-export" id="storyExport">
+    <h3>✦ Your Story ✦</h3>
+    <div class="story-text" id="storyText"></div>
+    <div class="btn-row">
+      <button class="btn" onclick="copyStory()">📋 Copy Story</button>
+      <button class="btn" onclick="downloadStory()">⬇ Download</button>
+      <button class="btn" onclick="generateScene()">⟳ New Scene</button>
+    </div>
+  </div>
+  
+  <!-- Character Section -->
+  <div class="character-section" id="characterSection">
+    <div class="character-label">✦ The Wanderer ✦</div>
+    <div class="character-stage" id="characterStage">Stage 1 · The Arrival</div>
+    <div class="character-card">
+      <img id="characterImg" src="" alt="The Wanderer" class="loading-img" style="display:none;">
+      <div id="characterPlaceholder" style="height:200px; display:flex; align-items:center; justify-content:center; color:rgba(180,160,100,0.3); font-style:italic;">The wanderer has not yet arrived.</div>
+    </div>
+    <div class="character-desc" id="characterDesc"></div>
+    
+    <!-- Writer Input -->
+    <div class="writer-input" id="writerInput">
+      <textarea id="writerTextarea" placeholder="What does the Wanderer do? Write a line of dialogue or action..."></textarea>
+      <div class="writer-row">
+        <button class="btn continue-btn" onclick="submitWriting()">▶ Continue</button>
+        <span class="writer-timer" id="writerTimer">30s</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="character-evolution-log" id="evolutionLog"></div>
+  <div class="elements" id="elementsGrid"></div>
+  
+  <div class="data-bar" id="dataBar">
+    <div class="data-item"><strong>Background</strong><span id="dataBg">—</span></div>
+    <div class="data-item"><strong>Solar</strong><span id="dataSolar">—</span></div>
+    <div class="data-item"><strong>Moon</strong><span id="dataMoon">—</span></div>
+    <div class="data-item"><strong>Weather</strong><span id="dataWeather">—</span></div>
+    <div class="data-item"><strong>UV Index</strong><span id="dataUv">—</span></div>
+    <div class="data-item"><strong>Sun</strong><span id="dataSun">—</span></div>
+    <div class="data-item"><strong>Tide</strong><span id="dataTide">—</span></div>
+    <div class="data-item"><strong>Earthquakes</strong><span id="dataQuakes">—</span></div>
+    <div class="data-item"><strong>ISS</strong><span id="dataIss">—</span></div>
+    <div class="data-item"><strong>Quote</strong><span id="dataQuote">—</span></div>
+    <div class="data-item"><strong>Cascade</strong><span id="dataCascade">—</span></div>
+  </div>
+
+</div>
+
+<script>
+// ═══════════════════════════════════
+// CONFIG
+// ═══════════════════════════════════
+const LAT = 44.5734, LON = -68.7956, NOAA_TIDE_STATION = '8414684';
+const CASCADE_INTERVAL = 30000, MAX_CASCADE_STAGES = 4;
+const MEMORY_KEY = 'gaia_world_memory', STATS_KEY = 'gaia_writer_stats';
+let lastBackgroundUrl = null;
+
+const pollinationsImg = (p) => `https://image.pollinations.ai/prompt/${encodeURIComponent(p)}?width=800&height=500&nologo=true`;
+const picsum = (s) => `https://picsum.photos/seed/${s}/800/500`;
+
+// ═══════════════════════════════════
+// WRITER STATS
+// ═══════════════════════════════════
+function getWriterStats() {
+  try { return JSON.parse(localStorage.getItem(STATS_KEY)) || { stories: 0, contributions: 0 }; }
+  catch(e) { return { stories: 0, contributions: 0 }; }
+}
+function incrementStories() {
+  const stats = getWriterStats(); stats.stories++;
+  try { localStorage.setItem(STATS_KEY, JSON.stringify(stats)); } catch(e) {}
+  return stats;
+}
+function incrementContributions() {
+  const stats = getWriterStats(); stats.contributions++;
+  try { localStorage.setItem(STATS_KEY, JSON.stringify(stats)); } catch(e) {}
+  return stats;
+}
+function updateStatsDisplay() {
+  const stats = getWriterStats();
+  document.getElementById('statsStories').textContent = stats.stories;
+  document.getElementById('statsContributions').textContent = stats.contributions;
+}
+
+// ═══════════════════════════════════
+// WORLD STATE ENGINE
+// ═══════════════════════════════════
+function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
+function normalize(v) { return Math.round(clamp(v, 0, 1) * 100); }
+
+function getMemoryState() {
+  try { const stored = JSON.parse(localStorage.getItem(MEMORY_KEY)); if (stored) return stored; } catch(e) {}
+  return { daysVisited: 0, pastStates: [], lastVisit: null };
+}
+
+function updateMemoryState(worldState) {
+  const memory = getMemoryState();
+  const today = new Date().toISOString().split('T')[0];
+  if (memory.lastVisit !== today) {
+    memory.daysVisited++; memory.lastVisit = today;
+    memory.pastStates.push({ date: today, vitality: worldState.vitality, luminosity: worldState.luminosity, chaos: worldState.chaos, harmony: worldState.harmony });
+    if (memory.pastStates.length > 30) memory.pastStates.shift();
+  }
+  try { localStorage.setItem(MEMORY_KEY, JSON.stringify(memory)); } catch(e) {}
+  return memory;
+}
+
+function calculateWorldState(solar, moon, weather, tide, quakes, iss) {
+  const isDaytime = weather?.sunrise && weather?.sunset ? new Date() >= new Date(weather.sunrise) && new Date() <= new Date(weather.sunset) : new Date().getHours() >= 6 && new Date().getHours() < 20;
+  const solarRank = solar?.class?.charAt(0) === 'X' ? 5 : solar?.class?.charAt(0) === 'M' ? 4 : solar?.class?.charAt(0) === 'C' ? 3 : solar?.class?.charAt(0) === 'B' ? 2 : 1;
+  const moonIllum = moon?.phase ? parseFloat(moon.phase) / 100 : 0.5;
+  
+  const vitality = normalize((weather?.uv || 3) / 11 * 0.4 + (weather?.temp > 15 ? 0.3 : weather?.temp > 5 ? 0.2 : 0.1) * 0.4 + (moonIllum > 0.5 ? 0.2 : 0.1) * 0.2);
+  const luminosity = normalize(solarRank / 5 * 0.4 + moonIllum * 0.3 + (isDaytime ? 0.3 : 0.1));
+  const chaos = normalize((weather?.wind || 10) / 60 * 0.3 + (solarRank >= 4 ? 0.4 : solarRank === 3 ? 0.2 : 0) * 0.3 + (quakes?.count24h > 50 ? 0.3 : quakes?.count24h > 10 ? 0.15 : 0) * 0.2 + (tide?.state === 'rising' && (weather?.wind || 0) > 30 ? 0.2 : 0.1) * 0.2);
+  const harmony = normalize((1 - chaos / 100) * 0.5 + ((weather?.temp || 15) > 10 && (weather?.temp || 15) < 25 ? 0.3 : 0.1) * 0.3 + (moonIllum > 0.3 && moonIllum < 0.7 ? 0.2 : 0.1) * 0.2);
+  
+  const memoryObj = getMemoryState();
+  const memoryVal = normalize(Math.min(memoryObj.daysVisited / 30, 1) * 0.5 + (memoryObj.pastStates.length > 0 ? 0.5 : 0));
+  
+  return { vitality, luminosity, chaos, harmony, memory: memoryVal, memoryObj, isDaytime, solarRank, moonIllum };
+}
+
+function updateWorldDisplay(ws) {
+  document.getElementById('wsVitality').textContent = ws.vitality + '%';
+  document.getElementById('wsLuminosity').textContent = ws.luminosity + '%';
+  document.getElementById('wsChaos').textContent = ws.chaos + '%';
+  document.getElementById('wsHarmony').textContent = ws.harmony + '%';
+  document.getElementById('wsMemory').textContent = ws.memory + '%';
+  document.getElementById('wsBarVitality').style.width = ws.vitality + '%';
+  document.getElementById('wsBarLuminosity').style.width = ws.luminosity + '%';
+  document.getElementById('wsBarChaos').style.width = ws.chaos + '%';
+  document.getElementById('wsBarHarmony').style.width = ws.harmony + '%';
+  document.getElementById('wsBarMemory').style.width = ws.memory + '%';
+  document.getElementById('wsChaos').style.color = ws.chaos > 60 ? '#ff4444' : ws.chaos > 30 ? '#cc8844' : '#c9a84c';
+  document.getElementById('wsVitality').style.color = ws.vitality > 60 ? '#44cc88' : ws.vitality > 30 ? '#88aa44' : '#c9a84c';
+}
+
+function worldStateToNarrative(ws) {
+  const parts = [];
+  if (ws.vitality > 70) parts.push('The land pulses with life. Growth is everywhere.');
+  else if (ws.vitality > 40) parts.push('The world breathes steadily. Life persists.');
+  else parts.push('The land is thin. Survival is earned, not given.');
+  if (ws.luminosity > 70) parts.push('Light floods every corner. Nothing is hidden.');
+  else if (ws.luminosity > 40) parts.push('Shadows and light trade places.');
+  else parts.push('Darkness holds sway. Secrets breed in the dim.');
+  if (ws.chaos > 70) parts.push('The world churns. Storms gather. The ground trembles.');
+  else if (ws.chaos > 40) parts.push('Unrest simmers beneath the surface.');
+  else parts.push('Stillness reigns. The air is heavy with waiting.');
+  if (ws.harmony > 70) parts.push('All things find their place. Peace prevails.');
+  else if (ws.harmony > 40) parts.push('Balance holds, but barely.');
+  else parts.push('Discord threads through every alliance.');
+  if (ws.memory > 70) parts.push('The past is thick here. This world remembers.');
+  else if (ws.memory > 30) parts.push('Echoes of past days linger at the edges.');
+  else parts.push('This place is young. It has no memory yet.');
+  return parts.join(' ');
+}
+
+// ═══════════════════════════════════
+// DATA FETCHERS (same as before, compressed)
+// ═══════════════════════════════════
+async function fetchAPOD() {
+  const today = new Date().toISOString().split('T')[0];
+  try { const c = JSON.parse(localStorage.getItem('apod_cache')||'null'); if (c&&c.date===today&&c.url) return c; } catch(e) {}
+  try {
+    const r = await fetch('https://api.nasa.gov/planetary/apod?api_key=DEMO_KEY');
+    const d = await r.json();
+    if (r.ok && d.media_type==='image' && d.url) {
+      const res = {url:d.url,title:d.title,date:today};
+      try { localStorage.setItem('apod_cache',JSON.stringify(res)); } catch(e) {}
+      return res;
+    }
+    throw new Error('APOD unavailable');
+  } catch(e) {
+    return {url:pollinationsImg(`deep space nebula, cosmic, stars, seed ${today}`),title:'Cosmic backdrop',date:today};
+  }
+}
+function preloadImage(url) { return new Promise(r=>{if(!url)return r(null);const i=new Image();i.onload=()=>r(url);i.onerror=()=>r(null);i.src=url;}); }
+async function fetchSolarData() {
+  try {
+    const r = await fetch('https://services.swpc.noaa.gov/json/goes/primary/xrays-6-hour.json');
+    const rows = await r.json();
+    const lr = rows.filter(r=>r.energy==='0.1-0.8nm');
+    if (lr.length>0) {
+      const l=lr[lr.length-1], f=l.flux;
+      return {class:f<1e-7?`A${(f/1e-8).toFixed(1)}`:f<1e-6?`B${(f/1e-7).toFixed(1)}`:f<1e-5?`C${(f/1e-6).toFixed(1)}`:f<1e-4?`M${(f/1e-5).toFixed(1)}`:`X${(f/1e-4).toFixed(1)}`,flux:f?.toExponential(2),time:l.time_tag};
+    }
+  } catch(e) {}
+  return null;
+}
+async function fetchMoonPhase() {
+  try {
+    const n=new Date(),lp=2551443,nm=new Date(2026,4,18).getTime(),p=((n.getTime()-nm)%lp)/lp;
+    const names=['New Moon','Waxing Crescent','First Quarter','Waxing Gibbous','Full Moon','Waning Gibbous','Last Quarter','Waning Crescent'];
+    const idx=Math.floor(p*8)%8;
+    return {phase:(p*100).toFixed(1),name:names[idx],emoji:['🌑','🌒','🌓','🌔','🌕','🌖','🌗','🌘'][idx]};
+  } catch(e) {}
+  return null;
+}
+async function fetchWeather() {
+  try {
+    const r = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${LAT}&longitude=${LON}&current=temperature_2m,wind_speed_10m,uv_index&daily=sunrise,sunset&timezone=auto`);
+    const d = await r.json(), cur=d.current||{}, daily=d.daily||{};
+    return {temp:cur.temperature_2m,wind:cur.wind_speed_10m,uv:cur.uv_index,sunrise:daily.sunrise?.[0],sunset:daily.sunset?.[0]};
+  } catch(e) {}
+  return null;
+}
+function uvLabel(uv) { if(uv==null)return null; return uv<3?'low':uv<6?'moderate':uv<8?'high':uv<11?'very high':'extreme'; }
+function formatClockTime(iso) { return iso?new Date(iso).toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'}):null; }
+async function fetchTide() {
+  const base=`https://api.tidesandcurrents.noaa.gov/api/prod/datagetter?product=predictions&application=hera&station=${NOAA_TIDE_STATION}&time_zone=lst_ld&units=english&interval=hilo&format=json&date=today`;
+  for(const datum of['MLLW','STND']) {
+    try {
+      const r=await fetch(`${base}&datum=${datum}`),d=await r.json();
+      if(!r.ok||d.error)continue;
+      const preds=d.predictions||[]; if(!preds.length)continue;
+      const now=new Date(); let next=null;
+      for(const p of preds){if(new Date(p.t.replace(' ','T'))>now){next=p;break;}}
+      return {state:next?(next.type==='H'?'rising':'falling'):'unknown',nextType:next?.type==='H'?'high':'low',nextTime:next?formatClockTime(next.t.replace(' ','T')):null,nextHeight:next?parseFloat(next.v).toFixed(1):null};
+    } catch(e) {}
+  }
+  return null;
+}
+async function fetchEarthquakes() {
+  try {
+    const r=await fetch('https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_day.geojson'),d=await r.json();
+    const q=d.features||[],s=q.length>0?q.reduce((a,b)=>b.properties.mag>a.properties.mag?b:a):null;
+    return {count24h:q.length,strongest_mag:s?.properties?.mag,strongest_place:s?.properties?.place};
+  } catch(e) {}
+  return null;
+}
+async function fetchISS() {
+  try {
+    const r=await fetch('http://api.open-notify.org/iss-now.json'),d=await r.json();
+    return {lat:parseFloat(d.iss_position.latitude).toFixed(1),lon:parseFloat(d.iss_position.longitude).toFixed(1),overhead:Math.abs(parseFloat(d.iss_position.latitude)-LAT)<15&&Math.abs(parseFloat(d.iss_position.longitude)-LON)<15};
+  } catch(e) {}
+  return null;
+}
+async function fetchQuote() {
+  try { const r=await fetch('https://api.quotable.io/random?maxLength=80'),d=await r.json(); return {content:d.content,author:d.author}; } catch(e) {}
+  return null;
+}
+
+// ═══════════════════════════════════
+// BINAURAL AMBIENT TONE (compressed)
+// ═══════════════════════════════════
+let audioCtx=null,droneOscL=null,droneOscR=null,droneGain=null,dronePlaying=false,currentBeatHz=10,currentBand='alpha';
+function ensureAudioCtx(){if(!audioCtx)audioCtx=new(window.AudioContext||window.webkitAudioContext)();return audioCtx;}
+function computeBrainwaveTarget(solar,weather,tide){
+  const isDaytime=weather?.sunrise&&weather?.sunset?new Date()>=new Date(weather.sunrise)&&new Date()<=new Date(weather.sunset):new Date().getHours()>=6&&new Date().getHours()<20;
+  const band=isDaytime?'alpha':'theta',[lo,hi]=band==='alpha'?[8,12]:[4,8];
+  let solarPos=solar?.class?.startsWith('X')||solar?.class?.startsWith('M')?0.9:solar?.class?.startsWith('C')?0.6:0.2;
+  const tideNudge=tide?.state==='rising'?0.05:tide?.state==='falling'?-0.05:0;
+  return {band,hz:Math.round((lo+(hi-lo)*Math.min(1,Math.max(0,solarPos+tideNudge)))*10)/10};
+}
+function startDrone(carrierHz,beatHz){const ctx=ensureAudioCtx();droneOscL=ctx.createOscillator();droneOscR=ctx.createOscillator();const pL=ctx.createStereoPanner(),pR=ctx.createStereoPanner();pL.pan.value=-1;pR.pan.value=1;droneGain=ctx.createGain();droneGain.gain.value=0;droneOscL.type='sine';droneOscR.type='sine';droneOscL.frequency.value=carrierHz;droneOscR.frequency.value=carrierHz+beatHz;droneOscL.connect(pL).connect(droneGain);droneOscR.connect(pR).connect(droneGain);droneGain.connect(ctx.destination);droneOscL.start();droneOscR.start();droneGain.gain.linearRampToValueAtTime(0.04,ctx.currentTime+2);dronePlaying=true;}
+function stopDrone(){if(!dronePlaying||!droneGain)return;droneGain.gain.linearRampToValueAtTime(0,ensureAudioCtx().currentTime+1);setTimeout(()=>{try{droneOscL.stop();droneOscR.stop();}catch(e){}},1100);dronePlaying=false;}
+function updateDroneFrequency(carrierHz,beatHz){if(!dronePlaying||!droneOscR)return;droneOscR.frequency.linearRampToValueAtTime(carrierHz+beatHz,ensureAudioCtx().currentTime+3);}
+function toggleDrone(){const btn=document.getElementById('droneToggle');if(dronePlaying){stopDrone();btn.textContent='🎧 Ambient Tone: off';}else{startDrone(180,currentBeatHz);btn.textContent=`🎧 Ambient Tone: ${currentBand} ${currentBeatHz}Hz`;}}
+
+// ═══════════════════════════════════
+// POLLINATIONS
+// ═══════════════════════════════════
+async function pollinationsText(prompt){try{const r=await fetch('https://text.pollinations.ai/',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:[{role:'user',content:prompt}],model:'openai',temperature:0.9,max_tokens:200})});if(r.ok)return(await r.text()).trim();}catch(e){}return null;}
+
+// ═══════════════════════════════════
+// INTERACTIVE CASCADE ENGINE
+// ═══════════════════════════════════
+let cascadeRunning=false,cascadeTimer=null,countdownTimer=null,cascadeStage=0;
+let characterHistory=[],humanLines=[],sceneData=null,worldState=null;
+let currentCountdown=0;
+
+function addEvolutionLog(stage,text,isHuman=false){
+  const log=document.getElementById('evolutionLog');
+  const stageNames=['Arrival','Approach','Threshold','Return'];
+  const entry=document.createElement('div');
+  entry.className='log-entry';
+  entry.textContent=`[Stage ${stage+1}: ${stageNames[stage]}] ${isHuman?'✏️ ':'🤖 '}${text}`;
+  log.appendChild(entry); log.scrollTop=log.scrollHeight;
+}
+
+function updateCascadeDots(activeStage,state){
+  for(let i=0;i<MAX_CASCADE_STAGES;i++){
+    const dot=document.getElementById(`cascadeDot${i}`);
+    if(!dot)continue;
+    dot.classList.remove('active','generating','human');
+    if(i===activeStage&&state==='generating')dot.classList.add('generating');
+    else if(i===activeStage&&state==='human')dot.classList.add('human');
+    else if(i<activeStage||(i===activeStage&&state==='active'))dot.classList.add('active');
+  }
+}
+
+async function generateCharacterStage(stage,humanInput=null){
+  if(!sceneData||!worldState)return null;
+  const {apod}=sceneData;
+  const ws=worldState;
+  const narrative=worldStateToNarrative(ws);
+  
+  let prompt;
+  if(stage===0){
+    prompt=`Describe a solitary wanderer who has just arrived in this world. The sky shows "${apod?.title||'the cosmos'}". The world state: ${narrative}. Describe the wanderer's appearance, clothing, what they carry, and their posture. Be specific and vivid. 2-3 sentences. Do not name the wanderer.`;
+  }else{
+    const previousDesc=characterHistory[characterHistory.length-1]||'';
+    const stageNames=['','Approach','Threshold','Return'];
+    let humanContext='';
+    if(humanInput){
+      humanContext=`The wanderer did this: "${humanInput}". Incorporate this action into their evolution.`;
+    }
+    prompt=`A wanderer in a living world. Previously: "${previousDesc}". ${humanContext} The world state: ${narrative}. This is Stage ${stage+1}: The ${stageNames[stage]}. Describe how the wanderer has CHANGED from the previous description. What have they acquired? What has changed about their appearance, possessions, posture? Be specific. 2-3 sentences.`;
+  }
+  
+  const textDesc=await pollinationsText(prompt);
+  if(!textDesc)return null;
+  characterHistory.push(textDesc);
+  
+  const imagePrompt=`A fantasy character: ${textDesc}. ${narrative}. Digital painting, atmospheric, cinematic, no text.`;
+  const imageUrl=pollinationsImg(imagePrompt);
+  addEvolutionLog(stage,textDesc,false);
+  return {textDesc,imageUrl};
+}
+
+function showWriterInput(){
+  const input=document.getElementById('writerInput');
+  const textarea=document.getElementById('writerTextarea');
+  input.style.display='block';
+  textarea.value='';
+  textarea.focus();
+  startCountdown();
+}
+
+function hideWriterInput(){
+  document.getElementById('writerInput').style.display='none';
+  stopCountdown();
+}
+
+function startCountdown(){
+  currentCountdown=CASCADE_INTERVAL/1000;
+  const timerEl=document.getElementById('writerTimer');
+  timerEl.textContent=currentCountdown+'s';
+  timerEl.classList.remove('urgent');
+  if(countdownTimer)clearInterval(countdownTimer);
+  countdownTimer=setInterval(()=>{
+    currentCountdown--;
+    timerEl.textContent=currentCountdown+'s';
+    if(currentCountdown<=10)timerEl.classList.add('urgent');
+    if(currentCountdown<=0){
+      clearInterval(countdownTimer);
+      countdownTimer=null;
+      submitWriting(true); // auto-advance with whatever's in the box (or empty)
+    }
+  },1000);
+}
+
+function stopCountdown(){
+  if(countdownTimer){clearInterval(countdownTimer);countdownTimer=null;}
+  document.getElementById('writerTimer').classList.remove('urgent');
+}
+
+function submitWriting(isAuto=false){
+  stopCountdown();
+  const textarea=document.getElementById('writerTextarea');
+  const humanInput=textarea.value.trim();
+  
+  if(humanInput){
+    humanLines.push(humanInput);
+    addEvolutionLog(cascadeStage-1,humanInput,true);
+    incrementContributions();
+    updateStatsDisplay();
+    updateCascadeDots(cascadeStage-1,'human');
+  }else if(isAuto){
+    addEvolutionLog(cascadeStage-1,'[The writer watched in silence.]',true);
+  }
+  
+  hideWriterInput();
+  advanceCascade(humanInput||null);
+}
+
+async function advanceCascade(humanInput=null){
+  if(!cascadeRunning||cascadeStage>=MAX_CASCADE_STAGES){stopCascade();return;}
+  
+  updateCascadeDots(cascadeStage,'generating');
+  const stageNames=['The Arrival','The Approach','The Threshold','The Return'];
+  document.getElementById('characterStage').textContent=`Stage ${cascadeStage+1} · ${stageNames[cascadeStage]}`;
+  
+  const result=await generateCharacterStage(cascadeStage,humanInput);
+  
+  if(result){
+    const img=document.getElementById('characterImg');
+    const placeholder=document.getElementById('characterPlaceholder');
+    const loadedUrl=await preloadImage(result.imageUrl);
+    if(loadedUrl){img.src=loadedUrl;img.style.display='block';img.classList.remove('loading-img');placeholder.style.display='none';}
+    document.getElementById('characterDesc').textContent=result.textDesc;
+    document.getElementById('dataCascade').textContent=`Stage ${cascadeStage+1}/4 · ${stageNames[cascadeStage]}`;
+    updateCascadeDots(cascadeStage,'active');
+  }else{
+    updateCascadeDots(cascadeStage,'active');
+    document.getElementById('characterDesc').textContent='[The wanderer pauses. The path is unclear.]';
+  }
+  
+  cascadeStage++;
+  
+  if(cascadeStage<MAX_CASCADE_STAGES){
+    document.getElementById('cascadeTimer').textContent='Waiting...';
+    showWriterInput();
+  }else{
+    stopCascade();
+    showStoryExport();
+  }
+}
+
+function showStoryExport(){
+  document.getElementById('storyExport').style.display='block';
+  document.getElementById('cascadeTimer').textContent='Complete';
+  document.getElementById('dataCascade').textContent='Complete · 4 stages';
+  
+  const storyText=document.getElementById('storyText');
+  const stageNames=['The Arrival','The Approach','The Threshold','The Return'];
+  let html='';
+  for(let i=0;i<characterHistory.length;i++){
+    html+=`<span class="stage-marker">— Stage ${i+1}: ${stageNames[i]} —</span>\n`;
+    html+=`<span class="ai-line">${characterHistory[i]}</span>\n`;
+    if(humanLines[i]){
+      html+=`<span class="human-line">✏️ ${humanLines[i]}</span>\n`;
+    }
+  }
+  storyText.innerHTML=html;
+  
+  incrementStories();
+  updateStatsDisplay();
+  
+  // Hide character section
+  document.getElementById('characterSection').style.display='none';
+  document.getElementById('evolutionLog').style.display='none';
+}
+
+function copyStory(){
+  const storyText=document.getElementById('storyText').innerText;
+  navigator.clipboard.writeText(storyText).then(()=>{
+    alert('Story copied to clipboard!');
+  }).catch(()=>{
+    alert('Could not copy. Select the text manually.');
+  });
+}
+
+function downloadStory(){
+  const storyText=document.getElementById('storyText').innerText;
+  const blob=new Blob([storyText],{type:'text/plain'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url; a.download=`living-world-story-${Date.now()}.txt`;
+  a.click(); URL.revokeObjectURL(url);
+}
+
+function toggleCascade(){cascadeRunning?stopCascade():startCascade();}
+
+function startCascade(){
+  if(!sceneData)return;
+  cascadeRunning=true;cascadeStage=0;characterHistory=[];humanLines=[];
+  document.getElementById('evolutionLog').innerHTML='';
+  document.getElementById('evolutionLog').style.display='block';
+  document.getElementById('characterImg').style.display='none';
+  document.getElementById('characterPlaceholder').style.display='flex';
+  document.getElementById('characterPlaceholder').textContent='The wanderer approaches...';
+  document.getElementById('characterDesc').textContent='';
+  document.getElementById('storyExport').style.display='none';
+  document.getElementById('characterSection').style.display='';
+  for(let i=0;i<MAX_CASCADE_STAGES;i++)updateCascadeDots(i,'');
+  document.getElementById('cascadeBtn').textContent='⏹ Stop Writing';
+  document.getElementById('dataCascade').textContent='Starting...';
+  advanceCascade(null);
+}
+
+function stopCascade(){
+  cascadeRunning=false;
+  stopCountdown();
+  hideWriterInput();
+  if(cascadeTimer){clearTimeout(cascadeTimer);cascadeTimer=null;}
+  document.getElementById('cascadeBtn').textContent='▶ Start Writing';
+  document.getElementById('cascadeTimer').textContent='Stopped';
+  document.getElementById('dataCascade').textContent=`Stopped · ${cascadeStage} stages`;
+  for(let i=cascadeStage;i<MAX_CASCADE_STAGES;i++){const dot=document.getElementById(`cascadeDot${i}`);if(dot)dot.classList.remove('active','generating','human');}
+}
+
+// ═══════════════════════════════════
+// RENDER SCENE
+// ═══════════════════════════════════
+async function generateScene(){
+  if(cascadeRunning)stopCascade();
+  
+  const desc=document.getElementById('sceneDesc');
+  desc.classList.add('loading');desc.textContent='The world assembles itself...';
+  
+  const[apod,solar,moon,weather,tide,quakes,iss,quote]=await Promise.all([
+    fetchAPOD(),fetchSolarData(),fetchMoonPhase(),fetchWeather(),fetchTide(),fetchEarthquakes(),fetchISS(),fetchQuote()
+  ]);
+  
+  sceneData={apod,solar,moon,weather,tide,quakes,iss,quote};
+  worldState=calculateWorldState(solar,moon,weather,tide,quakes,iss);
+  const memory=updateMemoryState(worldState);
+  worldState.memoryObj=memory;
+  updateWorldDisplay(worldState);
+  updateStatsDisplay();
+  
+  if(apod?.url&&apod.url!==lastBackgroundUrl){
+    const loadedUrl=await preloadImage(apod.url);
+    if(loadedUrl){document.getElementById('sceneBody').style.backgroundImage=`url(${loadedUrl})`;lastBackgroundUrl=loadedUrl;}
+  }
+  
+  const narrative=worldStateToNarrative(worldState);
+  const issOverhead=iss?.overhead?' The ISS passes silently overhead.':'';
+  let sceneText=await pollinationsText(`Describe this scene in 3-4 poetic sentences. Use vivid imagery. ${narrative}.${issOverhead} The sky shows "${apod?.title||'the cosmos'}".`);
+  if(!sceneText)sceneText=`The Witch's Foot under a ${moon?.name||'shifting'} sky. The air holds ${weather?.temp||'an unknown'} degrees. ${narrative}`;
+  desc.classList.remove('loading');desc.textContent=sceneText;
+  
+  document.getElementById('characterImg').style.display='none';
+  document.getElementById('characterPlaceholder').style.display='flex';
+  document.getElementById('characterPlaceholder').textContent='The wanderer has not yet arrived.';
+  document.getElementById('characterDesc').textContent='';
+  document.getElementById('characterStage').textContent='Stage 1 · The Arrival';
+  document.getElementById('evolutionLog').innerHTML='';
+  document.getElementById('evolutionLog').style.display='none';
+  document.getElementById('storyExport').style.display='none';
+  document.getElementById('characterSection').style.display='';
+  hideWriterInput();
+  for(let i=0;i<MAX_CASCADE_STAGES;i++)updateCascadeDots(i,'');
+  document.getElementById('cascadeTimer').textContent='—';
+  document.getElementById('cascadeBtn').textContent='▶ Start Writing';
+  
+  document.getElementById('elementsGrid').innerHTML=[
+    {label:'The Tower',prompt:`Ancient stone tower. ${narrative}. Atmospheric digital painting.`},
+    {label:'The Forest',prompt:`Dark pine forest. ${narrative}. Mist, moonlight. Atmospheric digital painting.`},
+    {label:'The Hearth',prompt:`Small campfire. ${narrative}. Embers rising. Cozy but isolated. Digital painting.`},
+  ].map(el=>`
+    <div class="element-card">
+      <img src="${pollinationsImg(el.prompt)}" alt="${el.label}" loading="lazy" onerror="this.src='${picsum(el.label.replace(/\\s/g,''))}'">
+      <div class="element-label">${el.label}</div>
+    </div>
+  `).join('');
+  
+  document.getElementById('dataBg').textContent=apod?.title||'—';
+  document.getElementById('dataSolar').textContent=solar?.class||'—';
+  document.getElementById('dataMoon').textContent=moon?`${moon.emoji} ${moon.name} (${moon.phase}%)`:'—';
+  document.getElementById('dataWeather').textContent=weather?`${weather.temp}°C, wind ${weather.wind}km/h`:'—';
+  document.getElementById('dataUv').textContent=weather?.uv!=null?`${weather.uv} (${uvLabel(weather.uv)})`:'—';
+  document.getElementById('dataSun').textContent=weather?`↑${formatClockTime(weather.sunrise)||'—'} ↓${formatClockTime(weather.sunset)||'—'}`:'—';
+  document.getElementById('dataTide').textContent=tide?`${tide.state}, next ${tide.nextType} ${tide.nextTime} (${tide.nextHeight}ft)`:'—';
+  document.getElementById('dataQuakes').textContent=quakes?`${quakes.count24h} today, strongest M${quakes.strongest_mag} ${quakes.strongest_place||''}`.trim():'—';
+  document.getElementById('dataIss').textContent=iss?`${iss.lat},${iss.lon}${iss.overhead?' · OVERHEAD':''}`:'—';
+  document.getElementById('dataQuote').textContent=quote?`"${quote.content}" —${quote.author}`:'—';
+  document.getElementById('dataCascade').textContent='Not started';
+  document.getElementById('sceneDate').textContent=new Date().toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+}
+
+function toggleDataBar(){document.getElementById('dataBar').style.display=document.getElementById('dataBar').style.display==='none'?'':'none';}
+
+// ═══════════════════════════════════
+// INIT
+// ═══════════════════════════════════
+generateScene();
+</script>
+
+</body>
+</html>
 <title>🌍 Scene · The Living World</title>
 <style>
   :root { --overlay: rgba(5, 5, 15, 0.75); }
