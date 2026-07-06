@@ -151,6 +151,21 @@
     transition: all 0.3s;
   }
   .btn:hover { background: rgba(40, 30, 15, 0.8); border-color: #c9a84c; color: #e0c860; }
+
+  .drone-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    margin-bottom: 24px;
+    font-size: 10px;
+    color: rgba(200,180,140,0.6);
+    letter-spacing: 0.05em;
+  }
+  .drone-row input[type="range"] {
+    width: 120px;
+    accent-color: #c9a84c;
+  }
 </style>
 </head>
 <body id="sceneBody">
@@ -166,6 +181,11 @@
   <div class="btn-row">
     <button class="btn" onclick="generateScene()">⟳ New Scene</button>
     <button class="btn" onclick="toggleDataBar()">📊 Toggle Data</button>
+    <button class="btn" id="droneToggle" onclick="toggleDrone()">🎧 Ambient Tone: off</button>
+  </div>
+  <div class="drone-row" id="droneRow" style="display:none;">
+    <input type="range" id="droneVolume" min="0" max="10" value="4" oninput="setDroneVolume(this.value)">
+    <span class="drone-label" id="droneLabel">—</span>
   </div>
   
   <div class="scene-description loading" id="sceneDesc">
@@ -179,6 +199,9 @@
     <div class="data-item"><strong>Solar</strong><span id="dataSolar">—</span></div>
     <div class="data-item"><strong>Moon</strong><span id="dataMoon">—</span></div>
     <div class="data-item"><strong>Weather</strong><span id="dataWeather">—</span></div>
+    <div class="data-item"><strong>UV Index</strong><span id="dataUv">—</span></div>
+    <div class="data-item"><strong>Sun</strong><span id="dataSun">—</span></div>
+    <div class="data-item"><strong>Tide</strong><span id="dataTide">—</span></div>
     <div class="data-item"><strong>Scene Prompt</strong><span id="dataPrompt">—</span></div>
   </div>
 
@@ -197,6 +220,11 @@ const IMAGE_SERVICES = {
   // Another free option — picsum placeholder while waiting
   picsum: (seed) => `https://picsum.photos/seed/${seed}/800/500`,
 };
+
+// Bucksport, ME coordinates — the Witch's Foot
+const LAT = 44.5734;
+const LON = -68.7956;
+const NOAA_TIDE_STATION = '8414684'; // Bucksport, ME
 
 // ═══════════════════════════════════
 // DATA FETCHERS
@@ -254,24 +282,194 @@ async function fetchMoonPhase() {
   return null;
 }
 
+// Weather + UV + sunrise/sunset in a single Open-Meteo call
 async function fetchWeather() {
   try {
-    // Witch's Foot — Bucksport, Maine
-    const resp = await fetch('https://api.open-meteo.com/v1/forecast?latitude=44.5734&longitude=-68.7956&current_weather=true');
+    const url = `https://api.open-meteo.com/v1/forecast?latitude=${LAT}&longitude=${LON}` +
+      `&current=temperature_2m,wind_speed_10m,uv_index` +
+      `&daily=sunrise,sunset&timezone=auto`;
+    const resp = await fetch(url);
     const data = await resp.json();
-    if (data.current_weather) {
-      const w = data.current_weather;
-      return { temp: w.temperature, wind: w.windspeed, code: w.weathercode };
-    }
+    const cur = data.current || {};
+    const daily = data.daily || {};
+    return {
+      temp: cur.temperature_2m,
+      wind: cur.wind_speed_10m,
+      uv: cur.uv_index,
+      sunrise: daily.sunrise ? daily.sunrise[0] : null,
+      sunset: daily.sunset ? daily.sunset[0] : null,
+    };
   } catch(e) {}
   return null;
+}
+
+function uvLabel(uv) {
+  if (uv == null) return null;
+  if (uv < 3) return 'low';
+  if (uv < 6) return 'moderate';
+  if (uv < 8) return 'high';
+  if (uv < 11) return 'very high';
+  return 'extreme';
+}
+
+function formatClockTime(iso) {
+  if (!iso) return null;
+  const d = new Date(iso);
+  return d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+}
+
+// NOAA CO-OPS tide predictions (high/low) for today at Bucksport, ME
+async function fetchTide() {
+  try {
+    const url = `https://api.tidesandcurrents.noaa.gov/api/prod/datagetter` +
+      `?product=predictions&application=hera-living-world&station=${NOAA_TIDE_STATION}` +
+      `&datum=MLLW&time_zone=lst_ld&units=english&interval=hilo&format=json&date=today`;
+    const resp = await fetch(url);
+    const data = await resp.json();
+    const preds = data.predictions || [];
+    if (preds.length === 0) return null;
+
+    const now = new Date();
+    // Find current state: are we rising toward the next high, or falling toward the next low?
+    let next = null;
+    for (const p of preds) {
+      const t = new Date(p.t.replace(' ', 'T'));
+      if (t > now) { next = p; break; }
+    }
+    const state = next ? (next.type === 'H' ? 'rising' : 'falling') : 'unknown';
+    return {
+      state,
+      nextType: next ? (next.type === 'H' ? 'high' : 'low') : null,
+      nextTime: next ? formatClockTime(next.t.replace(' ', 'T')) : null,
+      nextHeight: next ? parseFloat(next.v).toFixed(1) : null,
+    };
+  } catch(e) {}
+  return null;
+}
+
+// ═══════════════════════════════════
+// BINAURAL AMBIENT TONE
+// ═══════════════════════════════════
+// Two oscillators, one per ear, offset by a small "beat" frequency.
+// That offset is what the brain perceives as a slow pulsing tone —
+// this is presented as mood-setting ambience tied to the day's data,
+// not a guaranteed brainwave-entrainment effect (the research on that
+// is mixed and mostly anecdotal).
+
+let audioCtx = null;
+let droneOscL = null, droneOscR = null, droneGain = null;
+let dronePlaying = false;
+let currentBeatHz = 10, currentBand = 'alpha';
+
+function ensureAudioCtx() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  return audioCtx;
+}
+
+// Decide target brainwave band + beat frequency from the day's data.
+// Daytime → alpha (8-12Hz, "relaxed alertness"). Nighttime → theta (4-8Hz, "drowsy/meditative").
+// Solar flux and tide state nudge the exact Hz within that band — a small
+// sonification of the same data driving the scene, not a clinical claim.
+function computeBrainwaveTarget(solar, weather, tide) {
+  const now = new Date();
+  let isDaytime = true;
+  if (weather?.sunrise && weather?.sunset) {
+    const sr = new Date(weather.sunrise);
+    const ss = new Date(weather.sunset);
+    isDaytime = now >= sr && now <= ss;
+  }
+
+  const band = isDaytime ? 'alpha' : 'theta';
+  const [lo, hi] = band === 'alpha' ? [8, 12] : [4, 8];
+
+  // Solar flux pushes toward the higher end (more "charged"); calmer/lower flux toward the low end.
+  let solarPos = 0.5;
+  if (solar?.class) {
+    if (solar.class.startsWith('X') || solar.class.startsWith('M')) solarPos = 0.9;
+    else if (solar.class.startsWith('C')) solarPos = 0.6;
+    else solarPos = 0.2;
+  }
+  // Rising tide nudges up slightly, falling tide nudges down slightly.
+  const tideNudge = tide?.state === 'rising' ? 0.05 : tide?.state === 'falling' ? -0.05 : 0;
+
+  const pos = Math.min(1, Math.max(0, solarPos + tideNudge));
+  const hz = lo + (hi - lo) * pos;
+  return { band, hz: Math.round(hz * 10) / 10 };
+}
+
+function startDrone(carrierHz, beatHz) {
+  const ctx = ensureAudioCtx();
+  droneOscL = ctx.createOscillator();
+  droneOscR = ctx.createOscillator();
+  const panL = ctx.createStereoPanner();
+  const panR = ctx.createStereoPanner();
+  panL.pan.value = -1;
+  panR.pan.value = 1;
+  droneGain = ctx.createGain();
+  droneGain.gain.value = 0;
+
+  droneOscL.type = 'sine';
+  droneOscR.type = 'sine';
+  droneOscL.frequency.value = carrierHz;
+  droneOscR.frequency.value = carrierHz + beatHz;
+
+  droneOscL.connect(panL).connect(droneGain);
+  droneOscR.connect(panR).connect(droneGain);
+  droneGain.connect(ctx.destination);
+
+  droneOscL.start();
+  droneOscR.start();
+
+  const vol = document.getElementById('droneVolume');
+  const target = vol ? vol.value / 100 : 0.04;
+  droneGain.gain.linearRampToValueAtTime(target, ctx.currentTime + 2);
+  dronePlaying = true;
+}
+
+function stopDrone() {
+  if (!dronePlaying || !droneGain) return;
+  const ctx = ensureAudioCtx();
+  droneGain.gain.linearRampToValueAtTime(0, ctx.currentTime + 1);
+  const oscL = droneOscL, oscR = droneOscR;
+  setTimeout(() => {
+    try { oscL.stop(); oscR.stop(); } catch(e) {}
+  }, 1100);
+  dronePlaying = false;
+}
+
+// Smoothly retune the beat frequency on a new scene, without restarting the tone
+function updateDroneFrequency(carrierHz, beatHz) {
+  if (!dronePlaying || !droneOscR) return;
+  const ctx = ensureAudioCtx();
+  droneOscR.frequency.linearRampToValueAtTime(carrierHz + beatHz, ctx.currentTime + 3);
+}
+
+function toggleDrone() {
+  const btn = document.getElementById('droneToggle');
+  const row = document.getElementById('droneRow');
+  if (dronePlaying) {
+    stopDrone();
+    btn.textContent = '🎧 Ambient Tone: off';
+    row.style.display = 'none';
+  } else {
+    startDrone(180, currentBeatHz);
+    btn.textContent = `🎧 Ambient Tone: ${currentBand} ${currentBeatHz}Hz`;
+    row.style.display = 'flex';
+  }
+}
+
+function setDroneVolume(val) {
+  if (droneGain) {
+    const ctx = ensureAudioCtx();
+    droneGain.gain.linearRampToValueAtTime(val / 100, ctx.currentTime + 0.3);
+  }
 }
 
 // ═══════════════════════════════════
 // BUILD SCENE PROMPT
 // ═══════════════════════════════════
 
-function buildScenePrompt(solar, moon, weather, apod) {
+function buildScenePrompt(solar, moon, weather, apod, tide) {
   const solarMood = solar?.class?.startsWith('X') ? 'harsh blazing light, intense, dangerous'
     : solar?.class?.startsWith('M') ? 'bright active light, energetic'
     : solar?.class?.startsWith('C') ? 'moderate daylight, steady'
@@ -280,14 +478,26 @@ function buildScenePrompt(solar, moon, weather, apod) {
   const moonMood = moon?.name?.includes('Full') ? 'full moon casting long shadows'
     : moon?.name?.includes('New') ? 'moonless dark night'
     : `moon in ${moon?.name || 'unknown phase'}`;
+
+  const uv = uvLabel(weather?.uv);
+  const uvMood = uv === 'extreme' || uv === 'very high' ? 'a searing, merciless light overhead'
+    : uv === 'high' ? 'a sharp, unforgiving sun'
+    : uv === 'low' ? 'a soft, gentle light'
+    : null;
+
+  const tideMood = tide?.state === 'rising' ? 'the tide creeping in over the flats'
+    : tide?.state === 'falling' ? 'the tide pulling back, exposing dark wet stone'
+    : null;
   
   const weatherDesc = weather?.temp != null 
     ? `${weather.temp}°C, wind ${weather.wind}km/h at the Witch's Foot, Maine`
     : 'the Witch\'s Foot, Maine';
   
   const apodTitle = apod?.title || 'the cosmos';
+
+  const extras = [uvMood, tideMood].filter(Boolean).join('. ');
   
-  return `A fantasy landscape scene inspired by "${apodTitle}". ${weatherDesc}. ${solarMood}. ${moonMood}. Ancient stone ruins, a distant tower, a small fire burning. Atmospheric, cinematic, digital painting style. No text, no letters, no words.`;
+  return `A fantasy landscape scene inspired by "${apodTitle}". ${weatherDesc}. ${solarMood}. ${moonMood}.${extras ? ' ' + extras + '.' : ''} Ancient stone ruins, a distant tower, a small fire burning. Atmospheric, cinematic, digital painting style. No text, no letters, no words.`;
 }
 
 // ═══════════════════════════════════
@@ -312,11 +522,12 @@ async function generateScene() {
   desc.textContent = 'The world assembles itself...';
   
   // Fetch all data
-  const [apod, solar, moon, weather] = await Promise.all([
+  const [apod, solar, moon, weather, tide] = await Promise.all([
     fetchAPOD(),
     fetchSolarData(),
     fetchMoonPhase(),
-    fetchWeather()
+    fetchWeather(),
+    fetchTide()
   ]);
   
   // Set background
@@ -325,7 +536,7 @@ async function generateScene() {
   }
   
   // Build scene prompt
-  const scenePrompt = buildScenePrompt(solar, moon, weather, apod);
+  const scenePrompt = buildScenePrompt(solar, moon, weather, apod, tide);
   
   // Generate scene description via Pollinations Text API
   let sceneText = '';
@@ -368,7 +579,26 @@ async function generateScene() {
   document.getElementById('dataSolar').textContent = solar?.class || '—';
   document.getElementById('dataMoon').textContent = moon ? `${moon.emoji} ${moon.name} (${moon.phase}%)` : '—';
   document.getElementById('dataWeather').textContent = weather ? `${weather.temp}°C, wind ${weather.wind}km/h` : '—';
+  document.getElementById('dataUv').textContent = weather?.uv != null ? `${weather.uv} (${uvLabel(weather.uv)})` : '—';
+  document.getElementById('dataSun').textContent = weather
+    ? `↑${formatClockTime(weather.sunrise) || '—'} ↓${formatClockTime(weather.sunset) || '—'}`
+    : '—';
+  document.getElementById('dataTide').textContent = tide
+    ? `${tide.state}, next ${tide.nextType} ${tide.nextTime} (${tide.nextHeight}ft)`
+    : '—';
   document.getElementById('dataPrompt').textContent = scenePrompt.substring(0, 100) + '...';
+
+  // Retune ambient tone to match this scene's data
+  const target = computeBrainwaveTarget(solar, weather, tide);
+  currentBand = target.band;
+  currentBeatHz = target.hz;
+  const droneLabel = document.getElementById('droneLabel');
+  if (droneLabel) droneLabel.textContent = `${target.band} · ${target.hz}Hz beat`;
+  const droneBtn = document.getElementById('droneToggle');
+  if (droneBtn && dronePlaying) {
+    droneBtn.textContent = `🎧 Ambient Tone: ${target.band} ${target.hz}Hz`;
+    updateDroneFrequency(180, target.hz);
+  }
   
   // Date
   document.getElementById('sceneDate').textContent = new Date().toLocaleDateString('en-US', {
