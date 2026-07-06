@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🔆 Hyperion — Light & Illumination</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=EB+Garamond:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
+<style>
+  :root { --gold: #c9a84c; --deep: #05050f; --mist: #e8e0d0; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--deep); color: var(--mist); font-family: 'EB Garamond', Georgia, serif; padding: 2rem; max-width: 700px; margin: 0 auto; }
+  h1 { font-family: 'Cinzel', serif; color: var(--gold); letter-spacing: 0.1em; font-size: 1.4rem; margin-bottom: 0.3rem; }
+  .subtitle { color: rgba(180,160,100,0.5); font-style: italic; margin-bottom: 1.5rem; }
+  #status { background: rgba(180,160,100,0.06); border-left: 3px solid var(--gold); padding: 0.8rem 1rem; margin-bottom: 1rem; font-style: italic; }
+  .section-label { font-family: 'Cinzel', serif; font-size: 0.8rem; letter-spacing: 0.15em; color: var(--gold); margin-bottom: 0.5rem; margin-top: 1rem; }
+  .signal-box { background: rgba(180,160,100,0.04); border: 1px solid rgba(180,160,100,0.15); border-radius: 4px; padding: 0.9rem; margin-bottom: 1rem; }
+  pre { background: rgba(255,255,255,0.04); border: 1px solid rgba(180,160,100,0.15); padding: 1rem; border-radius: 4px; overflow: auto; max-height: 260px; font-size: 0.75rem; color: rgba(232,224,208,0.8); }
+  .back { display: inline-block; margin-top: 1.5rem; font-family: 'Cinzel', serif; font-size: 0.65rem; letter-spacing: 0.2em; color: rgba(201,168,76,0.6); text-decoration: none; }
+  .back:hover { color: var(--gold); }
+</style>
+</head>
+<body>
+
+<h1>🔆 HYPERION</h1>
+<div class="subtitle">Light & Illumination · Signal Amplifier</div>
+
+<div id="status">Waking...</div>
+
+<div class="section-label">SIGNAL — NOAA Solar X-ray Flux</div>
+<div id="signal" class="signal-box">Gathering...</div>
+
+<div class="section-label">LOCAL MEMORY</div>
+<pre id="output">Loading...</pre>
+
+<a href="../../index.html" class="back">← Return to GAIA</a>
+
+<script src="identity.js"></script>
+<script src="remember.js"></script>
+<script>
+function xrayClass(flux) {
+  if (flux == null) return 'Unknown';
+  if (flux < 1e-7) return `A${(flux / 1e-8).toFixed(1)}`;
+  if (flux < 1e-6) return `B${(flux / 1e-7).toFixed(1)}`;
+  if (flux < 1e-5) return `C${(flux / 1e-6).toFixed(1)}`;
+  if (flux < 1e-4) return `M${(flux / 1e-5).toFixed(1)}`;
+  return `X${(flux / 1e-4).toFixed(1)}`;
+}
+
+(async function boot() {
+  await HyperionMemory.init();
+
+  let signalText = 'The light could not be read.';
+  let signalData = null;
+
+  try {
+    const resp = await fetch('https://services.swpc.noaa.gov/json/goes/primary/xrays-6-hour.json');
+    const rows = await resp.json();
+    const longRows = rows.filter(r => r.energy === '0.1-0.8nm');
+    const latest = longRows[longRows.length - 1];
+    const flux = latest ? latest.flux : null;
+    const cls = xrayClass(flux);
+
+    signalData = { flux, class: cls, observed_at: latest?.time_tag ?? null };
+    signalText = flux != null
+      ? `Current solar X-ray flux: class ${cls} (${flux.toExponential(2)} W/m²).`
+      : 'No flux reading available.';
+  } catch (e) {
+    signalText = 'The light could not be read (NOAA SWPC feed unreachable).';
+  }
+
+  document.getElementById('status').textContent =
+    (typeof HyperionIdentity !== 'undefined' && HyperionIdentity.reflect)
+      ? HyperionIdentity.reflect() : '🔆 Hyperion: Light & Illumination. He amplifies what is hidden.';
+  document.getElementById('signal').textContent = signalText;
+  document.getElementById('output').textContent = JSON.stringify(HyperionMemory.layers.local, null, 2);
+
+  if (signalData) {
+    try {
+      await HyperionMemory.remember({
+        tick: Date.now(),
+        charge_type: 'solar_reading',
+        coherence: 1,
+        voice: signalText,
+        signal: signalData
+      });
+    } catch (e) { console.warn('Hyperion could not record the flare:', e.message); }
+  }
+
+  window.TitanExport = function () {
+    return {
+      titan: 'hyperion',
+      title: 'Light & Illumination',
+      reflect: (typeof HyperionIdentity !== 'undefined' && HyperionIdentity.reflect) ? HyperionIdentity.reflect() : null,
+      signal: signalData,
+      fast: HyperionMemory.layers.fast,
+      local: HyperionMemory.layers.local,
+      exported_at: new Date().toISOString()
+    };
+  };
+
+  if (window.parent !== window) {
+    window.parent.postMessage({ type: 'titan-ready', titan: 'hyperion' }, '*');
+  }
+})();
+</script>
+
+</body>
+</html>
