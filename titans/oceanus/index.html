@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🌀 Oceanus — Flow & Connections</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=EB+Garamond:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
+<style>
+  :root { --gold: #c9a84c; --deep: #05050f; --mist: #e8e0d0; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--deep); color: var(--mist); font-family: 'EB Garamond', Georgia, serif; padding: 2rem; max-width: 700px; margin: 0 auto; }
+  h1 { font-family: 'Cinzel', serif; color: var(--gold); letter-spacing: 0.1em; font-size: 1.4rem; margin-bottom: 0.3rem; }
+  .subtitle { color: rgba(180,160,100,0.5); font-style: italic; margin-bottom: 1.5rem; }
+  #status { background: rgba(180,160,100,0.06); border-left: 3px solid var(--gold); padding: 0.8rem 1rem; margin-bottom: 1rem; font-style: italic; }
+  .section-label { font-family: 'Cinzel', serif; font-size: 0.8rem; letter-spacing: 0.15em; color: var(--gold); margin-bottom: 0.5rem; margin-top: 1rem; }
+  .signal-box { background: rgba(180,160,100,0.04); border: 1px solid rgba(180,160,100,0.15); border-radius: 4px; padding: 0.9rem; margin-bottom: 1rem; }
+  pre { background: rgba(255,255,255,0.04); border: 1px solid rgba(180,160,100,0.15); padding: 1rem; border-radius: 4px; overflow: auto; max-height: 260px; font-size: 0.75rem; color: rgba(232,224,208,0.8); }
+  .back { display: inline-block; margin-top: 1.5rem; font-family: 'Cinzel', serif; font-size: 0.65rem; letter-spacing: 0.2em; color: rgba(201,168,76,0.6); text-decoration: none; }
+  .back:hover { color: var(--gold); }
+</style>
+</head>
+<body>
+
+<h1>🌀 OCEANUS</h1>
+<div class="subtitle">Flow & Connections · Stream Aggregator</div>
+
+<div id="status">Waking...</div>
+
+<div class="section-label">SIGNAL — Penobscot Bay Wave Data</div>
+<div id="signal" class="signal-box">Gathering...</div>
+
+<div class="section-label">LOCAL MEMORY</div>
+<pre id="output">Loading...</pre>
+
+<a href="../../index.html" class="back">← Return to GAIA</a>
+
+<script src="identity.js"></script>
+<script src="remember.js"></script>
+<script>
+// Coordinates near Bucksport, ME / Penobscot Bay
+const LAT = 44.57, LON = -68.79;
+
+(async function boot() {
+  await OceanusMemory.init();
+
+  let signalText = 'The waters could not be read.';
+  let signalData = null;
+
+  try {
+    const resp = await fetch(`https://marine-api.open-meteo.com/v1/marine?latitude=${LAT}&longitude=${LON}&hourly=wave_height,wave_period&timezone=auto`);
+    const data = await resp.json();
+    const waveHeight = data?.hourly?.wave_height?.[0];
+    const wavePeriod = data?.hourly?.wave_period?.[0];
+
+    signalData = { wave_height_m: waveHeight ?? null, wave_period_s: wavePeriod ?? null, location: 'Penobscot Bay' };
+    signalText = waveHeight != null
+      ? `Wave height near the Penobscot mouth: ${waveHeight} m, period ${wavePeriod ?? '?'} s.`
+      : 'The waters near the bay are unreadable today.';
+  } catch (e) {
+    signalText = 'The waters could not be read (Open-Meteo Marine feed unreachable).';
+  }
+
+  document.getElementById('status').textContent =
+    (typeof OceanusIdentity !== 'undefined' && OceanusIdentity.reflect)
+      ? OceanusIdentity.reflect() : '🌀 Oceanus: Flow & Connections. He maps what flowed where.';
+  document.getElementById('signal').textContent = signalText;
+  document.getElementById('output').textContent = JSON.stringify(OceanusMemory.layers.local, null, 2);
+
+  if (signalData) {
+    try {
+      await OceanusMemory.remember({
+        tick: Date.now(),
+        charge_type: 'flow_reading',
+        coherence: 1,
+        voice: signalText,
+        signal: signalData
+      });
+    } catch (e) { console.warn('Oceanus could not record the flow:', e.message); }
+  }
+
+  window.TitanExport = function () {
+    return {
+      titan: 'oceanus',
+      title: 'Flow & Connections',
+      reflect: (typeof OceanusIdentity !== 'undefined' && OceanusIdentity.reflect) ? OceanusIdentity.reflect() : null,
+      signal: signalData,
+      fast: OceanusMemory.layers.fast,
+      local: OceanusMemory.layers.local,
+      exported_at: new Date().toISOString()
+    };
+  };
+
+  if (window.parent !== window) {
+    window.parent.postMessage({ type: 'titan-ready', titan: 'oceanus' }, '*');
+  }
+})();
+</script>
+
+</body>
+</html>
