@@ -119,6 +119,15 @@
             color: var(--gold);
             margin-top: 0.25rem;
         }
+        .flare-indicator {
+            font-family: 'Cinzel', serif;
+            font-size: 0.55rem;
+            letter-spacing: 0.15em;
+            color: rgba(255,200,68,0.5);
+            margin-top: 0.3rem;
+        }
+        .flare-indicator.m-class { color: #ffaa44; }
+        .flare-indicator.x-class { color: #ff4422; animation: goldShimmer 1s ease-in-out infinite; }
 
         .tab-bar {
             display: flex;
@@ -133,12 +142,13 @@
             border: 1px solid rgba(201,168,76,0.2);
             color: var(--text-dim);
             font-family: 'Cinzel', serif;
-            font-size: 0.7rem;
-            letter-spacing: 0.1em;
-            padding: 0.5rem 1rem;
+            font-size: 0.65rem;
+            letter-spacing: 0.08em;
+            padding: 0.45rem 0.8rem;
             cursor: pointer;
             border-radius: 4px 4px 0 0;
             transition: all 0.2s;
+            white-space: nowrap;
         }
         .tab-btn.active {
             background: var(--surface-light);
@@ -177,15 +187,27 @@
             border-top: 1px solid rgba(201,168,76,0.08);
         }
 
-        /* ── DOORWAY ── */
-        .doorway-container {
-            display: flex; justify-content: center; margin: 1rem 0 0.5rem;
+        /* ── DOORWAYS ── */
+        .doorways-row {
+            display: flex; justify-content: center; gap: 2rem; margin: 1rem 0 0.5rem;
+            flex-wrap: wrap;
+        }
+        .doorway-pair {
+            text-align: center;
+        }
+        .doorway-label {
+            font-family: 'Cinzel', serif;
+            font-size: 0.5rem;
+            letter-spacing: 0.15em;
+            color: rgba(200,168,76,0.4);
+            margin-top: 0.3rem;
         }
 
         @media (max-width: 700px) {
             .content-layer { padding: 1.5rem 0.8rem; }
-            .tab-btn { padding: 0.35rem 0.6rem; font-size: 0.6rem; }
+            .tab-btn { padding: 0.3rem 0.5rem; font-size: 0.55rem; }
             iframe.sanctum-frame { height: 55vh; }
+            .doorways-row { gap: 1rem; }
         }
     </style>
 </head>
@@ -202,13 +224,15 @@
                 <span class="apollo-glyph">☀️</span>
                 <span class="apollo-title">APOLLO</span>
                 <div class="phi-sub">THE COMPLETE SANCTUARY · φ ENGINE · ALL MODES</div>
+                <div class="flare-indicator" id="flareIndicator">☉ Awaiting signal...</div>
             </div>
 
             <!-- ══ TAB BAR ══ -->
             <div class="tab-bar">
-                <button class="tab-btn active" data-tab="table">🃏 THE TABLE</button>
-                <button class="tab-btn" data-tab="chat">💬 THE VOICE</button>
+                <button class="tab-btn active" data-tab="table">🃏 TABLE</button>
+                <button class="tab-btn" data-tab="chat">💬 VOICE</button>
                 <button class="tab-btn" data-tab="prophecy">🔮 PROPHECY</button>
+                <button class="tab-btn" data-tab="flare">☀️ FLARE</button>
                 <button class="tab-btn" data-tab="studio">🎨 STUDIO</button>
             </div>
 
@@ -217,12 +241,12 @@
                 <iframe id="sanctuaryFrame" class="sanctum-frame" src="apolloTable.html" title="Apollo Sanctuary"></iframe>
             </div>
 
-            <!-- ══ DOORWAY TO REALM ══ -->
-            <div class="doorway-container" id="doorwayContainer"></div>
+            <!-- ══ DOORWAYS ══ -->
+            <div class="doorways-row" id="doorwaysRow"></div>
 
             <!-- ══ FOOTER ══ -->
             <div class="footer-note">
-                GAIA · Apollo Engine · The Table · The Voice · The Prophecy · The Studio
+                GAIA · Apollo Engine · Table · Voice · Prophecy · Flare · Studio · Realm · Organism
             </div>
 
         </div>
@@ -232,11 +256,13 @@
 <div id="toast"></div>
 
 <script src="../js/gaia-mason.js"></script>
+<script src="js/solarOracle.js"></script>
 <script>
-// ═══════════════════════════════════════
+// ═══════════════════════════════════
 // APOLLO · The Complete Sanctuary
-// Mason frame + Ouranos + Pontus + Doorway
-// ═══════════════════════════════════════
+// Mason frame + Ouranos + Pontus + Dual Doorways
+// Flare-driven sun — live NOAA data modulates glow
+// ═══════════════════════════════════
 
 const DEFAULT_STATE = {
     visits: 0,
@@ -259,6 +285,43 @@ function toast(msg, d = 2800) {
 }
 
 // ═══════════════════════════════════
+// FLARE DATA — drives the sun
+// ═══════════════════════════════════
+
+let currentFlareData = null;
+let flareRank = 1; // 1=B, 2=C, 3=M, 4=X
+
+async function fetchFlareData() {
+    if (typeof SolarOracle !== 'undefined') {
+        try {
+            const data = await SolarOracle.fetchAll();
+            if (data && data.flare) {
+                currentFlareData = data.flare;
+                const cls = currentFlareData.class?.charAt(0) || 'B';
+                flareRank = cls === 'X' ? 4 : cls === 'M' ? 3 : cls === 'C' ? 2 : 1;
+                updateFlareIndicator();
+            }
+        } catch(e) {
+            console.warn('Flare fetch failed:', e.message);
+        }
+    }
+}
+
+function updateFlareIndicator() {
+    const el = document.getElementById('flareIndicator');
+    if (!currentFlareData) {
+        el.textContent = '☉ Awaiting signal...';
+        el.className = 'flare-indicator';
+        return;
+    }
+    const cls = currentFlareData.class || '?';
+    el.textContent = `☉ ${cls} · ${currentFlareData.message || 'The sun speaks'}`;
+    el.className = 'flare-indicator';
+    if (cls.startsWith('M')) el.classList.add('m-class');
+    if (cls.startsWith('X')) el.classList.add('x-class');
+}
+
+// ═══════════════════════════════════
 // MASON FRAME
 // ═══════════════════════════════════
 
@@ -266,7 +329,6 @@ function buildMasonFrame() {
     const container = document.getElementById('mason-layer');
     const m = new GaiaMason('mason-layer');
 
-    // Apollo's materials
     GaiaMason.MATERIALS['sun_stone'] = {
         chars: ['◆','◇','◆','◇','◆'], textColor:'#e8d080', mortarColor:'#c8b840',
         fontSize:24, lineHeight:0.5, letterSpacing:0, fontFamily:"'Georgia',serif", weathering:0.02
@@ -286,21 +348,21 @@ function buildMasonFrame() {
 
     const W = container.clientWidth;
 
-    // Left pillar — laurel green
+    // Left pillar
     m.buildPillar({
         ...GaiaMason.mat('laurel_dark'),
         x: 10, y: 20, width: 30, height: 900, z: 3,
         capital: true, capitalHeight: 26
     });
 
-    // Right pillar — laurel green
+    // Right pillar
     m.buildPillar({
         ...GaiaMason.mat('laurel_dark'),
         x: W - 40, y: 20, width: 30, height: 900, z: 3,
         capital: true, capitalHeight: 26
     });
 
-    // Top arch — sun stone
+    // Top arch
     m.buildArch({
         chars: ['◆','◇','◆','◇','◆'],
         textColor: '#e8d080', fontSize: 24,
@@ -318,7 +380,7 @@ function buildMasonFrame() {
         perspectiveStrength: 4
     });
 
-    // Inscriptions on pillars
+    // Pillar inscriptions
     m.buildInscription({
         text: 'ΓΝΩΘΙ ΣΕΑΥΤΟΝ',
         x: 1, y: 440, fontSize: 9,
@@ -335,66 +397,18 @@ function buildMasonFrame() {
     // Light
     m.buildLight({ color: '#ffe088', radius: 120, x: W / 2, y: 450, pulse: true, z: 0 });
 
-    // ── DOORWAY TO REALM ──
-    const doorwayCx = W / 2, doorwayCy = 830;
+    // ── DOORWAY 1: REALM (center-right) ──
+    const realmCx = W / 2 + 60, realmCy = 830;
+    buildDoorway(m, container, realmCx, realmCy, 'ENTER THE', 'SOLAR TEMPLE', 'realm.html?from=index', '☀️ You step through the threshold into the Solar Temple...');
 
-    m.buildArch({
-        chars: ['◆','◇','◆','◇'],
-        textColor: '#e8d080', fontSize: 20,
-        fontFamily: "'Georgia',serif",
-        cx: doorwayCx, cy: doorwayCy, innerRadius: 55,
-        stoneCount: 15, stoneDepth: 20, z: 10,
-        keystoneChar: '☀️', keystoneOversize: 1.8
-    });
-
-    // Dark void
-    const doorVoid = m.buildWall({
-        chars: [' '],
-        textColor: '#0a0800', mortarColor: '#0a0800',
-        fontSize: 10, lineHeight: 0.5, letterSpacing: 0,
-        fontFamily: 'monospace',
-        x: doorwayCx - 50, y: doorwayCy - 5,
-        width: 100, height: 70, z: 9
-    });
-    if (doorVoid) {
-        doorVoid.style.borderRadius = '55px 55px 0 0';
-        doorVoid.style.boxShadow = 'inset 0 0 40px rgba(255,200,68,0.5)';
-        doorVoid.style.animation = 'doorGlow 3s ease-in-out infinite';
-    }
-
-    m.buildInscription({
-        text: 'ENTER THE',
-        x: doorwayCx - 42, y: doorwayCy - 30,
-        fontSize: 7, color: 'rgba(240,216,128,0.5)',
-        fontFamily: "'Cinzel',serif", z: 12
-    });
-    m.buildInscription({
-        text: 'SOLAR TEMPLE',
-        x: doorwayCx - 52, y: doorwayCy - 18,
-        fontSize: 7, color: 'rgba(255,200,68,0.5)',
-        fontFamily: "'Cinzel',serif", z: 12,
-        animation: 'goldShimmer 3s ease-in-out infinite'
-    });
-
-    // Click zone
-    const doorwayZone = document.createElement('div');
-    doorwayZone.className = 'zone';
-    doorwayZone.title = 'Enter the Solar Temple';
-    doorwayZone.style.cssText = `
-        position: absolute; left: ${doorwayCx - 50}px; top: ${doorwayCy - 5}px;
-        width: 100px; height: 70px; z-index: 30; cursor: pointer;
-    `;
-    doorwayZone.addEventListener('click', () => {
-        saveState();
-        toast('☀️ You step through the threshold into the Solar Temple...');
-        setTimeout(() => { window.location.href = 'realm.html?from=index'; }, 1000);
-    });
-    container.appendChild(doorwayZone);
+    // ── DOORWAY 2: ORGANISM (center-left) ──
+    const orgCx = W / 2 - 60, orgCy = 830;
+    buildDoorway(m, container, orgCx, orgCy, 'HEAR THE', 'LIVING VOICE', 'organism.html', '🧬 You approach the living voice of the sun...');
 
     // Floor inscription
     m.buildInscription({
-        text: 'LIGHT  ·  TRUTH  ·  PROPHECY  ·  MUSIC',
-        x: W / 2 - 140, y: 900,
+        text: 'LIGHT  ·  TRUTH  ·  PROPHECY  ·  MUSIC  ·  VOICE',
+        x: W / 2 - 160, y: 900,
         fontSize: 6, color: 'rgba(240,216,128,0.2)',
         fontFamily: "'Cinzel',serif", z: 5
     });
@@ -402,8 +416,61 @@ function buildMasonFrame() {
     return m;
 }
 
+function buildDoorway(m, container, cx, cy, labelTop, labelBottom, href, toastMsg) {
+    m.buildArch({
+        chars: ['◆','◇','◆','◇'],
+        textColor: '#e8d080', fontSize: 20,
+        fontFamily: "'Georgia',serif",
+        cx: cx, cy: cy, innerRadius: 45,
+        stoneCount: 13, stoneDepth: 18, z: 10,
+        keystoneChar: '☀️', keystoneOversize: 1.6
+    });
+
+    const doorVoid = m.buildWall({
+        chars: [' '],
+        textColor: '#0a0800', mortarColor: '#0a0800',
+        fontSize: 10, lineHeight: 0.5, letterSpacing: 0,
+        fontFamily: 'monospace',
+        x: cx - 42, y: cy - 3,
+        width: 84, height: 60, z: 9
+    });
+    if (doorVoid) {
+        doorVoid.style.borderRadius = '45px 45px 0 0';
+        doorVoid.style.boxShadow = 'inset 0 0 40px rgba(255,200,68,0.5)';
+        doorVoid.style.animation = 'doorGlow 3s ease-in-out infinite';
+    }
+
+    m.buildInscription({
+        text: labelTop,
+        x: cx - 36, y: cy - 28,
+        fontSize: 6, color: 'rgba(240,216,128,0.5)',
+        fontFamily: "'Cinzel',serif", z: 12
+    });
+    m.buildInscription({
+        text: labelBottom,
+        x: cx - 44, y: cy - 17,
+        fontSize: 6, color: 'rgba(255,200,68,0.5)',
+        fontFamily: "'Cinzel',serif", z: 12,
+        animation: 'goldShimmer 3s ease-in-out infinite'
+    });
+
+    const zone = document.createElement('div');
+    zone.className = 'zone';
+    zone.title = labelBottom;
+    zone.style.cssText = `
+        position: absolute; left: ${cx - 42}px; top: ${cy - 3}px;
+        width: 84px; height: 60px; z-index: 30; cursor: pointer;
+    `;
+    zone.addEventListener('click', () => {
+        saveState();
+        toast(toastMsg);
+        setTimeout(() => { window.location.href = href; }, 1000);
+    });
+    container.appendChild(zone);
+}
+
 // ═══════════════════════════════════
-// OURANOS — sun-dominant heavens
+// OURANOS — flare-driven sun
 // ═══════════════════════════════════
 
 function setupOuranos() {
@@ -422,8 +489,7 @@ function setupOuranos() {
         speed: 0.3 + Math.random() * 1
     }));
 
-    // The Sun — prominent, warm
-    const sun = { x: W * 0.75, y: H * 0.2, r: 18, glow: 50 };
+    const sun = { x: W * 0.75, y: H * 0.2, baseR: 18, baseGlow: 50 };
 
     function draw() {
         ctx.clearRect(0, 0, W, H);
@@ -455,22 +521,50 @@ function setupOuranos() {
             ctx.fill();
         });
 
-        // Sun glow
-        const sunGrad = ctx.createRadialGradient(sun.x, sun.y, 0, sun.x, sun.y, sun.glow * 3);
-        sunGrad.addColorStop(0, 'rgba(255,240,180,0.9)');
-        sunGrad.addColorStop(0.2, 'rgba(255,200,68,0.5)');
-        sunGrad.addColorStop(0.5, 'rgba(255,180,40,0.15)');
-        sunGrad.addColorStop(1, 'transparent');
-        ctx.fillStyle = sunGrad;
+        // ── FLARE-DRIVEN SUN ──
+        // Flare rank modulates glow intensity and radius
+        const flareMultiplier = 1 + (flareRank - 1) * 0.4; // B=1.0, C=1.4, M=1.8, X=2.2
+        const pulseAmp = flareRank >= 3 ? 1.8 : 1.3; // M/X flares pulse harder
+        const pulseSpeed = flareRank >= 4 ? 0.004 : 0.002; // X flares pulse faster
+        const glowR = sun.baseGlow * flareMultiplier;
+        const bodyR = sun.baseR * (1 + (flareRank - 1) * 0.15);
+        const pulse = 1 + Math.sin(now * pulseSpeed) * 0.15 * pulseAmp;
+
+        // Outer corona (flare class affects spread)
+        const coronaGrad = ctx.createRadialGradient(sun.x, sun.y, 0, sun.x, sun.y, glowR * 3 * pulse);
+        coronaGrad.addColorStop(0, `rgba(255,240,180,${0.7 * flareMultiplier})`);
+        coronaGrad.addColorStop(0.15, `rgba(255,200,68,${0.5 * flareMultiplier})`);
+        coronaGrad.addColorStop(0.4, `rgba(255,180,40,${0.2 * flareMultiplier})`);
+        coronaGrad.addColorStop(0.7, 'rgba(255,140,20,0.06)');
+        coronaGrad.addColorStop(1, 'transparent');
+        ctx.fillStyle = coronaGrad;
         ctx.beginPath();
-        ctx.arc(sun.x, sun.y, sun.glow * 3, 0, Math.PI * 2);
+        ctx.arc(sun.x, sun.y, glowR * 3 * pulse, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Inner glow
+        const innerGrad = ctx.createRadialGradient(sun.x, sun.y, 0, sun.x, sun.y, glowR * pulse);
+        innerGrad.addColorStop(0, 'rgba(255,255,220,0.95)');
+        innerGrad.addColorStop(0.3, `rgba(255,220,100,${0.6 * flareMultiplier})`);
+        innerGrad.addColorStop(1, 'transparent');
+        ctx.fillStyle = innerGrad;
+        ctx.beginPath();
+        ctx.arc(sun.x, sun.y, glowR * pulse, 0, Math.PI * 2);
         ctx.fill();
 
         // Sun body
         ctx.beginPath();
-        ctx.arc(sun.x, sun.y, sun.r, 0, Math.PI * 2);
+        ctx.arc(sun.x, sun.y, bodyR * pulse, 0, Math.PI * 2);
         ctx.fillStyle = '#ffe088';
         ctx.fill();
+
+        // X-class: add white-hot core
+        if (flareRank >= 4) {
+            ctx.beginPath();
+            ctx.arc(sun.x, sun.y, bodyR * 0.5, 0, Math.PI * 2);
+            ctx.fillStyle = 'rgba(255,255,255,0.9)';
+            ctx.fill();
+        }
 
         requestAnimationFrame(draw);
     }
@@ -478,7 +572,7 @@ function setupOuranos() {
 }
 
 // ═══════════════════════════════════
-// PONTUS — light ripples (not waves)
+// PONTUS — light ripples
 // ═══════════════════════════════════
 
 function setupPontus() {
@@ -546,6 +640,7 @@ const tabMap = {
     table: 'apolloTable.html',
     chat: 'chat.html',
     prophecy: 'prophecy.html',
+    flare: 'flare.html',
     studio: 'studio.html'
 };
 
@@ -585,6 +680,10 @@ function init() {
     setupOuranos();
     setupPontus();
     buildMasonFrame();
+
+    // Fetch flare data and start polling
+    fetchFlareData();
+    setInterval(fetchFlareData, 60000);
 
     // Restore last tab
     if (state.lastTab && tabMap[state.lastTab]) {
