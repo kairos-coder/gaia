@@ -1,0 +1,907 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🎧 Soundscape Test v2 · GAIA</title>
+<style>
+  :root { --overlay: rgba(5, 5, 15, 0.88); }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Georgia', serif;
+    color: #e8e0d0;
+    min-height: 100vh;
+    background: #050508;
+    position: relative;
+  }
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: radial-gradient(ellipse at 50% 0%, rgba(40, 30, 10, 0.35), transparent 60%), var(--overlay);
+    z-index: 0;
+    pointer-events: none;
+  }
+
+  .content {
+    position: relative;
+    z-index: 1;
+    max-width: 880px;
+    margin: 0 auto;
+    padding: 40px 28px 60px;
+  }
+
+  .header { text-align: center; margin-bottom: 28px; }
+  .header .sigil { font-size: 44px; margin-bottom: 6px; }
+  .header h1 { font-size: 24px; letter-spacing: 0.1em; color: #c9a84c; margin-bottom: 6px; }
+  .header .sub { font-size: 11px; color: rgba(200,180,140,0.45); letter-spacing: 0.08em; text-transform: uppercase; }
+
+  /* World State Sliders */
+  .world-state {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 2px;
+    background: rgba(200,160,80,0.1);
+    border: 1px solid rgba(200,160,80,0.15);
+    margin-bottom: 28px;
+  }
+  .ws-item { background: rgba(10, 8, 4, 0.7); padding: 12px 8px 10px; text-align: center; }
+  .ws-label { font-size: 8px; color: rgba(200,160,100,0.5); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 6px; }
+  .ws-value { font-size: 18px; color: #c9a84c; margin-bottom: 6px; }
+  .ws-item input[type="range"] { width: 100%; accent-color: #c9a84c; cursor: pointer; }
+  .ws-bar { height: 3px; background: rgba(200,160,80,0.1); border-radius: 1px; overflow: hidden; margin-top: 6px; }
+  .ws-fill { height: 100%; transition: width 0.15s ease; }
+  .ws-fill.vitality { background: #44cc88; }
+  .ws-fill.luminosity { background: #ffd700; }
+  .ws-fill.chaos { background: #ff4444; }
+  .ws-fill.harmony { background: #4488ff; }
+  .ws-fill.memory { background: #cc88ff; }
+
+  /* Layer Panels */
+  .panel {
+    background: rgba(10, 8, 4, 0.7);
+    border: 1px solid rgba(200,160,80,0.2);
+    border-left: 3px solid #c9a84c;
+    padding: 20px;
+    margin-bottom: 20px;
+  }
+  .panel.event-panel { border-left-color: #44cc88; }
+  .panel.master-panel { border-left-color: #4488ff; }
+  .panel-title { font-size: 11px; color: rgba(200,160,100,0.5); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 4px; }
+  .panel-desc { font-size: 12px; font-style: italic; color: rgba(200,180,140,0.55); margin-bottom: 14px; line-height: 1.5; }
+
+  .layer-row { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; margin-bottom: 10px; }
+  .layer-row:last-child { margin-bottom: 0; }
+  .layer-row label { font-size: 11px; color: rgba(200,180,140,0.6); min-width: 90px; }
+  .layer-row input[type="range"] { flex: 1; min-width: 120px; accent-color: #c9a84c; cursor: pointer; }
+  .vol-readout { font-family: monospace; font-size: 10px; color: rgba(180,160,100,0.5); min-width: 42px; text-align: right; }
+
+  select {
+    background: rgba(20,15,8,0.9); border: 1px solid rgba(200,160,80,0.3);
+    color: #c9a84c; font-family: 'Georgia', serif; font-size: 12px;
+    padding: 8px 12px; cursor: pointer;
+  }
+
+  .btn {
+    background: rgba(20, 15, 8, 0.8);
+    border: 1px solid rgba(200,160,80,0.3);
+    color: #c9a84c;
+    padding: 10px 20px;
+    font-family: 'Georgia', serif;
+    font-size: 12px;
+    cursor: pointer;
+    letter-spacing: 0.06em;
+    transition: all 0.3s;
+  }
+  .btn:hover { background: rgba(40, 30, 15, 0.8); border-color: #c9a84c; color: #e0c860; }
+  .btn.on { border-color: #44cc88; color: #44cc88; }
+  .btn.event-btn { border-color: rgba(68,204,136,0.4); color: #44cc88; font-size: 14px; padding: 14px 28px; }
+  .btn.event-btn:hover { background: rgba(20,40,30,0.8); border-color: #44cc88; }
+  .btn.master-btn { border-color: rgba(68,136,255,0.4); color: #4488ff; }
+  .btn.master-btn:hover { background: rgba(15,25,40,0.8); border-color: #4488ff; }
+
+  /* Step Sequencer */
+  .seq-controls { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; margin-bottom: 16px; }
+  .seq-grid { display: flex; flex-direction: column; gap: 4px; margin-bottom: 14px; }
+  .seq-row { display: grid; grid-template-columns: 60px repeat(16, 1fr); gap: 3px; align-items: center; }
+  .seq-row-label { font-size: 9px; color: rgba(200,160,100,0.5); letter-spacing: 0.04em; text-transform: uppercase; }
+  .seq-step {
+    aspect-ratio: 1;
+    background: rgba(200,160,80,0.08);
+    border: 1px solid rgba(200,160,80,0.15);
+    cursor: pointer;
+    transition: all 0.15s;
+    min-height: 22px;
+  }
+  .seq-step:hover { background: rgba(200,160,80,0.2); }
+  .seq-step.on.low { background: #44cc88; border-color: #44cc88; }
+  .seq-step.on.mid { background: #c9a84c; border-color: #c9a84c; }
+  .seq-step.on.high { background: #ff8844; border-color: #ff8844; }
+  .seq-step.playhead { box-shadow: 0 0 0 2px #fff inset; }
+  .seq-step.beat-marker { border-left: 2px solid rgba(200,160,80,0.4); }
+
+  /* Param readout */
+  .readout {
+    background: rgba(10, 8, 4, 0.7);
+    border: 1px solid rgba(200,160,80,0.15);
+    padding: 14px 16px;
+    font-family: monospace;
+    font-size: 10px;
+    color: rgba(180,160,100,0.55);
+    line-height: 1.8;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 4px 16px;
+  }
+  .readout strong { color: #c9a84c; font-weight: normal; }
+
+  .freeze-output {
+    display: none;
+    background: rgba(0,0,0,0.5);
+    border: 1px solid rgba(68,136,255,0.25);
+    padding: 12px;
+    font-family: monospace;
+    font-size: 10px;
+    color: rgba(150,180,220,0.8);
+    max-height: 160px;
+    overflow-y: auto;
+    white-space: pre-wrap;
+    margin-top: 12px;
+  }
+
+  @media (max-width: 640px) {
+    .seq-row { grid-template-columns: 44px repeat(16, 1fr); }
+    .layer-row label { min-width: 70px; }
+  }
+</style>
+</head>
+<body>
+<div class="content">
+
+  <div class="header">
+    <div class="sigil">🎧</div>
+    <h1>Soundscape Test v2</h1>
+    <div class="sub">Pure synthesis · offline · no APIs · step sequencer</div>
+  </div>
+
+  <div class="world-state" id="worldState">
+    <div class="ws-item">
+      <div class="ws-label">Vitality</div>
+      <div class="ws-value" id="valVitality">50</div>
+      <input type="range" id="slVitality" min="0" max="100" value="50">
+      <div class="ws-bar"><div class="ws-fill vitality" id="barVitality" style="width:50%"></div></div>
+    </div>
+    <div class="ws-item">
+      <div class="ws-label">Luminosity</div>
+      <div class="ws-value" id="valLuminosity">50</div>
+      <input type="range" id="slLuminosity" min="0" max="100" value="50">
+      <div class="ws-bar"><div class="ws-fill luminosity" id="barLuminosity" style="width:50%"></div></div>
+    </div>
+    <div class="ws-item">
+      <div class="ws-label">Chaos</div>
+      <div class="ws-value" id="valChaos">25</div>
+      <input type="range" id="slChaos" min="0" max="100" value="25">
+      <div class="ws-bar"><div class="ws-fill chaos" id="barChaos" style="width:25%"></div></div>
+    </div>
+    <div class="ws-item">
+      <div class="ws-label">Harmony</div>
+      <div class="ws-value" id="valHarmony">60</div>
+      <input type="range" id="slHarmony" min="0" max="100" value="60">
+      <div class="ws-bar"><div class="ws-fill harmony" id="barHarmony" style="width:60%"></div></div>
+    </div>
+    <div class="ws-item">
+      <div class="ws-label">Memory</div>
+      <div class="ws-value" id="valMemory">40</div>
+      <input type="range" id="slMemory" min="0" max="100" value="40">
+      <div class="ws-bar"><div class="ws-fill memory" id="barMemory" style="width:40%"></div></div>
+    </div>
+  </div>
+
+  <!-- LAYER 1: DRONE -->
+  <div class="panel">
+    <div class="panel-title">Layer 1 · Drone / Pad</div>
+    <div class="panel-desc">Detuned sine &amp; triangle oscillators through a slow-sweeping lowpass filter.</div>
+    <div class="layer-row">
+      <button class="btn" id="btnDrone" onclick="toggleDrone()">Drone: off</button>
+      <label>Vol</label>
+      <input type="range" id="volDrone" min="0" max="100" value="35" oninput="setLayerVolume('drone', this.value)">
+      <span class="vol-readout" id="volDroneReadout">35%</span>
+    </div>
+    <div class="layer-row">
+      <label>Filter Range</label>
+      <input type="range" id="ctrlFilterMax" min="400" max="4000" value="1200" oninput="setManualOverride('filterFreqMax', this.value)">
+      <span class="vol-readout" id="ctrlFilterMaxReadout">1200Hz</span>
+    </div>
+    <div class="layer-row">
+      <label>Sweep Rate</label>
+      <input type="range" id="ctrlSweepMax" min="5" max="50" value="18" oninput="setManualOverride('sweepHzMax', this.value / 100)">
+      <span class="vol-readout" id="ctrlSweepMaxReadout">0.18Hz</span>
+    </div>
+    <div class="layer-row">
+      <label>Detune Spread</label>
+      <input type="range" id="ctrlDetuneSpread" min="0" max="100" value="8" oninput="setManualOverride('harmonySpreadMin', this.value / 100)">
+      <span class="vol-readout" id="ctrlDetuneSpreadReadout">0.08</span>
+    </div>
+  </div>
+
+  <!-- LAYER 2: SEQUENCER -->
+  <div class="panel">
+    <div class="panel-title">Layer 2 · Pulse / Beat Sequencer</div>
+    <div class="panel-desc">16-step grid across three voices — reuses the thump / accent / breath sound sources as steps instead of a continuous loop.</div>
+    <div class="seq-controls">
+      <button class="btn" id="btnPulse" onclick="togglePulse()">Sequencer: off</button>
+      <label style="min-width:auto;">Vol</label>
+      <input type="range" id="volPulse" min="0" max="100" value="50" oninput="setLayerVolume('pulse', this.value)" style="max-width:100px;">
+      <span class="vol-readout" id="volPulseReadout">50%</span>
+      <label style="min-width:auto;">BPM</label>
+      <input type="range" id="ctrlBpmOverride" min="24" max="160" value="78" oninput="setManualOverride('bpmOverride', this.value)" style="max-width:100px;">
+      <span class="vol-readout" id="ctrlBpmOverrideReadout">78</span>
+      <label style="min-width:auto;">Density</label>
+      <input type="range" id="ctrlDensity" min="0" max="100" value="25" oninput="setDensity(this.value)" style="max-width:100px;">
+      <span class="vol-readout" id="ctrlDensityReadout">25%</span>
+      <button class="btn" onclick="randomizeSteps()">🎲 Fill from Density</button>
+      <button class="btn" onclick="clearSteps()">Clear</button>
+    </div>
+    <div class="seq-grid" id="seqGrid"><div class="seq-row"><div class="seq-row-label">Low</div><div class="seq-step on low beat-marker" data-row="low" data-step="0" onclick="toggleStep('low', 0)"></div><div class="seq-step " data-row="low" data-step="1" onclick="toggleStep('low', 1)"></div><div class="seq-step " data-row="low" data-step="2" onclick="toggleStep('low', 2)"></div><div class="seq-step " data-row="low" data-step="3" onclick="toggleStep('low', 3)"></div><div class="seq-step on low beat-marker" data-row="low" data-step="4" onclick="toggleStep('low', 4)"></div><div class="seq-step " data-row="low" data-step="5" onclick="toggleStep('low', 5)"></div><div class="seq-step " data-row="low" data-step="6" onclick="toggleStep('low', 6)"></div><div class="seq-step " data-row="low" data-step="7" onclick="toggleStep('low', 7)"></div><div class="seq-step on low beat-marker" data-row="low" data-step="8" onclick="toggleStep('low', 8)"></div><div class="seq-step " data-row="low" data-step="9" onclick="toggleStep('low', 9)"></div><div class="seq-step " data-row="low" data-step="10" onclick="toggleStep('low', 10)"></div><div class="seq-step " data-row="low" data-step="11" onclick="toggleStep('low', 11)"></div><div class="seq-step on low beat-marker" data-row="low" data-step="12" onclick="toggleStep('low', 12)"></div><div class="seq-step " data-row="low" data-step="13" onclick="toggleStep('low', 13)"></div><div class="seq-step " data-row="low" data-step="14" onclick="toggleStep('low', 14)"></div><div class="seq-step on low" data-row="low" data-step="15" onclick="toggleStep('low', 15)"></div></div><div class="seq-row"><div class="seq-row-label">Mid</div><div class="seq-step  beat-marker" data-row="mid" data-step="0" onclick="toggleStep('mid', 0)"></div><div class="seq-step on mid" data-row="mid" data-step="1" onclick="toggleStep('mid', 1)"></div><div class="seq-step " data-row="mid" data-step="2" onclick="toggleStep('mid', 2)"></div><div class="seq-step " data-row="mid" data-step="3" onclick="toggleStep('mid', 3)"></div><div class="seq-step  beat-marker" data-row="mid" data-step="4" onclick="toggleStep('mid', 4)"></div><div class="seq-step " data-row="mid" data-step="5" onclick="toggleStep('mid', 5)"></div><div class="seq-step " data-row="mid" data-step="6" onclick="toggleStep('mid', 6)"></div><div class="seq-step " data-row="mid" data-step="7" onclick="toggleStep('mid', 7)"></div><div class="seq-step  beat-marker" data-row="mid" data-step="8" onclick="toggleStep('mid', 8)"></div><div class="seq-step " data-row="mid" data-step="9" onclick="toggleStep('mid', 9)"></div><div class="seq-step " data-row="mid" data-step="10" onclick="toggleStep('mid', 10)"></div><div class="seq-step " data-row="mid" data-step="11" onclick="toggleStep('mid', 11)"></div><div class="seq-step  beat-marker" data-row="mid" data-step="12" onclick="toggleStep('mid', 12)"></div><div class="seq-step " data-row="mid" data-step="13" onclick="toggleStep('mid', 13)"></div><div class="seq-step " data-row="mid" data-step="14" onclick="toggleStep('mid', 14)"></div><div class="seq-step " data-row="mid" data-step="15" onclick="toggleStep('mid', 15)"></div></div><div class="seq-row"><div class="seq-row-label">High</div><div class="seq-step on high beat-marker" data-row="high" data-step="0" onclick="toggleStep('high', 0)"></div><div class="seq-step " data-row="high" data-step="1" onclick="toggleStep('high', 1)"></div><div class="seq-step " data-row="high" data-step="2" onclick="toggleStep('high', 2)"></div><div class="seq-step " data-row="high" data-step="3" onclick="toggleStep('high', 3)"></div><div class="seq-step  beat-marker" data-row="high" data-step="4" onclick="toggleStep('high', 4)"></div><div class="seq-step " data-row="high" data-step="5" onclick="toggleStep('high', 5)"></div><div class="seq-step " data-row="high" data-step="6" onclick="toggleStep('high', 6)"></div><div class="seq-step " data-row="high" data-step="7" onclick="toggleStep('high', 7)"></div><div class="seq-step  beat-marker" data-row="high" data-step="8" onclick="toggleStep('high', 8)"></div><div class="seq-step " data-row="high" data-step="9" onclick="toggleStep('high', 9)"></div><div class="seq-step on high" data-row="high" data-step="10" onclick="toggleStep('high', 10)"></div><div class="seq-step on high" data-row="high" data-step="11" onclick="toggleStep('high', 11)"></div><div class="seq-step  beat-marker" data-row="high" data-step="12" onclick="toggleStep('high', 12)"></div><div class="seq-step on high" data-row="high" data-step="13" onclick="toggleStep('high', 13)"></div><div class="seq-step " data-row="high" data-step="14" onclick="toggleStep('high', 14)"></div><div class="seq-step " data-row="high" data-step="15" onclick="toggleStep('high', 15)"></div></div></div>
+  </div>
+
+  <!-- LAYER 3: EVENT -->
+  <div class="panel event-panel">
+    <div class="panel-title">Layer 3 · Event (one-shot)</div>
+    <div class="panel-desc">Fires a single spike sound — simulates a quake, flare, or other world-event trigger.</div>
+    <div class="layer-row">
+      <select id="eventType">
+        <option value="bell" selected="selected">Bell (sustained harmonic swell)</option>
+        <option value="pluck">Pluck (fast pizzicato transient)</option>
+        <option value="impact">Impact (low thump + noise burst)</option>
+        <option value="swell">Swell (slow 2-3s rise, bell-based)</option>
+      </select>
+      <button class="btn event-btn" onclick="fireEvent()">⚡ Fire Event</button>
+      <label>Vol</label>
+      <input type="range" id="volEvent" min="0" max="100" value="60" oninput="setLayerVolume('event', this.value)">
+      <span class="vol-readout" id="volEventReadout">60%</span>
+    </div>
+  </div>
+
+  <!-- MASTER -->
+  <div class="panel master-panel">
+    <div class="panel-title">Master</div>
+    <div class="panel-desc">Global control and preset capture.</div>
+    <div class="layer-row">
+      <label>Master Vol</label>
+      <input type="range" id="volMaster" min="0" max="100" value="100" oninput="setMasterVolume(this.value)">
+      <span class="vol-readout" id="volMasterReadout">100%</span>
+    </div>
+    <div class="layer-row">
+      <button class="btn master-btn" onclick="freezeState()">❄ Freeze (log preset)</button>
+      <button class="btn master-btn" onclick="randomizeWorld()">🎲 Randomize World</button>
+    </div>
+    <div class="freeze-output" id="freezeOutput"></div>
+  </div>
+
+  <div class="readout" id="readout"><span><strong>filter cutoff</strong> 640 Hz</span><span><strong>sweep rate</strong> 0.116 Hz</span><span><strong>detune scale</strong> 0.45</span><span><strong>pulse BPM</strong> 38</span><span><strong>saturation</strong> 5</span><span><strong>jitter</strong> 9 ms</span><span><strong>vitality cents</strong> +9</span></div>
+
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════
+// TUNING CONSTANTS
+// ═══════════════════════════════════════════════════════════
+
+const DRONE = {
+  baseFreq: 55,
+  detuneCents: [0, 7, -5],
+  oscTypes: ['sine', 'triangle', 'sine'],
+  filterFreqMin: 80,
+  filterFreqMax: 1200,        // overridden live by ctrlFilterMax
+  filterQ: 1.4,
+  filterSweepHzMin: 0.02,
+  filterSweepHzMax: 0.18,     // overridden live by ctrlSweepMax
+  fadeInSec: 2.0,
+  fadeOutSec: 1.2,
+  defaultVolume: 0.35,
+};
+
+const PULSE = {
+  bpmMin: 24,
+  bpmMax: 78,                 // world-driven ceiling; ctrlBpmOverride can override entirely
+  subFreq: 46,
+  subBaseGain: 0.07,
+  thumpAttack: 0.035,
+  thumpDecay: 1.1,
+  thumpDepth: 0.22,
+  thumpPitchDrop: 8,
+  accentFreq: 174,
+  accentDecay: 0.24,
+  accentGain: 0.06,
+  accentFilterHz: 320,
+  breathGain: 0.03,
+  breathAttack: 0.06,
+  breathDecay: 0.4,
+  breathFilterLo: 280,
+  breathFilterHi: 900,
+  hiFreq: 520,
+  hiDecay: 0.15,
+  hiGain: 0.045,
+  jitterMaxMs: 35,
+  saturationMin: 0,
+  saturationMax: 18,
+  defaultVolume: 0.45,
+  steps: 16,
+};
+
+// Event type recipes — each fireEvent() call reads whichever is selected
+const EVENT_TYPES = {
+  bell: {
+    partials: [1, 2.4, 3.8, 5.2],
+    baseFreq: 330,
+    attack: 0.008,
+    decay: 3.2,
+    swellPeak: 0.7,
+    noiseBurst: false,
+  },
+  pluck: {
+    partials: [1, 2.0],
+    baseFreq: 440,
+    attack: 0.005,
+    decay: 0.6,
+    swellPeak: 0.01,
+    noiseBurst: true,
+    noiseDecay: 0.03,
+    noiseGainMult: 0.3,
+  },
+  impact: {
+    partials: [1, 1.5],
+    baseFreq: 90,
+    attack: 0.003,
+    decay: 0.4,
+    swellPeak: 0.005,
+    noiseBurst: true,
+    noiseDecay: 0.15,
+    noiseGainMult: 0.6,
+  },
+  swell: {
+    partials: [1, 2.4, 3.8, 5.2],
+    baseFreq: 330,
+    attack: 0.02,
+    decay: 4.5,
+    swellPeak: 2.6,
+    noiseBurst: false,
+  },
+};
+
+const WORLD_MAP = {
+  vitalityPitchRange: [0, 18],
+  vitalityMixBoost: 0.25,
+  harmonySpreadMin: 0.08,     // overridden live by ctrlDetuneSpread
+};
+
+// Manual overrides — set by the new knobs, take priority over world-driven values
+let manualOverrides = {
+  filterFreqMax: null,
+  sweepHzMax: null,
+  harmonySpreadMin: null,
+  bpmOverride: null,
+};
+
+function setManualOverride(key, val) {
+  manualOverrides[key] = parseFloat(val);
+  const readoutMap = {
+    filterFreqMax: v => Math.round(v) + 'Hz',
+    sweepHzMax: v => v.toFixed(2) + 'Hz',
+    harmonySpreadMin: v => v.toFixed(2),
+    bpmOverride: v => Math.round(v),
+  };
+  const idMap = {
+    filterFreqMax: 'ctrlFilterMaxReadout',
+    sweepHzMax: 'ctrlSweepMaxReadout',
+    harmonySpreadMin: 'ctrlDetuneSpreadReadout',
+    bpmOverride: 'ctrlBpmOverrideReadout',
+  };
+  document.getElementById(idMap[key]).textContent = readoutMap[key](manualOverrides[key]);
+  applyWorldToAudio();
+}
+
+// ═══════════════════════════════════════════════════════════
+// AUDIO ENGINE
+// ═══════════════════════════════════════════════════════════
+
+let ctx = null;
+let world = { vitality: 50, luminosity: 50, chaos: 25, harmony: 60, memory: 40 };
+let layerVolumes = { drone: DRONE.defaultVolume, pulse: PULSE.defaultVolume, event: EVENT_TYPES.bell ? 0.6 : 0.6 };
+let masterVolume = 1.0;
+
+let drone = { running: false, oscs: [], gains: [], filter: null, sweepLfo: null, sweepDepth: null, master: null };
+let pulse = { running: false, master: null, saturator: null, schedulerId: null, nextStepTime: 0, stepIndex: 0 };
+
+// Step sequencer state: 3 rows (low/mid/high) x 16 steps, boolean grid
+let seqSteps = {
+  low:  new Array(PULSE.steps).fill(false),
+  mid:  new Array(PULSE.steps).fill(false),
+  high: new Array(PULSE.steps).fill(false),
+};
+let currentPlayhead = -1;
+
+function ensureCtx() {
+  if (!ctx) ctx = new (window.AudioContext || window.webkitAudioContext)();
+  if (ctx.state === 'suspended') ctx.resume();
+  return ctx;
+}
+
+function lerp(a, b, t) { return a + (b - a) * t; }
+function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
+
+function makeDistortionCurve(amount) {
+  const n = 256;
+  const curve = new Float32Array(n);
+  for (let i = 0; i < n; i++) {
+    const x = (i * 2) / n - 1;
+    curve[i] = ((Math.PI + amount) * x) / (Math.PI + amount * Math.abs(x));
+  }
+  return curve;
+}
+
+// ─── World-state → audio params ───
+
+function computeParams() {
+  const v = world.vitality / 100;
+  const lum = world.luminosity / 100;
+  const cha = world.chaos / 100;
+  const har = world.harmony / 100;
+  const mem = world.memory / 100;
+
+  const filterMax = manualOverrides.filterFreqMax ?? DRONE.filterFreqMax;
+  const sweepMax = manualOverrides.sweepHzMax ?? DRONE.filterSweepHzMax;
+  const spreadMin = manualOverrides.harmonySpreadMin ?? WORLD_MAP.harmonySpreadMin;
+
+  const worldBpm = lerp(PULSE.bpmMin, PULSE.bpmMax, cha);
+  const bpm = manualOverrides.bpmOverride ?? worldBpm;
+
+  return {
+    filterCutoff: lerp(DRONE.filterFreqMin, filterMax, lum),
+    filterQ: lerp(DRONE.filterQ, DRONE.filterQ * 2.2, 1 - har),
+    sweepRate: lerp(sweepMax, DRONE.filterSweepHzMin, mem),
+    detuneScale: lerp(1.0, spreadMin, har),
+    vitalityCents: lerp(0, WORLD_MAP.vitalityPitchRange[1], v),
+    vitalityMix: 1 + v * WORLD_MAP.vitalityMixBoost,
+    bpm: bpm,
+    saturation: lerp(PULSE.saturationMin, PULSE.saturationMax, cha),
+    jitterMs: lerp(0, PULSE.jitterMaxMs, cha),
+    thumpDepth: PULSE.thumpDepth * lerp(1.0, 1.35, cha),
+    chaosNorm: cha,
+  };
+}
+
+function applyWorldToAudio() {
+  const p = computeParams();
+
+  if (drone.running && drone.filter) {
+    const now = ctx.currentTime;
+    drone.filter.frequency.setTargetAtTime(p.filterCutoff, now, 0.4);
+    drone.filter.Q.setTargetAtTime(p.filterQ, now, 0.4);
+    if (drone.sweepLfo) drone.sweepLfo.frequency.setTargetAtTime(p.sweepRate, now, 0.4);
+    if (drone.sweepDepth) drone.sweepDepth.gain.setTargetAtTime(p.filterCutoff * 0.35, now, 0.4);
+
+    drone.oscs.forEach((osc, i) => {
+      const baseDetune = DRONE.detuneCents[i] * p.detuneScale;
+      osc.detune.setTargetAtTime(baseDetune + (i === 0 ? p.vitalityCents : 0), now, 0.3);
+      if (drone.gains[i]) {
+        const base = i === 0 ? 0.45 : 0.28;
+        drone.gains[i].gain.setTargetAtTime(base * (i > 0 ? p.vitalityMix : 1), now, 0.3);
+      }
+    });
+  }
+
+  if (pulse.running && pulse.saturator) {
+    pulse.saturator.curve = makeDistortionCurve(p.saturation);
+  }
+
+  updateReadout(p);
+}
+
+// ─── Drone layer ───
+
+function startDrone() {
+  ensureCtx();
+  if (drone.running) return;
+  const p = computeParams();
+
+  drone.master = ctx.createGain();
+  drone.master.gain.value = 0;
+  drone.master.connect(ctx.destination);
+
+  drone.filter = ctx.createBiquadFilter();
+  drone.filter.type = 'lowpass';
+  drone.filter.frequency.value = p.filterCutoff;
+  drone.filter.Q.value = p.filterQ;
+  drone.filter.connect(drone.master);
+
+  drone.sweepLfo = ctx.createOscillator();
+  drone.sweepLfo.type = 'sine';
+  drone.sweepLfo.frequency.value = p.sweepRate;
+  drone.sweepDepth = ctx.createGain();
+  drone.sweepDepth.gain.value = p.filterCutoff * 0.35;
+  drone.sweepLfo.connect(drone.sweepDepth).connect(drone.filter.frequency);
+  drone.sweepLfo.start();
+
+  drone.oscs = [];
+  drone.gains = [];
+  DRONE.detuneCents.forEach((cents, i) => {
+    const osc = ctx.createOscillator();
+    osc.type = DRONE.oscTypes[i];
+    osc.frequency.value = DRONE.baseFreq;
+    osc.detune.value = cents * p.detuneScale + (i === 0 ? p.vitalityCents : 0);
+
+    const g = ctx.createGain();
+    g.gain.value = (i === 0 ? 0.45 : 0.28) * (i > 0 ? p.vitalityMix : 1);
+    osc.connect(g).connect(drone.filter);
+    osc.start();
+    drone.oscs.push(osc);
+    drone.gains.push(g);
+  });
+
+  drone.master.gain.linearRampToValueAtTime(layerVolumes.drone * masterVolume, ctx.currentTime + DRONE.fadeInSec);
+  drone.running = true;
+  document.getElementById('btnDrone').textContent = 'Drone: on';
+  document.getElementById('btnDrone').classList.add('on');
+}
+
+function stopDrone() {
+  if (!drone.running) return;
+  const now = ctx.currentTime;
+  drone.master.gain.cancelScheduledValues(now);
+  drone.master.gain.setValueAtTime(drone.master.gain.value, now);
+  drone.master.gain.linearRampToValueAtTime(0, now + DRONE.fadeOutSec);
+
+  setTimeout(() => {
+    try { drone.oscs.forEach(o => o.stop()); } catch(e) {}
+    try { drone.sweepLfo.stop(); } catch(e) {}
+    drone = { running: false, oscs: [], gains: [], filter: null, sweepLfo: null, sweepDepth: null, master: null };
+  }, DRONE.fadeOutSec * 1000 + 100);
+
+  document.getElementById('btnDrone').textContent = 'Drone: off';
+  document.getElementById('btnDrone').classList.remove('on');
+}
+
+function toggleDrone() { ensureCtx(); drone.running ? stopDrone() : startDrone(); }
+
+// ─── Step sequencer sound sources (reused per-step instead of per-beat) ───
+
+function thumpStep(time, depth) {
+  const osc = ctx.createOscillator();
+  osc.type = 'sine';
+  osc.frequency.setValueAtTime(PULSE.subFreq, time);
+  osc.frequency.exponentialRampToValueAtTime(Math.max(30, PULSE.subFreq - PULSE.thumpPitchDrop), time + PULSE.thumpAttack * 2);
+  osc.frequency.exponentialRampToValueAtTime(PULSE.subFreq, time + PULSE.thumpDecay * 0.5);
+
+  const gain = ctx.createGain();
+  gain.gain.setValueAtTime(0.0001, time);
+  gain.gain.linearRampToValueAtTime(PULSE.subBaseGain + depth, time + PULSE.thumpAttack);
+  gain.gain.exponentialRampToValueAtTime(0.0001, time + PULSE.thumpDecay);
+
+  const filter = ctx.createBiquadFilter();
+  filter.type = 'lowpass';
+  filter.frequency.value = 110;
+
+  osc.connect(gain).connect(filter).connect(pulse.master);
+  osc.start(time);
+  osc.stop(time + PULSE.thumpDecay + 0.05);
+}
+
+function accentStep(time) {
+  const osc = ctx.createOscillator();
+  osc.type = 'triangle';
+  osc.frequency.value = PULSE.accentFreq;
+
+  const filter = ctx.createBiquadFilter();
+  filter.type = 'lowpass';
+  filter.frequency.value = PULSE.accentFilterHz;
+  filter.Q.value = 0.6;
+
+  const gain = ctx.createGain();
+  gain.gain.setValueAtTime(0, time);
+  gain.gain.linearRampToValueAtTime(PULSE.accentGain, time + 0.02);
+  gain.gain.exponentialRampToValueAtTime(0.001, time + PULSE.accentDecay);
+
+  osc.connect(filter).connect(gain).connect(pulse.master);
+  osc.start(time);
+  osc.stop(time + PULSE.accentDecay + 0.05);
+}
+
+function hiStep(time) {
+  const len = Math.ceil(ctx.sampleRate * 0.08);
+  const buffer = ctx.createBuffer(1, len, ctx.sampleRate);
+  const data = buffer.getChannelData(0);
+  for (let i = 0; i < len; i++) {
+    const t = i / len;
+    data[i] = (Math.random() * 2 - 1) * (1 - t);
+  }
+  const src = ctx.createBufferSource();
+  src.buffer = buffer;
+
+  const filter = ctx.createBiquadFilter();
+  filter.type = 'highpass';
+  filter.frequency.value = PULSE.hiFreq;
+
+  const gain = ctx.createGain();
+  gain.gain.setValueAtTime(PULSE.hiGain, time);
+  gain.gain.exponentialRampToValueAtTime(0.001, time + PULSE.hiDecay);
+
+  src.connect(filter).connect(gain).connect(pulse.master);
+  src.start(time);
+  src.stop(time + PULSE.hiDecay + 0.02);
+}
+
+function breathStep(time) {
+  const len = Math.ceil(ctx.sampleRate * 0.3);
+  const buffer = ctx.createBuffer(1, len, ctx.sampleRate);
+  const data = buffer.getChannelData(0);
+  for (let i = 0; i < len; i++) {
+    const t = i / len;
+    data[i] = (Math.random() * 2 - 1) * Math.sin(Math.PI * t);
+  }
+  const src = ctx.createBufferSource();
+  src.buffer = buffer;
+
+  const filter = ctx.createBiquadFilter();
+  filter.type = 'bandpass';
+  filter.frequency.value = (PULSE.breathFilterLo + PULSE.breathFilterHi) / 2;
+  filter.Q.value = 0.9;
+
+  const gain = ctx.createGain();
+  gain.gain.setValueAtTime(0, time);
+  gain.gain.linearRampToValueAtTime(PULSE.breathGain, time + PULSE.breathAttack);
+  gain.gain.exponentialRampToValueAtTime(0.001, time + PULSE.breathDecay);
+
+  src.connect(filter).connect(gain).connect(pulse.master);
+  src.start(time);
+  src.stop(time + PULSE.breathDecay + 0.05);
+}
+
+// ─── Sequencer scheduler ───
+
+function renderSeqGrid() {
+  const grid = document.getElementById('seqGrid');
+  const rows = [['low', 'Low'], ['mid', 'Mid'], ['high', 'High']];
+  grid.innerHTML = rows.map(([key, label]) => {
+    const cells = seqSteps[key].map((on, i) => {
+      const beatMarker = i % 4 === 0 ? ' beat-marker' : '';
+      return `<div class="seq-step ${on ? 'on ' + key : ''}${beatMarker}" data-row="${key}" data-step="${i}" onclick="toggleStep('${key}', ${i})"></div>`;
+    }).join('');
+    return `<div class="seq-row"><div class="seq-row-label">${label}</div>${cells}</div>`;
+  }).join('');
+}
+
+function toggleStep(row, i) {
+  seqSteps[row][i] = !seqSteps[row][i];
+  renderSeqGrid();
+  highlightPlayhead(currentPlayhead);
+}
+
+function clearSteps() {
+  seqSteps = { low: new Array(PULSE.steps).fill(false), mid: new Array(PULSE.steps).fill(false), high: new Array(PULSE.steps).fill(false) };
+  renderSeqGrid();
+}
+
+function setDensity(val) {
+  document.getElementById('ctrlDensityReadout').textContent = val + '%';
+}
+
+function randomizeSteps() {
+  const density = parseInt(document.getElementById('ctrlDensity').value, 10) / 100;
+  seqSteps.low = new Array(PULSE.steps).fill(false).map((_, i) => i % 4 === 0 || Math.random() < density * 0.4);
+  seqSteps.mid = new Array(PULSE.steps).fill(false).map(() => Math.random() < density * 0.6);
+  seqSteps.high = new Array(PULSE.steps).fill(false).map(() => Math.random() < density);
+  renderSeqGrid();
+}
+
+function highlightPlayhead(step) {
+  document.querySelectorAll('.seq-step').forEach(el => el.classList.remove('playhead'));
+  if (step < 0) return;
+  document.querySelectorAll(`.seq-step[data-step="${step}"]`).forEach(el => el.classList.add('playhead'));
+}
+
+function schedulePulse() {
+  if (!pulse.running) return;
+  const p = computeParams();
+  const stepDur = (60 / p.bpm) / 4; // 16th notes
+  const lookahead = 0.15;
+
+  while (pulse.nextStepTime < ctx.currentTime + lookahead) {
+    const jitter = p.jitterMs > 0 ? (Math.random() - 0.5) * 2 * (p.jitterMs / 1000) : 0;
+    const t = pulse.nextStepTime + jitter;
+    const idx = pulse.stepIndex % PULSE.steps;
+
+    if (seqSteps.low[idx]) thumpStep(t, p.thumpDepth);
+    if (seqSteps.mid[idx]) accentStep(t);
+    if (seqSteps.high[idx]) hiStep(t);
+
+    if (idx % 8 === 0) breathStep(t);
+
+    const capturedIdx = idx;
+    setTimeout(() => highlightPlayhead(capturedIdx), Math.max(0, (t - ctx.currentTime) * 1000));
+
+    pulse.nextStepTime += stepDur;
+    pulse.stepIndex++;
+  }
+  pulse.schedulerId = setTimeout(schedulePulse, 30);
+}
+
+function startPulse() {
+  ensureCtx();
+  if (pulse.running) return;
+  const p = computeParams();
+
+  pulse.master = ctx.createGain();
+  pulse.master.gain.value = layerVolumes.pulse * masterVolume;
+
+  pulse.saturator = ctx.createWaveShaper();
+  pulse.saturator.curve = makeDistortionCurve(p.saturation);
+  pulse.saturator.oversample = '2x';
+
+  pulse.master.connect(pulse.saturator).connect(ctx.destination);
+
+  pulse.nextStepTime = ctx.currentTime + 0.08;
+  pulse.stepIndex = 0;
+  pulse.running = true;
+  schedulePulse();
+
+  document.getElementById('btnPulse').textContent = 'Sequencer: on';
+  document.getElementById('btnPulse').classList.add('on');
+}
+
+function stopPulse() {
+  if (!pulse.running) return;
+  clearTimeout(pulse.schedulerId);
+  pulse.schedulerId = null;
+  pulse.running = false;
+  pulse.master = null;
+  pulse.saturator = null;
+  highlightPlayhead(-1);
+
+  document.getElementById('btnPulse').textContent = 'Sequencer: off';
+  document.getElementById('btnPulse').classList.remove('on');
+}
+
+function togglePulse() { ensureCtx(); pulse.running ? stopPulse() : startPulse(); }
+
+// ─── Event layer (multi-type one-shot) ───
+
+function fireEvent() {
+  ensureCtx();
+  const type = document.getElementById('eventType').value;
+  const cfg = EVENT_TYPES[type];
+  const now = ctx.currentTime;
+  const vol = layerVolumes.event * masterVolume;
+
+  const master = ctx.createGain();
+  master.gain.setValueAtTime(0, now);
+  master.gain.linearRampToValueAtTime(vol, now + cfg.swellPeak);
+  master.gain.exponentialRampToValueAtTime(0.001, now + cfg.decay);
+  master.connect(ctx.destination);
+
+  cfg.partials.forEach((ratio, i) => {
+    const osc = ctx.createOscillator();
+    osc.type = 'sine';
+    osc.frequency.value = cfg.baseFreq * ratio;
+
+    const g = ctx.createGain();
+    const partialVol = vol / (i + 1.2);
+    g.gain.setValueAtTime(partialVol, now);
+    g.gain.exponentialRampToValueAtTime(0.001, now + cfg.decay * (0.7 + i * 0.15));
+
+    osc.connect(g).connect(master);
+    osc.start(now);
+    osc.stop(now + cfg.decay + 0.1);
+  });
+
+  if (cfg.noiseBurst) {
+    const len = Math.ceil(ctx.sampleRate * cfg.noiseDecay * 2);
+    const buffer = ctx.createBuffer(1, len, ctx.sampleRate);
+    const data = buffer.getChannelData(0);
+    for (let i = 0; i < len; i++) {
+      const t = i / len;
+      data[i] = (Math.random() * 2 - 1) * (1 - t);
+    }
+    const src = ctx.createBufferSource();
+    src.buffer = buffer;
+    const noiseGain = ctx.createGain();
+    noiseGain.gain.setValueAtTime(vol * cfg.noiseGainMult, now);
+    noiseGain.gain.exponentialRampToValueAtTime(0.001, now + cfg.noiseDecay);
+    src.connect(noiseGain).connect(ctx.destination);
+    src.start(now);
+    src.stop(now + cfg.noiseDecay + 0.05);
+  }
+}
+
+// ─── Layer / master volumes ───
+
+function setLayerVolume(layer, val) {
+  const norm = val / 100;
+  layerVolumes[layer] = norm;
+  document.getElementById('vol' + layer.charAt(0).toUpperCase() + layer.slice(1) + 'Readout').textContent = val + '%';
+  if (layer === 'drone' && drone.running && drone.master) drone.master.gain.setTargetAtTime(norm * masterVolume, ctx.currentTime, 0.1);
+  if (layer === 'pulse' && pulse.running && pulse.master) pulse.master.gain.setTargetAtTime(norm * masterVolume, ctx.currentTime, 0.1);
+}
+
+function setMasterVolume(val) {
+  masterVolume = val / 100;
+  document.getElementById('volMasterReadout').textContent = val + '%';
+  if (drone.running && drone.master) drone.master.gain.setTargetAtTime(layerVolumes.drone * masterVolume, ctx.currentTime, 0.1);
+  if (pulse.running && pulse.master) pulse.master.gain.setTargetAtTime(layerVolumes.pulse * masterVolume, ctx.currentTime, 0.1);
+}
+
+// ─── Master panel actions ───
+
+function freezeState() {
+  const p = computeParams();
+  const snapshot = {
+    timestamp: new Date().toISOString(),
+    world: { ...world },
+    layerVolumes: { ...layerVolumes },
+    masterVolume,
+    manualOverrides: { ...manualOverrides },
+    computedParams: p,
+    seqSteps: { ...seqSteps },
+    eventType: document.getElementById('eventType').value,
+  };
+  const json = JSON.stringify(snapshot, null, 2);
+  console.log('FROZEN PRESET:', json);
+  const out = document.getElementById('freezeOutput');
+  out.style.display = 'block';
+  out.textContent = json;
+}
+
+function randomizeWorld() {
+  WORLD_KEYS.forEach(key => {
+    const v = Math.round(Math.random() * 100);
+    world[key] = v;
+    const cap = key.charAt(0).toUpperCase() + key.slice(1);
+    document.getElementById('sl' + cap).value = v;
+    document.getElementById('val' + cap).textContent = v;
+    document.getElementById('bar' + cap).style.width = v + '%';
+  });
+  applyWorldToAudio();
+}
+
+// ─── World-state UI ───
+
+const WORLD_KEYS = ['vitality', 'luminosity', 'chaos', 'harmony', 'memory'];
+
+function bindWorldSliders() {
+  WORLD_KEYS.forEach(key => {
+    const cap = key.charAt(0).toUpperCase() + key.slice(1);
+    const sl = document.getElementById('sl' + cap);
+    sl.addEventListener('input', () => {
+      const v = parseInt(sl.value, 10);
+      world[key] = v;
+      document.getElementById('val' + cap).textContent = v;
+      document.getElementById('bar' + cap).style.width = v + '%';
+      applyWorldToAudio();
+    });
+  });
+}
+
+function updateReadout(p) {
+  document.getElementById('readout').innerHTML = [
+    `<span><strong>filter cutoff</strong> ${Math.round(p.filterCutoff)} Hz</span>`,
+    `<span><strong>sweep rate</strong> ${p.sweepRate.toFixed(3)} Hz</span>`,
+    `<span><strong>detune scale</strong> ${p.detuneScale.toFixed(2)}</span>`,
+    `<span><strong>pulse BPM</strong> ${Math.round(p.bpm)}</span>`,
+    `<span><strong>saturation</strong> ${Math.round(p.saturation)}</span>`,
+    `<span><strong>jitter</strong> ${Math.round(p.jitterMs)} ms</span>`,
+    `<span><strong>vitality cents</strong> +${Math.round(p.vitalityCents)}</span>`,
+  ].join('');
+}
+
+// ─── Init ───
+
+bindWorldSliders();
+renderSeqGrid();
+randomizeSteps(); // seed with a starting pattern so it's not silent on first play
+updateReadout(computeParams());
+</script>
+
+
+</body></html>
