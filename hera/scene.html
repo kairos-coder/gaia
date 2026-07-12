@@ -125,10 +125,10 @@
   </div>
 
   <div class="btn-row">
-    <button class="btn" id="btnAutoPlay" onclick="toggleAutoPlay()" disabled>▶ Auto-Play</button>
-    <button class="btn" onclick="generateOneBeat()" id="btnManual" disabled>⏭ Next Beat</button>
-    <button class="btn" onclick="toggleDataBar()">📊 Data</button>
-    <button class="btn" onclick="exportLog()">⬇ Export Log</button>
+    <button class="btn" id="btnAutoPlay" disabled>▶ Auto-Play</button>
+    <button class="btn" id="btnManual" disabled>⏭ Next Beat</button>
+    <button class="btn" id="btnDataBar">📊 Data</button>
+    <button class="btn" id="btnExport">⬇ Export Log</button>
   </div>
 
   <div class="scene-description" id="sceneDesc">
@@ -165,7 +165,7 @@ import * as webllm from 'https://cdn.jsdelivr.net/npm/@mlc-ai/web-llm@0.2.46/+es
 // CONFIG
 // ═══════════════════════════════════
 const LAT=44.5734,LON=-68.7956;
-const MODEL='gemma-2-2b-it-q4f16_1-MLC';
+const MODEL='Llama-3.2-1B-Instruct-q4f16_1-MLC';
 const BEAT_INTERVAL=60000;
 const pollinationsImg=p=>`https://image.pollinations.ai/prompt/${encodeURIComponent(p)}?width=1200&height=700&nologo=true`;
 
@@ -193,7 +193,7 @@ async function initDirector(){
       initProgressCallback:(p)=>{
         loadProgress=p.progress;
         document.getElementById('progressFill').style.width=(loadProgress*100)+'%';
-        updateDirectorUI('loading',`Loading model: ${Math.round(loadProgress*100)}%`);
+        updateDirectorUI('loading',`Loading: ${Math.round(loadProgress*100)}%`);
       }
     });
     
@@ -204,29 +204,28 @@ async function initDirector(){
     document.getElementById('btnAutoPlay').disabled=false;
     document.getElementById('btnManual').disabled=false;
     
-    console.log('🎬 Director ready (WebLLM + Gemma-2B)');
+    console.log('🎬 Director ready (WebLLM + Llama-3.2-1B)');
   }catch(e){
     console.error('Director failed:',e);
     directorLoading=false;
-    updateDirectorUI('off','Director unavailable');
+    updateDirectorUI('off','Director: '+e.message);
+    document.getElementById('btnAutoPlay').disabled=true;
+    document.getElementById('btnManual').disabled=true;
   }
 }
 
 async function directorDecide(sceneState){
   if(!directorReady)return'WHISPER';
-  
   try{
     const reply=await engine.chat.completions.create({
       messages:[
-        {role:'system',content:'You decide what happens next in a living fantasy world. Output EXACTLY ONE word: WHISPER, STORM, BLOOM, ECLIPSE, QUAKE, ARRIVAL, DEPARTURE, SILENCE. No other words.'},
-        {role:'user',content:`State: Vitality ${sceneState.vitality}%, Luminosity ${sceneState.luminosity}%, Chaos ${sceneState.chaos}%, Harmony ${sceneState.harmony}%, Memory ${sceneState.memory}%. Solar ${sceneState.solarFlare}. Moon ${sceneState.moonPhase}. Wind ${sceneState.wind}km/h. Quakes ${sceneState.quakes}.`}
+        {role:'system',content:'You decide what happens next in a fantasy world. Output EXACTLY ONE word: WHISPER, STORM, BLOOM, ECLIPSE, QUAKE, ARRIVAL, DEPARTURE, SILENCE.'},
+        {role:'user',content:`State: Vitality ${sceneState.vitality}%, Chaos ${sceneState.chaos}%, Harmony ${sceneState.harmony}%, Luminosity ${sceneState.luminosity}%, Memory ${sceneState.memory}%.`}
       ],temperature:0.8,max_tokens:5
     });
-    
     const beat=reply.choices[0].message.content.toUpperCase().trim();
     const valid=['WHISPER','STORM','BLOOM','ECLIPSE','QUAKE','ARRIVAL','DEPARTURE','SILENCE'];
-    const match=valid.find(b=>beat.includes(b))||'WHISPER';
-    return match;
+    return valid.find(b=>beat.includes(b))||'WHISPER';
   }catch(e){return'WHISPER';}
 }
 
@@ -235,7 +234,7 @@ async function directorGenerateScene(prompt,maxTokens=150){
   try{
     const reply=await engine.chat.completions.create({
       messages:[
-        {role:'system',content:'You are a vivid fantasy writer. Write 2-3 sentences. Be specific and atmospheric. No preamble.'},
+        {role:'system',content:'You write vivid fantasy scenes. 2-3 sentences. Specific, atmospheric. No preamble.'},
         {role:'user',content:prompt}
       ],temperature:0.9,max_tokens:maxTokens
     });
@@ -246,14 +245,13 @@ async function directorGenerateScene(prompt,maxTokens=150){
 async function directorGenerateCast(type,role,ws){
   if(!directorReady)return null;
   const prompts={
-    wanderer:`Describe a ${role} who wanders this world. Vitality ${ws.vitality}%, Chaos ${ws.chaos}%. What do they carry? What are they seeking? One vivid sentence.`,
-    keeper:`Describe a ${role} who tends this place. Harmony ${ws.harmony}%, Memory ${ws.memory}%. What do they protect? One vivid sentence.`,
-    beast:`Describe a ${role} that emerges here. Chaos ${ws.chaos}%, Vitality ${ws.vitality}%. Is it dangerous? One vivid sentence.`,
-    shade:`Describe a ${role} from the past that lingers. Memory ${ws.memory}%, Luminosity ${ws.luminosity}%. One vivid sentence.`,
-    stranger:`Describe a ${role} who arrives. What do they want? One vivid sentence.`
+    wanderer:`Describe a ${role} wandering this world. One vivid sentence.`,
+    keeper:`Describe a ${role} who tends this place. One vivid sentence.`,
+    beast:`Describe a ${role} that emerges here. One vivid sentence.`,
+    shade:`Describe a ${role} from the past lingering here. One vivid sentence.`,
+    stranger:`Describe a ${role} who arrives here. One vivid sentence.`
   };
-  const prompt=prompts[type]||prompts.stranger;
-  return await directorGenerateScene(prompt,80);
+  return await directorGenerateScene(prompts[type]||prompts.stranger,60);
 }
 
 // ═══════════════════════════════════
@@ -261,29 +259,25 @@ async function directorGenerateCast(type,role,ws){
 // ═══════════════════════════════════
 
 const ActorTypes={
-  wanderer:{icon:'🚶',roles:['seeker','exile','messenger','hunter','pilgrim'],triggers:{highVitality:true,highChaos:false,any:true}},
-  keeper:{icon:'🏛️',roles:['gatekeeper','librarian','oracle','smith','healer'],triggers:{highHarmony:true,highMemory:true}},
-  beast:{icon:'🐺',roles:['predator','guardian','omen','mount','shapeshifter'],triggers:{highChaos:true,highVitality:true}},
-  shade:{icon:'👻',roles:['ghost','memory','curse','echo','ancestor'],triggers:{lowLuminosity:true,highMemory:true}},
-  stranger:{icon:'🎭',roles:['trader','bard','rival','ally','mystic'],triggers:{any:true}}
+  wanderer:{icon:'🚶',roles:['seeker','exile','messenger','hunter','pilgrim'],triggers:{}},
+  keeper:{icon:'🏛️',roles:['gatekeeper','librarian','oracle','smith','healer'],triggers:{highHarmony:60,highMemory:50}},
+  beast:{icon:'🐺',roles:['predator','guardian','omen','mount','shapeshifter'],triggers:{highChaos:55}},
+  shade:{icon:'👻',roles:['ghost','memory','curse','echo','ancestor'],triggers:{lowLuminosity:45,highMemory:50}},
+  stranger:{icon:'🎭',roles:['trader','bard','rival','ally','mystic'],triggers:{}}
 };
 
 async function updateCast(){
-  // Departures
-  activeCast=activeCast.filter(a=>Math.random()>0.25);
-  
-  // Entries (max 3)
+  activeCast=activeCast.filter(a=>Math.random()>0.3);
   if(activeCast.length>=3)return;
   
   const ws=world;
   const available=Object.entries(ActorTypes).filter(([type,cfg])=>{
-    if(Math.random()>0.35)return false;
+    if(Math.random()>0.4)return false;
     const t=cfg.triggers;
-    if(t.highChaos&&ws.chaos<55)return false;
-    if(t.lowLuminosity&&ws.luminosity>45)return false;
-    if(t.highHarmony&&ws.harmony<55)return false;
-    if(t.highVitality&&ws.vitality<55)return false;
-    if(t.highMemory&&ws.memory<45)return false;
+    if(t.highChaos&&ws.chaos<t.highChaos)return false;
+    if(t.lowLuminosity&&ws.luminosity>t.lowLuminosity)return false;
+    if(t.highHarmony&&ws.harmony<t.highHarmony)return false;
+    if(t.highMemory&&ws.memory<t.highMemory)return false;
     return true;
   });
   
@@ -293,13 +287,13 @@ async function updateCast(){
     const desc=await directorGenerateCast(type,role,ws);
     if(desc){
       activeCast.push({type,role,description:desc,icon:cfg.icon,entered:Date.now(),beat:beatCount});
+      document.getElementById('dataCast').textContent=activeCast.length;
     }
   }
 }
 
 function renderCast(){
   const row=document.getElementById('castRow');
-  if(activeCast.length===0){row.innerHTML='';return;}
   row.innerHTML=activeCast.map(a=>`
     <div class="cast-card">
       <span class="cast-icon">${a.icon}</span>
@@ -314,26 +308,32 @@ function renderCast(){
 // ═══════════════════════════════════
 
 function norm(v){return Math.round(Math.max(0,Math.min(1,v))*100);}
-function calcWorld(solar,moon,weather,quakes,iss){
+function calcWorld(solar,moon,weather,quakes){
   const day=weather?.sunrise&&weather?.sunset?new Date()>=new Date(weather.sunrise)&&new Date()<=new Date(weather.sunset):new Date().getHours()>=6&&new Date().getHours()<20;
   const sr=solar?.class?.charAt(0)==='X'?5:solar?.class?.charAt(0)==='M'?4:solar?.class?.charAt(0)==='C'?3:solar?.class?.charAt(0)==='B'?2:1;
   const mi=moon?.phase?parseFloat(moon.phase)/100:0.5;
+  const chaos=norm((weather?.wind||10)/60*0.3+(sr>=4?0.4:sr===3?0.2:0)*0.3+(quakes?.count24h>50?0.3:quakes?.count24h>10?0.15:0)*0.2);
   return{
     vitality:norm((weather?.uv||3)/11*0.4+(weather?.temp>15?0.3:weather?.temp>5?0.2:0.1)*0.4+(mi>0.5?0.2:0.1)*0.2),
     luminosity:norm(sr/5*0.4+mi*0.3+(day?0.3:0.1)),
-    chaos:norm((weather?.wind||10)/60*0.3+(sr>=4?0.4:sr===3?0.2:0)*0.3+(quakes?.count24h>50?0.3:quakes?.count24h>10?0.15:0)*0.2),
-    harmony:norm((1-world.chaos/100)*0.5+((weather?.temp||15)>10&&(weather?.temp||15)<25?0.3:0.1)*0.3+(mi>0.3&&mi<0.7?0.2:0.1)*0.2),
+    chaos,
+    harmony:norm((1-chaos/100)*0.5+((weather?.temp||15)>10&&(weather?.temp||15)<25?0.3:0.1)*0.3+(mi>0.3&&mi<0.7?0.2:0.1)*0.2),
     memory:world.memory,isDaytime:day
   };
 }
 
 function updateWorldDisplay(){
-  ['Vitality','Luminosity','Chaos','Harmony','Memory'].forEach(k=>{
-    const key=k.toLowerCase();
-    document.getElementById('ws'+k).textContent=world[key]+'%';
-    document.getElementById('wsBar'+k).style.width=world[key]+'%';
-    if(k==='Chaos')document.getElementById('ws'+k).style.color=world[key]>60?'#ff4444':world[key]>30?'#cc8844':'#c9a84c';
-  });
+  document.getElementById('wsVitality').textContent=world.vitality+'%';
+  document.getElementById('wsLuminosity').textContent=world.luminosity+'%';
+  document.getElementById('wsChaos').textContent=world.chaos+'%';
+  document.getElementById('wsHarmony').textContent=world.harmony+'%';
+  document.getElementById('wsMemory').textContent=world.memory+'%';
+  document.getElementById('wsBarVitality').style.width=world.vitality+'%';
+  document.getElementById('wsBarLuminosity').style.width=world.luminosity+'%';
+  document.getElementById('wsBarChaos').style.width=world.chaos+'%';
+  document.getElementById('wsBarHarmony').style.width=world.harmony+'%';
+  document.getElementById('wsBarMemory').style.width=world.memory+'%';
+  document.getElementById('wsChaos').style.color=world.chaos>60?'#ff4444':world.chaos>30?'#cc8844':'#c9a84c';
 }
 
 function worldNarrative(){
@@ -365,21 +365,20 @@ function applyBeatToWorld(beatType){
 // ═══════════════════════════════════
 // DATA FETCHERS
 // ═══════════════════════════════════
-async function fetchSolar(){try{const r=await fetch('https://services.swpc.noaa.gov/json/goes/primary/xrays-6-hour.json');const rows=await r.json();const lr=rows.filter(r=>r.energy==='0.1-0.8nm');if(lr.length>0){const l=lr[lr.length-1],f=l.flux;return{class:f<1e-7?`A${(f/1e-8).toFixed(1)}`:f<1e-6?`B${(f/1e-7).toFixed(1)}`:f<1e-5?`C${(f/1e-6).toFixed(1)}`:f<1e-4?`M${(f/1e-5).toFixed(1)}`:`X${(f/1e-4).toFixed(1)}`,flux:f?.toExponential(2)};}}catch(e){}return null;}
+async function fetchSolar(){try{const r=await fetch('https://services.swpc.noaa.gov/json/goes/primary/xrays-6-hour.json');const rows=await r.json();const lr=rows.filter(r=>r.energy==='0.1-0.8nm');if(lr.length>0){const l=lr[lr.length-1],f=l.flux;return{class:f<1e-7?`A${(f/1e-8).toFixed(1)}`:f<1e-6?`B${(f/1e-7).toFixed(1)}`:f<1e-5?`C${(f/1e-6).toFixed(1)}`:f<1e-4?`M${(f/1e-5).toFixed(1)}`:`X${(f/1e-4).toFixed(1)}`};}}catch(e){}return null;}
 async function fetchMoon(){try{const n=new Date(),lp=2551443,nm=new Date(2026,4,18).getTime(),p=((n.getTime()-nm)%lp)/lp;const names=['New Moon','Waxing Crescent','First Quarter','Waxing Gibbous','Full Moon','Waning Gibbous','Last Quarter','Waning Crescent'];const idx=Math.floor(p*8)%8;return{phase:(p*100).toFixed(1),name:names[idx],emoji:['🌑','🌒','🌓','🌔','🌕','🌖','🌗','🌘'][idx]};}catch(e){}return null;}
 async function fetchWeather(){try{const r=await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${LAT}&longitude=${LON}&current=temperature_2m,wind_speed_10m,uv_index&daily=sunrise,sunset&timezone=auto`);const d=await r.json(),cur=d.current||{},daily=d.daily||{};return{temp:cur.temperature_2m,wind:cur.wind_speed_10m,uv:cur.uv_index,sunrise:daily.sunrise?.[0],sunset:daily.sunset?.[0]};}catch(e){}return null;}
-async function fetchQuakes(){try{const r=await fetch('https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_day.geojson'),d=await r.json();const q=d.features||[],s=q.length>0?q.reduce((a,b)=>b.properties.mag>a.properties.mag?b:a):null;return{count24h:q.length,strongest_mag:s?.properties?.mag};}catch(e){}return null;}
+async function fetchQuakes(){try{const r=await fetch('https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_day.geojson'),d=await r.json();const q=d.features||[];return{count24h:q.length};}catch(e){}return null;}
 async function fetchISS(){try{const r=await fetch('https://api.wheretheiss.at/v1/satellites/25544'),d=await r.json();return{lat:parseFloat(d.latitude).toFixed(1),lon:parseFloat(d.longitude).toFixed(1),overhead:Math.abs(parseFloat(d.latitude)-LAT)<15&&Math.abs(parseFloat(d.longitude)-LON)<15};}catch(e){}return null;}
 function preloadImage(url){return new Promise(r=>{if(!url)return r(null);const i=new Image();i.onload=()=>r(url);i.onerror=()=>r(null);i.src=url;});}
 
 async function refreshWorldData(){
   const[solar,moon,weather,quakes,iss]=await Promise.all([fetchSolar(),fetchMoon(),fetchWeather(),fetchQuakes(),fetchISS()]);
   sceneData={solar,moon,weather,quakes,iss};
-  const newWorld=calcWorld(solar,moon,weather,quakes,iss);
-  newWorld.memory=world.memory; // Preserve memory
+  const newWorld=calcWorld(solar,moon,weather,quakes);
+  newWorld.memory=world.memory;
   world=newWorld;
   updateWorldDisplay();
-  // Update data bar
   if(document.getElementById('dataBar').classList.contains('visible')){
     document.getElementById('dataSolar').textContent=solar?.class||'—';
     document.getElementById('dataMoon').textContent=moon?`${moon.emoji} ${moon.name}`:'—';
@@ -400,26 +399,18 @@ async function generateOneBeat(){
   beatCount++;
   document.getElementById('dataBeats').textContent=beatCount;
   
-  // Refresh data
   await refreshWorldData();
-  
-  // Update cast
   await updateCast();
   renderCast();
-  document.getElementById('dataCast').textContent=activeCast.length;
   
-  // Director decides
   const sceneState={
     vitality:world.vitality,luminosity:world.luminosity,chaos:world.chaos,
-    harmony:world.harmony,memory:world.memory,
-    solarFlare:sceneData?.solar?.class||'quiet',moonPhase:sceneData?.moon?.name||'unknown',
-    wind:sceneData?.weather?.wind||0,quakes:sceneData?.quakes?.count24h||0
+    harmony:world.harmony,memory:world.memory
   };
   
   const beatType=await directorDecide(sceneState);
   
-  // Generate scene
-  let prompt=`Describe this moment in two vivid sentences. World: ${worldNarrative()}. Scene type: ${beatType}.`;
+  let prompt=`Describe this moment in two vivid sentences. World: ${worldNarrative()}. Scene: ${beatType}.`;
   if(activeCast.length>0){
     prompt+=` Present: ${activeCast.map(a=>`${a.role} ${a.type} — ${a.description}`).join(' ')}`;
   }
@@ -427,34 +418,25 @@ async function generateOneBeat(){
   const sceneText=await directorGenerateScene(prompt);
   if(!sceneText)return;
   
-  // Generate image
   const imagePrompt=`Fantasy landscape: ${sceneText}. Digital painting, atmospheric, cinematic, no text.`;
   const imageUrl=pollinationsImg(imagePrompt);
   
-  // Display
   displayBeat(beatType,sceneText,imageUrl);
-  
-  // Apply shift
   applyBeatToWorld(beatType);
   updateWorldDisplay();
-  
-  // Log
   addBeatLog(beatType,sceneText);
 }
 
 function displayBeat(type,text,imageUrl){
-  const desc=document.getElementById('sceneDesc');
   const labels={WHISPER:'A Whisper',STORM:'Storm Rising',BLOOM:'Something Blooms',ECLIPSE:'Darkness Falls',QUAKE:'The Ground Shakes',ARRIVAL:'Someone Arrives',DEPARTURE:'A Departure',SILENCE:'Silence Falls'};
-  desc.innerHTML=`<span class="beat-label">${labels[type]||type}</span>${text}`;
+  document.getElementById('sceneDesc').innerHTML=`<span class="beat-label">${labels[type]||type}</span>${text}`;
   
-  // Background image
   if(imageUrl){
     preloadImage(imageUrl).then(url=>{
       if(url)document.getElementById('sceneBody').style.backgroundImage=`url(${url})`;
     });
   }
   
-  // Flash
   document.body.classList.remove('beat-flash','storm','bloom','eclipse','quake','arrival','departure','silence','whisper');
   void document.body.offsetWidth;
   document.body.classList.add('beat-flash',type.toLowerCase());
@@ -464,9 +446,7 @@ function displayBeat(type,text,imageUrl){
 function addBeatLog(type,text){
   beatLogEntries.unshift({type,text,time:new Date().toISOString(),beat:beatCount,cast:activeCast.length});
   if(beatLogEntries.length>50)beatLogEntries.pop();
-  
-  const log=document.getElementById('beatLog');
-  log.innerHTML=beatLogEntries.slice(0,20).map(e=>`
+  document.getElementById('beatLog').innerHTML=beatLogEntries.slice(0,20).map(e=>`
     <div class="log-entry">
       <span class="log-beat">[#${e.beat} ${e.type}]</span>
       ${e.text.substring(0,100)}${e.text.length>100?'...':''}
@@ -487,11 +467,7 @@ async function startAutoPlay(){
   document.getElementById('btnAutoPlay').textContent='⏹ Stop';
   document.getElementById('btnAutoPlay').classList.add('on');
   console.log('🎬 Auto-play started');
-  
-  // First beat immediately
   await generateOneBeat();
-  
-  // Then schedule
   scheduleNextBeat();
 }
 
@@ -512,9 +488,8 @@ function scheduleNextBeat(){
   countdownInterval=setInterval(()=>{
     countdownRemaining--;
     updateCountdown();
-    if(countdownRemaining<=0){clearInterval(countdownInterval);}
+    if(countdownRemaining<=0)clearInterval(countdownInterval);
   },1000);
-  
   autoPlayTimer=setTimeout(async()=>{
     if(!autoPlayRunning)return;
     await generateOneBeat();
@@ -533,8 +508,7 @@ function updateCountdown(){
 // ═══════════════════════════════════
 
 function updateDirectorUI(state,msg){
-  const dot=document.getElementById('directorDot');
-  dot.className='director-dot '+state;
+  document.getElementById('directorDot').className='director-dot '+state;
   document.getElementById('directorStatus').textContent=msg;
 }
 
@@ -548,22 +522,25 @@ function exportLog(){
 }
 
 // ═══════════════════════════════════
+// WIRE BUTTONS
+// ═══════════════════════════════════
+
+document.getElementById('btnAutoPlay').addEventListener('click',toggleAutoPlay);
+document.getElementById('btnManual').addEventListener('click',generateOneBeat);
+document.getElementById('btnDataBar').addEventListener('click',toggleDataBar);
+document.getElementById('btnExport').addEventListener('click',exportLog);
+
+// ═══════════════════════════════════
 // INIT
 // ═══════════════════════════════════
 
 async function init(){
   updateWorldDisplay();
-  
-  // Start loading the Director
   initDirector();
-  
-  // Fetch initial data
   await refreshWorldData();
   updateWorldDisplay();
-  
   console.log('🌍 The Living World · Auto-Play ready');
   console.log('   Director loading in background...');
-  console.log('   Click Auto-Play when Director is ready');
 }
 
 init();
